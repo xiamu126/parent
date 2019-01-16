@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=3IDUiqdFMRSeHAtuXWSVs93QYWwHnb70"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>
+    <title>热力图功能示例</title>
+    <style>
+        html{height:100%}
+        body{height:100%;margin:0;padding:0;}
+        #allmap{height:100%;width:100%;}
+    </style>
+</head>
+<body>
+<div id="allmap"></div>
+<script>
+    function randomNum(min, max){
+        return Math.floor(Math.random()*(max-min+1)+min);
+    }
+    function randomFloat(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+</script>
+<script type="text/javascript">
+    let map = new BMap.Map("allmap",{enableMapClick:false});
+    let jd = 120.6395730548;
+    let wd = 31.1626998664;
+    let point = new BMap.Point(jd, wd);
+    map.centerAndZoom(point, 15);
+    map.disableScrollWheelZoom();
+    map.disableDoubleClickZoom();
+
+    let points =[{"lng":jd, "lat":wd, "count":52}];//这里面添加经纬度, count为权重，下面的max即最高权重
+    for(let i = 0; i< 100; i++){
+        let tmp = {"lng": jd+randomFloat(0.001, 0.09), "lat": wd+randomFloat(0.001, 0.09), "count": randomNum(1, 80) };
+        points.push(tmp);
+    }
+
+    let heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 43, "visible": true, "opacity": 0});
+    map.addOverlay(heatmapOverlay);
+
+    function update(){
+        points.forEach((value, key) => {
+            value.count += randomNum(-10, 10);
+        });
+        heatmapOverlay.setDataSet({data:points, max:80});
+    }
+
+    update();
+
+    setInterval(function () {
+        update();
+    },1000*60);
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="../static/layui/css/layui.css" th:href="@{~/layui/css/layui.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css" rel="stylesheet">
+    <title>命令执行测试</title>
+    <style type="text/css">
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row" style="width: 986px;">
+        <div class="col-sm col-lg mt-1">
+            <button class="layui-btn layui-btn-normal" id="001">打开屏幕</button>
+        </div>
+        <div class="col-sm col-lg mt-1">
+            <button class="layui-btn layui-btn-normal" id="002">关闭屏幕</button>
+        </div>
+        <div class="col-sm col-lg mt-1">
+            <button class="layui-btn layui-btn-warm" id="003">打开气象站</button>
+        </div>
+        <div class="col-sm col-lg mt-1">
+            <button class="layui-btn layui-btn-warm" id="004">关闭气象站</button>
+        </div>
+        <div class="col-sm col-lg mt-1">
+            <button class="layui-btn layui-btn-disabled" id="101" disabled>气象站数据上传</button>
+        </div>
+        <div class="col-sm col-lg mt-1">
+            <button class="layui-btn layui-btn-disabled" id="102" disabled>路灯状态查询</button>
+        </div>
+        <div class="col-sm col-lg mt-1">
+            <button class="layui-btn layui-btn-primary" id="103">位置信息查询</button>
+        </div>
+    </div>
+    <div class="row" style="width: 568px;">
+        <div class="col-sm col-md mt-1">
+            <button class="layui-btn layui-btn-primary" id="A" data-pv="2">气象信息上传频率</button>
+        </div>
+        <div class="col-sm col-md mt-1">
+            <button class="layui-btn layui-btn-primary" id="B" data-pv="2">位置信息上传频率</button>
+        </div>
+        <div class="col-sm col-md mt-1">
+            <button class="layui-btn layui-btn-primary" id="C" data-pv="2">路灯状态信息上传频率</button>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../static/layui/layui.js" th:src="@{~/layui/layui.js}"></script>
+<script>
+    layui.use('layer', function() {
+        let $ = layui.jquery, layer = layui.layer;
+
+        function execute(cmd, other){
+            console.log(cmd);
+            let index = layer.load(1, {
+                shade: [0.1,'#fff'] //0.1透明度的白色背景
+            });
+            $.ajax({
+                url:`/api/execute`,
+                type:"post",
+                data:JSON.stringify({"args": `${cmd}`, "other": `${!other ? null : other}`}),
+                contentType:"application/json;charset=utf-8",
+                success:function(data){
+                    layer.close(index);
+                    if(data && data.code === 0){
+                        layer.msg('执行成功', {time: 1000});
+                    }else{
+                        layer.msg('执行失败', {time: 1000});
+                    }
+                },
+                error:function (jqXHR, textStatus, errorThrown) {
+                    layer.close(index);
+                    layer.msg(`${textStatus}`, {time: 1000});
+                }
+            });
+        }
+
+        let list = document.querySelectorAll("div[class='container'] > div[class='row'] > div");
+        list.forEach((value, key) => {
+            value.addEventListener("click", function () {
+                let pv = value.children[0].dataset.pv;
+                if(pv){
+                    execute(value.children[0].id, pv);
+                }else{
+                    execute(value.children[0].id);
+                }
+            });
+        });
+    });
+</script>
+</html>
+

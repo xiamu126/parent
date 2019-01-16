@@ -1,0 +1,63 @@
+server:
+  servlet:
+    session:
+      timeout: 30m
+spring:
+  task:
+    execution:
+      pool:
+        queue-capacity: 9999
+        keep-alive: 30s
+        core-size: 8
+        max-size: 50
+        allow-core-thread-timeout: true
+      thread-name-prefix: znld-web-task-thread
+    scheduling:
+      pool:
+        size: 5
+      thread-name-prefix: znld-web-task-scheduling-thread
+  resources:
+    add-mappings: false
+  mvc:
+    throw-exception-if-no-handler-found: true
+  main:
+    banner-mode: "off"
+  session:
+    store-type: redis
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+  profiles:
+    include: onenet,security,datasource
+    active: dev
+  cache:
+    type: redis
+  redis:
+    lettuce:
+      pool:
+        min-idle: 0
+        max-idle: 8
+        max-wait: -1ms
+        max-active: 8
+    database: 0
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.sybd.znld.model
+  configuration:
+    map-underscore-to-camel-case: true
+project:
+  name: znld
+  cache-prefix: 'znld::web::service::cache'
+  cache-of-null-expiration-time: 5s
+  cache-of-captcha-expiration-time: 30s
+  auth2-token-expiration-time: 7d
+captcha:
+  border: "no"
+  border-color: 105,179,90
+  font-color: red
+  image-width: 150
+  image-height: 42
+  font-size: 30
+  length: 4
+  font-names: 宋体,楷体,微软雅黑

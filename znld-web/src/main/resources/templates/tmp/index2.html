@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{~/layui/css/layui.css}">
+</head>
+<body>
+<table>
+    <tbody>
+    <tr>
+        <td><div id="main0" style="width: 600px;height:400px;"></div></td>
+        <td><div id="main1" style="width: 600px;height:400px;"></div></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+<script src="https://cdn.bootcss.com/echarts/4.1.0/echarts.js"></script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+<script th:src="@{~/layui/layui.js}"></script>
+<script th:src="@{~/js/moment-with-locales.js}"></script>
+<script th:inline="javascript">
+    function getUrlParam(name) {
+        let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        let r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r != null) return decodeURIComponent(r[2]); return null; //返回参数值
+    }
+
+    let myChart0 = echarts.init(document.getElementById('main0'));
+    let option0 = {
+        title: {
+            text: "未加载数据 湿度"
+        },
+        tooltip: {},
+        xAxis: {
+            type: 'category',
+            //data: ["8:00", "9:00", "10:00", "11:00"]
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            name: '',
+            type: 'line',
+            //data: ["0", "69", "68", "70"],
+            smooth: true
+        }]
+    };
+    myChart0.setOption(option0);
+
+    let myChart1 = echarts.init(document.getElementById('main1'));
+    let option1 = {
+        title: {
+            text: "未加载数据 温度"
+        },
+        tooltip: {},
+        xAxis: {
+            type: 'category',
+            //data: ["8:00", "9:00", "10:00", "11:00"]
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            name: '',
+            type: 'line',
+            //data: ["0", "27", "26", "26"],
+            smooth: true
+        }]
+    };
+    myChart1.setOption(option1);
+
+    let queryString = getUrlParam('q');
+    let deviceId = '42939715';
+    let objId = 3303;
+    let objInstId = 0;
+    let resId = 5700;
+    let limit = 0;
+    let begin = moment(queryString);
+    let endTimestamp = 0;
+    let beginTimestamp = begin.valueOf();
+    $.get(`/api/data/history/${deviceId}/${objId}/${objInstId}/${resId}/${beginTimestamp}/${endTimestamp}/${limit}`).done(function (data) {
+        console.log(data);
+        if(data.json){
+            myChart1.setOption({
+                title: {
+                    text: `${data.json.title} 温度`
+                },
+                xAxis: {
+                    data: [...data.json.atList]
+                },
+                series: [{
+                    data: [...data.json.valueList]
+                }]
+            });
+        }
+    });
+    objId = 3304;
+    $.get(`/api/data/history/${deviceId}/${objId}/${objInstId}/${resId}/${beginTimestamp}/${endTimestamp}/${limit}`).done(function (data) {
+        console.log(data);
+        if(data.json){
+            myChart0.setOption({
+                title: {
+                    text: `${data.json.title} 湿度`
+                },
+                xAxis: {
+                    data: [...data.json.atList]
+                },
+                series: [{
+                    data: [...data.json.valueList]
+                }]
+            });
+        }
+    });
+</script>
+</html>

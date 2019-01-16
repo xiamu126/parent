@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<!--    <link href="./fontawesome/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/layui/css/layui.css">-->
+    <!--<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=3IDUiqdFMRSeHAtuXWSVs93QYWwHnb70"></script>-->
+    <title>测试4</title>
+<link href="/assets/fontawesome/css/font-awesome.min.css" rel="stylesheet"><link href="/./css/view.css" rel="stylesheet"></head>
+<body>
+<div class="controller" id="controller">
+    <el-row type="flex" justify="center">
+        <div style="width: 105px;">
+            <el-select v-model="optionValue" placeholder="请选择">
+                <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+            </el-select>
+        </div>
+        <div>
+            <el-date-picker :clearable="false" v-model="beginEndTime" type="daterange" align="right" unlink-panels
+                            range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                            :picker-options="pickerOptions2">
+            </el-date-picker>
+        </div>
+        <i id="searchI" class="fa fa-search" aria-hidden="true" style="font-size: 25px; color: #009E94; position: relative; left: -38px; top: 7px;" @click="search"></i>
+    </el-row>
+</div>
+<div id="allmap"></div>
+<div id="cjd_marker" class="circle-marker">
+    <span id="span00" style="padding: 3px 5px;">神宇北斗</span>
+    <span id="wd_data_tip" style="padding: 3px 5px; background-color: #69cb04; border-radius: 0 20px 20px 0; text-align: center; color: #fff;">00</span>
+    <div id="tips" class="jBox-container hide" style="width: 257px; height: 227px;">
+        <div class="jBox-content">
+            <div class="smog-aqi-box">
+                <div class="title" style="">
+                    <h3>
+                        <span style="float: left">当前环境质量</span>
+                        <span class="" style="color: #ffbb00;float: right">良</span>
+                    </h3>
+                </div>
+                <ul class="detail-list">
+                    <li>
+                        <span>温度</span>
+                        <span class="lv2" id="wd_data">初始化中</span>
+                    </li>
+                    <li>
+                        <span>湿度</span>
+                        <span id="sd_data">初始化中</span>
+                    </li>
+                    <li>
+                        <span>噪音</span>
+                        <span id="zy_data">初始化中</span>
+                    </li>
+                    <li>
+                        <span>紫外线</span>
+                        <span id="zwx_data">初始化中</span>
+                    </li>
+                    <li>
+                        <span>PM2.5</span>
+                        <span id="pm25_data">初始化中</span>
+                    </li>
+                    <li>
+                        <span>PM10</span>
+                        <span id="pm10_data">初始化中</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cjd_marker2" class="circle-marker">
+    <span id="span10" style="padding: 3px 5px;">其他1</span>
+    <span id="span11" style="padding: 3px 5px; background-color: #69cb04; border-radius: 0 20px 20px 0; text-align: center; color: #fff;">00</span>
+    <div id="tips2" class="jBox-container hide" style="width: 257px; height: 227px;">
+        <div class="jBox-content">
+            <div class="smog-aqi-box">
+                <div class="title" style="">
+                    <h3>
+                        <span style="float: left">当前环境质量</span>
+                        <span class="" style="color: #ffbb00;float: right">良</span>
+                    </h3>
+                </div>
+                <ul class="detail-list">
+                    <li>
+                        <span>AQI(空气质量指数)</span>
+                        <span class="lv2">51</span>
+                    </li>
+                    <li>
+                        <span>PM2.5</span>
+                        <span>31ug/m3</span>
+                    </li>
+                    <li>
+                        <span>SO2</span>
+                        <span>5ug/m3</span>
+                    </li>
+                    <li>
+                        <span>NO2</span>
+                        <span>67ug/m3</span>
+                    </li>
+                    <li>
+                        <span>O3</span>
+                        <span>10ug/m3</span>
+                    </li>
+                    <li>
+                        <span>CO</span>
+                        <span>300ug/m3</span>
+                    </li>
+                    <li>
+                        <span>PM10</span>
+                        <span>52ug/m3</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cjd_marker3" class="circle-marker">
+    <span id="span20" style="padding: 3px 5px;">其他2</span>
+    <span id="span21" style="padding: 3px 5px; background-color: #69cb04; border-radius: 0 20px 20px 0; text-align: center; color: #fff;">00</span>
+    <!--<div id="tips3" class='tips '><div>温度：初始化中</div><div>湿度：初始化中</div></div>-->
+    <div id="tips3" class="jBox-container hide" style="width: 257px; height: 227px;">
+        <div class="jBox-content">
+            <div class="smog-aqi-box">
+                <div class="title" style="">
+                    <h3>
+                        <span style="float: left">当前环境质量</span>
+                        <span class="" style="color: #ffbb00;float: right">良</span>
+                    </h3>
+                </div>
+                <ul class="detail-list">
+                    <li>
+                        <span>AQI(空气质量指数)</span>
+                        <span class="lv2">51</span>
+                    </li>
+                    <li>
+                        <span>PM2.5</span>
+                        <span>31ug/m3</span>
+                    </li>
+                    <li>
+                        <span>SO2</span>
+                        <span>5ug/m3</span>
+                    </li>
+                    <li>
+                        <span>NO2</span>
+                        <span>67ug/m3</span>
+                    </li>
+                    <li>
+                        <span>O3</span>
+                        <span>10ug/m3</span>
+                    </li>
+                    <li>
+                        <span>CO</span>
+                        <span>300ug/m3</span>
+                    </li>
+                    <li>
+                        <span>PM10</span>
+                        <span>52ug/m3</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=3IDUiqdFMRSeHAtuXWSVs93QYWwHnb70"></script><script type="text/javascript" src="/./js/view.bundle.js"></script></body>
+<!--<script src="../static/layui/layui.js"></script>-->
+</html>

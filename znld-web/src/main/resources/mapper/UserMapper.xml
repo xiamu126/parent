@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.UserMapper">
+    <insert id="add" parameterType="com.sybd.znld.model.user.UserEntity">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', '') as id;
+        </selectKey>
+        insert into user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+          <if test=" id != null and id != '' ">id,</if>
+          <if test=" name != null and name != '' ">name,</if>
+          <if test=" password != null and password != '' ">password,</if>
+          <if test=" phone != null and phone != '' ">phone,</if>
+          <if test=" email != null and email != '' ">email,</if>
+          <if test=" gender != null and gender >= 0 ">gender,</if>
+          <if test=" age != null and age > 0 ">age,</if>
+          <if test=" contactAddress != null and contactAddress != '' ">contactAddres,</if>
+          <if test=" realName != null and realName != '' ">realName,</if>
+          <if test=" idCardNo != null and idCardNo != '' ">idCardNo,</if>
+          <if test=" lastLoginIp != null and lastLoginIp != '' ">lastLoginIp,</if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" id != null and id != '' ">#{id},</if>
+            <if test=" name != null and name != '' ">#{name},</if>
+            <if test=" password != null and password != '' ">#{password},</if>
+            <if test=" phone != null and phone != '' ">#{phone},</if>
+            <if test=" email != null and email != '' ">#{email},</if>
+            <if test=" gender != null and gender >= 0 ">#{gender},</if>
+            <if test=" age != null and age > 0 ">#{age},</if>
+            <if test=" contactAddress != null and contactAddress != '' ">#{contactAddress},</if>
+            <if test=" realName != null and realName != '' ">#{realName},</if>
+            <if test=" idCardNo != null and idCardNo != '' ">#{idCardNo},</if>
+            <if test=" lastLoginIp != null and lastLoginIp != '' ">#{lastLoginIp},</if>
+        </trim>
+    </insert>
+    <update id="updatePasswordByName" parameterType="com.sybd.znld.model.user.UserEntity">
+        update user
+        <set>
+          <if test="password != null and password != '' ">password=#{password}</if>
+        </set>
+        where name = #{name};
+    </update>
+    <update id="updateById" parameterType="com.sybd.znld.model.user.UserEntity">
+        update user
+        <set>
+          <if test=" name != null and name != '' ">name=#{name},</if>
+          <if test=" password != null and password != '' ">password=#{password},</if>
+          <if test=" phone != null and phone != '' ">phone=#{phone},</if>
+          <if test=" email != null and email != '' ">email=#{email},</if>
+          <if test=" gender != null and gender >= 0 ">gender=#{gender},</if>
+          <if test=" age != null and age > 0 ">age=#{age},</if>
+          <if test=" contactAddress != null and contactAddress != '' ">contactAddres=#{contactAddress},</if>
+          <if test=" realName != null and realName != '' ">realName=#{realName},</if>
+          <if test=" idCardNo != null and idCardNo != '' ">idCardNo=#{idCardNo},</if>
+          <if test=" lastLoginIp != null and lastLoginIp != '' ">lastLoginIp=#{lastLoginIp},</if>
+        </set>
+        where id=#{id};
+    </update>
+    <update id="updateByName" parameterType="com.sybd.znld.model.user.UserEntity">
+        update user
+        <set>
+            <if test=" password != null and password != '' ">password=#{password},</if>
+            <if test=" phone != null and phone != '' ">phone=#{phone},</if>
+            <if test=" email != null and email != '' ">email=#{email},</if>
+            <if test=" gender != null and gender >= 0 ">gender=#{gender},</if>
+            <if test=" age != null and age > 0 ">age=#{age},</if>
+            <if test=" contactAddress != null and contactAddress != '' ">contactAddres=#{contactAddress},</if>
+            <if test=" realName != null and realName != '' ">realName=#{realName},</if>
+            <if test=" idCardNo != null and idCardNo != '' ">idCardNo=#{idCardNo},</if>
+            <if test=" lastLoginIp != null and lastLoginIp != '' ">lastLoginIp=#{lastLoginIp},</if>
+        </set>
+        where name=#{name};
+    </update>
+    <select id="existsByName" resultType="java.lang.Boolean">
+        select true from user where name = #{name};
+    </select>
+    <select id="verify" resultType="com.sybd.znld.model.user.UserEntity">
+        select * from user where name=#{name} and password=#{password};
+    </select>
+    <select id="getUserById" resultType="com.sybd.znld.model.user.UserEntity">
+        select * from user where id=#{id};
+    </select>
+    <select id="getUserByName" resultType="com.sybd.znld.model.user.UserEntity">
+        select * from user where name=#{name};
+    </select>
+</mapper>

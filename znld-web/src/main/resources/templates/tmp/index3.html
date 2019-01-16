@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{~/layui/css/layui.css}">
+</head>
+<body>
+<div class="layui-container">
+    <div class="layui-row">
+        <div  class="layui-col-md3"><label style="font-size: 20px;">搜索</label></div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-md6">
+            <div id="main0" style="width: 600px;height:400px;"></div>
+        </div>
+        <div class="layui-col-md6">
+            <div id="main1" style="width: 600px;height:400px;"></div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="https://cdn.bootcss.com/echarts/4.1.0/echarts.js"></script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+<script th:src="@{~/layui/layui.js}"></script>
+<script>
+    layui.use(['layer', 'form'], function(){
+        let layer = layui.layer,form = layui.form;
+        layer.msg('Hello World');
+    });
+</script>
+<script th:inline="javascript">
+    let theData = [[${theData}]];
+    console.log(theData);
+
+    for(let it of theData.results.entries()){
+        let myChart = echarts.init(document.getElementById('main'+it[0]));
+        let option = {
+            title: {
+                text: it[1].title
+            },
+            tooltip: {},
+            xAxis: {
+                type: 'category',
+                data: [...it[1].atList]
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                name: '',
+                type: 'line',
+                data: [...it[1].valueList],
+                smooth: true
+            }]
+        };
+        myChart.setOption(option);
+
+        /*setInterval(function () {
+            $.get(`http://192.168.8.115:8080/data/${it[0]+1}`).done(function (data) {
+                console.log(data);
+                myChart.setOption({
+                    xAxis: {
+                        data: [...data.atList]
+                    },
+                    series: [{
+                        data: [...data.valueList]
+                    }]
+                });
+            });
+        },3000);*/
+    }
+
+</script>
+</html>
+

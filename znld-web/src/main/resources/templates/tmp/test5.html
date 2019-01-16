@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <link th:href="@{~/fontawesome/css/font-awesome.css}" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{~/layui/css/layui.css}">
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=3IDUiqdFMRSeHAtuXWSVs93QYWwHnb70"></script>
+    <title>测试4</title>
+    <style type="text/css">
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #allmap{width:100%;height:100%;}
+
+        .circle-marker {
+            position: absolute;
+            width: 88px;
+            height: 24px;
+            background: #fff;
+            border-radius: 20px 20px 20px 0;
+            opacity: 1;
+            text-align: center;
+            line-height: 24px;
+            font-family: Arial,sans-serif;
+            font-size: 12px;
+            white-space:nowrap;
+            cursor: pointer;
+            /*background-image: url('./layui/images/face/62.gif');*/
+            /*background-image: url('./321.gif');*/
+        }
+        .circle-marker:hover{
+            box-shadow: 0 0 8px rgba(0, 0, 0, .5);
+        }
+        .tips {
+            position: relative;
+            width: 200px;
+            height: 100px;
+            left: -60px;
+            top: -140px;
+            background-color: #fff;
+            border: 0 solid #666;
+            /*background-image: url('./未标题-22.png');
+            background-repeat: no-repeat;*/
+            border-radius: 0;
+        }
+
+        .tips:after{
+            content: '';
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            background-color: #fff;
+            transform: rotate(45deg);
+            left: 92px;
+            top: 86px;
+        }
+
+        .hide{
+            /*display: none;*/
+            visibility: hidden;
+        }
+        .controller{
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            z-index: 9999;
+            cursor: pointer;
+            user-select: none;
+            border: 0 solid #0000FF;
+        }
+        .tips>div{
+            position: relative;
+            left: 0;
+            top: 30px;
+            margin-top: 3px;
+            text-align: center;
+        }
+
+
+
+        .jBox-container{
+            border-radius: 3px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, .3);
+            background-color: #fff;
+            position: relative;
+            word-break: break-word;
+            left: -96px;
+            top: -271px;
+        }
+        .jBox-container:after{
+            content: '';
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            background-color: #fff;
+            transform: rotate(45deg);
+            left: 115px;
+            top: 216px;
+        }
+
+        .jBox-content{
+            padding: 8px 10px;
+            overflow: auto;
+            transition: opacity .15s;
+            position: relative;
+            word-break: break-word;
+        }
+        .smog-aqi-box{
+            padding: 7px 8px;
+        }
+        .title{
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ccc;
+            overflow: hidden;
+        }
+        h3{
+            font-weight: 400;
+            font-size: 1.17em;
+        }
+        .detail-list{
+
+        }
+        ul{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        ul li span:first-child{
+            float: left;
+        }
+        ul li span:last-child{
+            float: right;
+        }
+        ul li{
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+<div class="controller" id="controller">
+    <div class="layui-form">
+        <div class="layui-input-inline" style="width: 92px;">
+            <label >
+                <select id="cjds">
+                    <option value="">请选择</option>
+                    <option value="采集点0">吴江公园</option>
+                    <option value="采集点1" disabled>丽湾</option>
+                    <option value="采集点2" disabled>鲈乡实验小学</option>
+                </select>
+            </label>
+        </div>
+        <div class="layui-input-inline">
+            <input type="text" class="layui-input" id="test10" placeholder="选择日期" style="width: 200px;" >
+        </div>
+        <i id="searchI" class="fa fa-search" aria-hidden="true" style="font-size: 25px; color: #009E94; position: relative; left: -38px; top: 5px;"></i>
+    </div>
+
+</div>
+<div id="allmap"></div>
+<div id="cjd_marker" class="circle-marker">
+    <span id="span00" style="padding: 3px 5px;">吴江公园</span>
+    <span id="span01" style="padding: 3px 5px; background-color: #69cb04; border-radius: 0 20px 20px 0; text-align: center; color: #fff;">00</span>
+    <div id="tips" class='tips hide'>
+        <div id="wd_data">温度：初始化中</div>
+        <div id="sd_data">湿度：初始化中</div>
+    </div>
+</div>
+
+<div id="cjd_marker2" class="circle-marker">
+    <span id="span10" style="padding: 3px 5px;">丽湾</span>
+    <span id="span11" style="padding: 3px 5px; background-color: #69cb04; border-radius: 0 20px 20px 0; text-align: center; color: #fff;">00</span>
+    <div id="tips2" class="jBox-container hide" style="width: 257px; height: 227px;">
+        <div class="jBox-content">
+            <div class="smog-aqi-box">
+                <div class="title" style="">
+                    <h3>
+                        <span style="float: left">当前环境质量</span>
+                        <span class="" style="color: #ffbb00;float: right">良</span>
+                    </h3>
+                </div>
+                <ul class="detail-list">
+                    <li>
+                        <span>AQI(空气质量指数)</span>
+                        <span class="lv2">51</span>
+                    </li>
+                    <li>
+                        <span>PM2.5</span>
+                        <span>31ug/m3</span>
+                    </li>
+                    <li>
+                        <span>SO2</span>
+                        <span>5ug/m3</span>
+                    </li>
+                    <li>
+                        <span>NO2</span>
+                        <span>67ug/m3</span>
+                    </li>
+                    <li>
+                        <span>O3</span>
+                        <span>10ug/m3</span>
+                    </li>
+                    <li>
+                        <span>CO</span>
+                        <span>300ug/m3</span>
+                    </li>
+                    <li>
+                        <span>PM10</span>
+                        <span>52ug/m3</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cjd_marker3" class="circle-marker">
+    <span id="span20" style="padding: 3px 5px;">鲈乡实验小学</span>
+    <span id="span21" style="padding: 3px 5px; background-color: #69cb04; border-radius: 0 20px 20px 0; text-align: center; color: #fff;">00</span>
+    <!--<div id="tips3" class='tips '><div>温度：初始化中</div><div>湿度：初始化中</div></div>-->
+    <div id="tips3" class="jBox-container hide" style="width: 257px; height: 227px;">
+        <div class="jBox-content">
+            <div class="smog-aqi-box">
+                <div class="title" style="">
+                    <h3>
+                        <span style="float: left">当前环境质量</span>
+                        <span class="" style="color: #ffbb00;float: right">良</span>
+                    </h3>
+                </div>
+                <ul class="detail-list">
+                    <li>
+                        <span>AQI(空气质量指数)</span>
+                        <span class="lv2">51</span>
+                    </li>
+                    <li>
+                        <span>PM2.5</span>
+                        <span>31ug/m3</span>
+                    </li>
+                    <li>
+                        <span>SO2</span>
+                        <span>5ug/m3</span>
+                    </li>
+                    <li>
+                        <span>NO2</span>
+                        <span>67ug/m3</span>
+                    </li>
+                    <li>
+                        <span>O3</span>
+                        <span>10ug/m3</span>
+                    </li>
+                    <li>
+                        <span>CO</span>
+                        <span>300ug/m3</span>
+                    </li>
+                    <li>
+                        <span>PM10</span>
+                        <span>52ug/m3</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:src="@{~/layui/layui.js}"></script>
+<script>
+    layui.use(['form'], function(){});
+    let maxTime = new Date();
+    layui.use('laydate', function() {
+        let laydate = layui.laydate;
+        laydate.render({
+            elem: '#test10',
+            type: 'date',
+            range: false,
+            max: maxTime.getTime()
+        });
+    });
+    let searchI = document.querySelector("#searchI");
+    searchI.addEventListener("click", function () {
+        let ctrl = document.querySelector("#test10");
+        let select = document.querySelector("#cjds");
+        if(select.selectedIndex === 0){
+            layer.tips('内容不能为空','#cjds', {
+                tips: [4, '#3595CC'],
+                time: 1000
+            });
+            return false;
+        }
+        if(!ctrl.value){
+            layer.tips('内容不能为空','#test10', {
+                tips: [1, '#3595CC'],
+                time: 1000
+            });
+            return false;
+        }
+        layui.use('layer', function(){
+            let index = layer.open({
+                title: '查询结果',
+                type: 2,
+                content: `/index2.html?q=${encodeURIComponent(ctrl.value)}`,
+                maxmin: false
+            });
+            layer.full(index);
+            ctrl.value = "";
+        });
+    });
+</script>
+<script type="text/javascript">
+    // 百度地图API功能
+    let map = new BMap.Map("allmap",{enableMapClick:false});
+    let jd = 120.6395730548;
+    let wd = 31.1626998664;
+    let point = new BMap.Point(jd, wd);
+    // 将标注添加到地图中
+    map.centerAndZoom(point, 15);
+    map.disableScrollWheelZoom();
+    map.disableDoubleClickZoom();
+
+    /*****/
+    //1、定义构造函数并继承Overlay
+    //定义自定义覆盖物的构造函数
+    function ComplexCustomOverlay(point){
+        this._point = point;
+
+    }
+    // 继承API的BMap.Overlay
+    ComplexCustomOverlay.prototype = new BMap.Overlay();
+
+    //2、初始化自定义覆盖物
+    // 实现初始化方法
+    ComplexCustomOverlay.prototype.initialize = function(map){
+        // 保存map对象实例
+        this._map = map;
+        // 创建div元素，作为自定义覆盖物的容器
+        let div = document.querySelector("#cjd_marker");
+        let div2 = document.querySelector("#cjd_marker2");
+        let div3 = document.querySelector("#cjd_marker3");
+        this._div = div;
+        this.divs = [div, div2, div3];
+        // 将div添加到覆盖物容器中
+        map.getPanes().labelPane.appendChild(div);
+        map.getPanes().labelPane.appendChild(div2);
+        map.getPanes().labelPane.appendChild(div3);
+
+        let span20 = document.querySelector("#span20");
+        let span21 = document.querySelector("#span21");
+        this.divs[2].style.width = span20.offsetWidth + span21.offsetWidth + 7 + "px";
+
+        let span10 = document.querySelector("#span10");
+        let span11 = document.querySelector("#span11");
+        this.divs[1].style.width = span10.offsetWidth + span11.offsetWidth + 7 + "px";
+
+
+        let tips2 = document.querySelector("#tips2");
+        this.divs[1].addEventListener("mouseover", function () {
+            tips2.classList.toggle('hide');
+        });
+        this.divs[1].addEventListener("mouseout", function () {
+            tips2.classList.toggle('hide');
+        });
+        let tips3 = document.querySelector("#tips3");
+        this.divs[2].addEventListener("mouseover", function () {
+            tips3.classList.toggle('hide');
+        });
+        this.divs[2].addEventListener("mouseout", function () {
+            tips3.classList.toggle('hide');
+        });
+    };
+
+    //3、绘制覆盖物
+    // 实现绘制方法
+    ComplexCustomOverlay.prototype.draw = function(){
+        let map = this._map;
+        let pixel = map.pointToOverlayPixel(this._point);
+        this._div.style.left = pixel.x - 30 + "px";
+        this._div.style.top  = pixel.y - 30 + "px";
+
+        this.divs[1].style.left = pixel.x -200 + "px";
+        this.divs[1].style.top = pixel.y +100 + "px";
+
+        this.divs[2].style.left = pixel.x -100 + "px";
+        this.divs[2].style.top = pixel.y -200 + "px";
+    };
+
+    //4、自定义覆盖物添加事件方法
+    ComplexCustomOverlay.prototype.addEventListener = function(event,fun){
+        this._div['on'+event] = fun;
+    };
+    /*****/
+</script>
+<script>
+    layui.use(['jquery'],function () {
+        let $ = jQuery = layui.$;
+        let deviceId = [[${deviceId}]];
+        setTimeout(function () {
+            $.get(`/api/test/${deviceId}`).done(function (data) {
+                let weidu = data.json[2].value;
+                let jingdu = data.json[3].value;
+                if(!$.isNumeric(weidu) || !$.isNumeric(jingdu) || weidu === 0 || jingdu === 0){
+                    console.log(`错误的纬度${weidu}：经度${jingdu}`);
+                    weidu = wd;
+                    jingdu = jd;
+                }
+                console.log("初始化坐标点——");
+                let myCompOverlay = new ComplexCustomOverlay(new BMap.Point(jingdu, weidu));
+                map.addOverlay(myCompOverlay);//将标注添加到地图中
+                //5、 为自定义覆盖物添加点击事件
+                myCompOverlay.addEventListener('mouseover',function(){
+                    let tips = document.querySelector("#tips");
+                    tips.classList.toggle('hide');
+                });
+                myCompOverlay.addEventListener('mouseout',function(){
+                    let tips = document.querySelector("#tips");
+                    tips.classList.toggle("hide");
+                });
+
+                setInterval(function () {
+                    $.get(`/api/test/${deviceId}`).done(function (data) {
+                        if(myCompOverlay._div.innerHTML){
+                            let wd = document.querySelector('#wd_data');
+                            let sd = document.querySelector('#sd_data');
+                            wd.innerText = `湿度：${data.json[0].value}`;
+                            sd.innerText = `温度：${data.json[1].value}`;
+                            let wd_s = document.querySelector('#span01');
+                            wd_s.innerText = `${data.json[1].value}`;
+                        }else{
+                            console.log(`undefined tips`);
+                        }
+                    });
+                }, 1500);
+            });
+        },700);
+    });
+</script>
+</html>

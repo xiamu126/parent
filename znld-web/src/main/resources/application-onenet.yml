@@ -1,0 +1,9 @@
+onenet-server: http://api.heclouds.com
+znld:
+  onenet:
+    getHistoryDataStreamUrl: ${onenet-server}/devices/{deviceId}/datapoints
+    postExecuteUrl: ${onenet-server}/nbiot/execute
+    getLastDataStreamUrl: ${onenet-server}/devices/datapoints?devIds={devIds}
+    getDeviceUrl: ${onenet-server}/devices/{deviceId}
+    getDataStreamByIdUrl: ${onenet-server}/devices/{deviceId}/datastreams/{datastreamId}
+    getDataStreamsByIdsUrl: ${onenet-server}/devices/{deviceId}/datastreams?datastream_ids={dataStreamIds}

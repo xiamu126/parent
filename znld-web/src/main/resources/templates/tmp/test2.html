@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #allmap{
+            width:100%;
+            height:100%;
+        }
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=3IDUiqdFMRSeHAtuXWSVs93QYWwHnb70"></script>
+    <title>纯文本的信息窗口</title>
+    <style type="text/css">
+        html {
+            height:100%
+        }
+        body {
+            height:100%;
+            margin:0;
+            padding:0;
+        }
+        #main {
+            height:100%
+        }
+        .circle-marker {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            /*background: #c00;*/
+            border-radius: 50%;
+            opacity: 1;
+            background-image: url("/layui/images/face/62.gif");
+        }
+        .tips {
+            position: relative;
+            width: 200px;
+            height: 100px;
+            left: 20px;
+            top: -88px;
+            background-color: #fff;
+            border: 1px solid #666;
+        }
+        .hide{
+            display: none;
+        }
+        .show{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div id="allmap"></div>
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+<script th:inline="javascript">
+    // 百度地图API功能
+    let map = new BMap.Map("allmap",{enableMapClick:false});
+    let jd = 120.6395730548;
+    let wd = 31.1626998664;
+    let point = new BMap.Point(jd, wd);
+    map.centerAndZoom(point, 15);
+
+    /*****/
+    //1、定义构造函数并继承Overlay
+    //定义自定义覆盖物的构造函数
+    function ComplexCustomOverlay(point){
+        this._point = point;
+
+    }
+    // 继承API的BMap.Overlay
+    ComplexCustomOverlay.prototype = new BMap.Overlay();
+
+    //2、初始化自定义覆盖物
+    //实现初始化方法
+    ComplexCustomOverlay.prototype.initialize = function(map){
+        // 保存map对象实例
+        this._map = map;
+        // 创建div元素，作为自定义覆盖物的容器
+        let div = this.div = document.createElement('div');
+        div.className = 'circle-marker';
+        div.innerHTML=
+            `<div class='tips hide'><div id='wd_data'>温度：初始化中</div><div id='sd_data'>湿度：初始化中</div></div>`;
+        this._div = div;
+        // 将div添加到覆盖物容器中
+        map.getPanes().labelPane.appendChild(div);
+        return div;
+    };
+
+    //3、绘制覆盖物
+    // 实现绘制方法
+    ComplexCustomOverlay.prototype.draw = function(){
+        var map = this._map;
+        var pixel = map.pointToOverlayPixel(this._point);
+        this._div.style.left = pixel.x - 30 + "px";
+        this._div.style.top  = pixel.y - 30 + "px";
+    };
+
+    //4、自定义覆盖物添加事件方法
+    ComplexCustomOverlay.prototype.addEventListener = function(event,fun){
+        this._div['on'+event] = fun;
+    };
+
+    /*****/
+    let deviceId = [[${deviceId}]];
+    setTimeout(function () {
+        $.get(`/api/test/${deviceId}`).done(function (data) {
+            let weidu = data.json[2].value;
+            let jingdu = data.json[3].value;
+            if(!$.isNumeric(weidu) || !$.isNumeric(jingdu) || weidu === 0 || jingdu === 0){
+                console.log(`错误的纬度${weidu}：经度${jingdu}`);
+                weidu = wd;
+                jingdu = jd;
+            }
+
+            console.log("初始化坐标点——");
+            let myCompOverlay = new ComplexCustomOverlay(new BMap.Point(jingdu, weidu));
+            map.addOverlay(myCompOverlay);//将标注添加到地图中
+            //5、 为自定义覆盖物添加点击事件
+            myCompOverlay.addEventListener('mouseover',function(){
+                this.children[0].classList.remove('hide');
+            });
+            myCompOverlay.addEventListener('mouseout',function(){
+                this.children[0].classList.add("hide");
+            });
+
+            setInterval(function () {
+                $.get(`/api/test/${deviceId}`).done(function (data) {
+                    if(myCompOverlay._div.innerHTML){
+                        let wd = document.querySelector('#wd_data');
+                        let sd = document.querySelector('#sd_data');
+                        wd.innerText = `温度：${data.json[0].value}`;
+                        sd.innerText = `湿度：${data.json[1].value}`;
+                    }else{
+                        console.log(`undefined tips`);
+                    }
+                });
+            },3000);
+        });
+    },3000);
+</script>
+</html>
+

@@ -1,0 +1,28 @@
+db-server: localhost:8306
+redis-server: localhost
+redis-server-port: 6379
+
+server:
+  port: 8182
+spring:
+  datasource:
+    username: sybd
+    password: znld@DB#188188
+    #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
+    url: jdbc:mysql://${db-server}/znld_test?characterEncoding=utf-8&useSSL=false&useAffectedRows=true
+  redis:
+    host: ${redis-server}
+    port: ${redis-server-port}
+rabbitmq:
+  host: localhost
+  port: 5672
+  userName: znld_receiver
+  password: 123456
+  virtualHost: /znld
+  connectionThreadPool: 300
+  queueName: test
+  durable: false
+  exchangeName: test
+  builtinExchangeType: DIRECT
+  handshakeTimeout: 999999
+  clientId: 2

@@ -33,11 +33,11 @@ docker run --name ${name} --privileged=true --restart=always -p $1:3306 \
 echo "Waiting for DB to start up..."
 until [[ $(docker inspect ${name} --format '{{.State.Health.Status}}') == "healthy" ]]
 do
-  sleep 10
+  sleep 3s
 done
 
 echo "Setting up initial data..."
-docker exec -i ${name} mysql --default-character-set=utf8 -uroot -p$3 < $PWD/oauth_init.sql
-docker exec -i ${name} mysql --default-character-set=utf8 -uroot -p$3 < $PWD/znld_init.sql
+docker exec -i ${name} mysql --protocol=tcp --default-character-set=utf8 -uroot -p$3 < $PWD/oauth_init.sql
+docker exec -i ${name} mysql --protocol=tcp --default-character-set=utf8 -uroot -p$3 < $PWD/znld_init.sql
 
 

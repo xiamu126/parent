@@ -19,6 +19,6 @@ if [[ "`docker ps -aq | wc -l`" -gt 0 ]]; then
 fi
 
 echo "${name_prefix}$1"
-docker run -d --rm --restart=always \
+docker run -d --restart=always \
     -p $1:6379 --name "${name_prefix}$1" \
     -v $2:/usr/local/etc/redis/redis.conf:z redis redis-server /usr/local/etc/redis/redis.conf

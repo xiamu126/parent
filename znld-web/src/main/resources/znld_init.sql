@@ -1,3 +1,6 @@
+drop database if exists znld_test;
+CREATE DATABASE znld_test DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 drop database if exists znld;
 CREATE DATABASE znld DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 use znld;

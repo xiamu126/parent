@@ -39,5 +39,6 @@ done
 echo "Setting up initial data..."
 docker exec -i ${name} mysql --protocol=tcp --default-character-set=utf8 -uroot -p$3 < $PWD/oauth_init.sql
 docker exec -i ${name} mysql --protocol=tcp --default-character-set=utf8 -uroot -p$3 < $PWD/znld_init.sql
-
+docker exec -i ${name} mysqldump --protocol=tcp --add-drop-database znld -p$3 > /tmp/dump.sql
+docker exec -i ${name} mysql --protocol=tcp --default-character-set=utf8 znld_test -p$3 < /tmp/dump.sql
 

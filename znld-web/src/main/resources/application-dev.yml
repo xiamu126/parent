@@ -1,5 +1,8 @@
-db-server: 192.168.68.128:3306
-redis-server: 192.168.68.128
+#db-server: 192.168.68.128:3306
+#redis-server: 192.168.68.128
+#redis-server-port: 8000
+db-server: 58.210.51.74:8306
+redis-server: 58.210.51.74
 redis-server-port: 8000
 
 server:
@@ -7,7 +10,7 @@ server:
 spring:
   datasource:
     #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
-    url: jdbc:mysql://${db-server}/znld?characterEncoding=utf-8&useSSL=false&useAffectedRows=true
+    url: jdbc:mysql://${db-server}/znld_test?characterEncoding=utf-8&useSSL=false&useAffectedRows=true
     username: root
     password: 123456
   redis:

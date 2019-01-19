@@ -46,7 +46,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         // there is a 401 authentication is required if it doesn't allow form authentication for clients when access /oauth/token
     }
 
-    //@com.sybd.security.oauth2.server.db.DataSource("oauth")
+    //@com.sybd.security.oauth2.server.db.DbSource("oauth")
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.jdbc(dataSource);

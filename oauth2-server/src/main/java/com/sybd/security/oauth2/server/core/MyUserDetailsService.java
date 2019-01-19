@@ -1,7 +1,7 @@
 package com.sybd.security.oauth2.server.core;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.sybd.security.oauth2.server.db.DataSource;
+import com.sybd.security.oauth2.server.db.DbSource;
 import com.sybd.security.oauth2.server.mapper.UserMapper;
 import com.sybd.security.oauth2.server.model.UserEntity;
 import lombok.var;
@@ -22,7 +22,7 @@ public class MyUserDetailsService implements UserDetailsService {
         this.userMapper = userMapper;
     }
 
-    @DataSource("znld")
+    @DbSource("znld")
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         var user = userMapper.selectOne(new QueryWrapper<UserEntity>().eq("name", username));

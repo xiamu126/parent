@@ -5,6 +5,6 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DataSource {
+public @interface DbSource {
     String value() default "oauth";
 }

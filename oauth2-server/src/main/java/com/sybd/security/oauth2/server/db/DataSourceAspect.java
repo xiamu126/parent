@@ -12,7 +12,12 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Aspect @Order(1) //设置AOP执行顺序(需要在事务之前，否则事务只发生在默认库中)
+@Aspect
+//设置AOP执行顺序(需要在事务之前，否则事务只发生在默认库中)
+//在主从分离的情况，这个没什么必要，因为一旦开启事务了必然要在主数据库上发生
+//当然，如果多个数据源并没有什么关系的话，这个就需要了
+//就像现在的情况，一个访问znld数据库，一个访问oauth2数据库
+@Order(1)
 @Component
 public class DataSourceAspect {
     @Pointcut("@annotation(com.sybd.security.oauth2.server.db.DbSource)")

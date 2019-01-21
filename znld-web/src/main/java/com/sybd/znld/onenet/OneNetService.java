@@ -10,10 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -114,6 +115,14 @@ public class OneNetService implements IOneNetService {
         var url = oneNetConfig.getDataStreamsByIdsUrl(deviceId, dataStreamIds);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamsByIdsResult.class);
         return responseEntity.getBody();
+    }
+
+    @Override
+    public double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end) {
+        var historyData = getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
+        var data = historyData.getData().getDatastreams()[0].getDatapoints();
+        var avg = Arrays.stream(data).collect(Collectors.averagingDouble(d -> Double.parseDouble(d.getValue())));
+        return avg;
     }
 
     @Override

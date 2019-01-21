@@ -381,4 +381,10 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
         }
         return CheckedResourcesResult.fail("获取数据失败");
     }
+
+    public void getWeightedData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp){
+        var begin = MyDateTime.toLocalDateTime(beginTimestamp);
+        var end = MyDateTime.toLocalDateTime(endTimestamp);
+        var ret = this.oneNet.getWeightedData(deviceId, dataStreamId, begin, end);
+    }
 }

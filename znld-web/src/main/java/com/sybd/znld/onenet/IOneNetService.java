@@ -20,4 +20,5 @@ public interface IOneNetService {
                                                     String cursor);
     GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId);
     GetDataStreamsByIdsResult getLastDataStreamsByIds(Integer deviceId, String... dataStreamIds);
+    double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end);
 }

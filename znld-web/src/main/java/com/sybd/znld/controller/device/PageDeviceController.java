@@ -1,7 +1,7 @@
 package com.sybd.znld.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.onenet.OneNetService;
+import com.sybd.znld.onenet.BetterOneNetService;
 import com.sybd.znld.service.ExecuteCommandService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
@@ -22,7 +22,7 @@ public class PageDeviceController extends BaseDeviceController implements IPageD
 
     @Autowired
     public PageDeviceController(RedisTemplate<String, Object> redisTemplate,
-                                OneNetService oneNet,
+                                BetterOneNetService oneNet,
                                 ExecuteCommandService executeCommandService,
                                 ProjectConfig projectConfig) {
         super(redisTemplate, oneNet, executeCommandService, projectConfig);

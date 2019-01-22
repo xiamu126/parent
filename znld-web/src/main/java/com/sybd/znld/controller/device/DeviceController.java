@@ -35,7 +35,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
 
     @Autowired
     public DeviceController(RedisTemplate<String, Object> redisTemplate,
-                            OneNetService oneNet,
+                            BetterOneNetService oneNet,
                             ExecuteCommandService executeCommandService,
                             ProjectConfig projectConfig,
                             OneNetConfigDeviceService oneNetConfigDeviceService) {

@@ -1,7 +1,8 @@
 package com.sybd.znld.task;
 
-import com.sybd.znld.onenet.dto.CommandParams;
 import com.sybd.znld.onenet.OneNetService;
+import com.sybd.znld.onenet.dto.CommandParams;
+import com.sybd.znld.onenet.BetterOneNetService;
 import com.sybd.znld.onenet.OneNetConfig;
 import com.sybd.znld.service.ExecuteCommandService;
 import com.sybd.znld.service.OneNetConfigDeviceService;

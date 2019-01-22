@@ -1,6 +1,6 @@
 package com.sybd.znld;
 
-import com.sybd.znld.onenet.OneNetService;
+import com.sybd.znld.onenet.BetterOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.junit.Before;
@@ -22,7 +22,7 @@ import java.util.Locale;
 @Slf4j
 public class OneNetTest {
     @Autowired
-    private OneNetService oneNet;
+    private BetterOneNetService oneNet;
 
     @Autowired
     private WebApplicationContext wac;

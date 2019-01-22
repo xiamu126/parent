@@ -17,7 +17,7 @@ import java.util.Map;
 
 
 @Slf4j
-@Getter @Setter @ToString
+@ToString
 @Component
 @ConfigurationProperties(prefix = "znld.onenet")
 public class OneNetConfig {
@@ -29,13 +29,65 @@ public class OneNetConfig {
     private String getDataStreamByIdUrl;
     private String getDataStreamsByIdsUrl;
 
+    public OneNetConfigDeviceService getOnenetConfigDeviceService() {
+        return onenetConfigDeviceService;
+    }
+
+    public String getGetHistoryDataStreamUrl() {
+        return getHistoryDataStreamUrl;
+    }
+
+    public void setGetHistoryDataStreamUrl(String getHistoryDataStreamUrl) {
+        this.getHistoryDataStreamUrl = getHistoryDataStreamUrl;
+    }
+
+    public String getPostExecuteUrl() {
+        return postExecuteUrl;
+    }
+
+    public void setPostExecuteUrl(String postExecuteUrl) {
+        this.postExecuteUrl = postExecuteUrl;
+    }
+
+    public String getGetLastDataStreamUrl() {
+        return getLastDataStreamUrl;
+    }
+
+    public void setGetLastDataStreamUrl(String getLastDataStreamUrl) {
+        this.getLastDataStreamUrl = getLastDataStreamUrl;
+    }
+
+    public String getGetDeviceUrl() {
+        return getDeviceUrl;
+    }
+
+    public void setGetDeviceUrl(String getDeviceUrl) {
+        this.getDeviceUrl = getDeviceUrl;
+    }
+
+    public String getGetDataStreamByIdUrl() {
+        return getDataStreamByIdUrl;
+    }
+
+    public void setGetDataStreamByIdUrl(String getDataStreamByIdUrl) {
+        this.getDataStreamByIdUrl = getDataStreamByIdUrl;
+    }
+
+    public String getGetDataStreamsByIdsUrl() {
+        return getDataStreamsByIdsUrl;
+    }
+
+    public void setGetDataStreamsByIdsUrl(String getDataStreamsByIdsUrl) {
+        this.getDataStreamsByIdsUrl = getDataStreamsByIdsUrl;
+    }
+
     @Autowired
     public OneNetConfig(OneNetConfigDeviceService onenetConfigDeviceService) {
         this.onenetConfigDeviceService = onenetConfigDeviceService;
     }
 
     String getDataStreamId(OneNetKey oneNetKey){
-        return oneNetKey.getObjId().toString() + "_" + oneNetKey.getObjInstId().toString() + "_" + oneNetKey.getResId().toString();
+        return oneNetKey.getObjId() + "_" + oneNetKey.getObjInstId() + "_" + oneNetKey.getResId();
     }
 
     String getImei(Integer deviceId){

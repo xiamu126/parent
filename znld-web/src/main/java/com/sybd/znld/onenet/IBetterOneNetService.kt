@@ -4,7 +4,7 @@ import com.sybd.znld.onenet.dto.*
 import java.time.LocalDateTime
 
 interface IBetterOneNetService {
-    fun execute(params: CommandParams): OneNetExecuteResult
+    fun execute(params: CommandParams): OneNetExecuteResult?
     fun getOneNetKey(name: String): String
     fun getInstanceMap(deviceId: Int): Map<String, String>
     fun getDeviceById(deviceId: Int): GetDeviceResult

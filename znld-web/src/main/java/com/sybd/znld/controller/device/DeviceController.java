@@ -4,34 +4,38 @@ import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.device.dto.*;
 import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.core.ApiResultEx;
-import com.sybd.znld.onenet.*;
+import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
 import com.sybd.znld.service.ExecuteCommandService;
 import com.sybd.znld.service.OneNetConfigDeviceService;
 import com.whatever.util.MyDateTime;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import lombok.var;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 
 @Api(tags = "设备接口")
-@Slf4j
 @RestController
 @RequestMapping("/api/v1/device")
 public class DeviceController extends BaseDeviceController implements IDeviceController{
 
     private final OneNetConfigDeviceService oneNetConfigDeviceService;
+    private final Logger log = LoggerFactory.getLogger(DeviceController.class);
 
     @Autowired
     public DeviceController(RedisTemplate<String, Object> redisTemplate,
@@ -59,7 +63,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                 log.debug("开始时间等于结束时间");
                 return null;
             }
-            var result = oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), before, now, 5000, null, null);//过去24小时内的数据
+            var result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), before, now, 5000, null, null);//过去24小时内的数据
             var data = (result.getData().getDatastreams()[0]).getDatapoints();
             var atList = new ArrayList<String>();
             var valueList = new ArrayList<String>();
@@ -150,7 +154,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             oneNetKey.setResId(resId);
             var dataStreamId = oneNet.getDataStreamId(oneNetKey);
             var theData = (data.getData().getDevices()[0]).getDatastreams();
-            var jsonObj = Arrays.stream(theData)
+            GetLastDataStreamsResult.DataStream jsonObj = Arrays.stream(theData)
                     .filter(dataStream -> dataStream.getId().equals(dataStreamId))
                     .findFirst().orElse(null);
             final var weidu = this.oneNet.getOneNetKey("weidu");

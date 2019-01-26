@@ -1,33 +1,29 @@
 package com.sybd.znld.config;
 
-import com.google.code.kaptcha.impl.DefaultKaptcha;
-import com.google.code.kaptcha.util.Config;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.var;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import com.google.code.kaptcha.impl.DefaultKaptcha
+import com.google.code.kaptcha.util.Config
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.stereotype.Component
+import java.util.*
 
-import java.util.Properties;
-
-@Getter
-@Setter
 @Component
 @ConfigurationProperties(prefix = "captcha")
-public class KaptchaConfig {
-    private String border;
-    private String borderColor;
-    private String fontColor;
-    private String imageWidth;
-    private String imageHeight;
-    private String fontSize;
-    private String length;
-    private String fontNames;
+class KaptchaConfig{
+
+    lateinit var border: String
+    lateinit var borderColor: String
+    lateinit var fontColor:String
+    lateinit var imageWidth:String
+    lateinit var imageHeight:String
+    lateinit var fontSize:String
+    lateinit var length:String
+    lateinit var fontNames: String
+
     @Bean
-    public DefaultKaptcha getDefaultKaptcha() {
-        var defaultKaptcha = new DefaultKaptcha();
-        var properties = new Properties();
+    fun getDefaultKaptcha(): DefaultKaptcha {
+        val defaultKaptcha = DefaultKaptcha();
+        val properties = Properties();
         // 图片边框
         properties.setProperty("kaptcha.border", border);
         // 边框颜色
@@ -44,8 +40,8 @@ public class KaptchaConfig {
         properties.setProperty("kaptcha.textproducer.char.length", length);
         // 字体
         properties.setProperty("kaptcha.textproducer.font.names", fontNames);
-        var config = new Config(properties);
-        defaultKaptcha.setConfig(config);
+        val config = Config(properties);
+        defaultKaptcha.config = config;
         return defaultKaptcha;
     }
 }

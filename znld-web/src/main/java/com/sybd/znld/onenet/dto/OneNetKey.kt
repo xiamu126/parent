@@ -12,7 +12,7 @@ class OneNetKey(var objId: Int = 0, var objInstId: Int = 0, var resId: Int = 0):
         @JvmStatic fun toDataStreamId(objId: Int, objInstId: Int, resId: Int): String{
             return "${objId}_${objInstId}_$resId";
         }
-        @JvmStatic fun  from(id: String ): OneNetKey?{
+        @JvmStatic fun from(id: String ): OneNetKey?{
           /*val regex = "^\\d+_\\d+_\\d+$";
             val pattern = Pattern.compile(regex);
             val matcher = pattern.matcher(id);

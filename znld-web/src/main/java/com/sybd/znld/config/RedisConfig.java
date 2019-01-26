@@ -1,6 +1,5 @@
 package com.sybd.znld.config;
 
-import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.redisson.Redisson;
@@ -24,7 +23,6 @@ import org.springframework.data.redis.connection.lettuce.LettucePoolingClientCon
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 import org.springframework.util.StringUtils;
@@ -35,7 +33,6 @@ import java.lang.reflect.Method;
 @EnableRedisHttpSession
 @EnableCaching(proxyTargetClass = true)
 @Configuration
-@Slf4j
 public class RedisConfig extends CachingConfigurerSupport {
     @Value("${spring.redis.host}")
     private String host;

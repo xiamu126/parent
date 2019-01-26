@@ -6,22 +6,21 @@ import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.video.dto.VideoData;
 import com.sybd.znld.service.RedisService;
 import io.swagger.annotations.*;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
 import java.awt.image.BufferedImage;
 import java.util.concurrent.TimeUnit;
 
 @Api(tags = "视频接口")
-@Slf4j
 @RestController
 @RequestMapping("/api/v1/video")
 public class VideoController {
     private final RedisService redisService;
     private final VideoTask videoTask;
+    private final Logger log = LoggerFactory.getLogger(VideoController.class);
 
     @Autowired
     public VideoController(RedisService redisService, VideoTask videoTask) {
@@ -32,7 +31,7 @@ public class VideoController {
     @ApiOperation(value = "推送视频")
     @PostMapping(value = "play/", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult play(@ApiParam(name = "jsonData", value = "视频相关数据", required = true) @RequestBody VideoData jsonData){
-        var key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+jsonData.getChannelGuid();
+        String key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+jsonData.getChannelGuid();
         if(jsonData.getCmd().equals("push")){
             if(videoTask.push(key, jsonData)){
                 return ApiResult.success("推流成功");
@@ -52,7 +51,7 @@ public class VideoController {
     })
     @GetMapping(value = "heartbeat/{channelGuid:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult heartbeat(@PathVariable(name = "channelGuid") String channelGuid){
-        var key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+channelGuid;
+        String key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+channelGuid;
         redisService.set(key,"", 30, TimeUnit.SECONDS);
         try{
             return ApiResult.success();

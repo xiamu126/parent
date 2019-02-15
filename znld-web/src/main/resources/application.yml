@@ -30,7 +30,7 @@ spring:
     cache: false
   profiles:
     include: onenet,security,datasource
-    active: dev
+    active: test
   cache:
     type: redis
   redis:

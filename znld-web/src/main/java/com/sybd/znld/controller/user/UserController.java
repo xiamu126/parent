@@ -16,6 +16,8 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -31,7 +33,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
 @Api(tags = "用户接口")
-@Slf4j
 @RestController
 @RequestMapping("/api/v1/user")
 public class UserController implements IUserController {
@@ -41,9 +42,11 @@ public class UserController implements IUserController {
     private final StringRedisTemplate stringRedisTemplate;
     private final ProjectConfig projectConfig;
 
-    @Value("security.oauth2.client.client-id")
+    private final Logger log = LoggerFactory.getLogger(UserController.class);
+
+    @Value("${security.oauth2.client.client-id}")
     private String clientId;
-    @Value("security.oauth2.client.client-secret")
+    @Value("${security.oauth2.client.client-secret}")
     private String clientSecret;
 
     @Autowired
@@ -82,7 +85,8 @@ public class UserController implements IUserController {
     @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public LoginResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input, HttpServletRequest request, BindingResult bindingResult){
-        var rightCaptcha = this.stringRedisTemplate.opsForValue().get(getCaptchaKey(input.getUuid()));
+        String key = getCaptchaKey(input.getUuid());
+        String rightCaptcha = this.stringRedisTemplate.opsForValue().get(key);
         if(rightCaptcha == null){
             return LoginResult.fail("验证码已失效");
         }

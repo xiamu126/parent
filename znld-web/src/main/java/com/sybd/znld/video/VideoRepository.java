@@ -4,6 +4,8 @@ import com.sybd.znld.video.dto.VideoData;
 import com.sybd.znld.service.VideoConfigService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,11 +16,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Component
-@Slf4j
 public class VideoRepository implements IVideoRepository {
 
     private final VideoAsyncTask videoAsyncTask;
     private final VideoConfigService videoConfigService;
+    private final Logger log = LoggerFactory.getLogger(VideoRepository.class);
 
     @PreDestroy
     public void preDestroy(){
@@ -66,12 +68,12 @@ public class VideoRepository implements IVideoRepository {
         var rtspUrl = tmp.getRtspUrl();
         var result = videoAsyncTask.pickImage(channelGuid, rtspUrl);
         try {
-            while(!result.isDone()){
+            /*while(!result.isDone()){
                 Thread.sleep(1000);
-            }
-            return result.get(1, TimeUnit.SECONDS); //等待3秒
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            log.error(e.getMessage());
+            }*/
+            return result.get(30, TimeUnit.SECONDS); //等待3秒
+        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            log.error(ex.getMessage());
         }
         return null;
     }

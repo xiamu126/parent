@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Import;
  */
 @Import({DynamicDataSourceConfig.class})
 @SpringBootApplication(exclude={DataSourceAutoConfiguration.class})
-public class Application {
+public class OAuth2Application {
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        SpringApplication.run(OAuth2Application.class, args);
     }
 }

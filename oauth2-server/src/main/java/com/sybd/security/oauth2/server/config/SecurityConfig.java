@@ -65,8 +65,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/auth","/unauth", "/success", "/error").permitAll()
                 //.antMatchers(HttpMethod.OPTIONS, "/oauth/**").permitAll()
-                //.anyRequest().authenticated();
-        .anyRequest().permitAll();
+                .anyRequest().authenticated();
 
         /*http.formLogin().usernameParameter("user").passwordParameter("password")
                 .loginPage("/auth")

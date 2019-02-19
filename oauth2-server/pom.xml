@@ -13,7 +13,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sybd.oauth2</groupId>
-    <artifactId>server</artifactId>
+    <artifactId>oauth2-server</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
@@ -156,7 +156,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>com.sybd.security.oauth2.server.Application</mainClass>
+                            <mainClass>com.sybd.security.oauth2.server.OAuth2Application</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -46,6 +46,7 @@ public class LastDataResult extends BaseApiResult{
         modelMapper.validate();
         LastDataResult tmp = modelMapper.map(result, LastDataResult.class);
         tmp.code = 0;
+        tmp.msg = "";
         return tmp;
     }
 }

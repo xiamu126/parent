@@ -1,17 +1,18 @@
 package com.sybd.security.oauth2.server.core;
 
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 
-@Getter @Setter @ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@Slf4j
+import java.util.List;
+
 public class ApiResult {
-    private int code;
-    private String msg;
-    private Object json;
+    private static Logger log = LoggerFactory.getLogger(ApiResult.class);
+
+    public int code;
+    public String msg;
+    public Object json;
 
     public static ApiResult success(){
         return new ApiResult(0,"","");
@@ -33,10 +34,17 @@ public class ApiResult {
         return new ApiResult(1, msg,"");
     }
     public static ApiResult fail(BindingResult bindingResult){
-        var errorList = bindingResult.getAllErrors();
-        for(var error : errorList){
+        List<ObjectError> errorList = bindingResult.getAllErrors();
+        for(ObjectError error : errorList){
             log.debug(error.getDefaultMessage());
         }
         return ApiResult.fail("非法的参数");
     }
+
+    public ApiResult(int code, String msg, Object json) {
+        this.code = code;
+        this.msg = msg;
+        this.json = json;
+    }
+
 }

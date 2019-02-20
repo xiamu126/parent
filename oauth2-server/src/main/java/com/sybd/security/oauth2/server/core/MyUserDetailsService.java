@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.sybd.security.oauth2.server.db.DbSource;
 import com.sybd.security.oauth2.server.mapper.UserMapper;
 import com.sybd.security.oauth2.server.model.UserEntity;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,10 +24,10 @@ public class MyUserDetailsService implements UserDetailsService {
     @DbSource("znld")
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = userMapper.selectOne(new QueryWrapper<UserEntity>().eq("name", username));
+        UserEntity user = userMapper.selectOne(new QueryWrapper<UserEntity>().eq("name", username));
         if(user == null) throw new UsernameNotFoundException(username);
-        var tmp = user.getAuthorities();
-        var auth = tmp.split(",");
+        String tmp = user.getAuthorities();
+        String[] auth = tmp.split(",");
         return User.builder().username(username).password(user.getPassword()).authorities(auth).build();
     }
 }

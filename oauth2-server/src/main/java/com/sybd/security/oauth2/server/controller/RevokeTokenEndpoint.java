@@ -1,7 +1,6 @@
 package com.sybd.security.oauth2.server.controller;
 
 import com.sybd.security.oauth2.server.core.ApiResult;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.provider.endpoint.FrameworkEndpoint;
 import org.springframework.security.oauth2.provider.token.ConsumerTokenServices;
 import org.springframework.stereotype.Controller;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-@Slf4j
 @FrameworkEndpoint
 public class RevokeTokenEndpoint {
     @Resource//(name = "tokenServices")

@@ -1,7 +1,6 @@
 package com.sybd.security.oauth2.server.db;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +29,7 @@ public class DynamicDataSourceConfig {
     @Bean
     @Primary
     public DynamicDataSource dataSource(@Qualifier("oauthDataSource") DataSource oauthDataSource, @Qualifier("znldDataSource") DataSource znldDataSource) {
-        var targetDataSources = new HashMap<Object, Object>(2);
+        HashMap<Object, Object> targetDataSources = new HashMap<>(2);
         targetDataSources.put("oauth", oauthDataSource);
         targetDataSources.put("znld", znldDataSource);
         return new DynamicDataSource(oauthDataSource, targetDataSources);

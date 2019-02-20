@@ -1,9 +1,8 @@
 package com.sybd.znld.video;
 
+import com.sybd.znld.model.VideoConfigEntity;
 import com.sybd.znld.video.dto.VideoData;
 import com.sybd.znld.service.VideoConfigService;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -41,15 +41,15 @@ public class VideoRepository implements IVideoRepository {
 
     @Override
     public void push(VideoData videoData) {
-        var channelGuid = videoData.getChannelGuid();
-        var tmp = videoConfigService.getConfigByCameraId(videoData.getChannelGuid());
+        String channelGuid = videoData.getChannelGuid();
+        VideoConfigEntity tmp = videoConfigService.getConfigByCameraId(videoData.getChannelGuid());
         if(tmp == null){
             log.error("获取摄像头配置为空，"+channelGuid);
             return;
         }
-        var rtspUrl = tmp.getRtspUrl();
-        var rtmpUrl = tmp.getRtmpUrl();
-        var recordAudio = tmp.getRecordAudio();
+        String rtspUrl = tmp.getRtspUrl();
+        String rtmpUrl = tmp.getRtmpUrl();
+        Boolean recordAudio = tmp.getRecordAudio();
         videoAsyncTask.push(channelGuid, rtspUrl, rtmpUrl, recordAudio ? 1 : 0);
     }
 
@@ -60,13 +60,13 @@ public class VideoRepository implements IVideoRepository {
 
     @Override
     public BufferedImage pickImage(String channelGuid) {
-        var tmp = videoConfigService.getConfigByCameraId(channelGuid);
+        VideoConfigEntity tmp = videoConfigService.getConfigByCameraId(channelGuid);
         if(tmp == null){
             log.error("获取摄像头配置为空，"+channelGuid);
             return null;
         }
-        var rtspUrl = tmp.getRtspUrl();
-        var result = videoAsyncTask.pickImage(channelGuid, rtspUrl);
+        String rtspUrl = tmp.getRtspUrl();
+        Future<BufferedImage> result = videoAsyncTask.pickImage(channelGuid, rtspUrl);
         try {
             /*while(!result.isDone()){
                 Thread.sleep(1000);

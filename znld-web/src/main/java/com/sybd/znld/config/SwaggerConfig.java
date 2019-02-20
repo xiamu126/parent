@@ -1,7 +1,6 @@
 package com.sybd.znld.config;
 
 import io.swagger.annotations.ApiOperation;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,7 +58,7 @@ public class SwaggerConfig {
     }
 
     private SecurityScheme securityScheme() {
-        var grantType = new ResourceOwnerPasswordCredentialsGrant(authServer+"/oauth/token");
+        ResourceOwnerPasswordCredentialsGrant grantType = new ResourceOwnerPasswordCredentialsGrant(authServer+"/oauth/token");
         return new OAuthBuilder().name("spring_oauth").grantTypes(Collections.singletonList(grantType)).scopes(Arrays.asList(scopes())).build();
     }
 

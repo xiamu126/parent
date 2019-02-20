@@ -1,6 +1,5 @@
 package com.sybd.znld.security;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +13,6 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-@Slf4j
 @Configuration
 @EnableResourceServer
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
@@ -40,7 +38,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                         new Http403ForbiddenEntryPoint(),
                         new AntPathRequestMatcher("/**"));
         http.authorizeRequests().anyRequest().authenticated();
-        //http.cors();
+        http.cors();
     }
 }
 

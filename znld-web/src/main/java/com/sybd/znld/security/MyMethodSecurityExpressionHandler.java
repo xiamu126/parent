@@ -1,6 +1,5 @@
 package com.sybd.znld.security;
 
-import lombok.var;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
@@ -13,7 +12,7 @@ public class MyMethodSecurityExpressionHandler extends DefaultMethodSecurityExpr
 
     @Override
     protected MethodSecurityExpressionOperations createSecurityExpressionRoot(Authentication authentication, MethodInvocation invocation) {
-        var root = new MySecurityExpressionRoot(authentication);
+        MySecurityExpressionRoot root = new MySecurityExpressionRoot(authentication);
         root.setPermissionEvaluator(getPermissionEvaluator());
         root.setTrustResolver(this.trustResolver);
         root.setRoleHierarchy(getRoleHierarchy());

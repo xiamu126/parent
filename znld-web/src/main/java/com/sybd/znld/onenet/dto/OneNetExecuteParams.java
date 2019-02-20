@@ -1,15 +1,29 @@
 package com.sybd.znld.onenet.dto;
 
-import com.sybd.znld.onenet.dto.OneNetKey;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.io.Serializable;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class OneNetExecuteParams implements Serializable {
-    private OneNetKey oneNetKey;
-    private int timeout;
+    public OneNetKey oneNetKey;
+    public int timeout;
+
+    public OneNetExecuteParams(OneNetKey oneNetKey, int timeout) {
+        this.oneNetKey = oneNetKey;
+        this.timeout = timeout;
+    }
+
+    public OneNetKey getOneNetKey() {
+        return oneNetKey;
+    }
+
+    public void setOneNetKey(OneNetKey oneNetKey) {
+        this.oneNetKey = oneNetKey;
+    }
+
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
 }

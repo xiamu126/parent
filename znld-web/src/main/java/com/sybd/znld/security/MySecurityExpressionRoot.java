@@ -1,7 +1,6 @@
 package com.sybd.znld.security;
 
 import com.sybd.znld.model.user.UserEntity;
-import lombok.var;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
@@ -16,9 +15,9 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
         super(authentication);
     }
     public boolean isOk(){
-        var user = (UserEntity)this.getPrincipal();
-        var list =user.getAuthorities().split(",");
-        var ret =Arrays.stream(list).anyMatch(item -> item.equalsIgnoreCase("ADMIN"));
+        UserEntity user = (UserEntity)this.getPrincipal();
+        String[] list =user.getAuthorities().split(",");
+        boolean ret =Arrays.stream(list).anyMatch(item -> item.equalsIgnoreCase("ADMIN"));
         return ret;
     }
 

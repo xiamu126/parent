@@ -2,19 +2,39 @@ package com.sybd.znld.service.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 
-@Getter
-@Setter
 @ApiModel(value = "选中资源的单元值")
 public class CheckedResource implements Serializable {
     @ApiModelProperty(value = "元素Id")
-    private String oneNetKey;
+    public String oneNetKey;
     @ApiModelProperty(value = "元素的名字")
-    private String name;
+    public String name;
     @ApiModelProperty(value = "元素的描述")
-    private String description;
+    public String description;
+
+    public String getOneNetKey() {
+        return oneNetKey;
+    }
+
+    public void setOneNetKey(String oneNetKey) {
+        this.oneNetKey = oneNetKey;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

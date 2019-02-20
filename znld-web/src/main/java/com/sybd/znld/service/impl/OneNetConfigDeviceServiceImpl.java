@@ -1,14 +1,15 @@
 package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.dto.NameAndOneNetKey;
 import com.sybd.znld.mapper.OneNetConfigDeviceMapper;
 import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.OneNetConfigDeviceService;
 import com.sybd.znld.service.RedisService;
 import com.sybd.znld.service.dto.CheckedResource;
 import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
+import com.sybd.znld.service.dto.DeviceIdAndImei;
+import com.sybd.znld.service.dto.DeviceIdName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
-@Slf4j
 @Service
 public class OneNetConfigDeviceServiceImpl extends BaseServiceImpl implements OneNetConfigDeviceService {
 
@@ -40,13 +40,13 @@ public class OneNetConfigDeviceServiceImpl extends BaseServiceImpl implements On
     @Override
     @Cacheable
     public Map<Integer, String> getDeviceIdAndImeis() {
-        var list = this.onenetConfigDeviceMapper.getDeviceIdAndImeis();
+        List<DeviceIdAndImei> list = this.onenetConfigDeviceMapper.getDeviceIdAndImeis();
         if(list == null || list.size() <= 0){
             return null;
         }
-        var map = new HashMap<Integer, String>();
-        for(var item : list){
-            map.put(item.getDeviceId(), item.getImei());
+        HashMap<Integer, String> map = new HashMap<>();
+        for(DeviceIdAndImei item : list){
+            map.put(item.deviceId, item.imei);
         }
         return map;
     }
@@ -64,8 +64,8 @@ public class OneNetConfigDeviceServiceImpl extends BaseServiceImpl implements On
 
     @Override
     public boolean isDataStreamIdEnabled(String dataStreamId) {
-        var oneNetKey = OneNetKey.from(dataStreamId);
-        var ret =this.onenetConfigDeviceMapper.isDataStreamIdEnabled(oneNetKey);
+        OneNetKey oneNetKey = OneNetKey.from(dataStreamId);
+        Boolean ret =this.onenetConfigDeviceMapper.isDataStreamIdEnabled(oneNetKey);
         return ret != null && ret;
     }
 
@@ -74,7 +74,7 @@ public class OneNetConfigDeviceServiceImpl extends BaseServiceImpl implements On
     public String getImeiByDeviceId(Integer deviceId) {
         //为了防止缓存穿透（指定的key在缓存中不存在时，不断访问、间接导致对数据库的频繁访问）
         //此方法简单粗暴，不管从数据库中有没有查到数据，每次访问数据库都缓存结果（包括空）
-        var ret = this.onenetConfigDeviceMapper.getImeiByDeviceId(deviceId);
+        String ret = this.onenetConfigDeviceMapper.getImeiByDeviceId(deviceId);
         if(ret == null){
             this.removeCache(this.getClass(),".imei_"+deviceId, expirationTime);
         }
@@ -96,10 +96,10 @@ public class OneNetConfigDeviceServiceImpl extends BaseServiceImpl implements On
     @Override
     @Cacheable
     public Map<Integer, String> getDeviceIdNameMap() {
-        var list = this.onenetConfigDeviceMapper.getDeviceIdNames();
-        var map = new HashMap<Integer, String>();
-        for(var item : list){
-            map.put(item.getId(), item.getName());
+        List<DeviceIdName> list = this.onenetConfigDeviceMapper.getDeviceIdNames();
+        HashMap<Integer, String> map = new HashMap<>();
+        for(DeviceIdName item : list){
+            map.put(item.id, item.name);
         }
         return map;
     }
@@ -119,10 +119,10 @@ public class OneNetConfigDeviceServiceImpl extends BaseServiceImpl implements On
     @Override
     @Cacheable
     public Map<String, String> getInstanceMap(Integer deviceId) {
-        var list = this.onenetConfigDeviceMapper.getInstanceMap(deviceId);
-        var map = new HashMap<String, String>();
-        for(var item : list){
-            map.put(item.getName(), item.getOneNetKey());
+        List<NameAndOneNetKey> list = this.onenetConfigDeviceMapper.getInstanceMap(deviceId);
+        HashMap<String, String> map = new HashMap<>();
+        for(NameAndOneNetKey item : list){
+            map.put(item.name, item.oneNetKey);
         }
         return map;
     }

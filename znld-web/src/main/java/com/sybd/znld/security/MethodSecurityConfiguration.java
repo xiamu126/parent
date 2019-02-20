@@ -1,6 +1,5 @@
 package com.sybd.znld.security;
 
-import lombok.var;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
@@ -12,7 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 public class MethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
     @Override
     protected MethodSecurityExpressionHandler createExpressionHandler() {
-        var expressionHandler = new MyMethodSecurityExpressionHandler();
+        MyMethodSecurityExpressionHandler expressionHandler = new MyMethodSecurityExpressionHandler();
         expressionHandler.setPermissionEvaluator(new MyPermissionEvaluator());
         return expressionHandler;
     }

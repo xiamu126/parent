@@ -4,14 +4,11 @@ import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.mapper.VideoConfigMapper;
 import com.sybd.znld.model.VideoConfigEntity;
 import com.sybd.znld.service.VideoConfigService;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 public class VideoConfigServiceImpl extends BaseServiceImpl implements VideoConfigService {
     private final VideoConfigMapper videoConfigMapper;
@@ -32,7 +29,7 @@ public class VideoConfigServiceImpl extends BaseServiceImpl implements VideoConf
 
     @Override
     public int setConfigByCameraId(VideoConfigEntity videoConfigEntity) {
-        var ret = videoConfigMapper.setConfigByCameraId(videoConfigEntity);
+        int ret = videoConfigMapper.setConfigByCameraId(videoConfigEntity);
         return 0;
     }
 }

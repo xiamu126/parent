@@ -2,8 +2,9 @@ package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.service.BaseService;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.scheduling.TaskScheduler;
@@ -12,9 +13,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Slf4j
 @CacheConfig(cacheNames={BaseServiceImpl.cachePrefix})
 public class BaseServiceImpl implements BaseService {
+    private final Logger log = LoggerFactory.getLogger(BaseServiceImpl.class);
     protected static final String cachePrefix = "znld::web::service::cache";
 
     protected final CacheManager cacheManager;
@@ -27,7 +28,7 @@ public class BaseServiceImpl implements BaseService {
         this.taskScheduler = taskScheduler;
         this.projectConfig = projectConfig;
 
-        var time = this.projectConfig.getCacheOfNullExpirationTime();
+        Duration time = this.projectConfig.getCacheOfNullExpirationTime();
         if(time == null || time.isZero()){
             throw new RuntimeException("过期时间未设置");
         }else{
@@ -37,7 +38,7 @@ public class BaseServiceImpl implements BaseService {
 
     @Override
     public void removeAllCache(){
-        var cache = this.cacheManager.getCache(cachePrefix);
+        Cache cache = this.cacheManager.getCache(cachePrefix);
         if(cache != null){
             cache.clear();
         }else{
@@ -48,7 +49,7 @@ public class BaseServiceImpl implements BaseService {
     @Override
     public void removeCache(Class clazz, String suffix, Duration expirationTime) {
         taskScheduler.schedule(()->{
-            var cache = this.cacheManager.getCache(cachePrefix);
+            Cache cache = this.cacheManager.getCache(cachePrefix);
             if(cache != null){
                 cache.evict(clazz.getName()+suffix);
             }else{

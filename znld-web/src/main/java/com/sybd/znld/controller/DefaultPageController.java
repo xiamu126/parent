@@ -1,8 +1,6 @@
 package com.sybd.znld.controller;
 
 import com.sybd.znld.service.OneNetConfigDeviceService;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -15,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 
-@Slf4j
 @Controller
 public class DefaultPageController {
     private final OneNetConfigDeviceService onenetConfigDeviceService;

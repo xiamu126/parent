@@ -13,8 +13,6 @@ import com.sybd.znld.service.UserService;
 import com.whatever.util.MD5;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,8 +73,8 @@ public class UserController implements IUserController {
     public BufferedImage getCaptcha(@PathVariable("uuid") String uuid,
                                     HttpServletRequest request,
                                     HttpServletResponse response){
-        var remoteAddr = request.getRemoteAddr();
-        var createText = defaultKaptcha.createText();
+        String remoteAddr = request.getRemoteAddr();
+        String createText = defaultKaptcha.createText();
         this.stringRedisTemplate.opsForValue().set(getCaptchaKey(uuid), createText, this.projectConfig.getCacheOfCaptchaExpirationTime());
         return defaultKaptcha.createImage(createText);
     }
@@ -90,17 +88,17 @@ public class UserController implements IUserController {
         if(rightCaptcha == null){
             return LoginResult.fail("验证码已失效");
         }
-        var captcha = input.getCaptcha();
+        String captcha = input.getCaptcha();
         if(!captcha.equalsIgnoreCase(rightCaptcha)){
             return LoginResult.fail("验证码错误");
         }
-        var pwd = input.getPassword();
+        String pwd = input.getPassword();
         try {
             input.setPassword(MD5.encrypt(pwd, 2));
-            var user = userService.verify(input);
+            UserEntity user = userService.verify(input);
             if(user != null){
                 this.stringRedisTemplate.delete(getCaptchaKey(input.getUuid()));
-                var seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
+                long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
                 return LoginResult.success(user.getId(), clientId, clientSecret, seconds);
             }
         } catch (NoSuchAlgorithmException ex) {
@@ -114,7 +112,7 @@ public class UserController implements IUserController {
     public ApiResult verifyCaptcha(@PathVariable(name = "captcha") String captcha, HttpServletRequest request) {
         if(MyString.isEmptyOrNull(captcha) || captcha.length() < 4) return ApiResult.fail("验证码错误");
 
-        var rightCaptcha = request.getSession().getAttribute("captcha").toString();
+        String rightCaptcha = request.getSession().getAttribute("captcha").toString();
         if(captcha.equalsIgnoreCase(rightCaptcha)){
             request.getSession().removeAttribute("captcha");
             return ApiResult.success();
@@ -137,7 +135,7 @@ public class UserController implements IUserController {
     @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public ApiResult register(@RequestBody @Valid RegisterInput input, BindingResult bindingResult){
-        var pwd = input.getPassword();
+        String pwd = input.getPassword();
         try {
             input.setPassword(MD5.encrypt(pwd, 2));
             if(userService.register(input) != null){
@@ -152,7 +150,7 @@ public class UserController implements IUserController {
     @GetMapping(value = "{id:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public ApiResult getUserInfo(@PathVariable(name = "id") String id){
-        var tmp = this.userService.getUserById(id);
+        UserEntity tmp = this.userService.getUserById(id);
         return ApiResult.success(tmp);
     }
 

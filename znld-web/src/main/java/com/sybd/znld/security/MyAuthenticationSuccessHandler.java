@@ -1,12 +1,12 @@
 package com.sybd.znld.security;
 
-import lombok.var;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +22,7 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        var savedRequest = requestCache.getRequest(request, response);
+        SavedRequest savedRequest = requestCache.getRequest(request, response);
         redirectStrategy.sendRedirect(request, response, savedRequest.getRedirectUrl());
     }
 }

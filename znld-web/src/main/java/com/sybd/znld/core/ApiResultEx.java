@@ -1,15 +1,8 @@
 package com.sybd.znld.core;
 
-import lombok.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
 public class ApiResultEx {
     private int code;
     private String msg;
@@ -20,5 +13,36 @@ public class ApiResultEx {
     }
     public static ApiResult success(String msg, Map<String, Object> json){
         return new ApiResult(0, msg, json);
+    }
+
+    public ApiResultEx(){}
+    public ApiResultEx(int code, String msg, Map<String, Object> json) {
+        this.code = code;
+        this.msg = msg;
+        this.json = json;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public Map<String, Object> getJson() {
+        return json;
+    }
+
+    public void setJson(Map<String, Object> json) {
+        this.json = json;
     }
 }

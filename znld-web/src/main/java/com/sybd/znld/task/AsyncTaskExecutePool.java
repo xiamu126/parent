@@ -1,7 +1,5 @@
 package com.sybd.znld.task;
 
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -27,7 +25,7 @@ public class AsyncTaskExecutePool implements AsyncConfigurer {
 
     @Override
     public Executor getAsyncExecutor() {
-        var executor = new ThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(taskExecutionProperties.getPool().getCoreSize());
         executor.setMaxPoolSize(2* Runtime.getRuntime().availableProcessors());
         executor.setKeepAliveSeconds(Math.toIntExact(taskExecutionProperties.getPool().getKeepAlive().getSeconds()));

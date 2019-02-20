@@ -1,6 +1,5 @@
 package com.sybd.znld.security;
 
-import lombok.var;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,7 +27,7 @@ public class MyPermissionEvaluator implements PermissionEvaluator {
 
     private boolean hasPrivilege(Authentication auth, String targetType, String permission) {
         for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
-            var tmp = grantedAuth.getAuthority();
+            String tmp = grantedAuth.getAuthority();
             if (tmp.startsWith(targetType)) {
                 if (tmp.contains(permission)) {
                     return true;

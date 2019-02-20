@@ -2,9 +2,10 @@ package com.sybd.znld.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.onenet.OneNetService;
+import com.sybd.znld.onenet.dto.GetLastDataStreamsResult;
 import com.sybd.znld.service.ExecuteCommandService;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
@@ -15,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Arrays;
+import java.util.List;
 
-@Slf4j
 @Controller
 public class PageDeviceController extends BaseDeviceController implements IPageDeviceController {
+
+    private final Logger log = LoggerFactory.getLogger(PageDeviceController.class);
 
     @Autowired
     public PageDeviceController(RedisTemplate<String, Object> redisTemplate,
@@ -37,13 +40,13 @@ public class PageDeviceController extends BaseDeviceController implements IPageD
     @RequestMapping(value = "/view/{deviceId:^[1-9]\\d*$}", method = RequestMethod.GET, produces = {MediaType.TEXT_HTML_VALUE})
     @Override
     public String getViewPage(@PathVariable(name = "deviceId") Integer deviceId, Model model){
-        var ret = this.oneNet.getLastDataStream(deviceId);
-        if(ret.getErrno() == 0){
-            var dataStreams = ret.getData().getDevices()[0].getDatastreams();
-            var weidu = Arrays.stream(dataStreams)
+        GetLastDataStreamsResult ret = this.oneNet.getLastDataStream(deviceId);
+        if(ret.errno == 0){
+            List<GetLastDataStreamsResult.DataStream> dataStreams = ret.getData().getDevices().get(0).getDataStreams();
+            GetLastDataStreamsResult.DataStream weidu = dataStreams.stream()
                     .filter(dataStream -> dataStream.getId().equals("3336_0_5513"))
                     .findFirst().orElse(null);
-            var jingdu = Arrays.stream(dataStreams)
+            GetLastDataStreamsResult.DataStream jingdu = dataStreams.stream()
                     .filter(dataStream -> dataStream.getId().equals("3336_0_5514"))
                     .findFirst().orElse(null);
             model.addAttribute("deviceId", deviceId);

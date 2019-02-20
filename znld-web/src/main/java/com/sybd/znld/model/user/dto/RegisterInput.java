@@ -1,16 +1,32 @@
 package com.sybd.znld.model.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import javax.validation.constraints.NotEmpty;
 
-@Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class RegisterInput {
     @NotEmpty(message = "用户名不能为空")
-    private String name;
+    public String name;
     @NotEmpty(message = "密码不能为空")
-    private String password;
+    public String password;
+
+    public RegisterInput(){}
+    public RegisterInput(@NotEmpty(message = "用户名不能为空") String name, @NotEmpty(message = "密码不能为空") String password) {
+        this.name = name;
+        this.password = password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

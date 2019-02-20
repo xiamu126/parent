@@ -1,6 +1,5 @@
 package com.sybd.znld.config;
 
-import lombok.var;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -28,6 +27,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 
 @EnableRedisHttpSession
@@ -72,7 +72,7 @@ public class RedisConfig extends CachingConfigurerSupport {
     @Bean(name = "MyRedisConnectionFactory")
     public RedisConnectionFactory lettuceConnectionFactory(GenericObjectPoolConfig config) {
         // 单机版配置
-        var redisStandaloneConfiguration = new RedisStandaloneConfiguration(host, port);
+        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(host, port);
         //redisStandaloneConfiguration.setPassword(RedisPassword.of(password));
 
         // 集群版配置
@@ -88,7 +88,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         redisClusterConfiguration.setClusterNodes(nodes);*/
 
         // 客户端配置
-        var lettuceClientConfiguration =
+        LettucePoolingClientConfiguration lettuceClientConfiguration =
                 LettucePoolingClientConfiguration.builder()
                         .poolConfig(config)
                         .build();
@@ -98,7 +98,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redisson() throws IOException {
-        var config = Config.fromYAML(new ClassPathResource("redisson-single-prod.yml").getInputStream());
+        Config config = Config.fromYAML(new ClassPathResource("redisson-single-prod.yml").getInputStream());
         if(this.environment.equalsIgnoreCase("dev")){
             config = Config.fromYAML(new ClassPathResource("redisson-single-dev.yml").getInputStream());
         }
@@ -108,8 +108,8 @@ public class RedisConfig extends CachingConfigurerSupport {
     @Bean
     @Override
     public CacheManager cacheManager() {
-        var factory = lettuceConnectionFactory(genericObjectPoolConfig());
-        var redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();//.prefixKeysWith("sybd::znld::web");//.entryTtl(Duration.ofSeconds(30));
+        RedisConnectionFactory factory = lettuceConnectionFactory(genericObjectPoolConfig());
+        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();//.prefixKeysWith("sybd::znld::web");//.entryTtl(Duration.ofSeconds(30));
         return RedisCacheManager.builder(factory)
                 .cacheDefaults(redisCacheConfiguration)
                 .build();

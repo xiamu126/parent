@@ -2,28 +2,27 @@ package com.sybd.znld.video;
 
 import com.sybd.znld.config.RedisKeyConfig;
 import com.sybd.znld.service.RedisService;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.bytedeco.javacpp.avcodec;
 import org.bytedeco.javacpp.avutil;
 import org.bytedeco.javacv.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.awt.image.BufferedImage;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
-@Slf4j
 @Component
 public class VideoAsyncTask {
     private final RedisService redisService;
     private static ConcurrentHashMap<String, Boolean> threadPools = new ConcurrentHashMap<>();
+    private final Logger log = LoggerFactory.getLogger(VideoAsyncTask.class);
 
     @PreDestroy
     public void preDestroy(){
@@ -42,13 +41,13 @@ public class VideoAsyncTask {
             threadPools.remove(channelGuid);
         }
         stopRedis(channelGuid);
-        for (var entry : threadPools.entrySet()) {
+        for (Map.Entry entry : threadPools.entrySet()) {
             log.debug(entry.getKey() + " : " +  entry.getValue().toString());
         }
     }
 
     private boolean pushRedis(String channelGuid){
-        var redisKey = RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
+        String redisKey = RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
         if(redisService.exists(redisKey)){
             log.error("当前频道推流已经记录在全局缓存");
             return false;
@@ -58,12 +57,11 @@ public class VideoAsyncTask {
     }
 
     private void stopRedis(String channelGuid){
-        var redisKey = RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
+        String redisKey = RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
         redisService.delete(redisKey);
     }
 
-    @Setter @Getter
-    private static boolean terminateAll = false;
+    public static boolean terminateAll = false;
 
     void stopAll(){
         terminateAll = true;
@@ -86,9 +84,9 @@ public class VideoAsyncTask {
                 grabber.setImageHeight(height);
                 grabber.setAudioStream(0);//海康威视的回放视频，回答带出一个stream 1的Audio输入，但为none
                 grabber.start();
-                var frame = grabber.grabImage();
-                var converter = new Java2DFrameConverter();
-                var bufferedImage = converter.convert(frame);
+                Frame frame = grabber.grabImage();
+                Java2DFrameConverter converter = new Java2DFrameConverter();
+                BufferedImage bufferedImage = converter.convert(frame);
                 return CompletableFuture.completedFuture(bufferedImage);
             }
         } catch (FrameGrabber.Exception e) {

@@ -1,7 +1,6 @@
 package com.sybd.znld.service.impl;
 
 import com.sybd.znld.service.RedisService;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,7 @@ public class RedisServiceImpl implements RedisService {
 
     @Override
     public Boolean exists(String key) {
-        var tmp = this.redisTemplate.hasKey(key);
+        Boolean tmp = this.redisTemplate.hasKey(key);
         return tmp != null && tmp;
     }
 
@@ -53,11 +52,11 @@ public class RedisServiceImpl implements RedisService {
                 redisConnection -> new ConvertingCursor<>(redisConnection.scan(options), redisSerializer::deserialize)
         );*/
         return redisTemplate.execute((RedisCallback<List<String>>) connection -> {
-            var options = ScanOptions.scanOptions().match(pattern).count(Integer.MAX_VALUE).build();
-            var binaryKeys = new ArrayList<String>();
-            var cursor = connection.scan(options);
+            ScanOptions options = ScanOptions.scanOptions().match(pattern).count(Integer.MAX_VALUE).build();
+            ArrayList<String> binaryKeys = new ArrayList<>();
+            Cursor<byte[]> cursor = connection.scan(options);
             while (cursor.hasNext()) {
-                var strKey = new String(cursor.next(), Charset.forName("UTF-8"));
+                String strKey = new String(cursor.next(), Charset.forName("UTF-8"));
                 binaryKeys.add(strKey);
             }
             try {
@@ -75,9 +74,9 @@ public class RedisServiceImpl implements RedisService {
     }
 
     public void get(){
-        var tmp = this.redisTemplate.opsForValue().get("");
+        Object tmp = this.redisTemplate.opsForValue().get("");
         if(tmp == null){
-            var ret = this.redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, 1);
+            Boolean ret = this.redisTemplate.opsForValue().setIfAbsent(LOCK_KEY, 1);
             if(ret == null) return;
             if(ret){
                 this.redisTemplate.expire(LOCK_KEY, 1, TimeUnit.MINUTES);

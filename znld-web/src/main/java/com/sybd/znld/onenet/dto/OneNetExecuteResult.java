@@ -1,36 +1,76 @@
 package com.sybd.znld.onenet.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
 import java.io.Serializable;
 
-@Getter
-@Setter
-@ToString
-public class OneNetExecuteResult {
-    private Integer errno;
-    private String error;
-    private ObjectResource data;
+public class OneNetExecuteResult extends BaseResult {
+    public ObjectResource data;
 
-    @Getter
-    @Setter
-    @ToString
     public static class ObjectResource {
-        private Integer obj_inst_id;
-        private Resource res;
+        public Integer obj_inst_id;
+        public Resource res;
 
-        @Getter
-        @Setter
-        @ToString
-        public static class Resource {
-            private Integer res_id;
-            private Object val;
+        public ObjectResource(Integer obj_inst_id, Resource res) {
+            this.obj_inst_id = obj_inst_id;
+            this.res = res;
+        }
+
+        public Integer getObj_inst_id() {
+            return obj_inst_id;
+        }
+
+        public void setObj_inst_id(Integer obj_inst_id) {
+            this.obj_inst_id = obj_inst_id;
+        }
+
+        public Resource getRes() {
+            return res;
+        }
+
+        public void setRes(Resource res) {
+            this.res = res;
+        }
+    }
+    public static class Resource {
+        public Integer res_id;
+        public Object val;
+
+        public Resource(Integer res_id, Object val) {
+            this.res_id = res_id;
+            this.val = val;
+        }
+
+        public Integer getRes_id() {
+            return res_id;
+        }
+
+        public void setRes_id(Integer res_id) {
+            this.res_id = res_id;
+        }
+
+        public Object getVal() {
+            return val;
+        }
+
+        public void setVal(Object val) {
+            this.val = val;
         }
     }
 
     public boolean isOk(){
         return this.errno != null && this.errno == 0;
+    }
+
+    public OneNetExecuteResult(){}
+    public OneNetExecuteResult(Integer errno, String error, ObjectResource data) {
+        super(errno, error);
+        this.data = data;
+    }
+
+    public ObjectResource getData() {
+        return data;
+    }
+
+    public void setData(ObjectResource data) {
+        this.data = data;
     }
 }

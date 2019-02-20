@@ -8,11 +8,11 @@ import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
 import com.sybd.znld.service.ExecuteCommandService;
 import com.sybd.znld.service.OneNetConfigDeviceService;
+import com.sybd.znld.service.dto.CheckedResource;
+import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
 import com.whatever.util.MyDateTime;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
-import lombok.val;
-import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 @Api(tags = "设备接口")
 @RestController
@@ -48,7 +45,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     }
 
     private Result getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin) {
-        var end = MyDateTime.maxOfDay(begin);
+        LocalDateTime end = MyDateTime.maxOfDay(begin);
         log.debug(begin.toString());
         log.debug(end.toString());
         return getResourceByHour(deviceId, oneNetKey, begin, end);
@@ -57,21 +54,21 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     private Result getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin, LocalDateTime end){
         try{
             //LocalDateTime now = LocalDateTime.now();
-            var now = LocalDateTime.of(2018,9,17,23,59,59);
-            var before = now.toLocalDate().atTime(0,0,1,0);
+            LocalDateTime now = LocalDateTime.of(2018,9,17,23,59,59);
+            LocalDateTime before = now.toLocalDate().atTime(0,0,1,0);
             if(begin.isEqual(end)){
                 log.debug("开始时间等于结束时间");
                 return null;
             }
-            var result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), before, now, 5000, null, null);//过去24小时内的数据
-            var data = (result.getData().getDatastreams()[0]).getDatapoints();
-            var atList = new ArrayList<String>();
-            var valueList = new ArrayList<String>();
-            var theSet = new HashSet<Integer>();
-            for(var theData : data){
-                var str = theData.getAt();
-                var theDate = LocalDateTime.parse(str, DateTimeFormatter.ofPattern(MyDateTime.format2));
-                var hour = theDate.getHour();
+            GetHistoryDataStreamResult result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), before, now, 5000, null, null);//过去24小时内的数据
+            List<GetHistoryDataStreamResult.DataPoint> data = (result.getData().getDataStreams().get(0)).getDataPoints();
+            ArrayList<String> atList = new ArrayList<>();
+            ArrayList<String> valueList = new ArrayList<>();
+            HashSet<Integer> theSet = new HashSet<>();
+            for(GetHistoryDataStreamResult.DataPoint theData : data){
+                String str = theData.getAt();
+                LocalDateTime theDate = LocalDateTime.parse(str, DateTimeFormatter.ofPattern(MyDateTime.format2));
+                int hour = theDate.getHour();
 
                 if (!theSet.contains(hour)) {
                     theSet.add(hour);
@@ -79,10 +76,10 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                     valueList.add(theData.getValue());
                 }
             }
-            var ret = new Result();
-            ret.setAtList(atList);
-            ret.setValueList(valueList);
-            ret.setTitle(MyString.replace("{}", end.toLocalDate().toString()));
+            Result ret = new Result();
+            ret.atList = atList;
+            ret.valueList = valueList;
+            ret.title = MyString.replace("{}", end.toLocalDate().toString());
             return ret;
         }catch (Exception ex){
             log.error(ex.getMessage());
@@ -103,7 +100,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             if(!this.oneNetConfigDeviceService.isDataStreamIdEnabled(dataStreamId)){
                 return LastDataResult.fail("当前dataStreamId已禁用");
             }
-            var ret = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
+            GetDataStreamByIdResult ret = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
             if(ret.isOk()){
                 return LastDataResult.success(ret);
             }
@@ -116,12 +113,12 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @Deprecated
     public ApiResult getLastData(Integer deviceId){
         try{
-            var ret = this.oneNet.getLastDataStream(deviceId);
-            var dataStreams = ret.getData().getDevices()[0].getDatastreams();
-            var map = this.oneNet.getInstanceMap(deviceId);
-            var resultMap = new HashMap<String, Object>();
+            GetLastDataStreamsResult ret = this.oneNet.getLastDataStream(deviceId);
+            List<GetLastDataStreamsResult.DataStream> dataStreams = ret.getData().getDevices().get(0).getDataStreams();
+            Map<String, String> map = this.oneNet.getInstanceMap(deviceId);
+            HashMap<String, Object> resultMap = new HashMap<>();
             map.forEach((key, value) -> {
-                var tmp = Arrays.stream(dataStreams).filter(dataStream -> dataStream.getId().equals(value))
+                GetLastDataStreamsResult.DataStream tmp = dataStreams.stream().filter(dataStream -> dataStream.getId().equals(value))
                         .findFirst().orElse(null);
                 resultMap.put(key, tmp);
             });
@@ -147,18 +144,18 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     public ApiResult getLastData(Integer deviceId, Integer objId, Integer objInstId, Integer resId,
                                  HttpServletRequest request){
         try{
-            var data = oneNet.getLastDataStream(deviceId);
-            var oneNetKey = new OneNetKey(objId, objInstId, resId);
-            oneNetKey.setObjId(objId);
-            oneNetKey.setObjInstId(objInstId);
-            oneNetKey.setResId(resId);
-            var dataStreamId = oneNet.getDataStreamId(oneNetKey);
-            var theData = (data.getData().getDevices()[0]).getDatastreams();
-            GetLastDataStreamsResult.DataStream jsonObj = Arrays.stream(theData)
+            GetLastDataStreamsResult data = oneNet.getLastDataStream(deviceId);
+            OneNetKey oneNetKey = new OneNetKey(objId, objInstId, resId);
+            oneNetKey.objId = objId;
+            oneNetKey.objInstId = objInstId;
+            oneNetKey.resId = resId;
+            String dataStreamId = oneNet.getDataStreamId(oneNetKey);
+            List<GetLastDataStreamsResult.DataStream> theData = (data.getData().getDevices().get(0)).getDataStreams();
+            GetLastDataStreamsResult.DataStream jsonObj = theData.stream()
                     .filter(dataStream -> dataStream.getId().equals(dataStreamId))
                     .findFirst().orElse(null);
-            final var weidu = this.oneNet.getOneNetKey("weidu");
-            final var jingdu = this.oneNet.getOneNetKey("jingdu");
+            final String weidu = this.oneNet.getOneNetKey("weidu");
+            final String jingdu = this.oneNet.getOneNetKey("jingdu");
             if(dataStreamId.equals(weidu) || dataStreamId.equals(jingdu)){
                 if(jsonObj != null){
                     jsonObj.setValue(modifyLocation(jsonObj.getValue().toString()));
@@ -173,7 +170,8 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             return ApiResult.fail("获取最新数据失败");
         }
     }
-    @Deprecated
+
+    /*@Deprecated
     public ApiResult getHistoryData(Integer deviceId, Integer objId, Integer objInstId, Integer resId, Long beginTimestamp, Long endTimestamp, Integer limit){
         try{
             var oneNetKey = new OneNetKey(objId, objInstId, resId);
@@ -191,7 +189,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             log.error(ex.getMessage());
         }
         return ApiResult.fail("获取历史数据失败");
-    }
+    }*/
 
     @ApiOperation(value = "获取设备的历史数据")
     @ApiImplicitParams({
@@ -208,12 +206,12 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                         @PathVariable(name = "endTimestamp") Long endTimestamp) {
         try{
-            var begin = MyDateTime.toLocalDateTime(beginTimestamp);
-            var end = MyDateTime.toLocalDateTime(endTimestamp);
+            LocalDateTime begin = MyDateTime.toLocalDateTime(beginTimestamp);
+            LocalDateTime end = MyDateTime.toLocalDateTime(endTimestamp);
             if(begin.isAfter(end)){
                 return HistoryDataResult.fail("参数错误");
             }
-            var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, null, null, null);
+            GetHistoryDataStreamResult ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, null, null, null);
             if(ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
@@ -240,9 +238,9 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                     @PathVariable(name = "endTimestamp") Long endTimestamp,
                                     @PathVariable(name = "limit") Integer limit) {
         try{
-            var begin = MyDateTime.toLocalDateTime(beginTimestamp);
-            var end = MyDateTime.toLocalDateTime(endTimestamp);
-            var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, null, null);
+            LocalDateTime begin = MyDateTime.toLocalDateTime(beginTimestamp);
+            LocalDateTime end = MyDateTime.toLocalDateTime(endTimestamp);
+            GetHistoryDataStreamResult ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, null, null);
             if(ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
@@ -271,9 +269,9 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                     @PathVariable(name = "limit") Integer limit,
                                     @PathVariable(name = "sort") String sort) {
         try{
-            var begin = MyDateTime.toLocalDateTime(beginTimestamp);
-            var end = MyDateTime.toLocalDateTime(endTimestamp);
-            var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, sort, null);
+            LocalDateTime begin = MyDateTime.toLocalDateTime(beginTimestamp);
+            LocalDateTime end = MyDateTime.toLocalDateTime(endTimestamp);
+            GetHistoryDataStreamResult ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, sort, null);
             if(ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
@@ -305,12 +303,12 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                     @PathVariable(name = "cursor") String cursor,
                                     @PathVariable(name = "sort") String sort) {
         try{
-            var begin = MyDateTime.toLocalDateTime(beginTimestamp);
-            var end = MyDateTime.toLocalDateTime(endTimestamp);
+            LocalDateTime begin = MyDateTime.toLocalDateTime(beginTimestamp);
+            LocalDateTime end = MyDateTime.toLocalDateTime(endTimestamp);
             if(begin.isAfter(end) || limit <= 0){
                 return HistoryDataResult.fail("参数错误");
             }
-            var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, sort, cursor);
+            GetHistoryDataStreamResult ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, sort, cursor);
             if(ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
@@ -328,20 +326,20 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @Override
     public ExecuteResult execute(@PathVariable("deviceId") Integer deviceId, @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgsEx command){
         try{
-            var cmd = command.getArgsEx();
+            String cmd = command.getArgsEx();
             if(cmd.equals("")){
                 return ExecuteResult.fail("非法的参数");
             }
-            var tmp = this.executeCommandService.getParamsByCommand(command.getArgs());
+            OneNetExecuteParams tmp = this.executeCommandService.getParamsByCommand(command.getArgs());
             if(tmp == null) {
                 return ExecuteResult.fail("获取命令失败");
             }
-            val imei = oneNetConfigDeviceService.getImeiByDeviceId(deviceId);
+            String imei = oneNetConfigDeviceService.getImeiByDeviceId(deviceId);
             if(MyString.isEmptyOrNull(imei)){
                 return ExecuteResult.fail("未找到指定设备的imei");
             }
-            var params = new CommandParams(deviceId, imei, tmp.getOneNetKey(), tmp.getTimeout(), cmd);
-            var ret = oneNet.execute(params);
+            CommandParams params = new CommandParams(deviceId, imei, tmp.getOneNetKey(), tmp.getTimeout(), cmd);
+            OneNetExecuteResult ret = oneNet.execute(params);
             if(ret.isOk()) return ExecuteResult.success(ret);
 
         }catch (Exception ex){
@@ -355,7 +353,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @Override
     public DeviceIdAndNameResult getDeviceIdAndName(){
         try{
-            var tmp = this.oneNetConfigDeviceService.getDeviceIdAndDeviceNames();
+            List<DeviceIdAndDeviceName> tmp = this.oneNetConfigDeviceService.getDeviceIdAndDeviceNames();
             if(tmp == null || tmp.isEmpty()){
                 return DeviceIdAndNameResult.fail("获取数据为空");
             }
@@ -375,7 +373,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @Override
     public CheckedResourcesResult getCheckedResources(@PathVariable("deviceId") Integer deviceId) {
         try{
-            var ret = this.oneNetConfigDeviceService.getCheckedResources(deviceId);
+            List<CheckedResource> ret = this.oneNetConfigDeviceService.getCheckedResources(deviceId);
             if(ret == null || ret.isEmpty()){
                 return CheckedResourcesResult.fail("获取数据为空");
             }
@@ -387,8 +385,8 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     }
 
     public void getWeightedData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp){
-        var begin = MyDateTime.toLocalDateTime(beginTimestamp);
-        var end = MyDateTime.toLocalDateTime(endTimestamp);
-        var ret = this.oneNet.getWeightedData(deviceId, dataStreamId, begin, end);
+        LocalDateTime begin = MyDateTime.toLocalDateTime(beginTimestamp);
+        LocalDateTime end = MyDateTime.toLocalDateTime(endTimestamp);
+        double ret = this.oneNet.getWeightedData(deviceId, dataStreamId, begin, end);
     }
 }

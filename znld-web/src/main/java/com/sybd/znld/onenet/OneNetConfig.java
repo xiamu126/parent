@@ -3,11 +3,8 @@ package com.sybd.znld.onenet;
 import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.OneNetConfigDeviceService;
 import com.whatever.util.MyString;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -16,11 +13,12 @@ import java.util.Arrays;
 import java.util.Map;
 
 
-@Slf4j
-@ToString
 @Component
 @ConfigurationProperties(prefix = "znld.onenet")
 public class OneNetConfig {
+
+    private final Logger log = LoggerFactory.getLogger(OneNetConfig.class);
+
     private final OneNetConfigDeviceService onenetConfigDeviceService;
     private String getHistoryDataStreamUrl;
     private String postExecuteUrl;
@@ -115,7 +113,7 @@ public class OneNetConfig {
         return MyString.replace(getDataStreamByIdUrl, deviceId.toString(), dataStreamId);
     }
     String getDataStreamsByIdsUrl(Integer deviceId, String... dataStreamIds){
-        var tmp = Arrays.stream(dataStreamIds).reduce((a,b)->a+","+b).orElse("");
+        String tmp = Arrays.stream(dataStreamIds).reduce((a,b)->a+","+b).orElse("");
         log.debug(tmp);
         return MyString.replace(getDataStreamsByIdsUrl, deviceId.toString(), tmp);
     }
@@ -140,7 +138,7 @@ public class OneNetConfig {
         ZNLD_QX_UPLOAD_RATE("A"), //气象信息上传频率
         ZNLD_LOCATION_UPLOAD_RATE("B"), //位置信息上传频率
         ZNLD_STATUS_UPLOAD_RATE("C"); //路灯状态信息上传频率
-        private String value;
+        public String value;
         ExecuteCommand(String value){
             this.value = value;
         }

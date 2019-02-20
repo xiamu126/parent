@@ -1,6 +1,5 @@
 package com.sybd.znld.config;
 
-import lombok.var;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -36,14 +35,14 @@ public class SpringConfig {
 
     @Bean
     public ModelMapper modelMapper(){
-        var modelMapper = new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper;
     }
 
     @Bean
     ServletListenerRegistrationBean<ServletContextListener> servletListener() {
-        var srb = new ServletListenerRegistrationBean<ServletContextListener>();
+        ServletListenerRegistrationBean<ServletContextListener> srb = new ServletListenerRegistrationBean<>();
         srb.setListener(new MyServletContextListener());
         return srb;
     }

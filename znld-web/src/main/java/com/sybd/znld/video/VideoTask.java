@@ -60,10 +60,10 @@ public class VideoTask {
         for(String key: persistentKeys){//client:channelGuid:persistence:2
             String redisKey = getRedisKey(key.toString());
             if(this.redisService.exists(redisKey)) {
-                log.debug("当前key有效："+ redisKey+",不关闭");
+                //log.debug("当前key有效："+ redisKey+",不关闭");
             }else{
                 String channel = getChannel(redisKey);
-                //log.debug("当前key无效："+ redisKey+"，关闭channel："+channel);
+                log.debug("当前key无效："+ redisKey+"，关闭channel："+channel);
                 videoRepository.stop(channel);
             }
         }

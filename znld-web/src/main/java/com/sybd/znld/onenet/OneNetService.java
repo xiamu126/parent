@@ -42,7 +42,6 @@ public class OneNetService implements IOneNetService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("api-key", oneNetConfig.getApiKey(deviceId));
         headers.setContentType(mediaType);
-        log.debug(oneNetConfig.getApiKey(deviceId));
         return new HttpEntity<>(null, headers);
     }
 
@@ -122,8 +121,7 @@ public class OneNetService implements IOneNetService {
     public double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end) {
         GetHistoryDataStreamResult historyData = getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
         List<GetHistoryDataStreamResult.DataPoint> data = historyData.getData().getDataStreams().get(0).getDataPoints();
-        double avg = data.stream().collect(Collectors.averagingDouble(d -> Double.parseDouble(d.getValue())));
-        return avg;
+        return data.stream().collect(Collectors.averagingDouble(d -> Double.parseDouble(d.getValue())));
     }
 
     @Override

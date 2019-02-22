@@ -15,42 +15,16 @@ public class HistoryDataResult extends BaseApiResult{
     @ApiModelProperty(value = "当前的游标位置")
     public String cursor;
     @ApiModelProperty(value = "具体的历史数据")
-    @JsonProperty("datastreams")
-    public List<DataStream> dataStreams;
+    @JsonProperty("data_points")
+    public List<GetHistoryDataStreamResult.DataPoint> dataPoints;
 
-    public static class DataStream{
-        public String at;
-        public String value;
-
-        public DataStream(){}
-        public DataStream(String at, String value) {
-            this.at = at;
-            this.value = value;
-        }
-
-        public String getAt() {
-            return at;
-        }
-
-        public void setAt(String at) {
-            this.at = at;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-    }
-
+    public HistoryDataResult(){}
     public HistoryDataResult(Integer code, String msg){
         super(code, msg);
     }
-    public HistoryDataResult(Integer code, String msg, List<DataStream> dataStreams){
+    public HistoryDataResult(Integer code, String msg, List<GetHistoryDataStreamResult.DataPoint> dataPoints){
         super(code, msg);
-        this.dataStreams = dataStreams;
+        this.dataPoints = dataPoints;
     }
 
     public static HistoryDataResult fail(String msg){
@@ -60,17 +34,19 @@ public class HistoryDataResult extends BaseApiResult{
         PropertyMap<GetHistoryDataStreamResult, HistoryDataResult> propertyMap = new PropertyMap<GetHistoryDataStreamResult, HistoryDataResult>(){
             @Override
             protected void configure() {
-                map(source.getData().getCursor(), destination.cursor);
-                map(source.getData().getDataStreams(), destination.dataStreams);
-                skip(destination.getCode());
-                skip(destination.getMsg());
+                map(source.data.cursor, destination.cursor);
+                skip(destination.dataPoints);
+                skip(destination.code);
+                skip(destination.msg);
             }
         };
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.addMappings(propertyMap);
         modelMapper.validate();
         HistoryDataResult tmp = modelMapper.map(result, HistoryDataResult.class);
+        tmp.dataPoints = result.data.dataStreams.get(0).dataPoints;
         tmp.code = 0;
+        tmp.msg = "";
         return tmp;
     }
 
@@ -82,11 +58,11 @@ public class HistoryDataResult extends BaseApiResult{
         this.cursor = cursor;
     }
 
-    public List<DataStream> getDataStreams() {
-        return dataStreams;
+    public List<GetHistoryDataStreamResult.DataPoint> getDataPoints() {
+        return dataPoints;
     }
 
-    public void setDataStreams(List<DataStream> dataStreams) {
-        this.dataStreams = dataStreams;
+    public void setDataPoints(List<GetHistoryDataStreamResult.DataPoint> dataPoints) {
+        this.dataPoints = dataPoints;
     }
 }

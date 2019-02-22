@@ -44,47 +44,57 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
         this.oneNetConfigDeviceService = oneNetConfigDeviceService;
     }
 
-    private Result getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin) {
+    private Map<Integer, String> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin) {
         LocalDateTime end = MyDateTime.maxOfDay(begin);
         log.debug(begin.toString());
         log.debug(end.toString());
         return getResourceByHour(deviceId, oneNetKey, begin, end);
     }
 
-    private Result getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin, LocalDateTime end){
+    private Map<Integer, String> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin, LocalDateTime end){
         try{
-            //LocalDateTime now = LocalDateTime.now();
-            LocalDateTime now = LocalDateTime.of(2018,9,17,23,59,59);
-            LocalDateTime before = now.toLocalDate().atTime(0,0,1,0);
             if(begin.isEqual(end)){
                 log.debug("开始时间等于结束时间");
                 return null;
             }
-            GetHistoryDataStreamResult result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), before, now, 5000, null, null);//过去24小时内的数据
+            GetHistoryDataStreamResult result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), begin, end, 5000, null, null);//过去24小时内的数据
             List<GetHistoryDataStreamResult.DataPoint> data = (result.getData().getDataStreams().get(0)).getDataPoints();
-            ArrayList<String> atList = new ArrayList<>();
-            ArrayList<String> valueList = new ArrayList<>();
             HashSet<Integer> theSet = new HashSet<>();
+            Map<Integer, String> sortedMap = new TreeMap<>();
             for(GetHistoryDataStreamResult.DataPoint theData : data){
                 String str = theData.getAt();
                 LocalDateTime theDate = LocalDateTime.parse(str, DateTimeFormatter.ofPattern(MyDateTime.format2));
                 int hour = theDate.getHour();
-
                 if (!theSet.contains(hour)) {
                     theSet.add(hour);
-                    atList.add(hour +":00");
-                    valueList.add(theData.getValue());
+                    sortedMap.put(hour, theData.value);
                 }
             }
-            Result ret = new Result();
-            ret.atList = atList;
-            ret.valueList = valueList;
-            ret.title = MyString.replace("{}", end.toLocalDate().toString());
-            return ret;
+            return sortedMap;
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
        return null;
+    }
+
+    @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
+                                       @PathVariable(name = "dataStreamId") String dataStreamId,
+                                       @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                       @PathVariable(name = "endTimestamp") Long endTimestamp){
+        Map<Integer, String> result = getResourceByHour(deviceId, OneNetKey.from(dataStreamId), MyDateTime.toLocalDateTime(beginTimestamp), MyDateTime.toLocalDateTime(endTimestamp));
+        if(result == null) return PrettyHistoryDataResult.fail("获取数据为空");
+        return PrettyHistoryDataResult.success(result);
+    }
+    @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
+                                                        @PathVariable(name = "dataStreamId") String dataStreamId,
+                                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp){
+        Map<Integer, String> result = getResourceByHour(deviceId, OneNetKey.from(dataStreamId), MyDateTime.toLocalDateTime(beginTimestamp), LocalDateTime.now());
+        if(result == null) return PrettyHistoryDataResult.fail("获取数据为空");
+        return PrettyHistoryDataResult.success(result);
     }
 
     @ApiOperation(value = "获取设备的最新数据")
@@ -170,26 +180,6 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             return ApiResult.fail("获取最新数据失败");
         }
     }
-
-    /*@Deprecated
-    public ApiResult getHistoryData(Integer deviceId, Integer objId, Integer objInstId, Integer resId, Long beginTimestamp, Long endTimestamp, Integer limit){
-        try{
-            var oneNetKey = new OneNetKey(objId, objInstId, resId);
-            oneNetKey.setObjId(objId);
-            oneNetKey.setObjInstId(objInstId);
-            oneNetKey.setResId(resId);
-            if(endTimestamp == 0){
-                var ret = getResourceByHour(deviceId, oneNetKey, MyDateTime.toLocalDateTime(beginTimestamp));
-                return ApiResult.success(ret);
-            }else{
-                var ret = getResourceByHour(deviceId, oneNetKey, MyDateTime.toLocalDateTime(beginTimestamp), MyDateTime.toLocalDateTime(endTimestamp));
-                return ApiResult.success(ret);
-            }
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-        }
-        return ApiResult.fail("获取历史数据失败");
-    }*/
 
     @ApiOperation(value = "获取设备的历史数据")
     @ApiImplicitParams({

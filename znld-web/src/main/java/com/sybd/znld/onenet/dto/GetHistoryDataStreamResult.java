@@ -53,6 +53,7 @@ public class GetHistoryDataStreamResult extends BaseResult {
         @JsonProperty("datapoints")
         public List<DataPoint> dataPoints;
 
+        public DataStream(){}
         public DataStream(String id, List<DataPoint> dataPoints) {
             this.id = id;
             this.dataPoints = dataPoints;
@@ -78,6 +79,7 @@ public class GetHistoryDataStreamResult extends BaseResult {
         public String at;
         public String value;
 
+        public DataPoint(){}
         public DataPoint(String at, String value) {
             this.at = at;
             this.value = value;

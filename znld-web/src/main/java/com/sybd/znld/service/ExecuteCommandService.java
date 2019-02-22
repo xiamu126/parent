@@ -5,5 +5,5 @@ import com.sybd.znld.onenet.dto.OneNetKey;
 
 public interface ExecuteCommandService extends BaseService {
     OneNetKey getOneNetKeyByCommand(String cmd);
-    OneNetExecuteParams getParamsByCommand(String command);
+    OneNetExecuteParams getParamsByCommand(String command, boolean evict);
 }

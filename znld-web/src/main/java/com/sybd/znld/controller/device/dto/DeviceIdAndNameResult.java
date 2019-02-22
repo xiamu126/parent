@@ -1,5 +1,6 @@
 package com.sybd.znld.controller.device.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sybd.znld.core.BaseApiResult;
 import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
 import io.swagger.annotations.ApiModel;
@@ -10,6 +11,7 @@ import java.util.List;
 @ApiModel(value = "获取设备Id与名字的返回值")
 public class DeviceIdAndNameResult extends BaseApiResult{
     @ApiModelProperty(value = "设备Id与名字的集合")
+    @JsonProperty("data")
     public List<DeviceIdAndDeviceName> deviceIdAndDeviceNames;
 
     public DeviceIdAndNameResult(Integer code, String msg){

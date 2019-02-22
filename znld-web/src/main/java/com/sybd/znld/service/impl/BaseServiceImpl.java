@@ -49,13 +49,22 @@ public class BaseServiceImpl implements BaseService {
     @Override
     public void removeCache(Class clazz, String suffix, Duration expirationTime) {
         taskScheduler.schedule(()->{
-            Cache cache = this.cacheManager.getCache(cachePrefix);
-            if(cache != null){
-                cache.evict(clazz.getName()+suffix);
-            }else{
-                log.debug("获取cache失败");
-            }
+            _removeCache(clazz, suffix);
         }, LocalDateTime.now().plus(expirationTime).atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    @Override
+    public void removeCache(Class clazz, String suffix) {
+        _removeCache(clazz, suffix);
+    }
+
+    private void _removeCache(Class clazz, String suffix) {
+        Cache cache = this.cacheManager.getCache(cachePrefix);
+        if(cache != null){
+            cache.evict(clazz.getName()+suffix);
+        }else{
+            log.debug("获取cache失败");
+        }
     }
 
     @Override

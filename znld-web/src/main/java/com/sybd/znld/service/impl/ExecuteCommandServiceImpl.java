@@ -39,8 +39,12 @@ public class ExecuteCommandServiceImpl extends BaseServiceImpl implements Execut
     }
 
     @Override
-    @Cacheable
-    public OneNetExecuteParams getParamsByCommand(String cmd){
+    @Cacheable(key="#root.targetClass.getName()+'.getParamsByCommand'+#cmd")
+    public OneNetExecuteParams getParamsByCommand(String cmd, boolean evict){
+        if(evict){
+            this.removeCache(this.getClass(),".getParamsByCommand"+cmd);
+            return null;
+        }
         ExecuteCommandEntity entity = this.executeCommandMapper.getByCommand(cmd);
         if(entity == null) return null;
         OneNetKey oneNetKey = getOneNetKeyByCommand(cmd);

@@ -66,7 +66,7 @@ public class MyScheduledTask {
             try{
                 locker.lock();
                 //log.debug("成功获取锁并开始执行任务");
-                OneNetExecuteParams entity = this.executeCommandService.getParamsByCommand(OneNetConfig.ExecuteCommand.ZNLD_HEART_BEAT.getValue());
+                OneNetExecuteParams entity = this.executeCommandService.getParamsByCommand(OneNetConfig.ExecuteCommand.ZNLD_HEART_BEAT.getValue(), false);
                 if(entity == null){
                     //log.error("执行定时任务错误，获取指令为空");
                     return;

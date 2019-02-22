@@ -330,7 +330,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             if(cmd.equals("")){
                 return ExecuteResult.fail("非法的参数");
             }
-            OneNetExecuteParams tmp = this.executeCommandService.getParamsByCommand(command.getArgs());
+            OneNetExecuteParams tmp = this.executeCommandService.getParamsByCommand(command.getArgs(), false);
             if(tmp == null) {
                 return ExecuteResult.fail("获取命令失败");
             }

@@ -163,7 +163,7 @@ public class VideoAsyncTask {
             } catch (FrameRecorder.Exception e) {
                 log.error(e.getMessage());
             }
-            log.debug("exit1111");
+            log.debug("视频推流结束");
         }
     }
 }

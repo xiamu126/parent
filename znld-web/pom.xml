@@ -22,7 +22,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipTests>true</skipTests>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <jackson.version>2.9.7</jackson.version>
         <druid.version>1.1.10</druid.version>
         <mybatisplus.version>3.0.5</mybatisplus.version>
@@ -207,6 +207,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <release>11</release>
+                </configuration>
             </plugin>
         </plugins>
     </build>

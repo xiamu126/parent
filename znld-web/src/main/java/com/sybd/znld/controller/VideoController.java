@@ -31,7 +31,7 @@ public class VideoController {
     @ApiOperation(value = "推送视频")
     @PostMapping(value = "play", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult play(@ApiParam(name = "jsonData", value = "视频相关数据", required = true) @RequestBody VideoData jsonData){
-        String key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+jsonData.getChannelGuid();
+        var key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+jsonData.getChannelGuid();
         if(jsonData.getCmd().equals("push")){
             if(videoTask.push(key, jsonData)){
                 return ApiResult.success("推流成功");
@@ -51,7 +51,7 @@ public class VideoController {
     })
     @GetMapping(value = "heartbeat/{channelGuid:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult heartbeat(@PathVariable(name = "channelGuid") String channelGuid){
-        String key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+channelGuid;
+        var key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+channelGuid;
         redisService.set(key,"", 30, TimeUnit.SECONDS);
         try{
             return ApiResult.success();

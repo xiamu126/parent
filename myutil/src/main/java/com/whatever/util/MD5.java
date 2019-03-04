@@ -1,8 +1,6 @@
 package com.whatever.util;
 
-import lombok.var;
-
-import javax.xml.bind.DatatypeConverter;
+import com.google.common.io.BaseEncoding;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -11,7 +9,7 @@ public class MD5 {
         var md = MessageDigest.getInstance("MD5");
         md.update(text.getBytes());
         var digest = md.digest();
-        return DatatypeConverter.printHexBinary(digest);
+        return BaseEncoding.base16().encode(digest);
     }
     public static String encrypt(String text, int count) throws NoSuchAlgorithmException {
         var result = encrypt(text);
@@ -25,7 +23,7 @@ public class MD5 {
         md.update(salt.getBytes());
         md.update(text.getBytes());
         var digest = md.digest();
-        return DatatypeConverter.printHexBinary(digest);
+        return BaseEncoding.base16().encode(digest);
     }
 
     public static boolean verify(String text, String md5) throws NoSuchAlgorithmException {
@@ -33,11 +31,11 @@ public class MD5 {
         return md5Text.equalsIgnoreCase(md5);
     }
 
-/*    public static void main(String[] args){
+    public static void main(String[] args){
         try {
             System.out.println(MD5.encrypt(MD5.encrypt(MD5.encrypt("2018").toLowerCase()).toLowerCase(), 2));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 }

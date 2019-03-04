@@ -1,7 +1,5 @@
 package com.whatever.util;
 
-import lombok.var;
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +57,33 @@ public final class MyString {
             tmp.append(item.getKey()).append("=").append(item.getValue()).append("&");
         }
         return tmp.deleteCharAt(tmp.length()-1).toString();
+    }
+
+    public static String bytesToHex(byte[] nums){
+        StringBuilder result = new StringBuilder();
+        for(var num : nums){
+            result.append(byteToHex(num));
+        }
+        return result.toString();
+    }
+
+    public static String byteToHex(byte num){
+        char[] hexDigits = new char[2];
+        hexDigits[0] = Character.forDigit((num >> 4) & 0xf, 16);
+        hexDigits[1] = Character.forDigit(num & 0xf, 16);
+        return new String(hexDigits);
+    }
+    private static int toDigit(char hexChar) {
+        int digit = Character.digit(hexChar, 16);
+        if(digit == -1) {
+            throw new IllegalArgumentException("Invalid Hexadecimal Character: "+ hexChar);
+        }
+        return digit;
+    }
+    public static byte hexToByte(String hexString) {
+        int firstDigit = toDigit(hexString.charAt(0));
+        int secondDigit = toDigit(hexString.charAt(1));
+        return (byte) ((firstDigit << 4) + secondDigit);
     }
 
     public static void main(String[] args){

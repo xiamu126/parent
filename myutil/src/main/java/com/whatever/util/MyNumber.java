@@ -1,7 +1,5 @@
 package com.whatever.util;
 
-import lombok.var;
-
 import java.util.Random;
 
 public class MyNumber {

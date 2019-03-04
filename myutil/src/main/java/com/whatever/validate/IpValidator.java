@@ -1,6 +1,5 @@
 package com.whatever.validate;
 
-import lombok.var;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 import javax.validation.ConstraintValidator;

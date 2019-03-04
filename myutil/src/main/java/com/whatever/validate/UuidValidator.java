@@ -1,7 +1,5 @@
 package com.whatever.validate;
 
-import lombok.var;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;

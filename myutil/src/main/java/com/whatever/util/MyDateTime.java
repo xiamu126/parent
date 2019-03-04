@@ -1,7 +1,5 @@
 package com.whatever.util;
 
-import lombok.var;
-
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;

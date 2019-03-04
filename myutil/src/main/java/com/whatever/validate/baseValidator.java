@@ -1,7 +1,5 @@
 package com.whatever.validate;
 
-import lombok.var;
-
 import java.util.regex.Pattern;
 
 class baseValidator {

@@ -58,7 +58,7 @@ public class VideoTask {
     public void verify(){
         List<String> persistentKeys = redisService.scan(RedisKeyConfig.CLIENT_CHANNEL_GUID_PERSISTENCE_PREFIX_MATCH);//client:channelGuid:persistence:*
         for(String key: persistentKeys){//client:channelGuid:persistence:2
-            String redisKey = getRedisKey(key.toString());
+            String redisKey = getRedisKey(key);
             if(this.redisService.exists(redisKey)) {
                 //log.debug("当前key有效："+ redisKey+",不关闭");
             }else{

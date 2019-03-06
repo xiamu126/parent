@@ -16,8 +16,7 @@ public class MyPasswordEncoder implements PasswordEncoder {
     @Override
     public String encode(CharSequence rawPassword) {
         try {
-            String tmp = MD5.encrypt(MD5.encrypt(rawPassword.toString()).toLowerCase());
-            return tmp;
+            return MD5.encrypt(MD5.encrypt(rawPassword.toString()).toLowerCase());
         } catch (NoSuchAlgorithmException ex) {
             log.error(ex.getMessage());
         }
@@ -27,7 +26,7 @@ public class MyPasswordEncoder implements PasswordEncoder {
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
         try {
             //var tmp = MD5.encrypt(MD5.encrypt(MD5.encrypt(rawPassword.toString()).toLowerCase()).toLowerCase(), 2);
-            String tmp = MD5.encrypt(rawPassword.toString(), 2);
+            var tmp = MD5.encrypt(rawPassword.toString(), 2);
             return tmp.equals(encodedPassword);
         } catch (NoSuchAlgorithmException ex) {
             log.error(ex.getMessage());

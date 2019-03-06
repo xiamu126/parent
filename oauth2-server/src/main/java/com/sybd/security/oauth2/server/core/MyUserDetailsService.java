@@ -24,7 +24,7 @@ public class MyUserDetailsService implements UserDetailsService {
     @DbSource("znld")
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userMapper.selectOne(new QueryWrapper<UserEntity>().eq("name", username));
+        var user = userMapper.selectOne(new QueryWrapper<UserEntity>().eq("name", username));
         if(user == null) throw new UsernameNotFoundException(username);
         String tmp = user.getAuthorities();
         String[] auth = tmp.split(",");

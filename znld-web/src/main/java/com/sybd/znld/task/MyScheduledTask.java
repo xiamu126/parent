@@ -6,7 +6,7 @@ import com.sybd.znld.onenet.OneNetConfig;
 import com.sybd.znld.onenet.dto.OneNetExecuteParams;
 import com.sybd.znld.service.ExecuteCommandService;
 import com.sybd.znld.service.OneNetConfigDeviceService;
-import com.sybd.znld.video.VideoTask;
+import com.sybd.znld.service.VideoService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -19,19 +19,18 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Component
 public class MyScheduledTask {
     private final OneNetService oneNet;
     private final ExecuteCommandService executeCommandService;
-    private final VideoTask videoTask;
+    private final VideoService videoService;
     private final RedissonClient redissonClient;
     private final OneNetConfigDeviceService oneNetConfigDeviceService;
     private static Map<String, RLock> lockers;
     private static final String heartBeat = "oneNetHeartBeat";
 
-    private Logger log = LoggerFactory.getLogger(MyScheduledTask.class);
+    private final Logger log = LoggerFactory.getLogger(MyScheduledTask.class);
 
     @PreDestroy
     public void preDestroy(){
@@ -45,35 +44,33 @@ public class MyScheduledTask {
     @Autowired
     public MyScheduledTask(OneNetService oneNet,
                            ExecuteCommandService executeCommandService,
-                           VideoTask videoTask,
+                           VideoService videoService,
                            RedissonClient redissonClient,
                            OneNetConfigDeviceService oneNetConfigDeviceService) {
         this.oneNet = oneNet;
         this.executeCommandService = executeCommandService;
-        this.videoTask = videoTask;
+        this.videoService = videoService;
         this.redissonClient = redissonClient;
         this.oneNetConfigDeviceService = oneNetConfigDeviceService;
 
-        HashMap<String, RLock> map = new HashMap<>();
-        map.put(heartBeat, this.redissonClient.getLock(heartBeat));
-        lockers = Collections.unmodifiableMap(map);
+        lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat));
     }
 
     @Scheduled(initialDelay = 2000, fixedDelay = 1000*5)
     public void oneNetHeartBeat(){
-        RLock locker = lockers.get(heartBeat);
+        var locker = lockers.get(heartBeat);
         if(locker.tryLock()){
             try{
                 locker.lock();
                 //log.debug("成功获取锁并开始执行任务");
-                OneNetExecuteParams entity = this.executeCommandService.getParamsByCommand(OneNetConfig.ExecuteCommand.ZNLD_HEART_BEAT.getValue(), false);
+                var entity = this.executeCommandService.getParamsByCommand(OneNetConfig.ExecuteCommand.ZNLD_HEART_BEAT.getValue(), false);
                 if(entity == null){
                     //log.error("执行定时任务错误，获取指令为空");
                     return;
                 }
                 Map<Integer, String> map = this.oneNetConfigDeviceService.getDeviceIdAndImeis();
                 for(Map.Entry<Integer, String> item : map.entrySet()){
-                    CommandParams params = new CommandParams(item.getKey(),item.getValue(), entity.getOneNetKey(), entity.getTimeout(), OneNetConfig.ExecuteCommand.ZNLD_HEART_BEAT.getValue());
+                    var params = new CommandParams(item.getKey(),item.getValue(), entity.getOneNetKey(), entity.getTimeout(), OneNetConfig.ExecuteCommand.ZNLD_HEART_BEAT.getValue());
                     oneNet.execute(params);
                 }
             }finally {
@@ -85,8 +82,8 @@ public class MyScheduledTask {
         }
     }
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000*5)
+    @Scheduled(initialDelay = 1000, fixedDelay = 1000*10)
     public void videoCheck(){
-        this.videoTask.verify();
+        this.videoService.verify();
     }
 }

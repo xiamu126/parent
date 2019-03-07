@@ -110,7 +110,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             if(!this.oneNetConfigDeviceService.isDataStreamIdEnabled(dataStreamId)){
                 return LastDataResult.fail("当前dataStreamId已禁用");
             }
-            GetDataStreamByIdResult ret = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
+            var ret = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
             if(ret.isOk()){
                 return LastDataResult.success(ret);
             }

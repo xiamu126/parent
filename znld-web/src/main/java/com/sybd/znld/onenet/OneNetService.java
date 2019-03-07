@@ -101,7 +101,7 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId) {
-        RestTemplate restTemplate = new RestTemplate();
+        var restTemplate = new RestTemplate();
         HttpEntity<String> httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         String url = oneNetConfig.getDataStreamUrl(deviceId, dataStreamId);
         ResponseEntity<GetDataStreamByIdResult> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamByIdResult.class);

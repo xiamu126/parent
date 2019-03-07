@@ -59,6 +59,11 @@ public class VideoRepository implements IVideoRepository {
     }
 
     @Override
+    public boolean isChannelInUsing(String channelGuid) {
+        return this.videoAsyncTask.isChannelInUsing(channelGuid);
+    }
+
+    @Override
     public BufferedImage pickImage(String channelGuid) {
         VideoConfigEntity tmp = videoConfigService.getConfigByCameraId(channelGuid);
         if(tmp == null){

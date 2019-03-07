@@ -27,7 +27,7 @@
         <druid.version>1.1.10</druid.version>
         <mybatisplus.version>3.0.5</mybatisplus.version>
         <mysql.version>5.1.47</mysql.version>
-        <modelmapper.version>2.2.0</modelmapper.version>
+        <modelmapper.version>2.3.2</modelmapper.version>
         <kaptcha.version>2.3.2</kaptcha.version>
         <javacv.version>1.4.3</javacv.version>
         <redisson.version>3.10.3</redisson.version>
@@ -209,6 +209,32 @@
                 </executions>
                 <configuration>
                     <release>11</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>1.0.2</version>
+                <configuration>
+                    <from>
+                        <image>openjdk:11.0.2</image>
+                    </from>
+                    <to>
+                        <image>znld-test</image>
+                        <tags>
+                            <tag>0.1</tag>
+                        </tags>
+                    </to>
+                    <container>
+                        <jvmFlags>
+                            <jvmFlag>-Xms512m</jvmFlag>
+                        </jvmFlags>
+                        <mainClass>com.sybd.znld.ZnldApplication</mainClass>
+                        <useCurrentTimestamp>true</useCurrentTimestamp>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                    </container>
                 </configuration>
             </plugin>
         </plugins>

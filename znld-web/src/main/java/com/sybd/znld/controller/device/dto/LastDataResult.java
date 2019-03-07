@@ -41,10 +41,10 @@ public class LastDataResult extends BaseApiResult{
                 skip(destination.msg);
             }
         };
-        ModelMapper modelMapper = new ModelMapper();
+        var modelMapper = new ModelMapper();
         modelMapper.addMappings(propertyMap);
         modelMapper.validate();
-        LastDataResult tmp = modelMapper.map(result, LastDataResult.class);
+        var tmp = modelMapper.map(result, LastDataResult.class);
         tmp.code = 0;
         tmp.msg = "";
         return tmp;

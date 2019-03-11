@@ -1,59 +1,53 @@
-drop database if exists znld_test2;
-CREATE DATABASE znld_test2 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-use znld_test2;
+drop database if exists ZNLD_V2;
+CREATE DATABASE ZNLD_V2 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+use ZNLD_V2;
 
 create table execute_command(
-  id           int unsigned auto_increment primary key,
-  objId        int unsigned not null,
-  objInstId    int unsigned not null,
-  resId        int unsigned not null,
+  id           int unsigned not null auto_increment primary key,
+  obj_id        int unsigned not null,
+  obj_inst_id    int unsigned not null,
+  res_id        int unsigned not null,
   value        varchar(32) not null,
   description  varchar(32) not null,
-  timeout      tinyint unsigned default 5,
-  constraint unique_value unique (value)
+  timeout      tinyint unsigned default 5 not null
 );
 
 create table lamp(
-  id           varchar(32) primary key,
-  apiKey       varchar(50) not null ,
-  deviceId     varchar(50) not null,
+  id           varchar(32) not null primary key,
+  api_key       varchar(50) not null ,
+  device_id     varchar(50) not null,
   imei         varchar(50) not null,
-  objId        int unsigned not null,
-  objInstId    int unsigned not null,
-  resId        int unsigned not null,
+  obj_id        int unsigned not null,
+  obj_inst_id    int unsigned not null,
+  res_id        int unsigned not null,
   name         varchar(30) not null ,
-  description  varchar(10) default '',
-  timeout      tinyint unsigned default 5,
-  longitude    varchar(20) default '',
-  latitude     varchar(20) default '',
-  deviceName   varchar(50) not null,
-  status       tinyint unsigned default 0 comment '0：启用，1：删除，2：启用但不需要监测，3：启用但需要监测',
-  organization_id varchar(32) not null comment '所属组织',
-  constraint unique_objId_objInstId_resId unique (objId, objInstId, resId),
-  constraint unique_name unique (name)
+  description  varchar(10) default '' not null,
+  timeout      tinyint unsigned default 5 not null,
+  longitude    varchar(20) default '' not null,
+  latitude     varchar(20) default '' not null,
+  device_name   varchar(50) not null,
+  status       tinyint unsigned default 0  not null comment '0：启用，1：删除，2：启用但不需要监测，3：启用但需要监测',
+  organization_id varchar(32) not null comment '所属组织'
 );
 
-create table lamp_street(
-  id         int unsigned auto_increment primary key comment '编号',
+create table lamp_region(
+  id         varchar(32) not null primary key comment '编号',
   lamp_id    varchar(32) not null comment '路灯编号',
-  street_id  int unsigned not null comment '街道编号',
-  constraint unique_lamp unique (lamp_id)
+  region_id  varchar(32) not null comment '区域编号'
 );
 
-create table street(
-  id      varchar(32) primary key,
-  name    varchar(50) not null comment '街道名字',
-  status  tinyint unsigned default 0 comment '0：启用，1：冻结',
-  constraint unique_name unique (name)
+create table region(
+  id      varchar(32)  not null primary key,
+  name    varchar(50)  not null comment '区域名字',
+  status  tinyint unsigned default 0  not null comment '0：启用，1：冻结'
 );
 
 create table video_config(
-  id      varchar(32) primary key,
-  rtspUrl varchar(100) null,
-  rtmpUrl varchar(100) null,
-  recordAudio bit default false,
-  cameraId varchar(32) not null,
-  clientId varchar(32) not null
+  id      varchar(32)  not null primary key,
+  rtsp_url varchar(100) not null,
+  rtmp_url varchar(100) not null,
+  record_audio bit default false not null ,
+  organization_id varchar(32) not null
 );
 
 

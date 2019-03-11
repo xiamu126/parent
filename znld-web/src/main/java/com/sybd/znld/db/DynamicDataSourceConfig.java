@@ -1,4 +1,4 @@
-package com.sybd.security.oauth2.server.db;
+package com.sybd.znld.db;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,24 +17,33 @@ import java.util.Map;
 public class DynamicDataSourceConfig {
     @Bean("oauthDataSource")
     @ConfigurationProperties("spring.datasource.druid.oauth")
-    public DataSource dataSource1(){
+    public DataSource oauthDataSource(){
         return DruidDataSourceBuilder.create().build();
     }
 
     @Bean("znldDataSource")
     @ConfigurationProperties("spring.datasource.druid.znld")
-    public DataSource dataSource2(){
+    public DataSource znldDataSource(){
+        return DruidDataSourceBuilder.create().build();
+    }
+
+    @Bean("rbacDataSource")
+    @ConfigurationProperties("spring.datasource.druid.rbac")
+    public DataSource rbacDataSource(){
         return DruidDataSourceBuilder.create().build();
     }
 
     @Bean
     @Primary
-    @DependsOn({"oauthDataSource","znldDataSource"})
-    public DynamicDataSource dataSource(@Qualifier("oauthDataSource") DataSource oauthDataSource, @Qualifier("znldDataSource") DataSource znldDataSource) {
-        HashMap<Object, Object> targetDataSources = new HashMap<>(2);
+    @DependsOn({"oauthDataSource","znldDataSource","rbacDataSource"})
+    public DynamicDataSource dataSource(@Qualifier("oauthDataSource") DataSource oauthDataSource,
+                                        @Qualifier("znldDataSource") DataSource znldDataSource,
+                                        @Qualifier("rbacDataSource") DataSource rbacDataSource) {
+        var targetDataSources = new HashMap<Object, Object>();
         targetDataSources.put("oauth", oauthDataSource);
         targetDataSources.put("znld", znldDataSource);
-        return new DynamicDataSource(oauthDataSource, targetDataSources);
+        targetDataSources.put("rbac", rbacDataSource);
+        return new DynamicDataSource(znldDataSource, targetDataSources);
     }
 
     public static class DynamicDataSource extends AbstractRoutingDataSource {

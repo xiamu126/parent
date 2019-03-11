@@ -1,61 +1,62 @@
-drop database if exists znld;
-CREATE DATABASE znld DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-use znld;
+drop database if exists znld_test2;
+CREATE DATABASE znld_test2 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+use znld_test2;
 
 create table execute_command(
-  id int unsigned auto_increment primary key,
-  objId int unsigned not null,
-  objInstId int unsigned not null,
-  resId int unsigned not null,
-  value varchar(32) not null,
-  description varchar(32) not null,
-  timeout tinyint unsigned default 5 not null,
+  id           int unsigned auto_increment primary key,
+  objId        int unsigned not null,
+  objInstId    int unsigned not null,
+  resId        int unsigned not null,
+  value        varchar(32) not null,
+  description  varchar(32) not null,
+  timeout      tinyint unsigned default 5,
   constraint unique_value unique (value)
 );
 
-create table onenet_config_device(
-  id int unsigned auto_increment primary key,
-  apiKey varchar(50) not null ,
-  deviceId varchar(50) not null,
-  imei varchar(50) not null,
-  objId int unsigned not null,
-  objInstId int unsigned not null,
-  resId int unsigned not null,
-  name varchar(30) not null ,
-  description varchar(10) not null,
-  timeout tinyint unsigned default 5 not null,
-  longitude varchar(20) not null,
-  latitude varchar(20) not null,
-  deviceName varchar(50) not null,
-  checked bit default true comment '是否需要监测',
+create table lamp(
+  id           varchar(32) primary key,
+  apiKey       varchar(50) not null ,
+  deviceId     varchar(50) not null,
+  imei         varchar(50) not null,
+  objId        int unsigned not null,
+  objInstId    int unsigned not null,
+  resId        int unsigned not null,
+  name         varchar(30) not null ,
+  description  varchar(10) default '',
+  timeout      tinyint unsigned default 5,
+  longitude    varchar(20) default '',
+  latitude     varchar(20) default '',
+  deviceName   varchar(50) not null,
+  status       tinyint unsigned default 0 comment '0：启用，1：删除，2：启用但不需要监测，3：启用但需要监测',
+  organization_id varchar(32) not null comment '所属组织',
   constraint unique_objId_objInstId_resId unique (objId, objInstId, resId),
   constraint unique_name unique (name)
 );
 
-create table user(
-  id varchar(32) not null primary key,
-  name varchar(32) not null,
-  password varchar(32) not null,
-  phone varchar(11) null,
-  email varchar(32) null,
-  gender tinyint unsigned null,
-  age tinyint unsigned null,
-  contactAddress varchar(64) null,
-  realName varchar(10) null,
-  idCardNo varchar(18) null,
-  lastLoginTime datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-  lastLoginIp varchar(50) null,
-  authorities varchar(50) not null default 'USER' comment '该用户拥有的权限'
+create table lamp_street(
+  id         int unsigned auto_increment primary key comment '编号',
+  lamp_id    varchar(32) not null comment '路灯编号',
+  street_id  int unsigned not null comment '街道编号',
+  constraint unique_lamp unique (lamp_id)
+);
+
+create table street(
+  id      varchar(32) primary key,
+  name    varchar(50) not null comment '街道名字',
+  status  tinyint unsigned default 0 comment '0：启用，1：冻结',
+  constraint unique_name unique (name)
 );
 
 create table video_config(
-  id int unsigned auto_increment primary key,
+  id      varchar(32) primary key,
   rtspUrl varchar(100) null,
   rtmpUrl varchar(100) null,
-  recordAudio bit default false not null,
+  recordAudio bit default false,
   cameraId varchar(32) not null,
   clientId varchar(32) not null
 );
+
+
 alter table video_config add constraint fk_video_user foreign key (clientId)references user (id) on delete restrict on update cascade;
 
 alter table onenet_config_device add column apiKey varchar(50) not null after id;

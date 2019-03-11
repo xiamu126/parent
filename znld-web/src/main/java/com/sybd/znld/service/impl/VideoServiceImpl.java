@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class VideoServiceImpl implements VideoService {

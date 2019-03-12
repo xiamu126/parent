@@ -1,4 +1,4 @@
-package com.sybd.znld.service;
+package com.sybd.znld.service.v2;
 
 import com.sybd.znld.model.v2.oauth.OAuthClientDetailsModel;
 import com.sybd.znld.service.v2.oauth.IOAuthService;
@@ -47,7 +47,7 @@ public class OAuthServiceTest {
     @Test
     public void insertClientDetails(){
         var model = new OAuthClientDetailsModel();
-        model.clientId = "test";
+        model.clientId = "test1";
         model.resourceIds = "znld-web";
         model.clientSecret = "E75F5A44F80B2E19D7828ED6F9D7C8AF";
         model.scope = "read,write,execute";
@@ -59,7 +59,7 @@ public class OAuthServiceTest {
         model.additionalInformation = "";
         model.autoapprove = "false";
         var ret = this.oAuthService.insertClientDetails(model);
-        Assert.assertTrue(ret);
+        Assert.assertNotNull(ret);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class OAuthServiceTest {
         model.accessTokenValidity = 10;
         model.refreshTokenValidity = 100;
         model.additionalInformation = "";
-        model.autoapprove = "true";
+        model.autoapprove = "false";
         var ret = this.oAuthService.updateClientDetailsByClientId(model);
         Assert.assertTrue(ret);
     }

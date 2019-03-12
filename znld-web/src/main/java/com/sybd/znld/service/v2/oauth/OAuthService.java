@@ -1,7 +1,7 @@
 package com.sybd.znld.service.v2.oauth;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.service.mapper.OAuthClientDetailsMapper;
+import com.sybd.znld.service.mapper.v2.OAuthClientDetailsMapper;
 import com.sybd.znld.model.v2.oauth.OAuthClientDetailsModel;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +28,9 @@ public class OAuthService implements IOAuthService {
     }
 
     @Override
-    public boolean insertClientDetails(OAuthClientDetailsModel model) {
-        return this.oauthClientDetailsMapper.insert(model) > 0;
+    public OAuthClientDetailsModel insertClientDetails(OAuthClientDetailsModel model) {
+        if(this.oauthClientDetailsMapper.insert(model) > 0 ) return model;
+        else return null;
     }
 
     @Override

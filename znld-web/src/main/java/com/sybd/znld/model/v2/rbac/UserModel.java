@@ -7,17 +7,17 @@ public class UserModel implements Serializable {
     public String id;
     public String name;
     public String password;
-    public String phone;
-    public String email;
-    public Short gender;
-    public Short age;
-    public String contactAddress;
-    public String realName;
-    public String idCardNo;
+    public String phone = "";
+    public String email = "";
+    public Short gender = 3;
+    public Short age = 0;
+    public String contactAddress = "";
+    public String realName = "";
+    public String idCardNo = "";
     public LocalDateTime lastLoginTime;
     public String lastLoginIp;
     public String organizationId;
-    public Short status;
+    public Short status = 0;
 
     public String getId() {
         return id;

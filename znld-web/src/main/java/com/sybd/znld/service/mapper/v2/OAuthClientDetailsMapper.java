@@ -1,4 +1,4 @@
-package com.sybd.znld.service.mapper;
+package com.sybd.znld.service.mapper.v2;
 
 import com.sybd.znld.model.v2.oauth.OAuthClientDetailsModel;
 import org.apache.ibatis.annotations.Mapper;

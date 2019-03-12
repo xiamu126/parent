@@ -7,6 +7,6 @@ import java.util.List;
 public interface IOAuthService {
     List<OAuthClientDetailsModel> getClientDetails();
     OAuthClientDetailsModel getClientDetailsByClientId(String clientId);
-    boolean insertClientDetails(OAuthClientDetailsModel model);
+    OAuthClientDetailsModel insertClientDetails(OAuthClientDetailsModel model);
     boolean updateClientDetailsByClientId(OAuthClientDetailsModel model);
 }

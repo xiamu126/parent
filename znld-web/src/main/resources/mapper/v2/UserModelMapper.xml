@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.service.mapper.v2.UserModelMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.v2.rbac.UserModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', '');
+        </selectKey>
+        insert user(id,
+                    name,
+                    password,
+                    phone,
+                    email,
+                    gender,
+                    age,
+                    contact_address,
+                    real_name,
+                    id_card_no,
+                    last_login_ip,
+                    organization_id,
+                    status)
+        values
+        (#{id},
+         #{name},
+         #{password},
+         #{phone},
+         #{email},
+         #{gender},
+         #{age},
+         #{contactAddress},
+         #{realName},
+         #{idCardNo},
+         #{lastLoginIp},
+         #{organizationId},
+         #{status})
+    </insert>
+</mapper>

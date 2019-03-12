@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.sybd.znld.service.mapper.OAuthClientDetailsMapper">
+<mapper namespace="com.sybd.znld.service.mapper.v2.OAuthClientDetailsMapper">
     <select id="selectAll" resultType="com.sybd.znld.model.v2.oauth.OAuthClientDetailsModel">
         select * from oauth_client_details;
     </select>

@@ -11,7 +11,7 @@ spring:
         wall:
           enabled: true
           config:
-            delete-allow: false
+            delete-allow: true
             alter-table-allow: false
             drop-table-allow: false
             rename-table-allow: false

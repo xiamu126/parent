@@ -37,4 +37,9 @@ public class OAuthService implements IOAuthService {
     public boolean updateClientDetailsByClientId(OAuthClientDetailsModel model) {
         return this.oauthClientDetailsMapper.updateByClientId(model) > 0;
     }
+
+    @Override
+    public boolean deleteClientDetailsByClientId(String clientId) {
+        return this.oauthClientDetailsMapper.deleteByClientId(clientId) > 0;
+    }
 }

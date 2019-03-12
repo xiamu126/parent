@@ -85,6 +85,9 @@ public final class MyString {
         int secondDigit = toDigit(hexString.charAt(1));
         return (byte) ((firstDigit << 4) + secondDigit);
     }
+    public static boolean isUuid(String str){
+        return str.matches("^[0-9a-zA-Z]{32}$");
+    }
 
     public static void main(String[] args){
         var map = new HashMap<String, String>();

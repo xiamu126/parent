@@ -40,8 +40,30 @@ public class UserServiceTest {
         model.gender = 1;
         model.organizationId = "";
         model.lastLoginIp = "";
-        var user = this.userService.insertUser(model);
+        var user = this.userService.addUser(model);
         Assert.assertNotNull(user);
         Assert.assertNotEquals(user.id, "");
+    }
+
+    @Test
+    public void getUser(){
+        var user = this.userService.getUserById("3dfc0a90446d11e993a60242ac110006");
+        Assert.assertNotNull(user);
+    }
+
+    @Test
+    public void getUserByName(){
+        var user = this.userService.getUserByName("test");
+        Assert.assertNotNull(user);
+    }
+
+    @Test
+    public void modifyUser(){
+        var user = new UserModel();
+        user.id = "8f9ced90446d11e993a60242ac110006";
+        user.name = "test2";
+        user.phone = "12345678900";
+        var ret = this.userService.modifyUser(user);
+        Assert.assertNotNull(ret);
     }
 }

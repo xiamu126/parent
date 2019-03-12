@@ -52,4 +52,8 @@
         where client_id=#{clientId};
     </update>
 
+    <delete id="deleteByClientId" parameterType="string">
+        delete from oauth_client_details where client_id=#{_parameter}
+    </delete>
+
 </mapper>

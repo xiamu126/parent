@@ -79,4 +79,10 @@ public class OAuthServiceTest {
         var ret = this.oAuthService.updateClientDetailsByClientId(model);
         Assert.assertTrue(ret);
     }
+
+    @Test
+    public void deleteClientDetailsByClientId(){
+        var ret = this.oAuthService.deleteClientDetailsByClientId("test");
+        Assert.assertTrue(ret);
+    }
 }

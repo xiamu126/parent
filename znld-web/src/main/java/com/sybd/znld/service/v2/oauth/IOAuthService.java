@@ -9,4 +9,5 @@ public interface IOAuthService {
     OAuthClientDetailsModel getClientDetailsByClientId(String clientId);
     OAuthClientDetailsModel insertClientDetails(OAuthClientDetailsModel model);
     boolean updateClientDetailsByClientId(OAuthClientDetailsModel model);
+    boolean deleteClientDetailsByClientId(String clientId);
 }

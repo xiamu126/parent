@@ -11,4 +11,5 @@ public interface OAuthClientDetailsMapper {
     OAuthClientDetailsModel selectByClientId(String clientId);
     int insert(OAuthClientDetailsModel model);
     int updateByClientId(OAuthClientDetailsModel model);
+    int deleteByClientId(String clientId);
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.sybd.znld.mapper.VideoConfigMapper">
+<mapper namespace="com.sybd.znld.service.mapper.VideoConfigMapper">
     <select id="getConfigByCameraId" resultType="com.sybd.znld.model.VideoConfigEntity">
         select * from video_config where cameraId=#{_parameter};
     </select>

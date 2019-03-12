@@ -1,4 +1,4 @@
-package com.sybd.znld.mapper;
+package com.sybd.znld.service.mapper;
 
 import com.sybd.znld.model.ExecuteCommandEntity;
 import org.apache.ibatis.annotations.Mapper;

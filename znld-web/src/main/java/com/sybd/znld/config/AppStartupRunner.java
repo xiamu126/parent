@@ -2,6 +2,7 @@ package com.sybd.znld.config;
 
 import com.sybd.znld.service.VideoService;
 import com.sybd.znld.service.impl.BaseServiceImpl;
+import com.sybd.znld.service.v2.oauth.IOAuthService;
 import com.sybd.znld.service.v2.oauth.OAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

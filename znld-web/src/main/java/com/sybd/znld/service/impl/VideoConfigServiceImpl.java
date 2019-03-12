@@ -1,7 +1,7 @@
 package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.mapper.VideoConfigMapper;
+import com.sybd.znld.service.mapper.VideoConfigMapper;
 import com.sybd.znld.model.VideoConfigEntity;
 import com.sybd.znld.service.VideoConfigService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -44,5 +44,5 @@ spring:
       test-while-idle: true
       test-on-borrow: false
       test-on-return: false
-      validation-query: select 1
+      validation-query: selectAll 1
       reset-stat-enable: false

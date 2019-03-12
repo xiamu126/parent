@@ -1,5 +1,6 @@
 package com.sybd.znld.service;
 
+import com.sybd.znld.model.v2.oauth.OAuthClientDetailsModel;
 import com.sybd.znld.service.v2.oauth.IOAuthService;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,5 +42,41 @@ public class OAuthServiceTest {
     public void getClientDetailsById(){
         var ret = this.oAuthService.getClientDetailsByClientId("znld");
         Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void insertClientDetails(){
+        var model = new OAuthClientDetailsModel();
+        model.clientId = "test";
+        model.resourceIds = "znld-web";
+        model.clientSecret = "E75F5A44F80B2E19D7828ED6F9D7C8AF";
+        model.scope = "read,write,execute";
+        model.authorizedGrantTypes = "client_credentials,password,authorization_code,refresh_token,implicit";
+        model.webServerRedirectUri = "";
+        model.authorities = "user";
+        model.accessTokenValidity = 10;
+        model.refreshTokenValidity = 100;
+        model.additionalInformation = "";
+        model.autoapprove = "false";
+        var ret = this.oAuthService.insertClientDetails(model);
+        Assert.assertTrue(ret);
+    }
+
+    @Test
+    public void updateClientDetailsByClientId(){
+        var model = new OAuthClientDetailsModel();
+        model.clientId = "test";
+        model.resourceIds = "znld-web";
+        model.clientSecret = "E75F5A44F80B2E19D7828ED6F9D7C8AF";
+        model.scope = "read,write,execute";
+        model.authorizedGrantTypes = "client_credentials,password,authorization_code,refresh_token,implicit";
+        model.webServerRedirectUri = "";
+        model.authorities = "user";
+        model.accessTokenValidity = 10;
+        model.refreshTokenValidity = 100;
+        model.additionalInformation = "";
+        model.autoapprove = "true";
+        var ret = this.oAuthService.updateClientDetailsByClientId(model);
+        Assert.assertTrue(ret);
     }
 }

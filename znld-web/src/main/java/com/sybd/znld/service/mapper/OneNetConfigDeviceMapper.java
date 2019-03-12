@@ -1,4 +1,4 @@
-package com.sybd.znld.mapper;
+package com.sybd.znld.service.mapper;
 
 import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.dto.CheckedResource;
@@ -10,7 +10,6 @@ import com.sybd.znld.model.OneNetConfigDeviceEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface OneNetConfigDeviceMapper {

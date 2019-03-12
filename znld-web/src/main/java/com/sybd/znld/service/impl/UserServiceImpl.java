@@ -1,7 +1,7 @@
 package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.mapper.UserMapper;
+import com.sybd.znld.service.mapper.UserMapper;
 import com.sybd.znld.model.user.UserEntity;
 import com.sybd.znld.model.user.dto.LoginInput;
 import com.sybd.znld.model.user.dto.RegisterInput;

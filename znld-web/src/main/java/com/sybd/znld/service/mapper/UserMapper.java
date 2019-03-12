@@ -1,7 +1,6 @@
-package com.sybd.znld.mapper;
+package com.sybd.znld.service.mapper;
 
 import com.sybd.znld.model.user.UserEntity;
-import org.apache.catalina.User;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

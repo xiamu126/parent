@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class DataSourceAspect {
     private final Logger log = LoggerFactory.getLogger(DataSourceAspect.class);
 
-    @Pointcut("@annotation(com.sybd.znld.db.DbSource)")
+    @Pointcut("@annotation(com.sybd.znld.db.DbSource) || within(com.sybd.znld.service..*)") //within针对class级别的注解
     public void dataSourcePointCut() {}
 
     @Around("dataSourcePointCut()")

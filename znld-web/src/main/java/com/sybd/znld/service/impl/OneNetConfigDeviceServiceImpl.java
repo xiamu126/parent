@@ -2,7 +2,7 @@ package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.dto.NameAndOneNetKey;
-import com.sybd.znld.mapper.OneNetConfigDeviceMapper;
+import com.sybd.znld.service.mapper.OneNetConfigDeviceMapper;
 import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.OneNetConfigDeviceService;
 import com.sybd.znld.service.RedisService;

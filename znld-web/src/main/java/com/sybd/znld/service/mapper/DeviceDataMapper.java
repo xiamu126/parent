@@ -1,4 +1,4 @@
-package com.sybd.znld.mapper;
+package com.sybd.znld.service.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 

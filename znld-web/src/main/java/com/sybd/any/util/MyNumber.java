@@ -1,4 +1,4 @@
-package com.whatever.util;
+package com.sybd.any.util;
 
 import java.util.Random;
 

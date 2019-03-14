@@ -1,4 +1,4 @@
-package com.whatever.validate;
+package com.sybd.any.validate;
 
 import java.util.regex.Pattern;
 

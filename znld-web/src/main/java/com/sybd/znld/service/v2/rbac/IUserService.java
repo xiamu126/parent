@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface IUserService {
     UserModel addUser(UserModel user);
-    UserModel modifyUser(UserModel user);
+    UserModel modifyUserById(UserModel user);
     UserModel getUserById(String id);
     UserModel getUserByName(String name);
     UserModel getUserByPhone(String phone);

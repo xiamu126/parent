@@ -1,4 +1,4 @@
-package com.whatever.util;
+package com.sybd.any.util;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -87,6 +87,24 @@ public final class MyString {
     }
     public static boolean isUuid(String str){
         return str.matches("^[0-9a-zA-Z]{32}$");
+    }
+    public static boolean isIdCardNo(String str){
+        //身份证号15位或18位，最后一位可以为字母
+        if(!str.matches("(^\\d{17}[0-9a-zA-Z]|\\d{14}[0-9a-zA-Z])$")){
+            return false;
+        }
+        //接着验证身份证中的日期是否合法，分为年月日，从第7位开始
+        var tmp = Pattern.compile("\\d{6}(\\d{8}).*").matcher(str);
+        if(tmp.find()){
+            var birthDay = tmp.group(1);
+            var yearMonthDay = Pattern.compile("(\\d{4})(\\d{2})(\\d{2})").matcher(birthDay);
+            if(yearMonthDay.find()){
+                var year = yearMonthDay.group(1);
+                var month = yearMonthDay.group(2);
+                var day = yearMonthDay.group(3);
+                return true;
+            } else return false;
+        }else return false;
     }
 
     public static void main(String[] args){

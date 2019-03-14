@@ -5,6 +5,8 @@ import com.sybd.znld.model.v2.rbac.UserModel;
 import com.sybd.znld.service.mapper.v2.UserModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,19 +22,25 @@ public class UserService implements IUserService {
     }
 
     @Override
+    //@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = {Exception.class})
     public UserModel addUser(UserModel user) {
         var tmp = this.userModelMapper.selectByName(user.name);
         if(tmp != null) return null;
-        if(this.userModelMapper.insert(user) > 0) return user;
-        else return null;
+        if(this.userModelMapper.insert(user) > 0) return user; else return null;
     }
 
     @Override
-    public UserModel modifyUser(UserModel user) {
+    public UserModel modifyUserById(UserModel user) {
         if(user.id == null || user.id.equals("") || !user.id.matches("^[0-9a-zA-Z]{32}$")) return null;
-        if(user.phone != null && !user.phone.isEmpty() &&
-                !user.phone.matches("^1\\d{10}$"))
-            return null;
+        //如果存在有效的电话号码，则需要验证此号码是否已经使用过
+        if(user.phone != null && !user.phone.isEmpty() && user.phone.matches("^1\\d{10}$")){
+            if(this.getUserByPhone(user.phone) != null) return null;
+        }
+        //如果存在有效的身份证号，则需要验证此号是否已经使用过
+        if(user.idCardNo != null && !user.idCardNo.isEmpty() && user.idCardNo.matches("(^\\d{17}[0-9a-zA-Z]|\\d{14}[0-9a-zA-Z])$")){
+
+            if(this.getUserByIdCardNo(user.idCardNo) != null) return null;
+        }
         if(this.userModelMapper.updateById(user) > 0) return user;
         return null;
     }

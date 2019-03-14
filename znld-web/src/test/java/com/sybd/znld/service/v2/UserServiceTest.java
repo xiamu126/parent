@@ -35,7 +35,7 @@ public class UserServiceTest {
     public void insertUser(){
         var model = new UserModel();
         model.id = "1";
-        model.name = "test";
+        model.name = "test3";
         model.password = "123456";
         model.gender = 1;
         model.organizationId = "";
@@ -63,7 +63,7 @@ public class UserServiceTest {
         user.id = "8f9ced90446d11e993a60242ac110006";
         user.name = "test2";
         user.phone = "12345678900";
-        var ret = this.userService.modifyUser(user);
+        var ret = this.userService.modifyUserById(user);
         Assert.assertNotNull(ret);
     }
 }

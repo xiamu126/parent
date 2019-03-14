@@ -9,8 +9,9 @@ import org.springframework.context.annotation.Import;
 /**
  * 动态数据源配置,需要将自有的配置依赖(DynamicDataSourceConfig),将原有的依赖去除(DataSourceAutoConfiguration)
  */
-@Import({DynamicDataSourceConfig.class})
-@SpringBootApplication(exclude={DataSourceAutoConfiguration.class})
+/*@Import({DynamicDataSourceConfig.class})
+@SpringBootApplication(exclude={DataSourceAutoConfiguration.class})*/
+@SpringBootApplication
 public class OAuth2Application {
     public static void main(String[] args) {
         SpringApplication.run(OAuth2Application.class, args);

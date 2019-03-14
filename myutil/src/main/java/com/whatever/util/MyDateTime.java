@@ -1,4 +1,4 @@
-package com.sybd.any.util;
+package com.whatever.util;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -56,5 +56,9 @@ public final class MyDateTime {
         var instant = date.toInstant();
         var zoneId = ZoneId.systemDefault();
         return instant.atZone(zoneId).toLocalDateTime();
+    }
+
+    public static boolean isBetween(LocalDateTime it, LocalDateTime min, LocalDateTime max){
+        return it.isAfter(min) && (it.isBefore(max) || it.isEqual(max));
     }
 }

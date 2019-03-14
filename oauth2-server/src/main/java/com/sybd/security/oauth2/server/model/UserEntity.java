@@ -1,40 +1,105 @@
 package com.sybd.security.oauth2.server.model;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
-
 import java.io.Serializable;
 
-@Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-@TableName("user")
 public class UserEntity implements Serializable {
-    @TableId(value = "id", type = IdType.UUID)
-    private String id;
-    @TableField("name")
-    private String name;
-    @TableField("password")
-    private String password;
-    @TableField("phone")
-    private String phone;
-    @TableField("email")
-    private String email;
-    @TableField("gender")
-    private Short gender;
-    @TableField("age")
-    private Short age;
-    @TableField("contactAddress")
-    private String contactAddress;
-    @TableField("realName")
-    private String realName;
-    @TableField("idCardNo")
-    private String idCardNo;
-    @TableField("authorities")
-    private String authorities;
+    public String id;
+    public String name;
+    public String password;
+    public String phone;
+    public String email;
+    public Short gender;
+    public Short age;
+    public String contactAddress;
+    public String realName;
+    public String idCardNo;
+    public String authorities;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Short getGender() {
+        return gender;
+    }
+
+    public void setGender(Short gender) {
+        this.gender = gender;
+    }
+
+    public Short getAge() {
+        return age;
+    }
+
+    public void setAge(Short age) {
+        this.age = age;
+    }
+
+    public String getContactAddress() {
+        return contactAddress;
+    }
+
+    public void setContactAddress(String contactAddress) {
+        this.contactAddress = contactAddress;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public String getIdCardNo() {
+        return idCardNo;
+    }
+
+    public void setIdCardNo(String idCardNo) {
+        this.idCardNo = idCardNo;
+    }
+
+    public String getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(String authorities) {
+        this.authorities = authorities;
+    }
 }

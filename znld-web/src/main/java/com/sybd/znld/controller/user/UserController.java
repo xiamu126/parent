@@ -1,6 +1,8 @@
 package com.sybd.znld.controller.user;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
+import com.sybd.any.util.MD5;
+import com.sybd.any.util.MyString;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.user.dto.LoginResult;
 import com.sybd.znld.controller.user.dto.LogoutResult;
@@ -10,8 +12,6 @@ import com.sybd.znld.model.user.dto.LoginInput;
 import com.sybd.znld.model.user.dto.LoginOutput;
 import com.sybd.znld.model.user.dto.RegisterInput;
 import com.sybd.znld.service.UserService;
-import com.whatever.util.MD5;
-import com.whatever.util.MyString;
 import io.swagger.annotations.*;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +40,7 @@ public class UserController implements IUserController {
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final ProjectConfig projectConfig;
+    private final BCryptPasswordEncoder encoder;
 
     private final Logger log = LoggerFactory.getLogger(UserController.class);
 
@@ -58,6 +60,7 @@ public class UserController implements IUserController {
         this.redissonClient = redissonClient;
         this.stringRedisTemplate = stringRedisTemplate;
         this.projectConfig = projectConfig;
+        this.encoder = new BCryptPasswordEncoder(10);
     }
 
     private String getCaptchaKey(String uuid){
@@ -83,25 +86,25 @@ public class UserController implements IUserController {
     @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public LoginResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input, HttpServletRequest request, BindingResult bindingResult){
-        String key = getCaptchaKey(input.getUuid());
-        String rightCaptcha = this.stringRedisTemplate.opsForValue().get(key);
+        var key = getCaptchaKey(input.getUuid());
+        var rightCaptcha = this.stringRedisTemplate.opsForValue().get(key);
         if(rightCaptcha == null){
             return LoginResult.fail("验证码已失效");
         }
-        String captcha = input.getCaptcha();
+        var captcha = input.getCaptcha();
         if(!captcha.equalsIgnoreCase(rightCaptcha)){
             return LoginResult.fail("验证码错误");
         }
-        String pwd = input.getPassword();
+        var pwd = input.getPassword();
         try {
-            input.setPassword(MD5.encrypt(pwd, 2));
-            UserEntity user = userService.verify(input);
+            input.setPassword(this.encoder.encode(pwd));
+            var user = userService.verify(input);
             if(user != null){
                 this.stringRedisTemplate.delete(getCaptchaKey(input.getUuid()));
                 long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
                 return LoginResult.success(user.getId(), clientId, clientSecret, seconds);
             }
-        } catch (NoSuchAlgorithmException ex) {
+        } catch (Exception ex) {
             log.error(ex.getMessage());
         }
         return LoginResult.fail("用户名或密码错误");
@@ -137,11 +140,11 @@ public class UserController implements IUserController {
     public ApiResult register(@RequestBody @Valid RegisterInput input, BindingResult bindingResult){
         String pwd = input.getPassword();
         try {
-            input.setPassword(MD5.encrypt(pwd, 2));
+            input.setPassword(this.encoder.encode(pwd));
             if(userService.register(input) != null){
                 return ApiResult.success();
             }
-        } catch (NoSuchAlgorithmException ex) {
+        } catch (Exception ex) {
             log.error(ex.getMessage());
         }
         return ApiResult.fail("注册失败");

@@ -1,16 +1,16 @@
-package com.sybd.any.validate;
+package com.whatever.validate;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;
 
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Constraint(validatedBy = {MobileValidator.class})
-public @interface Mobile {
+@Constraint(validatedBy = IpValidator.class)
+@Target({ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Ip {
     boolean required() default true;
-    String message() default "Invalid mobile";
+    String message() default "Invalid IP";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

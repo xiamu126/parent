@@ -1,4 +1,4 @@
-package com.sybd.any.util;
+package com.whatever.util;
 
 import java.util.Random;
 
@@ -10,5 +10,8 @@ public class MyNumber {
     public static double rand(double min, double max){
         var random = new Random();
         return min + (max - min) * random.nextDouble();
+    }
+    public static boolean isBetween(int it, int min, int max){
+        return it >= min && it <= max;
     }
 }

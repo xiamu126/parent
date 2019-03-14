@@ -1,12 +1,12 @@
 package com.sybd.znld.service.impl;
 
+import com.sybd.any.util.MyString;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.service.mapper.UserMapper;
 import com.sybd.znld.model.user.UserEntity;
 import com.sybd.znld.model.user.dto.LoginInput;
 import com.sybd.znld.model.user.dto.RegisterInput;
 import com.sybd.znld.service.UserService;
-import com.whatever.util.MyString;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -54,7 +54,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
     @Override
     @Cacheable(key="#root.targetClass.getName()+'.user_'+#name")//不管结果如何都做缓存，以便面对一些恶意攻击的时候频繁访问数据库
     public UserEntity verify(String name, String password) {
-        UserEntity ret = userMapper.verify(name, password);
+        var ret = userMapper.verify(name, password);
         if(ret == null){
             this.removeCache(this.getClass(),".user_"+name, expirationTime);
         }

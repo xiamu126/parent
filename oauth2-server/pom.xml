@@ -24,16 +24,15 @@
         <java.version>11</java.version>
         <jackson.version>2.9.7</jackson.version>
         <druid.version>1.1.10</druid.version>
-        <mybatisplus.version>3.0.5</mybatisplus.version>
         <mysql.version>5.1.47</mysql.version>
         <modelmapper.version>2.2.0</modelmapper.version>
         <kaptcha.version>2.3.2</kaptcha.version>
         <javacv.version>1.4.3</javacv.version>
         <redisson.version>3.9.1</redisson.version>
-        <myutil.version>1.3.8</myutil.version>
+        <myutil.version>1.3.9</myutil.version>
         <swagger.version>2.9.2</swagger.version>
         <redisson.version>3.9.1</redisson.version>
-        <mybatis.version>1.3.2</mybatis.version>
+        <mybatis.version>2.0.0</mybatis.version>
     </properties>
 
     <repositories>
@@ -61,6 +60,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>${mybatis.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.whatever</groupId>
             <artifactId>myutil</artifactId>
             <version>${myutil.version}</version>
@@ -72,11 +76,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mybatisplus.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

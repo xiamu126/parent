@@ -1,5 +1,6 @@
-package com.sybd.any.util;
+package com.whatever.util;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,7 +103,9 @@ public final class MyString {
                 var year = yearMonthDay.group(1);
                 var month = yearMonthDay.group(2);
                 var day = yearMonthDay.group(3);
-                return true;
+                return MyNumber.isBetween(Integer.parseInt(year), 1900, LocalDate.now().getYear()) &&
+                        MyNumber.isBetween(Integer.parseInt(month), 1, 12) &&
+                        MyNumber.isBetween(Integer.parseInt(day), 1, 32);
             } else return false;
         }else return false;
     }
@@ -113,28 +116,6 @@ public final class MyString {
         map.put("limit", "100");
         map.put("cursor", "191811_505253765_1544055568061");
         System.out.println(toUrlParams(map));
-
-        System.out.println(" ......................阿弥陀佛......................\n"+
-                "                       _oo0oo_                      \n"+
-                "                      o8888888o                     \n"+
-                "                      88\" . \"88                     \n"+
-                "                      (| -_- |)                     \n"+
-                "                      0\\  =  /0                     \n"+
-                "                   ___/‘---’\\___                   \n"+
-                "                  .' \\|       |/ '.                 \n"+
-                "                 / \\\\|||  :  |||// \\                \n"+
-                "                / _||||| -卍-|||||_ \\               \n"+
-                "               |   | \\\\\\  -  /// |   |              \n"+
-                "               | \\_|  ''\\---/''  |_/ |              \n"+
-                "               \\  .-\\__  '-'  ___/-. /              \n"+
-                "             ___'. .'  /--.--\\  '. .'___            \n"+
-                "         .\"\" ‘<  ‘.___\\_<|>_/___.’>’ \"\".          \n"+
-                "       | | :  ‘- \\‘.;‘\\ _ /’;.’/ - ’ : | |        \n"+
-                "         \\  \\ ‘_.   \\_ __\\ /__ _/   .-’ /  /        \n"+
-                "    =====‘-.____‘.___ \\_____/___.-’___.-’=====     \n"+
-                "                       ‘=---=’                      \n"+
-                "                                                    \n"+
-                "....................佛祖保佑 ,永无BUG...................");
     }
 }
 

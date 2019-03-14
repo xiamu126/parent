@@ -1,7 +1,6 @@
 package com.sybd.znld.onenet.dto;
 
 import com.sybd.znld.onenet.OneNetConfig;
-import com.whatever.util.MyString;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

@@ -1,7 +1,6 @@
-package com.sybd.any.util;
+package com.whatever.util;
 
 import com.google.common.io.BaseEncoding;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 

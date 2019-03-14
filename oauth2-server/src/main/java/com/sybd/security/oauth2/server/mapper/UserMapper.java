@@ -1,7 +1,9 @@
 package com.sybd.security.oauth2.server.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.sybd.security.oauth2.server.model.UserEntity;
+import org.apache.ibatis.annotations.Mapper;
 
-public interface UserMapper extends BaseMapper<UserEntity> {
+@Mapper
+public interface UserMapper {
+    UserEntity selectByName(String name);
 }

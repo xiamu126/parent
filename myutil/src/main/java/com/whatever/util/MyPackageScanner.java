@@ -1,4 +1,14 @@
-package com.sybd.any.util;
+package com.whatever.util;
+
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.core.type.filter.RegexPatternTypeFilter;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class MyPackageScanner {
     /*private void scanPackage(String packageName, File currentfile) {

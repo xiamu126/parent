@@ -13,6 +13,7 @@
         <module>znld-websocket</module>
         <module>oauth2-server</module>
         <module>oauth2-resource</module>
+        <module>myutil</module>
     </modules>
 
 </project>

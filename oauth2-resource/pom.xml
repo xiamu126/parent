@@ -13,7 +13,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sybd.oauth2</groupId>
-    <artifactId>resource</artifactId>
+    <artifactId>oauth2-resource</artifactId>
     <version>0.0.1</version>
 
     <dependencies>

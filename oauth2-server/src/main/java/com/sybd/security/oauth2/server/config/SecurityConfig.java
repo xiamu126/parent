@@ -63,7 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/auth","/unauth", "/success", "/error").permitAll()
-                //.antMatchers(HttpMethod.OPTIONS, "/oauth/**").permitAll()
+                .antMatchers(HttpMethod.DELETE, "/oauth/token/revoke").permitAll()
                 .anyRequest().authenticated();
 
         /*http.formLogin().usernameParameter("user").passwordParameter("password")

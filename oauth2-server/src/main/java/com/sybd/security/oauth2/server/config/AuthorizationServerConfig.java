@@ -41,7 +41,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security){
         // 配置token获取和验证时的策略
-        security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()")
+        security.tokenKeyAccess("permitAll()")
+                .checkTokenAccess("permitAll()")
                 .allowFormAuthenticationForClients();//enable client to get the authenticated when using the /oauth/token to get a access token
         // there is a 401 authentication is required if it doesn't allow form authentication for clients when access /oauth/token
     }

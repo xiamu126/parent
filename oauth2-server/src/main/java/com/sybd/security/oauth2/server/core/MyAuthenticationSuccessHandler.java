@@ -1,5 +1,9 @@
 package com.sybd.security.oauth2.server.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
@@ -16,6 +20,8 @@ import java.io.IOException;
 @Component
 public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
+    private final Logger log = LoggerFactory.getLogger(MyAuthenticationSuccessHandler.class);
+
     private RequestCache requestCache = new HttpSessionRequestCache();
     private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
@@ -24,5 +30,10 @@ public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHand
                                         Authentication authentication) throws IOException {
         SavedRequest savedRequest = requestCache.getRequest(request, response);
         redirectStrategy.sendRedirect(request, response, savedRequest.getRedirectUrl());
+    }
+
+    @EventListener
+    public void handleAuthenticationSuccessEvent(AuthenticationSuccessEvent event){
+        log.debug("AbstractAuthenticationEvent");
     }
 }

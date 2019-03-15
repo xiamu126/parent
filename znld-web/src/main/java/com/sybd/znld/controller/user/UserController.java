@@ -1,8 +1,6 @@
 package com.sybd.znld.controller.user;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
-import com.sybd.any.util.MD5;
-import com.sybd.any.util.MyString;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.user.dto.LoginResult;
 import com.sybd.znld.controller.user.dto.LogoutResult;
@@ -12,6 +10,7 @@ import com.sybd.znld.model.user.dto.LoginInput;
 import com.sybd.znld.model.user.dto.LoginOutput;
 import com.sybd.znld.model.user.dto.RegisterInput;
 import com.sybd.znld.service.UserService;
+import com.whatever.util.MyString;
 import io.swagger.annotations.*;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;

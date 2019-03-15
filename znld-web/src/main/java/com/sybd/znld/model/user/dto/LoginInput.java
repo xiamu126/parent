@@ -1,6 +1,6 @@
 package com.sybd.znld.model.user.dto;
 
-import com.sybd.any.validate.Uuid;
+import com.whatever.validate.Uuid;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

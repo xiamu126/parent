@@ -2,8 +2,8 @@ package com.sybd.znld.onenet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sybd.any.util.MyString;
 import com.sybd.znld.onenet.dto.*;
+import com.whatever.util.MyString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

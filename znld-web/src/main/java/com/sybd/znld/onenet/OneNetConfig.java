@@ -1,17 +1,15 @@
 package com.sybd.znld.onenet;
 
-import com.sybd.any.util.MyString;
 import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.OneNetConfigDeviceService;
+import com.whatever.util.MyString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.Map;
-
 
 @Component
 @ConfigurationProperties(prefix = "znld.onenet")

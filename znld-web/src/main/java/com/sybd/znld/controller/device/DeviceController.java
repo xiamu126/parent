@@ -1,7 +1,5 @@
 package com.sybd.znld.controller.device;
 
-import com.sybd.any.util.MyDateTime;
-import com.sybd.any.util.MyString;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.device.dto.*;
 import com.sybd.znld.core.ApiResult;
@@ -12,6 +10,8 @@ import com.sybd.znld.service.ExecuteCommandService;
 import com.sybd.znld.service.OneNetConfigDeviceService;
 import com.sybd.znld.service.dto.CheckedResource;
 import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
+import com.whatever.util.MyDateTime;
+import com.whatever.util.MyString;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -45,7 +45,7 @@ create table user(
 create table organization(
   id                   varchar(32) not null primary key comment '编号',
   name                 varchar(50) not null comment '名称',
-  parent_id            varchar(32) not null comment '上级组织编号，0为顶级组织',
+  parent_id            varchar(32) not null comment '上级组织编号，空字符串为顶级组织',
   position             int unsigned not null default 0 comment '在当前组织层级的位置',
   status               tinyint unsigned not null default 0 comment '0：正常，1：冻结，2：删除',
   oauth2_client_id     varchar(256) not null comment 'oauth2认证信息，不同于组织表，用于用户名密码授权模式'

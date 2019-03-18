@@ -114,7 +114,7 @@ public class BetterOneNetService implements IBetterOneNetService{
 
     private fun getHttpEntity(deviceId: Int, mediaType: MediaType, body: String): HttpEntity<out String> {
         val headers = HttpHeaders()
-        headers.add("api-key", oneNetConfig.getApiKey(deviceId))
+        headers.addUser("api-key", oneNetConfig.getApiKey(deviceId))
         headers.contentType = mediaType
         return HttpEntity(body, headers)
     }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.service.mapper.rbac.OrganizationMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.rbac.OrganizationModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert organization(id, name, parent_id, position, status, oauth2_client_id)
+        values
+        (#{id},#{name},#{parentId},#{position},#{status},#{oauth2ClientId})
+    </insert>
+    <select id="selectByName" resultType="com.sybd.znld.model.rbac.OrganizationModel">
+        select * from organization where name = #{_parameter}
+    </select>
+    <select id="selectById" resultType="com.sybd.znld.model.rbac.OrganizationModel">
+        select * from organization where id = #{_parameter}
+    </select>
+    <update id="updateById" parameterType="com.sybd.znld.model.rbac.OrganizationModel">
+        update organization
+        set name = #{name}, parent_id = #{parentId}, position = #{position}, status = #{status}, oauth2_client_id = #{oauth2ClientId}
+        where id = #{id}
+    </update>
+    <select id="selectByParentIdAndPosition" resultType="com.sybd.znld.model.rbac.OrganizationModel">
+        select * from organization where parent_id = #{parentId} and position = #{position};
+    </select>
+    <update id="deleteById">
+        update organization set status = 3 where id=#{id};
+    </update>
+    <select id="selectByParentId" resultType="com.sybd.znld.model.rbac.OrganizationModel">
+        select * from organization where parent_id = #{_parameter};
+    </select>
+</mapper>

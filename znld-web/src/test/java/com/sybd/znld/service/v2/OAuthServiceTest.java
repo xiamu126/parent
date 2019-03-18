@@ -1,7 +1,7 @@
 package com.sybd.znld.service.v2;
 
-import com.sybd.znld.model.v2.oauth.OAuthClientDetailsModel;
-import com.sybd.znld.service.v2.oauth.IOAuthService;
+import com.sybd.znld.model.oauth.OAuthClientDetailsModel;
+import com.sybd.znld.service.oauth.IOAuthService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

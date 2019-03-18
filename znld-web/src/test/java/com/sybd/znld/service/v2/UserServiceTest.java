@@ -1,7 +1,7 @@
 package com.sybd.znld.service.v2;
 
-import com.sybd.znld.model.v2.rbac.UserModel;
-import com.sybd.znld.service.v2.rbac.UserService;
+import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.znld.service.rbac.UserService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

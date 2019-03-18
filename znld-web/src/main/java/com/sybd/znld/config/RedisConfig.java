@@ -82,7 +82,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         var nodes = new HashSet<RedisNode>();
         for (var ipPort : serverArray) {
             var ipAndPort = ipPort.split(":");
-            nodes.add(new RedisNode(ipAndPort[0].trim(), Integer.valueOf(ipAndPort[1])));
+            nodes.addUser(new RedisNode(ipAndPort[0].trim(), Integer.valueOf(ipAndPort[1])));
         }
         redisClusterConfiguration.setPassword(RedisPassword.of(password));
         redisClusterConfiguration.setClusterNodes(nodes);*/

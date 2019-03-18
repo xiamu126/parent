@@ -87,9 +87,15 @@ public final class MyString {
         return (byte) ((firstDigit << 4) + secondDigit);
     }
     public static boolean isUuid(String str){
+        if(str == null || str.equals("")) return false;
         return str.matches("^[0-9a-zA-Z]{32}$");
     }
+    public static boolean isPhoneNo(String str){
+        if(str == null || str.equals("")) return false;
+        return str.matches("^1\\d{10}$");
+    }
     public static boolean isIdCardNo(String str){
+        if(str == null || str.equals("")) return false;
         //身份证号15位或18位，最后一位可以为字母
         if(!str.matches("(^\\d{17}[0-9a-zA-Z]|\\d{14}[0-9a-zA-Z])$")){
             return false;
@@ -109,6 +115,10 @@ public final class MyString {
             } else return false;
         }else return false;
     }
+    public static boolean isEmail(String str){
+        if(str == null || str.equals("")) return false;
+        return str.matches("^(\\w)+(\\.\\w+)*@(\\w)+(\\.\\w+)+$");
+    }
 
     public static void main(String[] args){
         var map = new HashMap<String, String>();
@@ -116,6 +126,7 @@ public final class MyString {
         map.put("limit", "100");
         map.put("cursor", "191811_505253765_1544055568061");
         System.out.println(toUrlParams(map));
+        System.out.println(isEmail("xxx@xxx.com.cn.cn"));
     }
 }
 

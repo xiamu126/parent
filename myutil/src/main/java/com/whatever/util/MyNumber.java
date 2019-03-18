@@ -14,4 +14,19 @@ public class MyNumber {
     public static boolean isBetween(int it, int min, int max){
         return it >= min && it <= max;
     }
+    public static boolean isPositive(Integer it){
+        return it != null && it > 0;
+    }
+    public static boolean isNegative(Integer it){
+        return it != null && it < 0;
+    }
+    public static boolean isZero(Integer it){
+        return  it != null && it == 0;
+    }
+    public static boolean isPositiveOrZero(Integer it){
+        return it != null && it >= 0;
+    }
+    public static boolean isNegativeOrZero(Integer it){
+        return it != null && it <= 0;
+    }
 }

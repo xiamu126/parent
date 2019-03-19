@@ -569,7 +569,7 @@ LABL 0 新宋体,8,N</a:FontList>
 <a:GradientFillMode>65</a:GradientFillMode>
 <a:CustomPictureType>4</a:CustomPictureType>
 <a:CustomTextMode>1</a:CustomTextMode>
-<a:CustomPictureID>172F5B36-CFB9-4590-8DB3-4C5FDFA79D13</a:CustomPictureID>
+<a:CustomPictureID>C9A0895B-C493-4CF2-BA3E-50ED35013787</a:CustomPictureID>
 <a:GradientEndColor>16777215</a:GradientEndColor>
 <a:KeepAspect>1</a:KeepAspect>
 <c:Object>
@@ -602,7 +602,7 @@ LABL 0 新宋体,8,N</a:FontList>
 <a:Code>MINI_STAR</a:Code>
 <a:CreationDate>1551919792</a:CreationDate>
 <a:Creator>User</a:Creator>
-<a:ModificationDate>1551919958</a:ModificationDate>
+<a:ModificationDate>1551919938</a:ModificationDate>
 <a:Modifier>User</a:Modifier>
 <a:Location>file:///%[PRJ_ROOT_DIR]%/MINI_STAR.pdm</a:Location>
 <a:Extension>pdm</a:Extension>
@@ -615,7 +615,7 @@ LABL 0 新宋体,8,N</a:FontList>
 <a:Code>ZNLD</a:Code>
 <a:CreationDate>1551920003</a:CreationDate>
 <a:Creator>User</a:Creator>
-<a:ModificationDate>1551920223</a:ModificationDate>
+<a:ModificationDate>1552007446</a:ModificationDate>
 <a:Modifier>User</a:Modifier>
 <a:Location>file:///%[PRJ_ROOT_DIR]%/ZNLD.pdm</a:Location>
 <a:Extension>pdm</a:Extension>

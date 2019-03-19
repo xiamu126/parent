@@ -33,16 +33,24 @@ public class DynamicDataSourceConfig {
         return DruidDataSourceBuilder.create().build();
     }
 
+    @Bean("ministarDataSource")
+    @ConfigurationProperties("spring.datasource.druid.ministar")
+    public DataSource ministarDataSource(){
+        return DruidDataSourceBuilder.create().build();
+    }
+
     @Bean
     @Primary
-    @DependsOn({"oauthDataSource","znldDataSource","rbacDataSource"})
+    @DependsOn({"oauthDataSource","znldDataSource","rbacDataSource", "ministarDataSource"})
     public DynamicDataSource dataSource(@Qualifier("oauthDataSource") DataSource oauthDataSource,
                                         @Qualifier("znldDataSource") DataSource znldDataSource,
-                                        @Qualifier("rbacDataSource") DataSource rbacDataSource) {
+                                        @Qualifier("rbacDataSource") DataSource rbacDataSource,
+                                        @Qualifier("ministarDataSource") DataSource ministarDataSource) {
         var targetDataSources = new HashMap<Object, Object>();
         targetDataSources.put("oauth", oauthDataSource);
         targetDataSources.put("znld", znldDataSource);
         targetDataSources.put("rbac", rbacDataSource);
+        targetDataSources.put("ministar", ministarDataSource);
         return new DynamicDataSource(znldDataSource, targetDataSources);
     }
 

@@ -1,6 +1,7 @@
 package com.sybd.znld.service.znld;
 
 import com.sybd.znld.db.DbSource;
+import com.sybd.znld.model.BaseStatus;
 import com.sybd.znld.model.znld.RegionModel;
 import com.sybd.znld.service.mapper.znld.RegionMapper;
 import com.whatever.util.MyString;
@@ -12,26 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 @DbSource("znld")
 public class RegionService implements IRegionService {
-    public enum Status{
-        Ok((short)0), Frozen((short)1), Deleted((short)2);
-        private final Short value;
-        Status(Short v) {
-            this.value = v;
-        }
-        public Short getValue(){
-            return this.value;
-        }
-        public static boolean isValid(short v){
-            switch (v){
-                case 0:
-                case 1:
-                case 2:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    }
     private final Logger log = LoggerFactory.getLogger(RegionService.class);
     private final RegionMapper regionMapper;
 
@@ -56,7 +37,7 @@ public class RegionService implements IRegionService {
             log.debug("区域名字不能重复");
             return null;
         }
-        if(!Status.isValid(model.status)){
+        if(!BaseStatus.isValid(model.status)){
             log.debug("错误的状态");
             return null;
         }
@@ -100,7 +81,7 @@ public class RegionService implements IRegionService {
             log.debug("重复的区域名称");
             return null;
         }
-        if(!Status.isValid(model.status)){
+        if(!BaseStatus.isValid(model.status)){
             log.debug("错误的状态");
             return null;
         }

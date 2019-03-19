@@ -1723,9 +1723,10 @@ LABL 0 Arial,8,N</a:FontList>
 <a:Code>status</a:Code>
 <a:CreationDate>1552007073</a:CreationDate>
 <a:Creator>User</a:Creator>
-<a:ModificationDate>1552007121</a:ModificationDate>
+<a:ModificationDate>1552008102</a:ModificationDate>
 <a:Modifier>User</a:Modifier>
 <a:Comment>0：启用，1：冻结</a:Comment>
+<a:DefaultValue>0</a:DefaultValue>
 <a:DataType>tinyint</a:DataType>
 <a:Column.Mandatory>1</a:Column.Mandatory>
 </o:Column>

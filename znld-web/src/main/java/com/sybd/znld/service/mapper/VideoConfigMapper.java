@@ -1,6 +1,6 @@
 package com.sybd.znld.service.mapper;
 
-import com.sybd.znld.model.VideoConfigEntity;
+import com.sybd.znld.service.model.VideoConfigEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

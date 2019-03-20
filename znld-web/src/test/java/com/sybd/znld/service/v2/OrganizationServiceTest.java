@@ -1,6 +1,6 @@
 package com.sybd.znld.service.v2;
 
-import com.sybd.znld.model.rbac.OrganizationModel;
+import com.sybd.znld.service.model.rbac.OrganizationModel;
 import com.sybd.znld.service.rbac.OrganizationService;
 import org.junit.Assert;
 import org.junit.Before;

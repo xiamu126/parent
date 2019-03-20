@@ -1,8 +1,8 @@
 package com.sybd.znld.service;
 
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.model.user.UserEntity;
-import com.sybd.znld.model.user.dto.RegisterInput;
+import com.sybd.znld.service.model.user.UserEntity;
+import com.sybd.znld.service.model.user.dto.RegisterInput;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

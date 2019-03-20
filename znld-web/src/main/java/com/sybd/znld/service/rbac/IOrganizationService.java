@@ -1,6 +1,6 @@
 package com.sybd.znld.service.rbac;
 
-import com.sybd.znld.model.rbac.OrganizationModel;
+import com.sybd.znld.service.model.rbac.OrganizationModel;
 
 import java.util.List;
 

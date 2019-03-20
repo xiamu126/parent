@@ -43,7 +43,6 @@ spring:
     database: 0
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
-  type-aliases-package: com.sybd.znld.model
   configuration:
     map-underscore-to-camel-case: true
 project:

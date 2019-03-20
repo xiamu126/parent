@@ -5,10 +5,9 @@ import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.user.dto.LoginResult;
 import com.sybd.znld.controller.user.dto.LogoutResult;
 import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.model.user.UserEntity;
-import com.sybd.znld.model.user.dto.LoginInput;
-import com.sybd.znld.model.user.dto.LoginOutput;
-import com.sybd.znld.model.user.dto.RegisterInput;
+import com.sybd.znld.service.model.user.UserEntity;
+import com.sybd.znld.service.model.user.dto.LoginInput;
+import com.sybd.znld.service.model.user.dto.RegisterInput;
 import com.sybd.znld.service.UserService;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
@@ -27,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.awt.image.BufferedImage;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
 
 @Api(tags = "用户接口")
 @RestController

@@ -1,6 +1,6 @@
 package com.sybd.znld.service.mapper.rbac;
 
-import com.sybd.znld.model.rbac.OrganizationModel;
+import com.sybd.znld.service.model.rbac.OrganizationModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

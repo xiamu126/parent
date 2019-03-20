@@ -3,9 +3,9 @@ package com.sybd.znld.controller.user;
 import com.sybd.znld.controller.user.dto.LoginResult;
 import com.sybd.znld.controller.user.dto.LogoutResult;
 import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.model.user.UserEntity;
-import com.sybd.znld.model.user.dto.LoginInput;
-import com.sybd.znld.model.user.dto.RegisterInput;
+import com.sybd.znld.service.model.user.UserEntity;
+import com.sybd.znld.service.model.user.dto.LoginInput;
+import com.sybd.znld.service.model.user.dto.RegisterInput;
 import org.springframework.validation.BindingResult;
 
 import javax.servlet.http.HttpServletRequest;

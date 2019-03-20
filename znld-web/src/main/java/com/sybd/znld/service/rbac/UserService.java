@@ -1,7 +1,7 @@
 package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.znld.service.model.rbac.UserModel;
 import com.sybd.znld.service.mapper.rbac.UserModelMapper;
 import com.whatever.util.MyString;
 import org.springframework.beans.factory.annotation.Autowired;

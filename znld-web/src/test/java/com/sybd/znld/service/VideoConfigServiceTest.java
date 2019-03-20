@@ -1,7 +1,6 @@
 package com.sybd.znld.service;
 
-import com.sybd.znld.model.VideoConfigEntity;
-import com.sybd.znld.service.VideoConfigService;
+import com.sybd.znld.service.model.VideoConfigEntity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

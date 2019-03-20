@@ -1,6 +1,6 @@
 package com.sybd.znld.security;
 
-import com.sybd.znld.model.user.UserEntity;
+import com.sybd.znld.service.model.user.UserEntity;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;

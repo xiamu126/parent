@@ -1,7 +1,7 @@
 package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.rbac.OrganizationModel;
+import com.sybd.znld.service.model.rbac.OrganizationModel;
 import com.sybd.znld.service.mapper.rbac.OrganizationMapper;
 import com.whatever.util.MyNumber;
 import com.whatever.util.MyString;

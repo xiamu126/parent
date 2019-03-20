@@ -6,7 +6,7 @@ import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.service.dto.DeviceIdAndImei;
 import com.sybd.znld.service.dto.DeviceIdName;
 import com.sybd.znld.dto.NameAndOneNetKey;
-import com.sybd.znld.model.OneNetConfigDeviceEntity;
+import com.sybd.znld.service.model.OneNetConfigDeviceEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

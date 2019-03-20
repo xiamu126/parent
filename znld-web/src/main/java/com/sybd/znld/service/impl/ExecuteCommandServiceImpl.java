@@ -2,7 +2,7 @@ package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.service.mapper.ExecuteCommandMapper;
-import com.sybd.znld.model.ExecuteCommandEntity;
+import com.sybd.znld.service.model.ExecuteCommandEntity;
 import com.sybd.znld.onenet.dto.OneNetExecuteParams;
 import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.ExecuteCommandService;

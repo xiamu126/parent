@@ -1,6 +1,6 @@
 package com.sybd.znld.service.znld;
 
-import com.sybd.znld.model.znld.RegionModel;
+import com.sybd.znld.service.model.znld.RegionModel;
 
 public interface IRegionService {
     RegionModel addRegion(RegionModel model);

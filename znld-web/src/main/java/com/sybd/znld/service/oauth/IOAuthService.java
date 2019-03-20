@@ -1,6 +1,6 @@
 package com.sybd.znld.service.oauth;
 
-import com.sybd.znld.model.oauth.OAuthClientDetailsModel;
+import com.sybd.znld.service.model.oauth.OAuthClientDetailsModel;
 
 import java.util.List;
 

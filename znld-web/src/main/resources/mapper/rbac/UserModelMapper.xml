@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.mapper.rbac.UserModelMapper">
-    <insert id="insert" parameterType="com.sybd.znld.model.rbac.UserModel">
+    <insert id="insert" parameterType="com.sybd.znld.service.model.rbac.UserModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>
@@ -34,7 +34,7 @@
          #{status})
     </insert>
 
-    <update id="updateById" parameterType="com.sybd.znld.model.rbac.UserModel">
+    <update id="updateById" parameterType="com.sybd.znld.service.model.rbac.UserModel">
         update user
         <set>
             <if test=" name != null and name != '' ">name = #{name},</if>
@@ -53,22 +53,22 @@
         where id = #{id}
     </update>
 
-    <select id="selectById" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectById" resultType="com.sybd.znld.service.model.rbac.UserModel">
         select * from user where id = #{_parameter}
     </select>
-    <select id="selectByName" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByName" resultType="com.sybd.znld.service.model.rbac.UserModel">
         select * from user where name = #{_parameter}
     </select>
-    <select id="selectByPhone" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByPhone" resultType="com.sybd.znld.service.model.rbac.UserModel">
         select * from user where phone = #{_parameter}
     </select>
-    <select id="selectByEmail" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByEmail" resultType="com.sybd.znld.service.model.rbac.UserModel">
         select * from user where email = #{_parameter}
     </select>
-    <select id="selectByIdCardNo" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByIdCardNo" resultType="com.sybd.znld.service.model.rbac.UserModel">
         select * from user where id_card_no = #{_parameter}
     </select>
-    <select id="selectByOrganizationId" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByOrganizationId" resultType="com.sybd.znld.service.model.rbac.UserModel">
         select * from user where organization_id = #{_parameter}
     </select>
 </mapper>

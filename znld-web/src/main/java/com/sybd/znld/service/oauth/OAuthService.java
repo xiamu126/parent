@@ -2,7 +2,7 @@ package com.sybd.znld.service.oauth;
 
 import com.sybd.znld.db.DbSource;
 import com.sybd.znld.service.mapper.oauth.OAuthClientDetailsMapper;
-import com.sybd.znld.model.oauth.OAuthClientDetailsModel;
+import com.sybd.znld.service.model.oauth.OAuthClientDetailsModel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

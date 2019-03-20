@@ -1,6 +1,6 @@
 package com.sybd.znld.service.rbac;
 
-import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.znld.service.model.rbac.UserModel;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package com.sybd.znld.service.znld;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.BaseStatus;
-import com.sybd.znld.model.znld.RegionModel;
+import com.sybd.znld.service.model.BaseStatus;
+import com.sybd.znld.service.model.znld.RegionModel;
 import com.sybd.znld.service.mapper.znld.RegionMapper;
 import com.whatever.util.MyString;
 import org.slf4j.Logger;

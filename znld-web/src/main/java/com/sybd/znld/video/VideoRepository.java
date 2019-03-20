@@ -1,6 +1,6 @@
 package com.sybd.znld.video;
 
-import com.sybd.znld.model.VideoConfigEntity;
+import com.sybd.znld.service.model.VideoConfigEntity;
 import com.sybd.znld.video.dto.VideoData;
 import com.sybd.znld.service.VideoConfigService;
 import org.slf4j.Logger;

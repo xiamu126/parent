@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.mapper.UserMapper">
-    <insert id="add" parameterType="com.sybd.znld.model.user.UserEntity">
+    <insert id="add" parameterType="com.sybd.znld.service.model.user.UserEntity">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', '') as id;
         </selectKey>
@@ -34,14 +34,14 @@
             <if test=" lastLoginIp != null and lastLoginIp != '' ">#{lastLoginIp},</if>
         </trim>
     </insert>
-    <update id="updatePasswordByName" parameterType="com.sybd.znld.model.user.UserEntity">
+    <update id="updatePasswordByName" parameterType="com.sybd.znld.service.model.user.UserEntity">
         update user
         <set>
           <if test="password != null and password != '' ">password=#{password}</if>
         </set>
         where name = #{name};
     </update>
-    <update id="updateById" parameterType="com.sybd.znld.model.user.UserEntity">
+    <update id="updateById" parameterType="com.sybd.znld.service.model.user.UserEntity">
         update user
         <set>
           <if test=" name != null and name != '' ">name=#{name},</if>
@@ -57,7 +57,7 @@
         </set>
         where id=#{id};
     </update>
-    <update id="updateByName" parameterType="com.sybd.znld.model.user.UserEntity">
+    <update id="updateByName" parameterType="com.sybd.znld.service.model.user.UserEntity">
         update user
         <set>
             <if test=" password != null and password != '' ">password=#{password},</if>
@@ -75,13 +75,13 @@
     <select id="existsByName" resultType="java.lang.Boolean">
         select true from user where name = #{name};
     </select>
-    <select id="verify" resultType="com.sybd.znld.model.user.UserEntity">
+    <select id="verify" resultType="com.sybd.znld.service.model.user.UserEntity">
         select * from user where name=#{name} and password=#{password};
     </select>
-    <select id="getUserById" resultType="com.sybd.znld.model.user.UserEntity">
+    <select id="getUserById" resultType="com.sybd.znld.service.model.user.UserEntity">
         select * from user where id=#{id};
     </select>
-    <select id="getUserByName" resultType="com.sybd.znld.model.user.UserEntity">
+    <select id="getUserByName" resultType="com.sybd.znld.service.model.user.UserEntity">
         select * from user where name=#{name};
     </select>
 </mapper>

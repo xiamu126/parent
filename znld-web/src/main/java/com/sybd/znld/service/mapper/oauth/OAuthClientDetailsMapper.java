@@ -1,6 +1,6 @@
 package com.sybd.znld.service.mapper.oauth;
 
-import com.sybd.znld.model.oauth.OAuthClientDetailsModel;
+import com.sybd.znld.service.model.oauth.OAuthClientDetailsModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

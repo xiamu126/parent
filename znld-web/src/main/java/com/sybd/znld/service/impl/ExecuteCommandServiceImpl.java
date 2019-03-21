@@ -45,9 +45,9 @@ public class ExecuteCommandServiceImpl extends BaseServiceImpl implements Execut
             this.removeCache(this.getClass(),".getParamsByCommand"+cmd);
             return null;
         }
-        ExecuteCommandEntity entity = this.executeCommandMapper.getByCommand(cmd);
+        var entity = this.executeCommandMapper.getByCommand(cmd);
         if(entity == null) return null;
-        OneNetKey oneNetKey = getOneNetKeyByCommand(cmd);
+        var oneNetKey = getOneNetKeyByCommand(cmd);
         if(oneNetKey == null) return null;
         return new OneNetExecuteParams(oneNetKey, entity.getTimeout());
     }

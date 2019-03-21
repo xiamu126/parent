@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.mapper.OneNetConfigDeviceMapper">
-    <select id="getByDeviceId" resultType="com.sybd.znld.service.model.OneNetConfigDeviceEntity">
-        select * from onenet_config_device where deviceId=#{_parameter}
+    <select id="getByDeviceId" resultType="com.sybd.znld.service.model.znld.OneNetConfigDeviceModel">
+        select * from onenet_config_device where device_id=#{_parameter}
     </select>
     <select id="getDescBy" resultType="java.lang.String">
-        select description from onenet_config_device where objId=#{objId} and objInstId=#{objInstId} and resId=#{resId}
+        select description from onenet_config_device where obj_id=#{objId} and obj_inst_id=#{objInstId} and res_id=#{resId}
     </select>
     <select id="getDeviceIds" resultType="java.lang.Integer">
-        select distinct deviceId from onenet_config_device;
+        select distinct device_id from onenet_config_device;
     </select>
 
     <resultMap id="DeviceIdNames" type="com.sybd.znld.service.dto.DeviceIdName">
@@ -17,57 +17,57 @@
     </resultMap>
 
     <select id="getDeviceIdNames" resultMap="DeviceIdNames">
-        select distinct deviceId, deviceName from onenet_config_device;
+        select distinct device_id, device_name from onenet_config_device;
     </select>
 
     <select id="getApiKeyByDeviceId" resultType="java.lang.String">
-        select distinct apiKey from onenet_config_device where deviceId=#{deviceId};
+        select distinct api_key from onenet_config_device where device_id=#{deviceId};
     </select>
 
     <select id="getOneNetKey" resultType="java.lang.String">
-        select CONCAT_WS('_', objId, objInstId, resId) from onenet_config_device where name=#{name};
+        select CONCAT_WS('_', obj_id, obj_inst_id, res_id) from onenet_config_device where name=#{name};
     </select>
 
     <resultMap id="NameAndOneNetKeys" type="com.sybd.znld.dto.NameAndOneNetKey">
         <result column="name" jdbcType="VARCHAR" property="name"/>
-        <result column="oneNetKey" jdbcType="VARCHAR" property="oneNetKey"/>
+        <result column="oneNetKey" jdbcType="VARCHAR" property="onenet_key"/>
     </resultMap>
     
     <select id="getInstanceMap" resultMap="NameAndOneNetKeys">
-        select name, CONCAT_WS('_', objId, objInstId, resId) as oneNetKey from onenet_config_device where deviceId=#{deviceId};
+        select name, CONCAT_WS('_', obj_id, obj_inst_id, res_id) as onenet_key from onenet_config_device where device_id=#{deviceId};
     </select>
 
     <select id="getImeiByDeviceId" resultType="java.lang.String">
-        select distinct imei from onenet_config_device where deviceId=#{deviceId};
+        select distinct imei from onenet_config_device where device_id=#{deviceId};
     </select>
 
     <resultMap id="DeviceIdAndImeis" type="com.sybd.znld.service.dto.DeviceIdAndImei">
-        <result column="deviceId" jdbcType="INTEGER" property="deviceId"/>
+        <result column="deviceId" jdbcType="INTEGER" property="device_id"/>
         <result column="imei" jdbcType="VARCHAR" property="imei"/>
     </resultMap>
     <select id="getDeviceIdAndImeis" resultMap="DeviceIdAndImeis">
-        select distinct deviceId, imei from onenet_config_device;
+        select distinct device_id, imei from onenet_config_device;
     </select>
 
     <resultMap id="DeviceIdAndDeviceNames" type="com.sybd.znld.service.dto.DeviceIdAndDeviceName">
-        <result column="deviceId" jdbcType="INTEGER" property="deviceId"/>
-        <result column="deviceName" jdbcType="VARCHAR" property="deviceName"/>
+        <result column="deviceId" jdbcType="INTEGER" property="device_id"/>
+        <result column="deviceName" jdbcType="VARCHAR" property="device_name"/>
     </resultMap>
     <select id="getDeviceIdAndDeviceNames" resultMap="DeviceIdAndDeviceNames">
-        select distinct deviceId, deviceName from onenet_config_device;
+        select distinct device_id, device_name from onenet_config_device;
     </select>
 
     <resultMap id="CheckedResources" type="com.sybd.znld.service.dto.CheckedResource">
-        <result column="oneNetKey" jdbcType="VARCHAR" property="oneNetKey"/>
+        <result column="oneNetKey" jdbcType="VARCHAR" property="onenet_key"/>
         <result column="name" jdbcType="VARCHAR" property="name"/>
         <result column="description" jdbcType="VARCHAR" property="description"/>
     </resultMap>
     <select id="getCheckedResources" resultMap="CheckedResources">
-        select CONCAT_WS('_', objId, objInstId, resId) as oneNetKey, name, description from onenet_config_device
-        where checked = true and deviceId=#{deviceId};
+        select CONCAT_WS('_', obj_id, obj_inst_id, res_id) as onenet_key, name, description from onenet_config_device
+        where checked = true and device_id=#{deviceId};
     </select>
 
     <select id="isDataStreamIdEnabled" resultType="java.lang.Boolean">
-        select true from onenet_config_device where objId=#{objId} and objInstId=#{objInstId} and resId=#{resId} and checked=true;
+        select true from onenet_config_device where obj_id=#{objId} and obj_inst_id=#{objInstId} and res_id=#{resId} and checked=true;
     </select>
 </mapper>

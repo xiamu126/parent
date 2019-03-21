@@ -62,17 +62,7 @@ create table video_config(
 alter table video_config add constraint fk_video_user foreign key (clientId)references user (id) on delete restrict on update cascade;
 
 
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (12, 3300, 0, 5700, '000', '心跳', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (13, 3201, 0, 5551, '001', '屏幕_开', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (14, 3201, 0, 5551, '002', '屏幕_关', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (15, 3201, 1, 5551, '003', '气象站_开', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (16, 3201, 1, 5551, '004', '气象站_关', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (17, 3302, 0, 5700, '101', '气象站_数据上传', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (18, 3302, 0, 5700, '102', '路灯状态查询', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (19, 3302, 0, 5700, '103', '位置信息查询', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (20, 3318, 0, 5700, 'A', '气象信息上传频率', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (21, 3318, 1, 5700, 'B', '位置信息上传频率', 15);
-INSERT INTO znld.execute_command (id, objId, objInstId, resId, value, description, timeout) VALUES (22, 3318, 2, 5700, 'C', '路灯状态信息上传频率', 15);
+
 
 INSERT INTO znld.onenet_config_device (id, apiKey, deviceId, imei, objId, objInstId, resId, name, description, timeout, longitude, latitude, deviceName, checked) VALUES (1, 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '505253765', '868194030006003', 3304, 0, 5700, 'shidu', '湿度', 5, '', '', '路灯0001', true);
 INSERT INTO znld.onenet_config_device (id, apiKey, deviceId, imei, objId, objInstId, resId, name, description, timeout, longitude, latitude, deviceName, checked) VALUES (2, 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '505253765', '868194030006003', 3303, 0, 5700, 'wendu', '温度', 5, '', '', '路灯0001', true);

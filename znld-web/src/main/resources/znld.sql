@@ -11,6 +11,22 @@ create table execute_command(
   description  varchar(32) not null,
   timeout      tinyint unsigned default 5 not null
 );
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3300, 0, 5700, '000', '心跳');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3201, 0, 5551, '001', '屏幕_开');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3201, 0, 5551, '002', '屏幕_关');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3201, 1, 5551, '003', '气象站_开');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3201, 1, 5551, '004', '气象站_关');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3302, 0, 5700, '101', '气象站_数据上传');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3302, 0, 5700, '102', '路灯状态查询');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3302, 0, 5700, '103', '位置信息查询');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3318, 0, 5700, 'A', '气象信息上传频率');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3318, 1, 5700, 'B', '位置信息上传频率');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3318, 2, 5700, 'C', '路灯状态信息上传频率');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3201, 0, 5503, 104, '路灯与平台握手');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3303, 0, 5700, 200, '环境监测开始上传信息');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3303, 0, 5700, 201, '环境监测停止上传信息');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3303, 0, 5700, 202, '位置信息开始上传');
+INSERT INTO execute_command (obj_id, obj_inst_id, res_id, value, description) VALUES (3303, 0, 5700, 203, '位置信息停止上传');
 
 create table lamp(
   id           varchar(32) not null primary key,
@@ -49,6 +65,77 @@ create table video_config(
   record_audio bit default false not null ,
   organization_id varchar(32) not null
 );
+
+create table onenet_config_device(
+  id varchar(32) primary key,
+  api_key varchar(50) not null ,
+  device_id varchar(50) not null,
+  imei varchar(50) not null,
+  obj_id int unsigned not null,
+  obj_inst_id int unsigned not null,
+  res_id int unsigned not null,
+  name varchar(30) not null ,
+  description varchar(10) not null,
+  timeout tinyint unsigned default 5 not null,
+  longitude varchar(20) not null,
+  latitude varchar(20) not null,
+  device_name varchar(50) not null,
+  checked bit default true comment '是否需要监测'
+);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3304, 0, 5700, 'shidu', '湿度', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3303, 0, 5700, 'wendu', '温度', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3336, 0, 5513, 'bd_weidu', '北斗纬度', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3336, 0, 5514, 'bd_jingdu', '北斗经度', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3336, 0, 5518, 'bd_sjcuo', '北斗时间戳', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3336, 0, 5515, 'bd_gaodu', '北斗高度', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3336, 0, 5516, 'bd_jdu', '北斗精度', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3336, 0, 5517, 'bd_sudu', '北斗速度', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3303, 0, 5701, 'wddanwei', '温度单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3304, 0, 5701, 'sddanwei', '湿度单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3315, 0, 5700, 'qiya', '气压', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3315, 0, 5701, 'qydanwei', '气压单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3321, 0, 5700, 'gaodu', '高度', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3321, 0, 5701, 'gddanwei', '高度单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3321, 0, 5750, 'cgqmingzi_gaodu', '传感器名字', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3324, 0, 5700, 'zaoyin', '噪音', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3324, 0, 5701, 'zydanwei', '噪音单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3324, 0, 5750, 'cgqmingzi_zaoyin', '传感器名字', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3301, 0, 5700, 'ziwaixian', '紫外线', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3301, 0, 5701, 'zwxdanwei', '紫外线单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3325, 0, 5700, 'pm25', 'PM2.5', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3325, 0, 5701, 'pm25danwei', 'PM2.5单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3325, 0, 5750, 'cgqmingzi_pm25', '传感器名字', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '42939715', '868194030006003', 9999, 0, 9999, 'test', '测试属性', 5, '', '', '路灯0002', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3325, 1, 5700, 'pm10', 'PM10', 5, '', '', '路灯0001', true);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3325, 1, 5701, 'pm10danwei', 'PM10单位', 5, '', '', '路灯0001', false);
+INSERT INTO onenet_config_device (id, api_key, device_id, imei, obj_id, obj_inst_id, res_id, name, description, timeout, longitude, latitude, device_name, checked)
+VALUES (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', 3325, 1, 5750, 'cgqmingzi_pm10', '传感器名字', 5, '', '', '路灯0001', false);
 
 
 alter table video_config add constraint fk_video_user foreign key (clientId)references user (id) on delete restrict on update cascade;

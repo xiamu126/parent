@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class VideoConfigServiceTest {
     @Autowired
-    private VideoConfigService videoConfigService;
+    private VideoConfigServiceI videoConfigService;
 
     @Test
     public void test(){

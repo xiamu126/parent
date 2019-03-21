@@ -8,7 +8,7 @@ import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.service.model.user.UserEntity;
 import com.sybd.znld.service.model.user.dto.LoginInput;
 import com.sybd.znld.service.model.user.dto.RegisterInput;
-import com.sybd.znld.service.UserService;
+import com.sybd.znld.service.UserServiceI;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
 import org.redisson.api.RedissonClient;
@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
 @RequestMapping("/api/v1/user")
 public class UserController implements IUserController {
     private final DefaultKaptcha defaultKaptcha;
-    private final UserService userService;
+    private final UserServiceI userService;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final ProjectConfig projectConfig;
@@ -47,7 +47,7 @@ public class UserController implements IUserController {
 
     @Autowired
     public UserController(DefaultKaptcha defaultKaptcha,
-                          UserService userService,
+                          UserServiceI userService,
                           RedissonClient redissonClient,
                           StringRedisTemplate stringRedisTemplate,
                           ProjectConfig projectConfig) {

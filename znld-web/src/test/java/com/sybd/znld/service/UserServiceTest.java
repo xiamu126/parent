@@ -25,7 +25,7 @@ public class UserServiceTest {
     private WebApplicationContext wac;
 
     @Autowired
-    private UserService userService;
+    private UserServiceI userService;
     @Autowired
     private ProjectConfig projectConfig;
 

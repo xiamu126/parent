@@ -1,16 +1,17 @@
 package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.mapper.VideoConfigMapper;
 import com.sybd.znld.service.model.VideoConfigEntity;
-import com.sybd.znld.service.VideoConfigService;
+import com.sybd.znld.service.VideoConfigServiceI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 @Service
-public class VideoConfigServiceImpl extends BaseServiceImpl implements VideoConfigService {
+public class VideoConfigServiceImpl extends BaseService implements VideoConfigServiceI {
     private final VideoConfigMapper videoConfigMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

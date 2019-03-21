@@ -1,24 +1,22 @@
 package com.sybd.znld.controller;
 
-import com.sybd.znld.service.OneNetConfigDeviceService;
+import com.sybd.znld.service.OneNetConfigDeviceServiceI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 
 @Controller
 public class DefaultPageController {
-    private final OneNetConfigDeviceService onenetConfigDeviceService;
+    private final OneNetConfigDeviceServiceI onenetConfigDeviceService;
 
     @Autowired
-    public DefaultPageController(OneNetConfigDeviceService onenetConfigDeviceService) {
+    public DefaultPageController(OneNetConfigDeviceServiceI onenetConfigDeviceService) {
         this.onenetConfigDeviceService = onenetConfigDeviceService;
     }
 

@@ -2,7 +2,7 @@ package com.sybd.znld.video;
 
 import com.sybd.znld.service.model.VideoConfigEntity;
 import com.sybd.znld.video.dto.VideoData;
-import com.sybd.znld.service.VideoConfigService;
+import com.sybd.znld.service.VideoConfigServiceI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 public class VideoRepository implements IVideoRepository {
 
     private final VideoAsyncTask videoAsyncTask;
-    private final VideoConfigService videoConfigService;
+    private final VideoConfigServiceI videoConfigService;
     private final Logger log = LoggerFactory.getLogger(VideoRepository.class);
 
     @PreDestroy
@@ -29,7 +29,7 @@ public class VideoRepository implements IVideoRepository {
     }
 
     @Autowired
-    public VideoRepository(VideoAsyncTask videoAsyncTask, VideoConfigService videoConfigService) {
+    public VideoRepository(VideoAsyncTask videoAsyncTask, VideoConfigServiceI videoConfigService) {
         this.videoAsyncTask = videoAsyncTask;
         this.videoConfigService = videoConfigService;
     }

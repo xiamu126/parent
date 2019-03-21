@@ -1,7 +1,7 @@
 package com.sybd.znld.onenet;
 
 import com.sybd.znld.onenet.dto.OneNetKey;
-import com.sybd.znld.service.OneNetConfigDeviceService;
+import com.sybd.znld.service.OneNetConfigDeviceServiceI;
 import com.whatever.util.MyString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ public class OneNetConfig {
 
     private final Logger log = LoggerFactory.getLogger(OneNetConfig.class);
 
-    private final OneNetConfigDeviceService onenetConfigDeviceService;
+    private final OneNetConfigDeviceServiceI onenetConfigDeviceService;
     private String getHistoryDataStreamUrl;
     private String postExecuteUrl;
     private String getLastDataStreamUrl;
@@ -25,7 +25,7 @@ public class OneNetConfig {
     private String getDataStreamByIdUrl;
     private String getDataStreamsByIdsUrl;
 
-    public OneNetConfigDeviceService getOnenetConfigDeviceService() {
+    public OneNetConfigDeviceServiceI getOnenetConfigDeviceService() {
         return onenetConfigDeviceService;
     }
 
@@ -78,7 +78,7 @@ public class OneNetConfig {
     }
 
     @Autowired
-    public OneNetConfig(OneNetConfigDeviceService onenetConfigDeviceService) {
+    public OneNetConfig(OneNetConfigDeviceServiceI onenetConfigDeviceService) {
         this.onenetConfigDeviceService = onenetConfigDeviceService;
     }
 

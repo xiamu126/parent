@@ -3,9 +3,8 @@ package com.sybd.znld.task;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.CommandParams;
 import com.sybd.znld.onenet.OneNetConfig;
-import com.sybd.znld.onenet.dto.OneNetExecuteParams;
-import com.sybd.znld.service.ExecuteCommandService;
-import com.sybd.znld.service.OneNetConfigDeviceService;
+import com.sybd.znld.service.ExecuteCommandServiceI;
+import com.sybd.znld.service.OneNetConfigDeviceServiceI;
 import com.sybd.znld.service.VideoService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -16,17 +15,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class MyScheduledTask {
     private final OneNetService oneNet;
-    private final ExecuteCommandService executeCommandService;
+    private final ExecuteCommandServiceI executeCommandService;
     private final VideoService videoService;
     private final RedissonClient redissonClient;
-    private final OneNetConfigDeviceService oneNetConfigDeviceService;
+    private final OneNetConfigDeviceServiceI oneNetConfigDeviceService;
     private static Map<String, RLock> lockers;
     private static final String heartBeat = "oneNetHeartBeat";
 
@@ -43,10 +40,10 @@ public class MyScheduledTask {
 
     @Autowired
     public MyScheduledTask(OneNetService oneNet,
-                           ExecuteCommandService executeCommandService,
+                           ExecuteCommandServiceI executeCommandService,
                            VideoService videoService,
                            RedissonClient redissonClient,
-                           OneNetConfigDeviceService oneNetConfigDeviceService) {
+                           OneNetConfigDeviceServiceI oneNetConfigDeviceService) {
         this.oneNet = oneNet;
         this.executeCommandService = executeCommandService;
         this.videoService = videoService;

@@ -4,7 +4,7 @@ import com.sybd.znld.service.model.user.UserEntity;
 import com.sybd.znld.service.model.user.dto.LoginInput;
 import com.sybd.znld.service.model.user.dto.RegisterInput;
 
-public interface UserService extends BaseService {
+public interface UserServiceI extends IBaseService {
     UserEntity add(RegisterInput input);
     UserEntity verify(LoginInput input);
     UserEntity verify(String name, String password);

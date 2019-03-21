@@ -6,7 +6,7 @@ import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
 import java.util.List;
 import java.util.Map;
 
-public interface OneNetConfigDeviceService extends BaseService {
+public interface OneNetConfigDeviceServiceI extends IBaseService {
     String getImeiByDeviceId(Integer deviceId);
     String getDescBy(Integer objId, Integer objInstId, Integer resId);
     List<Integer> getDeviceIds();

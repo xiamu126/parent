@@ -1,4 +1,4 @@
-package com.sybd.znld.service.model.znld;
+package com.sybd.znld.service.znld.model;
 
 import java.io.Serializable;
 

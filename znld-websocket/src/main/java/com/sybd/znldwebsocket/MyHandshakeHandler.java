@@ -1,7 +1,7 @@
 package com.sybd.znldwebsocket;
 
-import lombok.extern.slf4j.Slf4j;
-import lombok.var;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -18,8 +18,8 @@ import java.security.Principal;
 import java.util.Map;
 
 @Component
-@Slf4j
 public class MyHandshakeHandler extends DefaultHandshakeHandler {
+    private final Logger log = LoggerFactory.getLogger(MyHandshakeHandler.class);
     @Override
     protected Principal determineUser(ServerHttpRequest request,
                                       WebSocketHandler wsHandler,

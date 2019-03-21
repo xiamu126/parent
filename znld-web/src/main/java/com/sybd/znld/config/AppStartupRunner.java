@@ -1,7 +1,7 @@
 package com.sybd.znld.config;
 
 import com.sybd.znld.service.VideoService;
-import com.sybd.znld.service.impl.BaseServiceImpl;
+import com.sybd.znld.service.BaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AppStartupRunner implements ApplicationRunner {
-    private final BaseServiceImpl baseService;
+    private final BaseService baseService;
     private final Logger log = LoggerFactory.getLogger(AppStartupRunner.class);
 
     private final VideoService videoService;
 
     @Autowired
     public AppStartupRunner(CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, VideoService videoService) {
-        this.baseService = new BaseServiceImpl(cacheManager, taskScheduler, projectConfig);
+        this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig);
         this.videoService = videoService;
     }
 

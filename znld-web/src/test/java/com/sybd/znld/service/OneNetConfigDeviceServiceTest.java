@@ -1,6 +1,5 @@
 package com.sybd.znld.service;
 
-import com.sybd.znld.onenet.dto.OneNetKey;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +23,7 @@ public class OneNetConfigDeviceServiceTest {
     private WebApplicationContext wac;
 
     @Autowired
-    private OneNetConfigDeviceService oneNetConfigDeviceService;
+    private OneNetConfigDeviceServiceI oneNetConfigDeviceService;
 
     private MockMvc mockMvc;
 

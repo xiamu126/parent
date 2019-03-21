@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {"com.sybd.znld"})
 public class ZnldApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(ZnldApplication.class, args);
     }

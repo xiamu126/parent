@@ -1,6 +1,6 @@
-package com.sybd.znld.service.mapper.znld;
+package com.sybd.znld.service.znld.mapper;
 
-import com.sybd.znld.service.model.znld.RegionModel;
+import com.sybd.znld.service.znld.model.RegionModel;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

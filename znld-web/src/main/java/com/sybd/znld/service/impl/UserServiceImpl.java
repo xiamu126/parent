@@ -1,11 +1,12 @@
 package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.mapper.UserMapper;
 import com.sybd.znld.service.model.user.UserEntity;
 import com.sybd.znld.service.model.user.dto.LoginInput;
 import com.sybd.znld.service.model.user.dto.RegisterInput;
-import com.sybd.znld.service.UserService;
+import com.sybd.znld.service.UserServiceI;
 import com.whatever.util.MyString;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
-public class UserServiceImpl extends BaseServiceImpl implements UserService {
+public class UserServiceImpl extends BaseService implements UserServiceI {
     private final UserMapper userMapper;
     private final ModelMapper modelMapper;
 

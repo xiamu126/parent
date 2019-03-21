@@ -6,10 +6,8 @@ import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.core.ApiResultEx;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
-import com.sybd.znld.service.ExecuteCommandService;
-import com.sybd.znld.service.OneNetConfigDeviceService;
-import com.sybd.znld.service.dto.CheckedResource;
-import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
+import com.sybd.znld.service.ExecuteCommandServiceI;
+import com.sybd.znld.service.OneNetConfigDeviceServiceI;
 import com.whatever.util.MyDateTime;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
@@ -31,15 +29,15 @@ import java.util.*;
 @RequestMapping("/api/v1/device")
 public class DeviceController extends BaseDeviceController implements IDeviceController{
 
-    private final OneNetConfigDeviceService oneNetConfigDeviceService;
+    private final OneNetConfigDeviceServiceI oneNetConfigDeviceService;
     private final Logger log = LoggerFactory.getLogger(DeviceController.class);
 
     @Autowired
     public DeviceController(RedisTemplate<String, Object> redisTemplate,
                             OneNetService oneNet,
-                            ExecuteCommandService executeCommandService,
+                            ExecuteCommandServiceI executeCommandService,
                             ProjectConfig projectConfig,
-                            OneNetConfigDeviceService oneNetConfigDeviceService) {
+                            OneNetConfigDeviceServiceI oneNetConfigDeviceService) {
         super(redisTemplate, oneNet, executeCommandService, projectConfig);
         this.oneNetConfigDeviceService = oneNetConfigDeviceService;
     }
@@ -87,6 +85,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
         if(result == null) return PrettyHistoryDataResult.fail("获取数据为空");
         return PrettyHistoryDataResult.success(result);
     }
+
     @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,

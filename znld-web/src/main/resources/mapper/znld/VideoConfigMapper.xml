@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.service.znld.mapper.VideoConfigMapper">
+    <select id="getConfigByCameraId" resultType="com.sybd.znld.service.znld.model.VideoConfigModel">
+        select * from video_config where id = #{_parameter};
+    </select>
+    <update id="setConfigByCameraId" parameterType="com.sybd.znld.service.znld.model.VideoConfigModel">
+        update video_config
+        <set>
+            <if test="rtspUrl != null">rtsp_url=#{rtspUrl},</if>
+            <if test="rtmpUrl != null">rtmp_url=#{rtmpUrl},</if>
+            <if test="recordAudio != null">record_audio=#{recordAudio},</if>
+            <if test="organizationId != null">organization_id=#{organizationId}</if>
+        </set>
+        where id = #{id};
+    </update>
+</mapper>

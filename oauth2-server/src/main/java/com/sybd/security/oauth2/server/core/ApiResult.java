@@ -34,8 +34,8 @@ public class ApiResult {
         return new ApiResult(1, msg,"");
     }
     public static ApiResult fail(BindingResult bindingResult){
-        List<ObjectError> errorList = bindingResult.getAllErrors();
-        for(ObjectError error : errorList){
+        var errorList = bindingResult.getAllErrors();
+        for(var error : errorList){
             log.debug(error.getDefaultMessage());
         }
         return ApiResult.fail("非法的参数");

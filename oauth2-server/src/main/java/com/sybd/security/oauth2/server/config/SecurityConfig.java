@@ -31,7 +31,6 @@ import java.util.Collections;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
     private final MyAuthenticationSuccessHandler authenticationSucessHandler;
     private final MyAuthenticationFailureHandler authenticationFailureHandler;
     private final MyLogoutSuccessHandler myLogoutSuccessHandler;

@@ -4,13 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.sybd</groupId>
-        <artifactId>znld</artifactId>
+        <groupId>com.sybd.znld</groupId>
+        <artifactId>parent</artifactId>
         <version>1.0</version>
         <relativePath>../../znld</relativePath>
     </parent>
 
-    <groupId>com.sybd.znld</groupId>
     <artifactId>znld-web</artifactId>
     <version>0.0.2</version>
     <packaging>jar</packaging>
@@ -19,6 +18,19 @@
     <description>sybd znld web</description>
 
     <dependencies>
+        <dependency>
+            <groupId>com.sybd.znld</groupId>
+            <artifactId>znld-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sybd.znld</groupId>
+            <artifactId>znld-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.whatever</groupId>
             <artifactId>myutil</artifactId>

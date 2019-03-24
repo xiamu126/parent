@@ -1,6 +1,6 @@
 package com.sybd.znld.security;
 
-import com.sybd.znld.service.model.user.UserEntity;
+import com.sybd.znld.model.rbac.UserModel;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
@@ -15,10 +15,10 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
         super(authentication);
     }
     public boolean isOk(){
-        UserEntity user = (UserEntity)this.getPrincipal();
-        String[] list =user.getAuthorities().split(",");
-        boolean ret =Arrays.stream(list).anyMatch(item -> item.equalsIgnoreCase("ADMIN"));
-        return ret;
+        var user = (UserModel)this.getPrincipal();
+        //var ret = Arrays.stream(list).anyMatch(item -> item.equalsIgnoreCase("ADMIN"));
+        //return ret;
+        return true;
     }
 
     @Override

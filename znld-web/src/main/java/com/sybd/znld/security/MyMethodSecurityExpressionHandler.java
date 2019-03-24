@@ -12,7 +12,7 @@ public class MyMethodSecurityExpressionHandler extends DefaultMethodSecurityExpr
 
     @Override
     protected MethodSecurityExpressionOperations createSecurityExpressionRoot(Authentication authentication, MethodInvocation invocation) {
-        MySecurityExpressionRoot root = new MySecurityExpressionRoot(authentication);
+        var root = new MySecurityExpressionRoot(authentication);
         root.setPermissionEvaluator(getPermissionEvaluator());
         root.setTrustResolver(this.trustResolver);
         root.setRoleHierarchy(getRoleHierarchy());

@@ -6,8 +6,8 @@ import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.core.ApiResultEx;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
-import com.sybd.znld.service.ExecuteCommandServiceI;
-import com.sybd.znld.service.OneNetConfigDeviceServiceI;
+import com.sybd.znld.service.OneNetConfigDeviceService;
+import com.sybd.znld.service.znld.IExecuteCommandService;
 import com.whatever.util.MyDateTime;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
@@ -29,15 +29,15 @@ import java.util.*;
 @RequestMapping("/api/v1/device")
 public class DeviceController extends BaseDeviceController implements IDeviceController{
 
-    private final OneNetConfigDeviceServiceI oneNetConfigDeviceService;
+    private final OneNetConfigDeviceService oneNetConfigDeviceService;
     private final Logger log = LoggerFactory.getLogger(DeviceController.class);
 
     @Autowired
     public DeviceController(RedisTemplate<String, Object> redisTemplate,
                             OneNetService oneNet,
-                            ExecuteCommandServiceI executeCommandService,
+                            IExecuteCommandService executeCommandService,
                             ProjectConfig projectConfig,
-                            OneNetConfigDeviceServiceI oneNetConfigDeviceService) {
+                            OneNetConfigDeviceService oneNetConfigDeviceService) {
         super(redisTemplate, oneNet, executeCommandService, projectConfig);
         this.oneNetConfigDeviceService = oneNetConfigDeviceService;
     }

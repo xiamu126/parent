@@ -1,16 +1,22 @@
 package com.sybd.znld.service.rbac;
 
-import com.sybd.znld.service.model.rbac.UserModel;
+import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.znld.service.rbac.dto.LoginInput;
+import com.sybd.znld.service.rbac.dto.RegisterInput;
 
 import java.util.List;
 
 public interface IUserService {
-    UserModel addUser(UserModel user);
-    UserModel modifyUserById(UserModel user);
+    UserModel addUser(UserModel model);
+    UserModel modifyUserById(UserModel model);
+    UserModel modifyUserByName(UserModel model);
     UserModel getUserById(String id);
     UserModel getUserByName(String name);
     UserModel getUserByPhone(String phone);
     UserModel getUserByEmail(String email);
     UserModel getUserByIdCardNo(String idCardNo);
     List<UserModel> getUserByOrganizationId(String organizationId);
+    UserModel verify(String name, String password);
+    UserModel verify(LoginInput input);
+    UserModel register(RegisterInput input);
 }

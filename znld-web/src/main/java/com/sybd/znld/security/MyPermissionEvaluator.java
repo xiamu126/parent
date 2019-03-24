@@ -12,7 +12,7 @@ public class MyPermissionEvaluator implements PermissionEvaluator {
         if ((authentication == null) || (targetDomainObject == null) || !(permission instanceof String)){
             return false;
         }
-        String targetType = targetDomainObject.getClass().getSimpleName().toUpperCase();
+        var targetType = targetDomainObject.getClass().getSimpleName().toUpperCase();
         return hasPrivilege(authentication, targetType, permission.toString().toUpperCase());
     }
 
@@ -26,8 +26,8 @@ public class MyPermissionEvaluator implements PermissionEvaluator {
     }
 
     private boolean hasPrivilege(Authentication auth, String targetType, String permission) {
-        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
-            String tmp = grantedAuth.getAuthority();
+        for (var grantedAuth : auth.getAuthorities()) {
+            var tmp = grantedAuth.getAuthority();
             if (tmp.startsWith(targetType)) {
                 if (tmp.contains(permission)) {
                     return true;

@@ -2,11 +2,9 @@ package com.sybd.znld.service.impl;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.service.BaseService;
-import com.sybd.znld.service.mapper.UserMapper;
-import com.sybd.znld.service.model.user.UserEntity;
-import com.sybd.znld.service.model.user.dto.LoginInput;
-import com.sybd.znld.service.model.user.dto.RegisterInput;
-import com.sybd.znld.service.UserServiceI;
+import com.sybd.znld.service.rbac.dto.LoginInput;
+import com.sybd.znld.service.rbac.dto.RegisterInput;
+import com.sybd.znld.service.rbac.mapper.UserMapper;
 import com.whatever.util.MyString;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +15,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
-@Service
-public class UserServiceImpl extends BaseService implements UserServiceI {
+public class UserServiceImpl extends BaseService {
     private final UserMapper userMapper;
     private final ModelMapper modelMapper;
 
@@ -33,38 +30,18 @@ public class UserServiceImpl extends BaseService implements UserServiceI {
         this.modelMapper = modelMapper;
     }
 
-    @Override
-    @Cacheable(key="#root.targetClass.getName()+'.user_'+#input.name", unless = "#result == null")
-    public UserEntity add(RegisterInput input) {
-        Boolean tmp = userMapper.existsByName(input.getName());
-        if(tmp != null){
-            return null;//已经存在
-        }
-        UserEntity ret = modelMapper.map(input, UserEntity.class);
-        if(userMapper.add(ret) <= 0){
-            return null;
-        }
-        return this.userMapper.getUserById(ret.id);
-    }
-
-    @Override
-    public UserEntity verify(LoginInput input) {
-        return verify(input.getUser(), input.getPassword());
-    }
-
-    @Override
-    @Cacheable(key="#root.targetClass.getName()+'.user_'+#name")//不管结果如何都做缓存，以便面对一些恶意攻击的时候频繁访问数据库
-    public UserEntity verify(String name, String password) {
+    //@Cacheable(key="#root.targetClass.getName()+'.user_'+#input.name", unless = "#result == null")
+    //@Cacheable(key="#root.targetClass.getName()+'.user_'+#name")//不管结果如何都做缓存，以便面对一些恶意攻击的时候频繁访问数据库
+/*    public UserEntity verify(String name, String password) {
         var ret = userMapper.verify(name, password);
         if(ret == null){
             this.removeCache(this.getClass(),".user_"+name, expirationTime);
         }
         return ret;
-    }
+    }*/
 
-    @Override
-    @Cacheable(key="#root.targetClass.getName()+'.user_'+#id")//不管结果如何都做缓存，以便面对一些恶意访问的时候频繁访问数据库
-    public UserEntity getUserById(String id) {
+    //@Cacheable(key="#root.targetClass.getName()+'.user_'+#id")//不管结果如何都做缓存，以便面对一些恶意访问的时候频繁访问数据库
+    /*public UserEntity getUserById(String id) {
         if(id == null || id.equals("")){
             this.removeCache(this.getClass(),".user_null", expirationTime);
             return null;
@@ -78,11 +55,10 @@ public class UserServiceImpl extends BaseService implements UserServiceI {
             this.removeCache(this.getClass(),".user_"+id, expirationTime); //3分钟后失效
         }
         return ret;
-    }
+    }*/
 
-    @Override
-    @Cacheable(key="#root.targetClass.getName()+'.user_'+#name")
-    public UserEntity getUserByName(String name) {
+    //@Cacheable(key="#root.targetClass.getName()+'.user_'+#name")
+    /*public UserEntity getUserByName(String name) {
         if(MyString.isEmptyOrNull(name)){
             this.removeCache(UserServiceImpl.class, ".user_null", expirationTime); //3分钟后失效
             return null;
@@ -92,10 +68,9 @@ public class UserServiceImpl extends BaseService implements UserServiceI {
             this.removeCache(UserServiceImpl.class, ".user_"+name, expirationTime); //3分钟后失效
         }
         return ret;
-    }
+    }*/
 
-    @Override
-    @CachePut(key="#root.targetClass.getName()+'.user_'+#input.id", unless = "#result == null")
+ /*   @CachePut(key="#root.targetClass.getName()+'.user_'+#input.id", unless = "#result == null")
     public UserEntity updateById(UserEntity input) {
         if(input == null || input.getId() == null || input.getId().equals("")){
             return null;
@@ -105,7 +80,6 @@ public class UserServiceImpl extends BaseService implements UserServiceI {
         return userMapper.getUserById(input.getId());
     }
 
-    @Override
     @CachePut(key="#root.targetClass.getName()+'.user_'+#input.name", unless = "#result == null")
     public UserEntity updateByName(UserEntity input) {
         if(input == null || input.getName() == null || input.getName().equals("")){
@@ -116,7 +90,6 @@ public class UserServiceImpl extends BaseService implements UserServiceI {
         return userMapper.getUserByName(input.getName());
     }
 
-    @Override
     //@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 30)
     //如果需要有自己单独的事务的则使用REQUIRES_NEW，这意味着在嵌套使用时，如果外层发生异常，不影响自己的正常执行
     @Cacheable(key="#root.targetClass.getName()+'.user_'+#input.name", unless = "#result == null")
@@ -127,5 +100,5 @@ public class UserServiceImpl extends BaseService implements UserServiceI {
             return ret;
         }
         return null;
-    }
+    }*/
 }

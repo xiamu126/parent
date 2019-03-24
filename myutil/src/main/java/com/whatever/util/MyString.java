@@ -47,9 +47,21 @@ public final class MyString {
     public static boolean isEmpty(String str){
         return str != null && str.equals("");
     }
+    public static boolean isAllEmpty(String ...params){
+        return Arrays.stream(params).allMatch(MyString::isEmpty);
+    }
+    public static boolean isAnyEmpty(String ...params){
+        return Arrays.stream(params).anyMatch(MyString::isEmpty);
+    }
 
     public static boolean isEmptyOrNull(String str){
         return str == null || str.equals("");
+    }
+    public static boolean isAllEmptyOrNull(String ...params){
+        return Arrays.stream(params).allMatch(MyString::isEmptyOrNull);
+    }
+    public static boolean isAnyEmptyOrNull(String ...params){
+        return Arrays.stream(params).anyMatch(MyString::isEmptyOrNull);
     }
 
     public static String toUrlParams(Map<String, String> nameAndValues){
@@ -120,6 +132,10 @@ public final class MyString {
         return str.matches("^(\\w)+(\\.\\w+)*@(\\w)+(\\.\\w+)+$");
     }
 
+    public static boolean isIPv4(String ip){
+        return ip.matches("((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\.)){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)");
+    }
+
     public static void main(String[] args){
         var map = new HashMap<String, String>();
         map.put("start", "2015-01-10T08:00:35");
@@ -127,6 +143,7 @@ public final class MyString {
         map.put("cursor", "191811_505253765_1544055568061");
         System.out.println(toUrlParams(map));
         System.out.println(isEmail("xxx@xxx.com.cn.cn"));
+        System.out.println(isIPv4("00.1.1.1"));
     }
 }
 

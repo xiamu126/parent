@@ -62,7 +62,7 @@ public class VideoServiceImpl implements VideoService {
 
     @Override
     public void verify(){
-        List<String> persistentKeys = redisService.scan(RedisKeyConfig.CLIENT_CHANNEL_GUID_PERSISTENCE_PREFIX_MATCH);//client:channelGuid:persistence:*
+        var persistentKeys = redisService.scan(RedisKeyConfig.CLIENT_CHANNEL_GUID_PERSISTENCE_PREFIX_MATCH);//client:channelGuid:persistence:*
         for(var key: persistentKeys){//client:channelGuid:persistence:2
             var redisKey = getRedisKey(key);
             if(this.redisService.exists(redisKey)) {

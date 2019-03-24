@@ -1,6 +1,6 @@
 package com.sybd.znld.controller;
 
-import com.sybd.znld.service.OneNetConfigDeviceServiceI;
+import com.sybd.znld.service.OneNetConfigDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -13,10 +13,10 @@ import java.security.Principal;
 
 @Controller
 public class DefaultPageController {
-    private final OneNetConfigDeviceServiceI onenetConfigDeviceService;
+    private final OneNetConfigDeviceService onenetConfigDeviceService;
 
     @Autowired
-    public DefaultPageController(OneNetConfigDeviceServiceI onenetConfigDeviceService) {
+    public DefaultPageController(OneNetConfigDeviceService onenetConfigDeviceService) {
         this.onenetConfigDeviceService = onenetConfigDeviceService;
     }
 

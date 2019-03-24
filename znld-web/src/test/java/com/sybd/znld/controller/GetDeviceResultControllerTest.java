@@ -2,7 +2,7 @@ package com.sybd.znld.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.onenet.dto.OneNetExecuteArgsEx;
-import com.sybd.znld.service.OneNetConfigDeviceServiceI;
+import com.sybd.znld.service.OneNetConfigDeviceService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +27,7 @@ public class GetDeviceResultControllerTest {
     private WebApplicationContext wac;
 
     @Autowired
-    private OneNetConfigDeviceServiceI onenetConfigDeviceService;
+    private OneNetConfigDeviceService onenetConfigDeviceService;
 
     private MockMvc mockMvc;
 

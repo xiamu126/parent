@@ -2,7 +2,7 @@ package com.sybd.znld.video;
 
 import com.sybd.znld.service.model.VideoConfigEntity;
 import com.sybd.znld.video.dto.VideoData;
-import com.sybd.znld.service.VideoConfigServiceI;
+import com.sybd.znld.service.znld.IVideoConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 public class VideoRepository implements IVideoRepository {
 
     private final VideoAsyncTask videoAsyncTask;
-    private final VideoConfigServiceI videoConfigService;
+    private final IVideoConfigService videoConfigService;
     private final Logger log = LoggerFactory.getLogger(VideoRepository.class);
 
     @PreDestroy
@@ -29,7 +29,7 @@ public class VideoRepository implements IVideoRepository {
     }
 
     @Autowired
-    public VideoRepository(VideoAsyncTask videoAsyncTask, VideoConfigServiceI videoConfigService) {
+    public VideoRepository(VideoAsyncTask videoAsyncTask, IVideoConfigService videoConfigService) {
         this.videoAsyncTask = videoAsyncTask;
         this.videoConfigService = videoConfigService;
     }
@@ -41,8 +41,8 @@ public class VideoRepository implements IVideoRepository {
 
     @Override
     public void push(VideoData videoData) {
-        String channelGuid = videoData.getChannelGuid();
-        VideoConfigEntity tmp = videoConfigService.getConfigByCameraId(videoData.getChannelGuid());
+        var channelGuid = videoData.getChannelGuid();
+        var tmp = videoConfigService.getConfigByCameraId(videoData.getChannelGuid());
         if(tmp == null){
             log.error("获取摄像头配置为空，"+channelGuid);
             return;
@@ -65,7 +65,7 @@ public class VideoRepository implements IVideoRepository {
 
     @Override
     public BufferedImage pickImage(String channelGuid) {
-        VideoConfigEntity tmp = videoConfigService.getConfigByCameraId(channelGuid);
+        var tmp = videoConfigService.getConfigByCameraId(channelGuid);
         if(tmp == null){
             log.error("获取摄像头配置为空，"+channelGuid);
             return null;

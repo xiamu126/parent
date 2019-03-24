@@ -3,7 +3,7 @@ package com.sybd.znld.controller.device;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.GetLastDataStreamsResult;
-import com.sybd.znld.service.ExecuteCommandServiceI;
+import com.sybd.znld.service.znld.IExecuteCommandService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class PageDeviceController extends BaseDeviceController implements IPageD
     @Autowired
     public PageDeviceController(RedisTemplate<String, Object> redisTemplate,
                                 OneNetService oneNet,
-                                ExecuteCommandServiceI executeCommandService,
+                                IExecuteCommandService executeCommandService,
                                 ProjectConfig projectConfig) {
         super(redisTemplate, oneNet, executeCommandService, projectConfig);
     }

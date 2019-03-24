@@ -15,7 +15,7 @@ import java.io.IOException;
 
 @Component
 public class MyLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler implements LogoutSuccessHandler {
-    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
     private final Logger log = LoggerFactory.getLogger(MyLogoutSuccessHandler.class);
 
     @Override

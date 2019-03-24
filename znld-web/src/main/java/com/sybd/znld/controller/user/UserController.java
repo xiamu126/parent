@@ -5,10 +5,10 @@ import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.user.dto.LoginResult;
 import com.sybd.znld.controller.user.dto.LogoutResult;
 import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.service.model.user.UserEntity;
-import com.sybd.znld.service.model.user.dto.LoginInput;
-import com.sybd.znld.service.model.user.dto.RegisterInput;
-import com.sybd.znld.service.UserServiceI;
+import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.znld.service.rbac.IUserService;
+import com.sybd.znld.service.rbac.dto.LoginInput;
+import com.sybd.znld.service.rbac.dto.RegisterInput;
 import com.whatever.util.MyString;
 import io.swagger.annotations.*;
 import org.redisson.api.RedissonClient;
@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
 @RequestMapping("/api/v1/user")
 public class UserController implements IUserController {
     private final DefaultKaptcha defaultKaptcha;
-    private final UserServiceI userService;
+    private final IUserService userService;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final ProjectConfig projectConfig;
@@ -47,7 +47,7 @@ public class UserController implements IUserController {
 
     @Autowired
     public UserController(DefaultKaptcha defaultKaptcha,
-                          UserServiceI userService,
+                          IUserService userService,
                           RedissonClient redissonClient,
                           StringRedisTemplate stringRedisTemplate,
                           ProjectConfig projectConfig) {
@@ -82,21 +82,19 @@ public class UserController implements IUserController {
     @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public LoginResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input, HttpServletRequest request, BindingResult bindingResult){
-        var key = getCaptchaKey(input.getUuid());
+        var key = getCaptchaKey(input.uuid);
         var rightCaptcha = this.stringRedisTemplate.opsForValue().get(key);
         if(rightCaptcha == null){
             return LoginResult.fail("验证码已失效");
         }
-        var captcha = input.getCaptcha();
-        if(!captcha.equalsIgnoreCase(rightCaptcha)){
+        if(!input.captcha.equalsIgnoreCase(rightCaptcha)){
             return LoginResult.fail("验证码错误");
         }
-        var pwd = input.getPassword();
         try {
-            input.setPassword(this.encoder.encode(pwd));
+            input.password = this.encoder.encode(input.password);
             var user = userService.verify(input);
             if(user != null){
-                this.stringRedisTemplate.delete(getCaptchaKey(input.getUuid()));
+                this.stringRedisTemplate.delete(getCaptchaKey(input.uuid));
                 long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
                 return LoginResult.success(user.getId(), clientId, clientSecret, seconds);
             }
@@ -134,9 +132,8 @@ public class UserController implements IUserController {
     @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public ApiResult register(@RequestBody @Valid RegisterInput input, BindingResult bindingResult){
-        String pwd = input.getPassword();
         try {
-            input.setPassword(this.encoder.encode(pwd));
+            input.password = this.encoder.encode(input.password);
             if(userService.register(input) != null){
                 return ApiResult.success();
             }
@@ -149,14 +146,14 @@ public class UserController implements IUserController {
     @GetMapping(value = "{id:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public ApiResult getUserInfo(@PathVariable(name = "id") String id){
-        UserEntity tmp = this.userService.getUserById(id);
+        var tmp = this.userService.getUserById(id);
         return ApiResult.success(tmp);
     }
 
     @PostMapping(value = "", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult updateUserInfo(@RequestBody @Valid UserEntity input, BindingResult bindingResult){
-        this.userService.updateById(input);
+    public ApiResult updateUserInfo(@RequestBody @Valid UserModel input, BindingResult bindingResult){
+        this.userService.modifyUserById(input);
         return ApiResult.success();
     }
 }

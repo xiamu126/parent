@@ -23,7 +23,7 @@ public class OneNetConfigDeviceServiceTest {
     private WebApplicationContext wac;
 
     @Autowired
-    private OneNetConfigDeviceServiceI oneNetConfigDeviceService;
+    private OneNetConfigDeviceService oneNetConfigDeviceService;
 
     private MockMvc mockMvc;
 

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.sybd.znld.service.mapper.oauth.OAuthClientDetailsMapper">
-    <select id="selectAll" resultType="com.sybd.znld.service.model.oauth.OAuthClientDetailsModel">
+<mapper namespace="com.sybd.znld.service.oauth.mapper.OAuthClientDetailsMapper">
+    <select id="selectAll" resultType="com.sybd.znld.service.oauth.model.OAuthClientDetailsModel">
         select * from oauth_client_details;
     </select>
-    <select id="selectByClientId" parameterType="string" resultType="com.sybd.znld.service.model.oauth.OAuthClientDetailsModel">
+    <select id="selectByClientId" parameterType="string" resultType="com.sybd.znld.service.oauth.model.OAuthClientDetailsModel">
         select * from oauth_client_details where client_id=#{_parameter};
     </select>
-    <insert id="insert" parameterType="com.sybd.znld.service.model.oauth.OAuthClientDetailsModel">
+    <insert id="insert" parameterType="com.sybd.znld.service.oauth.model.OAuthClientDetailsModel">
         insert into oauth_client_details(client_id,
                                          resource_ids,
                                          client_secret,
@@ -35,7 +35,7 @@
         </trim>
     </insert>
 
-    <update id="updateByClientId" parameterType="com.sybd.znld.service.model.oauth.OAuthClientDetailsModel">
+    <update id="updateByClientId" parameterType="com.sybd.znld.service.oauth.model.OAuthClientDetailsModel">
         update oauth_client_details
         <set>
             <if test=" resourceIds != null and resourceIds != '' ">resource_ids = #{resourceIds},</if>

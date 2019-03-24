@@ -3,9 +3,9 @@ package com.sybd.znld.task;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.CommandParams;
 import com.sybd.znld.onenet.OneNetConfig;
-import com.sybd.znld.service.ExecuteCommandServiceI;
-import com.sybd.znld.service.OneNetConfigDeviceServiceI;
+import com.sybd.znld.service.OneNetConfigDeviceService;
 import com.sybd.znld.service.VideoService;
+import com.sybd.znld.service.znld.IExecuteCommandService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -20,10 +20,10 @@ import java.util.Map;
 @Component
 public class MyScheduledTask {
     private final OneNetService oneNet;
-    private final ExecuteCommandServiceI executeCommandService;
+    private final IExecuteCommandService executeCommandService;
     private final VideoService videoService;
     private final RedissonClient redissonClient;
-    private final OneNetConfigDeviceServiceI oneNetConfigDeviceService;
+    private final OneNetConfigDeviceService oneNetConfigDeviceService;
     private static Map<String, RLock> lockers;
     private static final String heartBeat = "oneNetHeartBeat";
 
@@ -40,10 +40,10 @@ public class MyScheduledTask {
 
     @Autowired
     public MyScheduledTask(OneNetService oneNet,
-                           ExecuteCommandServiceI executeCommandService,
+                           IExecuteCommandService executeCommandService,
                            VideoService videoService,
                            RedissonClient redissonClient,
-                           OneNetConfigDeviceServiceI oneNetConfigDeviceService) {
+                           OneNetConfigDeviceService oneNetConfigDeviceService) {
         this.oneNet = oneNet;
         this.executeCommandService = executeCommandService;
         this.videoService = videoService;

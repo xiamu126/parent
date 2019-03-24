@@ -5,9 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.*;
-import springfox.documentation.schema.AlternateTypeRule;
-import springfox.documentation.schema.AlternateTypeRules;
-import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
@@ -15,12 +12,9 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.SecurityConfiguration;
 import springfox.documentation.swagger.web.SecurityConfigurationBuilder;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
-import com.fasterxml.classmate.TypeResolver;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 @EnableSwagger2
 @Configuration
@@ -58,7 +52,7 @@ public class SwaggerConfig {
     }
 
     private SecurityScheme securityScheme() {
-        ResourceOwnerPasswordCredentialsGrant grantType = new ResourceOwnerPasswordCredentialsGrant(authServer+"/oauth/token");
+        ResourceOwnerPasswordCredentialsGrant grantType = new ResourceOwnerPasswordCredentialsGrant(authServer+ "/com/sybd/znld/model/oauth/token");
         return new OAuthBuilder().name("spring_oauth").grantTypes(Collections.singletonList(grantType)).scopes(Arrays.asList(scopes())).build();
     }
 

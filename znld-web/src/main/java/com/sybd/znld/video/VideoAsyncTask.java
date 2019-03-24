@@ -35,7 +35,7 @@ public class VideoAsyncTask {
         this.redisService = redisService;
     }
 
-    public void stop(String channelGuid){
+    public void  stop(String channelGuid){
         threadPools.remove(channelGuid);
         stopRedis(channelGuid);
     }

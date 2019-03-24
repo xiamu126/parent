@@ -4,7 +4,7 @@
     <select id="selectById" resultType="com.sybd.znld.service.znld.model.ExecuteCommandModel">
         select * from execute_command where id = #{_parameter}
     </select>
-    <select id="selectByCommand" resultType="com.sybd.znld.service.znld.model.ExecuteCommandModel">
+    <select id="selectByValue" resultType="com.sybd.znld.service.znld.model.ExecuteCommandModel">
         select * from execute_command where `value` = #{_parameter}
     </select>
 </mapper>

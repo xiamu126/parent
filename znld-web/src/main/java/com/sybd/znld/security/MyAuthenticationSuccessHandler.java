@@ -16,13 +16,13 @@ import java.io.IOException;
 @Component
 public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private RequestCache requestCache = new HttpSessionRequestCache();
-    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+    private final RequestCache requestCache = new HttpSessionRequestCache();
+    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        SavedRequest savedRequest = requestCache.getRequest(request, response);
+        var savedRequest = requestCache.getRequest(request, response);
         redirectStrategy.sendRedirect(request, response, savedRequest.getRedirectUrl());
     }
 }

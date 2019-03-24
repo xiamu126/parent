@@ -5,7 +5,7 @@ import com.sybd.znld.dto.NameAndOneNetKey;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.mapper.OneNetConfigDeviceMapper;
 import com.sybd.znld.onenet.dto.OneNetKey;
-import com.sybd.znld.service.OneNetConfigDeviceServiceI;
+import com.sybd.znld.service.OneNetConfigDeviceService;
 import com.sybd.znld.service.RedisService;
 import com.sybd.znld.service.dto.CheckedResource;
 import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
@@ -21,7 +21,7 @@ import java.util.*;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
-public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNetConfigDeviceServiceI {
+public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNetConfigDeviceService {
 
     private final OneNetConfigDeviceMapper onenetConfigDeviceMapper;
     private final RedisService redisService;

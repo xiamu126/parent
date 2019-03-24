@@ -21,8 +21,7 @@ import java.io.IOException;
 public class MyAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
     private final Logger log = LoggerFactory.getLogger(MyAuthenticationFailureHandler.class);
-
-    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,

@@ -1,8 +1,8 @@
 package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.service.model.rbac.OrganizationModel;
-import com.sybd.znld.service.mapper.rbac.OrganizationMapper;
+import com.sybd.znld.model.rbac.OrganizationModel;
+import com.sybd.znld.service.rbac.mapper.OrganizationMapper;
 import com.whatever.util.MyNumber;
 import com.whatever.util.MyString;
 import org.slf4j.Logger;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
 @DbSource("rbac")
 public class OrganizationService implements IOrganizationService {

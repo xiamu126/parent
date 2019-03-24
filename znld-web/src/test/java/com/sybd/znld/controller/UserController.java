@@ -1,7 +1,7 @@
 package com.sybd.znld.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sybd.znld.service.UserServiceI;
+import com.sybd.znld.service.rbac.IUserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +26,7 @@ public class UserController {
     private WebApplicationContext wac;
 
     @Autowired
-    private UserServiceI userService;
+    private IUserService userService;
 
     private MockMvc mockMvc;
 

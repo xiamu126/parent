@@ -47,7 +47,7 @@ public class DynamicDataSourceConfig {
                                         @Qualifier("rbacDataSource") DataSource rbacDataSource,
                                         @Qualifier("ministarDataSource") DataSource ministarDataSource) {
         var targetDataSources = new HashMap<Object, Object>();
-        targetDataSources.put("oauth", oauthDataSource);
+        targetDataSources.put("com/sybd/znld/model/oauth", oauthDataSource);
         targetDataSources.put("znld", znldDataSource);
         targetDataSources.put("rbac", rbacDataSource);
         targetDataSources.put("ministar", ministarDataSource);

@@ -15,7 +15,7 @@ public interface UserMapper {
     UserModel selectByIdCardNo(String idCardNo);
     List<UserModel> selectByOrganizationId(String organizationId);
     int updateById(UserModel user);
-    UserModel verify(String name, String password);
+    UserModel selectByNameAndPassword(String name, String password);
     int updatePasswordByName(UserModel model);
     int updateByName(UserModel model);
 }

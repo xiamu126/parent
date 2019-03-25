@@ -1,40 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.rbac.mapper.UserMapper">
-    <insert id="insert" parameterType="com.sybd.znld.service.rbac.model.UserModel">
+    <insert id="insert" parameterType="com.sybd.znld.model.rbac.UserModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>
-        insert user(id,
-                    name,
-                    password,
-                    phone,
-                    email,
-                    gender,
-                    age,
-                    contact_address,
-                    real_name,
-                    id_card_no,
-                    last_login_ip,
-                    organization_id,
-                    status)
+        insert user(id,name,password,phone,email,gender,age,contact_address,real_name,id_card_no,last_login_ip,organization_id,status)
         values
-        (#{id},
-         #{name},
-         #{password},
-         #{phone},
-         #{email},
-         #{gender},
-         #{age},
-         #{contactAddress},
-         #{realName},
-         #{idCardNo},
-         #{lastLoginIp},
-         #{organizationId},
-         #{status})
+        (#{id},#{name},#{password},#{phone},#{email},#{gender},#{age},#{contactAddress},#{realName},#{idCardNo},#{lastLoginIp},#{organizationId},#{status})
     </insert>
 
-    <update id="updateById" parameterType="com.sybd.znld.service.rbac.model.UserModel">
+    <update id="updateById" parameterType="com.sybd.znld.model.rbac.UserModel">
         update user
         <set>
             <if test=" name != null and name != '' ">name = #{name},</if>
@@ -52,23 +28,50 @@
         </set>
         where id = #{id}
     </update>
+    <update id="updatePasswordByName" parameterType="com.sybd.znld.model.rbac.UserModel">
+        update user
+        <set>
+            <if test="password != null and password != '' ">password=#{password}</if>
+        </set>
+        where name = #{name};
+    </update>
+    <update id="updateByName" parameterType="com.sybd.znld.model.rbac.UserModel">
+        update user
+        <set>
+            <if test=" password != null and password != '' ">password = #{password},</if>
+            <if test=" phone != null and phone != '' ">phone = #{phone},</if>
+            <if test=" email != null and email != '' ">email = #{email},</if>
+            <if test=" gender != null and (gender gte 0 and gender lt 3) ">gender = #{gender},</if>
+            <if test=" age != null and (age gte 18 and age lt 100) ">age = #{age},</if>
+            <if test=" contactAddress != null and contactAddress != '' ">contactAddress = #{contactAddress},</if>
+            <if test=" realName != null and realName != '' ">realName = #{realName},</if>
+            <if test=" idCardNo != null and idCardNo != '' ">idCardNo = #{idCardNo},</if>
+            <if test=" lastLoginIp != null and lastLoginIp != '' ">lastLoginIp = #{lastLoginIp},</if>
+            <if test=" organizationId != null and organizationId != '' ">organizationId = #{organizationId},</if>
+            <if test=" status != null and status gte 0 ">status = #{status},</if>
+        </set>
+        where name = #{name};
+    </update>
 
-    <select id="selectById" resultType="com.sybd.znld.service.rbac.model.UserModel">
+    <select id="selectById" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where id = #{_parameter}
     </select>
-    <select id="selectByName" resultType="com.sybd.znld.service.rbac.model.UserModel">
+    <select id="selectByName" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where name = #{_parameter}
     </select>
-    <select id="selectByPhone" resultType="com.sybd.znld.service.rbac.model.UserModel">
+    <select id="selectByPhone" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where phone = #{_parameter}
     </select>
-    <select id="selectByEmail" resultType="com.sybd.znld.service.rbac.model.UserModel">
+    <select id="selectByEmail" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where email = #{_parameter}
     </select>
-    <select id="selectByIdCardNo" resultType="com.sybd.znld.service.rbac.model.UserModel">
+    <select id="selectByIdCardNo" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where id_card_no = #{_parameter}
     </select>
-    <select id="selectByOrganizationId" resultType="com.sybd.znld.service.rbac.model.UserModel">
+    <select id="selectByOrganizationId" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where organization_id = #{_parameter}
+    </select>
+    <select id="selectByNameAndPassword" resultType="com.sybd.znld.model.rbac.UserModel">
+        select * from user where name=#{name} and password=#{password};
     </select>
 </mapper>

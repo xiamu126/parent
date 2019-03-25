@@ -6,9 +6,8 @@ import com.sybd.znld.db.DbSource;
 import com.sybd.znld.model.znld.VideoConfigModel;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.video.VideoAsyncTask;
-import com.sybd.znld.service.video.dto.VideoData;
 import com.sybd.znld.service.znld.mapper.VideoConfigMapper;
-import com.whatever.util.MyString;
+import com.sybd.znld.util.MyString;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PreDestroy;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 

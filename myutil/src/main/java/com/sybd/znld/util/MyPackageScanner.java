@@ -1,4 +1,4 @@
-package com.whatever.util;
+package com.sybd.znld.util;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;

@@ -1,6 +1,6 @@
 package com.sybd.znld.model.rbac;
 
-import com.whatever.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 

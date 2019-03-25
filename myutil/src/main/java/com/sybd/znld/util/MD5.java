@@ -1,4 +1,4 @@
-package com.whatever.util;
+package com.sybd.znld.util;
 
 import com.google.common.io.BaseEncoding;
 import java.security.MessageDigest;

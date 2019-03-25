@@ -9,7 +9,7 @@ import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.rbac.dto.LoginInput;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
-import com.whatever.util.MyString;
+import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;

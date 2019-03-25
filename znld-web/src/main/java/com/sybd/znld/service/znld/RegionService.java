@@ -4,7 +4,7 @@ import com.sybd.znld.db.DbSource;
 import com.sybd.znld.model.znld.RegionModel;
 import com.sybd.znld.service.model.BaseStatus;
 import com.sybd.znld.service.znld.mapper.RegionMapper;
-import com.whatever.util.MyString;
+import com.sybd.znld.util.MyString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

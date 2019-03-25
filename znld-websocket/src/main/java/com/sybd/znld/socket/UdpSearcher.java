@@ -1,3 +1,5 @@
+package com.sybd.znld.socket;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -8,7 +10,7 @@ public class UdpSearcher {
     public static void main(String[] args) throws IOException {
         var ds = new DatagramSocket();
 
-        var tmp = new DatagramPacket("hello".getBytes(StandardCharsets.UTF_8),"hello".length(), InetAddress.getLocalHost(),20000);
+        var tmp = new DatagramPacket("hello".getBytes(StandardCharsets.UTF_8), "hello".length(), InetAddress.getLocalHost(),20000);
         ds.send(tmp);
 
         var buf = new byte[512];

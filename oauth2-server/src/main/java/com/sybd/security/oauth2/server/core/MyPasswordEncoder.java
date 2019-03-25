@@ -1,6 +1,6 @@
 package com.sybd.security.oauth2.server.core;
 
-import com.whatever.util.MD5;
+import com.sybd.znld.util.MD5;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;

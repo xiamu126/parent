@@ -79,7 +79,7 @@ public class MyScheduledTask {
         }
     }
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000*10)
+    //@Scheduled(initialDelay = 1000, fixedDelay = 1000*10)
     public void videoCheck(){
         this.videoService.verify();
     }

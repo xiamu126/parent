@@ -8,13 +8,11 @@ import com.sybd.znld.service.rbac.dto.LoginInput;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
 import com.sybd.znld.service.rbac.mapper.OrganizationMapper;
 import com.sybd.znld.service.rbac.mapper.UserMapper;
-import com.whatever.util.MyString;
-import org.modelmapper.Condition;
+import com.sybd.znld.util.MyString;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -98,13 +96,13 @@ public class UserService extends BaseService implements IUserService {
     @Override
     public UserModel verify(String name, String password) {
         if(MyString.isAnyEmptyOrNull(name, password)) return null;
-        return this.userMapper.verify(name, password);
+        return this.userMapper.selectByNameAndPassword(name, password);
     }
 
     @Override
     public UserModel verify(LoginInput input) {
         if(input == null || !input.isValid()) return null;
-        return this.userMapper.verify(input.user, input.password);
+        return this.userMapper.selectByNameAndPassword(input.user, input.password);
     }
 
     @Override

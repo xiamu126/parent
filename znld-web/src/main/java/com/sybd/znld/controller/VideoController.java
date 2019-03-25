@@ -31,15 +31,17 @@ public class VideoController {
     @ApiOperation(value = "推送视频")
     @PostMapping(value = "play", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult play(@ApiParam(name = "jsonData", value = "视频相关数据", required = true) @RequestBody VideoData jsonData){
-        if(jsonData.getCmd().equals("push")){
-            if(videoService.push(jsonData.channelGuid)){
-                return ApiResult.success("推流成功");
+        try{
+            if(jsonData.getCmd().equals("push")){
+                if(videoService.push(jsonData.channelGuid)){
+                    return ApiResult.success("推流成功");
+                }
+                return ApiResult.fail("推流失败");
             }
-            return ApiResult.fail("推流失败");
-        }
-
-        if(videoService.stop(jsonData.channelGuid)){
+            videoService.stop(jsonData.channelGuid);
             return ApiResult.success();
+        }catch (Exception ex){
+            log.error(ex.getMessage());
         }
         return ApiResult.fail("关闭失败");
     }

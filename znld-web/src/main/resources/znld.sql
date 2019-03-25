@@ -120,6 +120,18 @@ create table video_config(
   organization_id varchar(32) not null
 );
 
+create table http_log
+(
+  id                   varchar(32) not null primary key  comment '编号',
+  path                 text not null  comment '请求路径',
+  method               varchar(10) not null  comment '请求方法',
+  header               text not null  comment '请求头',
+  body                 text not null  comment '请求体',
+  ip                   varchar(20) not null  comment '请求者的IP',
+  trigger_time         timestamp not null default CURRENT_TIMESTAMP  comment '发生时间'
+);
+
+
 
 alter table video_config add constraint fk_video_user foreign key (clientId)references user (id) on delete restrict on update cascade;
 

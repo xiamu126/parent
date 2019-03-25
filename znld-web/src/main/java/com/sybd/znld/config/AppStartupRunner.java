@@ -1,7 +1,7 @@
 package com.sybd.znld.config;
 
-import com.sybd.znld.service.video.IVideoService;
 import com.sybd.znld.service.BaseService;
+import com.sybd.znld.service.znld.IVideoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,18 +16,18 @@ public class AppStartupRunner implements ApplicationRunner {
     private final BaseService baseService;
     private final Logger log = LoggerFactory.getLogger(AppStartupRunner.class);
 
-    private final IVideoService IVideoService;
+    private final IVideoService videoService;
 
     @Autowired
-    public AppStartupRunner(CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, IVideoService IVideoService) {
+    public AppStartupRunner(CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, IVideoService videoService) {
         this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig);
-        this.IVideoService = IVideoService;
+        this.videoService = videoService;
     }
 
     @Override
     public void run(ApplicationArguments args){
         log.debug("执行程序启动初始化任务");
         this.baseService.removeAllCache();
-        this.IVideoService.stopAll();
+        this.videoService.stopAll();
     }
 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.znld.mapper.ExecuteCommandMapper">
-    <select id="selectById" resultType="com.sybd.znld.service.znld.model.ExecuteCommandModel">
+    <select id="selectById" resultType="com.sybd.znld.model.znld.ExecuteCommandModel">
         select * from execute_command where id = #{_parameter}
     </select>
-    <select id="selectByValue" resultType="com.sybd.znld.service.znld.model.ExecuteCommandModel">
+    <select id="selectByValue" resultType="com.sybd.znld.model.znld.ExecuteCommandModel">
         select * from execute_command where `value` = #{_parameter}
     </select>
 </mapper>

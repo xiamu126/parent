@@ -1,6 +1,6 @@
 package com.sybd.znld.service.znld;
 
-import com.sybd.znld.service.znld.model.RegionModel;
+import com.sybd.znld.model.znld.RegionModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

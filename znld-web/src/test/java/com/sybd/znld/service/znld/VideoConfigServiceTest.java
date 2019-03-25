@@ -21,7 +21,7 @@ public class VideoConfigServiceTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private IVideoConfigService videoConfigService;
+    private IVideoService videoConfigService;
 
     @Before
     public void setup() {

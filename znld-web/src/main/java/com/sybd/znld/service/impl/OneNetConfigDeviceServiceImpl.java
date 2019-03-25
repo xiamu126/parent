@@ -6,11 +6,11 @@ import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.mapper.OneNetConfigDeviceMapper;
 import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.OneNetConfigDeviceService;
-import com.sybd.znld.service.RedisService;
 import com.sybd.znld.service.dto.CheckedResource;
 import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.service.dto.DeviceIdAndImei;
 import com.sybd.znld.service.dto.DeviceIdName;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
@@ -24,18 +24,18 @@ import java.util.*;
 public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNetConfigDeviceService {
 
     private final OneNetConfigDeviceMapper onenetConfigDeviceMapper;
-    private final RedisService redisService;
+    private final RedissonClient redissonClient;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public OneNetConfigDeviceServiceImpl(OneNetConfigDeviceMapper onenetConfigDeviceMapper,
-                                         RedisService redisService,
+                                         RedissonClient redissonClient,
                                          ProjectConfig projectConfig,
                                          CacheManager cacheManager,
                                          TaskScheduler taskScheduler) {
         super(cacheManager, taskScheduler, projectConfig);
         this.onenetConfigDeviceMapper = onenetConfigDeviceMapper;
-        this.redisService = redisService;
+        this.redissonClient = redissonClient;
     }
 
     @Override

@@ -2,10 +2,10 @@ package com.sybd.znld.controller;
 
 import com.sybd.znld.config.RedisKeyConfig;
 import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.service.VideoService;
-import com.sybd.znld.video.dto.VideoData;
-import com.sybd.znld.service.RedisService;
+import com.sybd.znld.service.video.dto.VideoData;
+import com.sybd.znld.service.znld.IVideoService;
 import io.swagger.annotations.*;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,28 +18,27 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/api/v1/video")
 public class VideoController {
-    private final RedisService redisService;
-    private final VideoService videoService;
+    private final RedissonClient redissonClient;
+    private final IVideoService videoService;
     private final Logger log = LoggerFactory.getLogger(VideoController.class);
 
     @Autowired
-    public VideoController(RedisService redisService, VideoService videoService) {
-        this.redisService = redisService;
+    public VideoController(RedissonClient redissonClient, IVideoService videoService) {
+        this.redissonClient = redissonClient;
         this.videoService = videoService;
     }
 
     @ApiOperation(value = "推送视频")
     @PostMapping(value = "play", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult play(@ApiParam(name = "jsonData", value = "视频相关数据", required = true) @RequestBody VideoData jsonData){
-        var key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+jsonData.getChannelGuid();
         if(jsonData.getCmd().equals("push")){
-            if(videoService.push(key, jsonData)){
+            if(videoService.push(jsonData.channelGuid)){
                 return ApiResult.success("推流成功");
             }
             return ApiResult.fail("推流失败");
         }
 
-        if(videoService.stop(key, jsonData)){
+        if(videoService.stop(jsonData.channelGuid)){
             return ApiResult.success();
         }
         return ApiResult.fail("关闭失败");
@@ -52,11 +51,11 @@ public class VideoController {
     @GetMapping(value = "heartbeat/{channelGuid:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult heartbeat(@PathVariable(name = "channelGuid") String channelGuid){
         var key = RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+channelGuid;
-        if(this.videoService.isChannelInUsing(channelGuid)){
-            redisService.set(key,"", 30, TimeUnit.SECONDS);
+        if(this.videoService.isChannelInUsing(channelGuid)){//这个是否如果有人把全部频道都关闭了
+            redissonClient.getBucket(key).set("", 30, TimeUnit.SECONDS);
             return ApiResult.success();
         }else {
-            return ApiResult.fail("已经关闭");
+            return ApiResult.fail("频道已经关闭");
         }
     }
 

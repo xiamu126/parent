@@ -4,8 +4,8 @@ import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.CommandParams;
 import com.sybd.znld.onenet.OneNetConfig;
 import com.sybd.znld.service.OneNetConfigDeviceService;
-import com.sybd.znld.service.VideoService;
 import com.sybd.znld.service.znld.IExecuteCommandService;
+import com.sybd.znld.service.znld.IVideoService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class MyScheduledTask {
     private final OneNetService oneNet;
     private final IExecuteCommandService executeCommandService;
-    private final VideoService videoService;
+    private final IVideoService videoService;
     private final RedissonClient redissonClient;
     private final OneNetConfigDeviceService oneNetConfigDeviceService;
     private static Map<String, RLock> lockers;
@@ -41,7 +41,7 @@ public class MyScheduledTask {
     @Autowired
     public MyScheduledTask(OneNetService oneNet,
                            IExecuteCommandService executeCommandService,
-                           VideoService videoService,
+                           IVideoService videoService,
                            RedissonClient redissonClient,
                            OneNetConfigDeviceService oneNetConfigDeviceService) {
         this.oneNet = oneNet;

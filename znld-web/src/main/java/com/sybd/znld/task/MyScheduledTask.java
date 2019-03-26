@@ -31,8 +31,8 @@ public class MyScheduledTask {
 
     @PreDestroy
     public void preDestroy(){
-        for(Map.Entry<String, RLock> item : lockers.entrySet()){
-            RLock locker = item.getValue();
+        for(var item : lockers.entrySet()){
+            var locker = item.getValue();
             locker.forceUnlock();
             log.debug("释放锁："+locker.getName());
         }
@@ -53,7 +53,7 @@ public class MyScheduledTask {
         lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat));
     }
 
-    @Scheduled(initialDelay = 2000, fixedDelay = 1000*5)
+    //@Scheduled(initialDelay = 2000, fixedDelay = 1000*5)
     public void oneNetHeartBeat(){
         var locker = lockers.get(heartBeat);
         if(locker.tryLock()){
@@ -65,8 +65,8 @@ public class MyScheduledTask {
                     //log.error("执行定时任务错误，获取指令为空");
                     return;
                 }
-                Map<Integer, String> map = this.oneNetConfigDeviceService.getDeviceIdAndImeis();
-                for(Map.Entry<Integer, String> item : map.entrySet()){
+                var map = this.oneNetConfigDeviceService.getDeviceIdAndImeis();
+                for(var item: map.entrySet()){
                     var params = new CommandParams(item.getKey(),item.getValue(), entity.getOneNetKey(), entity.getTimeout(), OneNetConfig.ExecuteCommand.ZNLD_HEART_BEAT.getValue());
                     oneNet.execute(params);
                 }

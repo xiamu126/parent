@@ -13,11 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 
 interface IUserController {
-    ApiResult register(RegisterInput input, BindingResult bindingResult);
-    BufferedImage getCaptcha(String uuid, HttpServletRequest request, HttpServletResponse response);
+    ApiResult register(RegisterInput input, HttpServletRequest request, BindingResult bindingResult);
+    BufferedImage getCaptcha(String uuid, HttpServletRequest request);
     LoginResult login(LoginInput input, HttpServletRequest request, BindingResult bindingResult);
     ApiResult verifyCaptcha(String captcha, HttpServletRequest request);
     LogoutResult logout(String id, HttpServletRequest request);
-    ApiResult getUserInfo(String id);
-    ApiResult updateUserInfo(UserModel input, BindingResult bindingResult);
+    ApiResult getUserInfo(String id, HttpServletRequest request);
+    ApiResult updateUserInfo(UserModel input, HttpServletRequest request, BindingResult bindingResult);
 }

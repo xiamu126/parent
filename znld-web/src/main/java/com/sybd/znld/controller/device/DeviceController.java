@@ -104,7 +104,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @GetMapping(value = "data/last/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public LastDataResult getLastData(@PathVariable(name = "deviceId") Integer deviceId,
-                                      @PathVariable(name = "dataStreamId") String dataStreamId) {
+                                      @PathVariable(name = "dataStreamId") String dataStreamId, HttpServletRequest request) {
         try {
             if(!this.oneNetConfigDeviceService.isDataStreamIdEnabled(dataStreamId)){
                 return LastDataResult.fail("当前dataStreamId已禁用");
@@ -193,7 +193,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     public HistoryDataResult getHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
                                         @PathVariable(name = "dataStreamId") String dataStreamId,
                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp,
-                                        @PathVariable(name = "endTimestamp") Long endTimestamp) {
+                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
         try{
             var begin = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
@@ -225,7 +225,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                     @PathVariable(name = "dataStreamId") String dataStreamId,
                                     @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                     @PathVariable(name = "endTimestamp") Long endTimestamp,
-                                    @PathVariable(name = "limit") Integer limit) {
+                                    @PathVariable(name = "limit") Integer limit, HttpServletRequest request) {
         try{
             var begin = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
@@ -256,7 +256,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                     @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                     @PathVariable(name = "endTimestamp") Long endTimestamp,
                                     @PathVariable(name = "limit") Integer limit,
-                                    @PathVariable(name = "sort") String sort) {
+                                    @PathVariable(name = "sort") String sort, HttpServletRequest request) {
         try{
             var begin = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
@@ -290,7 +290,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                     @PathVariable(name = "endTimestamp") Long endTimestamp,
                                     @PathVariable(name = "limit") Integer limit,
                                     @PathVariable(name = "cursor") String cursor,
-                                    @PathVariable(name = "sort") String sort) {
+                                    @PathVariable(name = "sort") String sort, HttpServletRequest request) {
         try{
             var begin = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
@@ -313,7 +313,9 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     })
     @PostMapping(value = "execute/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ExecuteResult execute(@PathVariable("deviceId") Integer deviceId, @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgsEx command){
+    public ExecuteResult execute(@PathVariable("deviceId") Integer deviceId,
+                                 @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgsEx command,
+                                 HttpServletRequest request){
         try{
             var cmd = command.getArgsEx();
             if(cmd.equals("")){
@@ -329,7 +331,9 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             }
             var params = new CommandParams(deviceId, imei, tmp.getOneNetKey(), tmp.getTimeout(), cmd);
             var ret = oneNet.execute(params);
+
             if(ret.isOk()) return ExecuteResult.success(ret);
+            else log.debug(ret.error);
 
         }catch (Exception ex){
             log.error(ex.getMessage());
@@ -340,7 +344,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @ApiOperation(value = "获取所有的设备Id和名字")
     @GetMapping(value = "info", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public DeviceIdAndNameResult getDeviceIdAndName(){
+    public DeviceIdAndNameResult getDeviceIdAndName(HttpServletRequest request){
         try{
             var tmp = this.oneNetConfigDeviceService.getDeviceIdAndDeviceNames();
             if(tmp == null || tmp.isEmpty()){
@@ -360,7 +364,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     })
     @GetMapping(value = "resource/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public CheckedResourcesResult getCheckedResources(@PathVariable("deviceId") Integer deviceId) {
+    public CheckedResourcesResult getCheckedResources(@PathVariable("deviceId") Integer deviceId, HttpServletRequest request) {
         try{
             var ret = this.oneNetConfigDeviceService.getCheckedResources(deviceId);
             if(ret == null || ret.isEmpty()){

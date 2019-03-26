@@ -28,7 +28,7 @@ create table authority(
 create table user(
   id                varchar(32) not null primary key,
   name              varchar(32) not null,
-  password          varchar(32) not null,
+  password          varchar(50) not null,
   phone             varchar(11) default '' not null,
   email             varchar(32) default '' not null,
   gender            tinyint unsigned default 3 not null comment '0为女，1为男，3为未知',

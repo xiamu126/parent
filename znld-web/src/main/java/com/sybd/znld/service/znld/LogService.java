@@ -27,6 +27,7 @@ public class LogService implements ILogService {
         if(model == null || MyString.isAnyEmptyOrNull(model.path, model.method, model.ip) || !HttpMethod.isValid(model.method)){
             return null;
         }
+        if(httpLogMapper.selectByAll(model) != null) return null;
         if(httpLogMapper.insert(model) > 0) return model;
         return null;
     }

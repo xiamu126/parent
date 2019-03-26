@@ -9,6 +9,7 @@ import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.rbac.dto.LoginInput;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
+import com.sybd.znld.service.znld.ILogService;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
 import org.redisson.api.RedissonClient;
@@ -69,11 +70,8 @@ public class UserController implements IUserController {
     })
     @GetMapping(value = "login/captcha/{uuid:[0-9a-f]{32}}", produces = {MediaType.IMAGE_PNG_VALUE})
     @Override
-    public BufferedImage getCaptcha(@PathVariable("uuid") String uuid,
-                                    HttpServletRequest request,
-                                    HttpServletResponse response){
-        String remoteAddr = request.getRemoteAddr();
-        String createText = defaultKaptcha.createText();
+    public BufferedImage getCaptcha(@PathVariable("uuid") String uuid, HttpServletRequest request){
+        var createText = defaultKaptcha.createText();
         this.stringRedisTemplate.opsForValue().set(getCaptchaKey(uuid), createText, this.projectConfig.getCacheOfCaptchaExpirationTime());
         return defaultKaptcha.createImage(createText);
     }
@@ -84,14 +82,10 @@ public class UserController implements IUserController {
     public LoginResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input, HttpServletRequest request, BindingResult bindingResult){
         var key = getCaptchaKey(input.uuid);
         var rightCaptcha = this.stringRedisTemplate.opsForValue().get(key);
-        if(rightCaptcha == null){
-            return LoginResult.fail("验证码已失效");
-        }
-        if(!input.captcha.equalsIgnoreCase(rightCaptcha)){
-            return LoginResult.fail("验证码错误");
-        }
+        if(rightCaptcha == null) return LoginResult.fail("验证码已失效");
+        if(!input.captcha.equalsIgnoreCase(rightCaptcha)) return LoginResult.fail("验证码错误");
         try {
-            input.password = this.encoder.encode(input.password);
+            //input.password = this.encoder.encode(input.password);
             var user = userService.verify(input);
             if(user != null){
                 this.stringRedisTemplate.delete(getCaptchaKey(input.uuid));
@@ -131,7 +125,7 @@ public class UserController implements IUserController {
 
     @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult register(@RequestBody @Valid RegisterInput input, BindingResult bindingResult){
+    public ApiResult register(@RequestBody @Valid RegisterInput input, HttpServletRequest request, BindingResult bindingResult){
         try {
             input.password = this.encoder.encode(input.password);
             if(userService.register(input) != null){
@@ -145,14 +139,14 @@ public class UserController implements IUserController {
 
     @GetMapping(value = "{id:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult getUserInfo(@PathVariable(name = "id") String id){
+    public ApiResult getUserInfo(@PathVariable(name = "id") String id, HttpServletRequest request){
         var tmp = this.userService.getUserById(id);
         return ApiResult.success(tmp);
     }
 
     @PostMapping(value = "", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult updateUserInfo(@RequestBody @Valid UserModel input, BindingResult bindingResult){
+    public ApiResult updateUserInfo(@RequestBody @Valid UserModel input, HttpServletRequest request, BindingResult bindingResult){
         this.userService.modifyUserById(input);
         return ApiResult.success();
     }

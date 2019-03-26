@@ -4,31 +4,33 @@ import com.sybd.znld.controller.device.dto.*;
 import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.onenet.dto.OneNetExecuteArgsEx;
 
+import javax.servlet.http.HttpServletRequest;
+
 public interface IDeviceController {
-    LastDataResult getLastData(Integer deviceId, String dataStreamId);
+    LastDataResult getLastData(Integer deviceId, String dataStreamId, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId,
                                  String dataStreamId,
                                  Long beginTimestamp,
-                                 Long endTimestamp);
+                                 Long endTimestamp, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId,
                              String dataStreamId,
                              Long beginTimestamp,
                              Long endTimestamp,
-                             Integer limit);
+                             Integer limit, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId,
                              String dataStreamId,
                              Long beginTimestamp,
                              Long endTimestamp,
                              Integer limit,
-                             String cursor);
+                             String cursor, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId,
                              String dataStreamId,
                              Long beginTimestamp,
                              Long endTimestamp,
                              Integer limit,
                              String cursor,
-                             String sort);
-    ExecuteResult execute(Integer deviceId, OneNetExecuteArgsEx command);
-    DeviceIdAndNameResult getDeviceIdAndName();
-    CheckedResourcesResult getCheckedResources(Integer deviceId);
+                             String sort, HttpServletRequest request);
+    ExecuteResult execute(Integer deviceId, OneNetExecuteArgsEx command, HttpServletRequest request);
+    DeviceIdAndNameResult getDeviceIdAndName(HttpServletRequest request);
+    CheckedResourcesResult getCheckedResources(Integer deviceId, HttpServletRequest request);
 }

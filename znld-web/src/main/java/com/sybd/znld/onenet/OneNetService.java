@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class OneNetService implements IOneNetService {
-
     private final Logger log = LoggerFactory.getLogger(OneNetService.class);
     private final OneNetConfig oneNetConfig;
 
@@ -29,23 +28,23 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetLastDataStreamsResult getLastDataStream(Integer deviceId){
-        RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<String> httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
-        String url = oneNetConfig.getLastDataStreamUrl(deviceId);
+        var restTemplate = new RestTemplate();
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var url = oneNetConfig.getLastDataStreamUrl(deviceId);
         log.debug(url);
-        ResponseEntity<GetLastDataStreamsResult> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetLastDataStreamsResult.class);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetLastDataStreamsResult.class);
         return responseEntity.getBody();
     }
 
     private HttpEntity<String> getHttpEntity(Integer deviceId, MediaType mediaType){
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         headers.add("api-key", oneNetConfig.getApiKey(deviceId));
         headers.setContentType(mediaType);
         return new HttpEntity<>(null, headers);
     }
 
     private HttpEntity<String> getHttpEntity(Integer deviceId, MediaType mediaType, String body){
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         headers.add("api-key", oneNetConfig.getApiKey(deviceId));
         headers.setContentType(mediaType);
         return new HttpEntity<>(body, headers);
@@ -126,14 +125,14 @@ public class OneNetService implements IOneNetService {
     @Override
     public OneNetExecuteResult execute(CommandParams params){
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            ObjectMapper objectMapper = new ObjectMapper();
-            OneNetExecuteArgs executeEntity = new OneNetExecuteArgs(params.getCommand());
-            String jsonBody = objectMapper.writeValueAsString(executeEntity);
-            HttpEntity<String> httpEntity = getHttpEntity(params.getDeviceId(), MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
-            String url = oneNetConfig.getPostExecuteUrl();
+            var restTemplate = new RestTemplate();
+            var objectMapper = new ObjectMapper();
+            var executeEntity = new OneNetExecuteArgs(params.getCommand());
+            var jsonBody = objectMapper.writeValueAsString(executeEntity);
+            var httpEntity = getHttpEntity(params.getDeviceId(), MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var url = oneNetConfig.getPostExecuteUrl();
             url = url + params.toUrlString();
-            ResponseEntity<OneNetExecuteResult> responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, OneNetExecuteResult.class);
+            var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, OneNetExecuteResult.class);
             return responseEntity.getBody();
         } catch (JsonProcessingException ex) {
             log.error(ex.getMessage());
@@ -154,10 +153,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetDeviceResult getDeviceById(Integer deviceId) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<String> httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
-        String url = oneNetConfig.getDeviceUrl(deviceId);
-        ResponseEntity<GetDeviceResult> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDeviceResult.class);
+        var restTemplate = new RestTemplate();
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
+        var url = oneNetConfig.getDeviceUrl(deviceId);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDeviceResult.class);
         return responseEntity.getBody();
     }
 }

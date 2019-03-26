@@ -30,4 +30,11 @@
         where method = #{method} and trigger_time <![CDATA[ <= ]]> #{begin} and trigger_time > #{end};
     </select>
 
+    <select id="selectByAll" resultType="com.sybd.znld.model.znld.HttpLogModel">
+        select * from http_log
+        where <if test="id != null and id != '' ">id = #{id} and</if>
+        path = #{path} and method = #{method} and trigger_time = #{triggerTime} and ip = #{ip}
+        and header = #{header} and body = #{body}
+    </select>
+
 </mapper>

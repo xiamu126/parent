@@ -45,7 +45,7 @@ public class GetDeviceResultControllerTest {
             final var objInstId = item.getObjInstId();
             final var resId = item.getResId();
             MockHttpServletRequestBuilder action = MockMvcRequestBuilders
-                    .get("/api/data/last/{deviceId}/{objId}/{objInstId}/{resId}", deviceId, objId, objInstId, resId);
+                    .getOneRegion("/api/data/last/{deviceId}/{objId}/{objInstId}/{resId}", deviceId, objId, objInstId, resId);
             String result = null;
             try {
                 result = this.mockMvc.perform(action)

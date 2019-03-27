@@ -7,12 +7,23 @@
         </selectKey>
         insert region(id, name, status) VALUES (#{id}, #{name}, #{status});
     </insert>
+
     <select id="selectById" resultType="com.sybd.znld.model.znld.RegionModel">
         select * from region where id = #{_parameter};
     </select>
     <select id="selectByName" resultType="com.sybd.znld.model.znld.RegionModel">
         select * from region where name = #{_parameter};
     </select>
+    <select id="selectAll" resultType="com.sybd.znld.model.znld.RegionModel">
+        select * from region;
+    </select>
+    <select id="selectOne" resultType="com.sybd.znld.model.znld.RegionModel">
+        select * from region limit 1;
+    </select>
+    <select id="select" resultType="com.sybd.znld.model.znld.RegionModel">
+        select * from region limit #{_parameter};
+    </select>
+
     <update id="updateById" parameterType="com.sybd.znld.model.znld.RegionModel">
         update region
         set name = #{name}, status = #{status}

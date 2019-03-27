@@ -7,14 +7,14 @@
         <groupId>com.sybd.znld</groupId>
         <artifactId>parent</artifactId>
         <version>1.0</version>
-        <relativePath>../../znld</relativePath>
+        <relativePath/>
     </parent>
 
-    <artifactId>znld-websocket</artifactId>
+    <artifactId>znld-socket</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
-    <name>znld-websocket</name>
+    <name>znld-socket</name>
     <description>Demo project for Spring Boot</description>
 
     <dependencies>

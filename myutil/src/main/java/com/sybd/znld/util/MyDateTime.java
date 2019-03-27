@@ -61,4 +61,41 @@ public final class MyDateTime {
     public static boolean isBetween(LocalDateTime it, LocalDateTime min, LocalDateTime max){
         return it.isAfter(min) && (it.isBefore(max) || it.isEqual(max));
     }
+
+    public static boolean isFuture(LocalDateTime it){
+        return it.isAfter(LocalDateTime.now());
+    }
+    public static boolean isAllFuture(LocalDateTime ...its){
+        var now = LocalDateTime.now();
+        for(var it: its){
+            if(it.isBefore(now)) return false;
+        }
+        return true;
+    }
+    //全部为未来时间，并且它们按严格升序排列（越往后离现在越远）、即没有相等
+    public static boolean isAllFutureAndStrictAsc(LocalDateTime ...its){
+        for(var i = 0; i < its.length - 2; i++){
+            if(its[i].isBefore(its[i+1]) || its[i].isEqual(its[i+1])) return false;
+        }
+        var now = LocalDateTime.now();
+        return !its[its.length - 1].isBefore(now);
+    }
+    public static boolean isPast(LocalDateTime it){
+        return it.isBefore(LocalDateTime.now());
+    }
+    public static boolean isAllPast(LocalDateTime ...its){
+        var now = LocalDateTime.now();
+        for(var it: its){
+            if(it.isAfter(now)) return false;
+        }
+        return true;
+    }
+    //全部为过去时间，并且它们按严格降序排列（越往前离现在越远）、即没有相等
+    public static boolean isAllPastAndStrictDesc(LocalDateTime ...its){
+        for(var i = 0; i < its.length - 2; i++){
+            if(its[i].isAfter(its[i+1]) || its[i].isEqual(its[i+1])) return false;
+        }
+        var now = LocalDateTime.now();
+        return !its[0].isAfter(now);
+    }
 }

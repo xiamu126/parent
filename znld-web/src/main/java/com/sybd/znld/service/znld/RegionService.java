@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @DbSource("znld")
 public class RegionService implements IRegionService {
@@ -19,6 +21,11 @@ public class RegionService implements IRegionService {
     @Autowired
     public RegionService(RegionMapper regionMapper) {
         this.regionMapper = regionMapper;
+    }
+
+    @Override
+    public RegionModel getOneRegion() {
+        return this.regionMapper.selectOne();
     }
 
     @Override
@@ -79,5 +86,16 @@ public class RegionService implements IRegionService {
         }
         if(this.regionMapper.updateById(model) > 0) return model;
         return null;
+    }
+
+    @Override
+    public List<RegionModel> getAllRegion() {
+        return this.regionMapper.selectAll();
+    }
+
+    @Override
+    public List<RegionModel> getRegion(int count) {
+        if(count <= 0) return null;
+        return this.regionMapper.select(count);
     }
 }

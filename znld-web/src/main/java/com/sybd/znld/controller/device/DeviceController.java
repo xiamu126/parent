@@ -280,7 +280,6 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             @ApiImplicitParam(name = "cursor", value = "从当前cursor开始", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "sort", value = "排序规则，升序ASC，降序DESC", required = true, dataType = "string", paramType = "path")
     })
-    @PreAuthorize("isOk('ADMIN')")
     @GetMapping(value = "data/history/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}/{limit:^[1-9]\\d*$}/{cursor:^\\d+_\\d+_\\d+$}/{sort:DESC|ASC}",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
@@ -342,7 +341,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     }
 
     @ApiOperation(value = "获取所有的设备Id和名字")
-    @PreAuthorize("isOk()")
+    //@PreAuthorize("isOk()")
     //@PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(value = "info", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override

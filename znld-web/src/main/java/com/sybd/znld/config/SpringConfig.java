@@ -2,6 +2,7 @@ package com.sybd.znld.config;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;

@@ -65,7 +65,7 @@ public class RegionServiceTest {
     }
 
     @Test
-    public void getRegion(){
+    public void getRegionById(){
         var ret = this.regionService.getRegionById("b4065088495111e993a60242ac110006");
         Assert.assertNotNull(ret);
         Assert.assertEquals("b4065088495111e993a60242ac110006", ret.id);
@@ -76,5 +76,23 @@ public class RegionServiceTest {
         var ret = this.regionService.getRegionByName("测试区域");
         Assert.assertNotNull(ret);
         Assert.assertEquals("测试区域", ret.name);
+    }
+
+    @Test
+    public void getAllRegion(){
+        var ret = this.regionService.getAllRegion();
+        Assert.assertFalse(ret.isEmpty());
+    }
+
+    @Test
+    public void getOneRegion(){
+        var ret = this.regionService.getOneRegion();
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void getRegion(){
+        var ret = this.regionService.getRegion(2);
+        Assert.assertEquals(2, ret.size());
     }
 }

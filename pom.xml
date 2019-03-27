@@ -214,7 +214,7 @@
 
     <modules>
         <module>znld-web</module>
-        <module>znld-websocket</module>
+        <module>znld-socket</module>
         <module>oauth2-server</module>
         <module>oauth2-resource</module>
         <module>znld-model</module>

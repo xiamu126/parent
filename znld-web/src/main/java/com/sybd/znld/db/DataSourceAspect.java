@@ -1,5 +1,6 @@
 package com.sybd.znld.db;
 
+import org.apache.ibatis.binding.MapperProxy;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -9,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.lang.annotation.Annotation;
 
 @Aspect
 //设置AOP执行顺序(需要在事务之前，否则事务只发生在默认库中)
@@ -25,7 +28,7 @@ public class DataSourceAspect {
         var signature = (MethodSignature) point.getSignature();
         var method = signature.getMethod();
         var ds = method.getAnnotation(DbSource.class);
-        if(ds != null){
+        if(ds != null){// 方法上的注解
             // 通过判断DataSource中的值来判断当前方法应用哪个数据源
             DynamicDataSourceConfig.DynamicDataSource.setDataSource(ds.value());
             try {
@@ -34,8 +37,10 @@ public class DataSourceAspect {
                 DynamicDataSourceConfig.DynamicDataSource.clearDataSource();
             }
         }
+        var tmp = point.getThis();
+        var tmp2 = tmp.getClass();
         ds = point.getTarget().getClass().getAnnotation(DbSource.class);
-        if(ds != null){
+        if(ds != null){// 类上的注解
             DynamicDataSourceConfig.DynamicDataSource.setDataSource(ds.value());
             try {
                 return point.proceed();

@@ -7,7 +7,7 @@ public class TwinkleBeautyGroupModel implements Serializable {
     public String id;
     public LocalDateTime beginTime;
     public LocalDateTime endTime;
-    public Short status;
+    public Short status = Status.UPLOADED;
     public String regionId;
 
     public static class Status{

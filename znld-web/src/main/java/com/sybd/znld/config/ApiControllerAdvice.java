@@ -3,6 +3,7 @@ package com.sybd.znld.config;
 import com.sybd.znld.core.ApiResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -18,7 +19,9 @@ public class ApiControllerAdvice {
         result.setCode(1);
         if(e instanceof NoHandlerFoundException){
             result.setMsg("404");
-        }else{
+        }else if(e instanceof AccessDeniedException){
+            result.setMsg("403");
+        } else{
             result.setMsg("500");
         }
         return result;

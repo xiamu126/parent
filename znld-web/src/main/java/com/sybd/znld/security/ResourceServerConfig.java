@@ -33,8 +33,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.exceptionHandling()
-                .defaultAuthenticationEntryPointFor(
+        http.exceptionHandling().defaultAuthenticationEntryPointFor(
                         new Http403ForbiddenEntryPoint(),
                         new AntPathRequestMatcher("/**"));
         http.authorizeRequests().anyRequest().authenticated();

@@ -2,6 +2,7 @@ package com.sybd.znld.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.service.rbac.IUserService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -28,11 +31,21 @@ public class UserController {
     @Autowired
     private IUserService userService;
 
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+    private String salt = BCrypt.gensalt();
     private MockMvc mockMvc;
 
     @Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+    }
+
+    @Test
+    public void test(){
+        var tmp = encoder.encode("defadfc2ad2fbb4fbcdc4d64f6c8d823");
+        var ret = encoder.matches("defadfc2ad2fbb4fbcdc4d64f6c8d823", "$2a$10$EumDON8cvvcKVk5QwQwHm.q2WsUoCD43Y8W0uCzkoRCHeAXsDEOSK");
+        log.debug(tmp);
+        Assert.assertTrue(ret);
     }
 
     @Test

@@ -6,8 +6,11 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
+import org.springframework.stereotype.Component;
 
-public class MyMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
+@Component
+public class MyMethodSecurityExpressionHandler extends OAuth2MethodSecurityExpressionHandler {
     private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
     @Override

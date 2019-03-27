@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.awt.image.BufferedImage;
+import java.security.SecureRandom;
 
 @Api(tags = "用户接口")
 @RestController
@@ -37,7 +39,7 @@ public class UserController implements IUserController {
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final ProjectConfig projectConfig;
-    private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
     private final Logger log = LoggerFactory.getLogger(UserController.class);
 
@@ -57,7 +59,6 @@ public class UserController implements IUserController {
         this.redissonClient = redissonClient;
         this.stringRedisTemplate = stringRedisTemplate;
         this.projectConfig = projectConfig;
-        this.encoder = new BCryptPasswordEncoder(10);
     }
 
     private String getCaptchaKey(String uuid){
@@ -85,9 +86,9 @@ public class UserController implements IUserController {
         if(rightCaptcha == null) return LoginResult.fail("验证码已失效");
         if(!input.captcha.equalsIgnoreCase(rightCaptcha)) return LoginResult.fail("验证码错误");
         try {
-            //input.password = this.encoder.encode(input.password);
-            var user = userService.verify(input);
+            var user = userService.getUserByName(input.user);
             if(user != null){
+                if(!this.encoder.matches(input.password, user.password)) return LoginResult.fail("用户名或密码错误");
                 this.stringRedisTemplate.delete(getCaptchaKey(input.uuid));
                 long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
                 return LoginResult.success(user.getId(), clientId, clientSecret, seconds);

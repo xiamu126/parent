@@ -2,7 +2,6 @@ package com.sybd.znld.service.znld;
 
 import com.sybd.znld.db.DbSource;
 import com.sybd.znld.model.znld.RegionModel;
-import com.sybd.znld.service.model.BaseStatus;
 import com.sybd.znld.service.znld.mapper.RegionMapper;
 import com.sybd.znld.util.MyString;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ public class RegionService implements IRegionService {
             log.debug("区域名字不能重复");
             return null;
         }
-        if(!BaseStatus.isValid(model.status)){
+        if(!RegionModel.Status.isValid(model.status)){
             log.debug("错误的状态");
             return null;
         }
@@ -65,25 +64,18 @@ public class RegionService implements IRegionService {
 
     @Override
     public RegionModel modifyRegionById(RegionModel model) {
-        if(model == null){
-            log.debug("错误的参数");
-            return null;
-        }
+        if(model == null) return null;
         if(!MyString.isUuid(model.id)){
-            log.debug("错误的id");
-            return null;
+            log.debug("错误的id"); return null;
         }
         if(MyString.isEmptyOrNull(model.name)){
-            log.debug("错误的区域名称");
-            return null;
+            log.debug("错误的区域名称"); return null;
         }
         if(this.regionMapper.selectByName(model.name) != null){
-            log.debug("重复的区域名称");
-            return null;
+            log.debug("重复的区域名称"); return null;
         }
-        if(!BaseStatus.isValid(model.status)){
-            log.debug("错误的状态");
-            return null;
+        if(!RegionModel.Status.isValid(model.status)){
+            log.debug("错误的状态"); return null;
         }
         if(this.regionMapper.updateById(model) > 0) return model;
         return null;

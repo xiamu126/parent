@@ -1,5 +1,6 @@
 package com.sybd.znld.service.rbac;
 
+import com.sybd.znld.model.rbac.AuthorityModel;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.dto.LoginInput;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
@@ -19,4 +20,5 @@ public interface IUserService {
     UserModel verify(String name, String password);
     UserModel verify(LoginInput input);
     UserModel register(RegisterInput input);
+    List<AuthorityModel> getAuthoritiesById(String userId);
 }

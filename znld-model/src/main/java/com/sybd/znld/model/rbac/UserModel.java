@@ -24,6 +24,21 @@ public class UserModel implements Serializable {
     public String organizationId;
     public Short status = 0;
 
+    public static class Status{
+        public static final short OK = 0;
+        public static final short FROZEN = 1;
+        public static final short DELETED = 2;
+
+        public static boolean isValid(short v){
+            switch (v){
+                case OK: case FROZEN: case DELETED:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
+
     public boolean isValid(){
         return MyString.isUuid(id) && !MyString.isAnyEmptyOrNull(name, password) && MyString.isUuid(organizationId);
     }

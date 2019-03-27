@@ -20,6 +20,9 @@ public class MyNumber {
     public static boolean isNegative(Integer it){
         return it != null && it < 0;
     }
+    public static boolean isNegative(Short it){
+        return it != null && it < 0;
+    }
     public static boolean isZero(Integer it){
         return  it != null && it == 0;
     }

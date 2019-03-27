@@ -2,13 +2,12 @@ package com.sybd.znld.model.rbac;
 
 import java.io.Serializable;
 
-public class OrganizationModel implements Serializable {
+public class AuthGroupModel implements Serializable {
     public String id;
     public String name;
     public String parentId;
     public Integer position;
-    public Short status;
-    public String oauth2ClientId;
+    public Short status = Status.OK;
 
     public static class Status{
         public static final short OK = 0;

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.service.rbac.mapper.UserRoleMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.rbac.UserRoleModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert user_role(id, user_id, role_id) values (#{id},#{userId},#{roleId});
+    </insert>
+
+    <select id="selectById" resultType="com.sybd.znld.model.rbac.UserRoleModel">
+        select * from user_role where id = #{id};
+    </select>
+    <select id="selectByUserId" resultType="com.sybd.znld.model.rbac.UserRoleModel">
+        select * from user_role where user_id = #{userId};
+    </select>
+    <select id="selectByRoleId" resultType="com.sybd.znld.model.rbac.UserRoleModel">
+        select * from user_role where role_id = #{roleId};
+    </select>
+    <select id="selectByUserIdAndRoleId" resultType="com.sybd.znld.model.rbac.UserRoleModel">
+        select * from user_role where user_id = #{userId} and role_id = #{roleId};
+    </select>
+</mapper>

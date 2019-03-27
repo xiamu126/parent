@@ -4,6 +4,12 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class TwinkleBeautyGroupModel implements Serializable {
+    public String id;
+    public LocalDateTime beginTime;
+    public LocalDateTime endTime;
+    public Short status;
+    public String regionId;
+
     public static class Status{
         public static final short UPLOADED = 0;
         public static final short RUNNING = 1;
@@ -25,9 +31,4 @@ public class TwinkleBeautyGroupModel implements Serializable {
             }
         }
     }
-    public String id;
-    public LocalDateTime beginTime;
-    public LocalDateTime endTime;
-    public Short status;
-    public String regionId;
 }

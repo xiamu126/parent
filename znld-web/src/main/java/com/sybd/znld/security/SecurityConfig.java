@@ -14,12 +14,12 @@ import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
-//@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers("/css/**", "/js/**", "/img/**", "/favicon.ico", "/assets/**", "/static/**");
-        web.ignoring().antMatchers("/api/v1/user/login/**", "/api/v1/user/logout/**", "/api/v1/user/register/**", "/**");
+        web.ignoring().antMatchers("/api/v1/user/login/**", "/api/v1/user/logout/**", "/api/v1/user/register/**");
         web.ignoring().antMatchers("/webjars/**","/v2/api-docs","/swagger-resources/**","/swagger-ui.html/**", "/api/doc/**");
     }
 

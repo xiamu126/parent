@@ -2,6 +2,7 @@ package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.db.DbSource;
+import com.sybd.znld.model.rbac.AuthorityModel;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.rbac.dto.LoginInput;
@@ -14,6 +15,7 @@ import org.modelmapper.PropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,6 +27,7 @@ import java.util.List;
 public class UserService extends BaseService implements IUserService {
     private final UserMapper userMapper;
     private final OrganizationMapper organizationMapper;
+    private final BCryptPasswordEncoder encoder;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -33,6 +36,7 @@ public class UserService extends BaseService implements IUserService {
         super(cacheManager, taskScheduler, projectConfig);
         this.userMapper = userMapper;
         this.organizationMapper = organizationMapper;
+        this.encoder = new BCryptPasswordEncoder(10);
     }
 
     @Override
@@ -145,5 +149,10 @@ public class UserService extends BaseService implements IUserService {
         modelMapper.validate();
         var user = modelMapper.map(input, UserModel.class);
         return addUser(user);
+    }
+
+    @Override
+    public List<AuthorityModel> getAuthoritiesById(String userId) {
+        return null;
     }
 }

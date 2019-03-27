@@ -1,0 +1,14 @@
+package com.sybd.znld.service.rbac;
+
+import com.sybd.znld.model.rbac.*;
+
+import java.util.List;
+
+public interface IAuthorityService {
+    AuthGroupModel addAuthGroup(AuthGroupModel model);
+    AuthorityModel addAuth(AuthorityModel model);
+    RoleModel addRole(RoleModel model);
+    UserRoleModel addUserRole(UserRoleModel model);
+    RoleAuthModel addRoleAuth(RoleAuthModel model);
+    List<AuthorityModel> getAuthoritiesByUserId(String userId);
+}

@@ -59,41 +59,24 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
-    public GetHistoryDataStreamResult getHistoryDataStream(Integer deviceId,
-                                                           String dataStreamId,
-                                                           LocalDateTime start,
-                                                           LocalDateTime end,
-                                                           Integer limit,
-                                                           String sort,
-                                                           String cursor) {
-        if(end != null && start.isAfter(end)){
-            return null;
-        }
-        RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<String> httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
-        String url = oneNetConfig.getHistoryDataStreamUrl(deviceId);
-        HashMap<String, String> map = new HashMap<>();
-        if(start != null){
-            map.put("start", start.toString());
-        }
-        if(end != null){
-            map.put("end", end.toString());
-        }
-        if(dataStreamId != null){
-            map.put("datastream_id", dataStreamId);
-        }
-        if(limit != null){
-            map.put("limit", limit.toString());
-        }
-        if(sort != null){
-            map.put("sort", sort);
-        }
-        if(cursor != null){
-            map.put("cursor", cursor);
-        }
+    public GetHistoryDataStreamResult
+    getHistoryDataStream(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end, Integer limit, String sort, String cursor) {
+        if(end != null && start.isAfter(end)) return null;
+        var restTemplate = new RestTemplate();
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var url = oneNetConfig.getHistoryDataStreamUrl(deviceId);
+
+        var map = new HashMap<String, String>();
+        if(start != null) map.put("start", start.toString());
+        if(end != null) map.put("end", end.toString());
+        if(dataStreamId != null) map.put("datastream_id", dataStreamId);
+        if(limit != null) map.put("limit", limit.toString());
+        if(sort != null) map.put("sort", sort);
+        if(cursor != null) map.put("cursor", cursor);
+
         url += MyString.toUrlParams(map);
         log.debug(url);
-        ResponseEntity<GetHistoryDataStreamResult> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetHistoryDataStreamResult.class);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetHistoryDataStreamResult.class);
         return responseEntity.getBody();
     }
 

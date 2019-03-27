@@ -4,6 +4,7 @@ import com.sybd.znld.model.rbac.UserModel;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Arrays;
 
@@ -14,11 +15,13 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
     public MySecurityExpressionRoot(Authentication authentication) {
         super(authentication);
     }
+
     public boolean isOk(){
-        var user = (UserModel)this.getPrincipal();
-        //var ret = Arrays.stream(list).anyMatch(item -> item.equalsIgnoreCase("ADMIN"));
-        //return ret;
-        return true;
+        var user = this.getPrincipal();
+        var tmp = this.getThis();
+        var auth = this.getAuthentication().getAuthorities();
+        var ret = auth.stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
+        return ret;
     }
 
     @Override

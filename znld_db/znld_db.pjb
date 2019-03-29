@@ -569,7 +569,7 @@ LABL 0 新宋体,8,N</a:FontList>
 <a:GradientFillMode>65</a:GradientFillMode>
 <a:CustomPictureType>4</a:CustomPictureType>
 <a:CustomTextMode>1</a:CustomTextMode>
-<a:CustomPictureID>D83C42B5-9C36-41BE-A19B-F287A3C51A23</a:CustomPictureID>
+<a:CustomPictureID>D5D731F5-8CDD-4D7A-B620-7F81B2E9D49E</a:CustomPictureID>
 <a:GradientEndColor>16777215</a:GradientEndColor>
 <a:KeepAspect>1</a:KeepAspect>
 <c:Object>
@@ -615,7 +615,7 @@ LABL 0 新宋体,8,N</a:FontList>
 <a:Code>ZNLD</a:Code>
 <a:CreationDate>1551920003</a:CreationDate>
 <a:Creator>User</a:Creator>
-<a:ModificationDate>1552007446</a:ModificationDate>
+<a:ModificationDate>1552955517</a:ModificationDate>
 <a:Modifier>User</a:Modifier>
 <a:Location>file:///%[PRJ_ROOT_DIR]%/ZNLD.pdm</a:Location>
 <a:Extension>pdm</a:Extension>

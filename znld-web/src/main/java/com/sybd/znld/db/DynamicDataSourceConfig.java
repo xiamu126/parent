@@ -12,6 +12,7 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 @Configuration
 public class DynamicDataSourceConfig {
@@ -47,7 +48,7 @@ public class DynamicDataSourceConfig {
                                         @Qualifier("rbacDataSource") DataSource rbacDataSource,
                                         @Qualifier("ministarDataSource") DataSource ministarDataSource) {
         var targetDataSources = new HashMap<Object, Object>();
-        targetDataSources.put("com/sybd/znld/model/oauth", oauthDataSource);
+        targetDataSources.put("oauth", oauthDataSource);
         targetDataSources.put("znld", znldDataSource);
         targetDataSources.put("rbac", rbacDataSource);
         targetDataSources.put("ministar", ministarDataSource);
@@ -55,7 +56,10 @@ public class DynamicDataSourceConfig {
     }
 
     public static class DynamicDataSource extends AbstractRoutingDataSource {
-        private static final ThreadLocal<String> contextHolder = new ThreadLocal<>();
+        private static final ThreadLocal<Stack<String>> contextHolder = new ThreadLocal<>();
+        static {
+            contextHolder.set(new Stack<>());
+        }
         /**
          * 配置DataSource, defaultTargetDataSource为主数据库
          */
@@ -71,15 +75,15 @@ public class DynamicDataSourceConfig {
         }
 
         static void setDataSource(String dataSource) {
-            contextHolder.set(dataSource);
+            contextHolder.get().push(dataSource);
         }
 
         private static String getDataSource() {
-            return contextHolder.get();
+            return contextHolder.get().peek();
         }
 
         static void clearDataSource() {
-            contextHolder.remove();
+            contextHolder.get().pop();
         }
 
     }

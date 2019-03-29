@@ -54,7 +54,7 @@ public final class ServerProvider extends Thread {
                 //解析命令与回送端口
                 var index = HEADER.length;
                 var receivedCmd = (short) ((clientData[index++] << 8) | (clientData[index++] & 0xff));
-                var receivedPort = (((clientData[index++]) << 24) | ((clientData[index++] & 0xff) << 16) | ((clientData[index++] & 0xff) << 8) | ((clientData[index] & 0xff)));
+                var receivedPort = ((clientData[index++]) << 24) | ((clientData[index++] & 0xff) << 16) | ((clientData[index++] & 0xff) << 8) | ((clientData[index] & 0xff));
 
                 //判断合法性
                 if (receivedCmd == 1 && receivedPort > 0) {

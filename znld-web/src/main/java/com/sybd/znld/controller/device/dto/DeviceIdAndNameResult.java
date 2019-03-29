@@ -2,7 +2,7 @@ package com.sybd.znld.controller.device.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sybd.znld.core.BaseApiResult;
-import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
+import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

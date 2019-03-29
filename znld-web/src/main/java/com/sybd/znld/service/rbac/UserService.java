@@ -23,7 +23,6 @@ import java.util.List;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
-@DbSource("rbac")
 public class UserService extends BaseService implements IUserService {
     private final UserMapper userMapper;
     private final OrganizationMapper organizationMapper;

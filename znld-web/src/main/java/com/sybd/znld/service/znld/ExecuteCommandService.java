@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
-@DbSource("znld")
 public class ExecuteCommandService extends BaseService implements IExecuteCommandService {
     private final Logger log = LoggerFactory.getLogger(ExecuteCommandService.class);
     private final ExecuteCommandMapper executeCommandMapper;
@@ -44,13 +43,8 @@ public class ExecuteCommandService extends BaseService implements IExecuteComman
     }
 
     @Override
-    @Cacheable(key="#root.targetClass.getName()+'.getOneNetKeyByCommand@'+#cmd")
-    public OneNetKey getOneNetKeyByCommand(String cmd, boolean evict) {
-        if(evict){
-            this.removeCache(this.getClass(),".getOneNetKeyByCommand@"+cmd);
-            return null;
-        }
-
+    //@Cacheable(key="#root.targetClass.getName()+'.getOneNetKeyByCommand@'+#cmd")
+    public OneNetKey getOneNetKeyByCommand(String cmd) {
         if(MyString.isEmptyOrNull(cmd)) return null;
         var tmp = this.executeCommandMapper.selectByValue(cmd);
         if(tmp == null) return null;
@@ -62,17 +56,12 @@ public class ExecuteCommandService extends BaseService implements IExecuteComman
     }
 
     @Override
-    @Cacheable(key="#root.targetClass.getName()+'.getParamsByCommand@'+#cmd")
-    public OneNetExecuteParams getParamsByCommand(String cmd, boolean evict) {
-        if(evict){
-            this.removeCache(this.getClass(),".getParamsByCommand@"+cmd);
-            return null;
-        }
-
+    //@Cacheable(key="#root.targetClass.getName()+'.getParamsByCommand@'+#cmd")
+    public OneNetExecuteParams getParamsByCommand(String cmd) {
         if(MyString.isEmptyOrNull(cmd)) return null;
         var entity = this.executeCommandMapper.selectByValue(cmd);
         if(entity == null) return null;
-        var oneNetKey = getOneNetKeyByCommand(cmd, false);
+        var oneNetKey = getOneNetKeyByCommand(cmd);
         if(oneNetKey == null) return null;
         return new OneNetExecuteParams(oneNetKey, entity.timeout);
     }

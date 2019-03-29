@@ -14,7 +14,6 @@ import java.util.List;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
-@DbSource("rbac")
 public class OrganizationService implements IOrganizationService {
     private final Logger log = LoggerFactory.getLogger(OrganizationService.class);
     private final OrganizationMapper organizationMapper;

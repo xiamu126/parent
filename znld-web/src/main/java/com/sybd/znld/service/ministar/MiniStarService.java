@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@DbSource("ministar")
 public class MiniStarService implements IMiniStarService {
     private final Logger log = LoggerFactory.getLogger(MiniStarService.class);
     private final TwinkleBeautyGroupMapper twinkleBeautyGroupMapper;
@@ -51,6 +50,12 @@ public class MiniStarService implements IMiniStarService {
         }
         if(this.regionMapper.selectById(model.regionId) == null){
             log.debug("指定的区域id不存在");
+            return null;
+        }
+        // 如果指定的区域时间内已经存在了相关的非失效的节目组，新增失败
+        var list = this.twinkleBeautyGroupMapper.selectActiveByRegionIdAndIntersectWith(model.regionId, model.beginTime, model.endTime);
+        if(list != null && list.size() > 0){
+            log.debug("指定的区域时间内已经存在有效的节目组，新增失败");
             return null;
         }
         if(this.twinkleBeautyGroupMapper.insert(model) > 0) return model;

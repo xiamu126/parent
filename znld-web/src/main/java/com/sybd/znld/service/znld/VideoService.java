@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Service
-@DbSource("znld")
 public class VideoService extends BaseService implements IVideoService {
     private final RedissonClient redissonClient;
     private final Logger log = LoggerFactory.getLogger(VideoService.class);

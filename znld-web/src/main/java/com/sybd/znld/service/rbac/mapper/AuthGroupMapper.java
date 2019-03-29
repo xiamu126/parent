@@ -1,9 +1,11 @@
 package com.sybd.znld.service.rbac.mapper;
 
+import com.sybd.znld.db.DbSource;
 import com.sybd.znld.model.rbac.AuthGroupModel;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
+@DbSource("rbac")
 public interface AuthGroupMapper {
     int insert(AuthGroupModel model);
     AuthGroupModel selectById(String id);

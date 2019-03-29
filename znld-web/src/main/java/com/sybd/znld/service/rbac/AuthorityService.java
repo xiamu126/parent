@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@DbSource("rbac")
 public class AuthorityService implements IAuthorityService {
     private final Logger log = LoggerFactory.getLogger(AuthorityService.class);
     private final AuthGroupMapper authGroupMapper;

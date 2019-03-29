@@ -18,4 +18,8 @@
     <select id="selectActiveByRegionId" resultType="com.sybd.znld.model.ministar.TwinkleBeautyGroupModel">
         select * from twinkle_beauty_group where region_id = #{regionId} and status in (0,1);
     </select>
+    <select id="selectActiveByRegionIdAndIntersectWith" resultType="com.sybd.znld.model.ministar.TwinkleBeautyGroupModel">
+        select * from twinkle_beauty_group
+        where region_id = #{regionId} and status in (0,1) and (#{beginTime} >= begin_time or #{endTime} <![CDATA[ <= ]]> end_time);
+    </select>
 </mapper>

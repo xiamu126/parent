@@ -1,7 +1,7 @@
 package com.sybd.znld.controller.device.dto;
 
 import com.sybd.znld.core.BaseApiResult;
-import com.sybd.znld.service.dto.CheckedResource;
+import com.sybd.znld.service.znld.dto.CheckedResource;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;

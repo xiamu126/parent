@@ -1,29 +1,12 @@
 package com.sybd.znld.service.impl;
 
-import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.dto.NameAndOneNetKey;
-import com.sybd.znld.service.BaseService;
-import com.sybd.znld.service.mapper.OneNetConfigDeviceMapper;
-import com.sybd.znld.onenet.dto.OneNetKey;
-import com.sybd.znld.service.OneNetConfigDeviceService;
-import com.sybd.znld.service.dto.CheckedResource;
-import com.sybd.znld.service.dto.DeviceIdAndDeviceName;
-import com.sybd.znld.service.dto.DeviceIdAndImei;
-import com.sybd.znld.service.dto.DeviceIdName;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
-public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNetConfigDeviceService {
+public class OneNetConfigDeviceServiceImpl {
 
-    private final OneNetConfigDeviceMapper onenetConfigDeviceMapper;
+    /*private final OneNetConfigDeviceMapper onenetConfigDeviceMapper;
     private final RedissonClient redissonClient;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -38,10 +21,9 @@ public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNet
         this.redissonClient = redissonClient;
     }
 
-    @Override
     @Cacheable
-    public Map<Integer, String> getDeviceIdAndImeis() {
-        List<DeviceIdAndImei> list = this.onenetConfigDeviceMapper.getDeviceIdAndImeis();
+    public Map<Integer, String> getDeviceIdAndIMEI() {
+        List<DeviceIdAndImei> list = this.onenetConfigDeviceMapper.getDeviceIdAndIMEI();
         if(list == null || list.size() <= 0){
             return null;
         }
@@ -52,25 +34,21 @@ public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNet
         return map;
     }
 
-    @Override
     @Cacheable
     public List<DeviceIdAndDeviceName> getDeviceIdAndDeviceNames() {
         return this.onenetConfigDeviceMapper.getDeviceIdAndDeviceNames();
     }
 
-    @Override
     public List<CheckedResource> getCheckedResources(Integer deviceId) {
         return this.onenetConfigDeviceMapper.getCheckedResources(deviceId);
     }
 
-    @Override
     public boolean isDataStreamIdEnabled(String dataStreamId) {
         OneNetKey oneNetKey = OneNetKey.from(dataStreamId);
         Boolean ret =this.onenetConfigDeviceMapper.isDataStreamIdEnabled(oneNetKey);
         return ret != null && ret;
     }
 
-    @Override
     @Cacheable(key="#root.targetClass.getName()+'.imei_'+#deviceId")
     public String getImeiByDeviceId(Integer deviceId) {
         //为了防止缓存穿透（指定的key在缓存中不存在时，不断访问、间接导致对数据库的频繁访问）
@@ -82,19 +60,16 @@ public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNet
         return ret;
     }
 
-    @Override
     @Cacheable
     public String getDescBy(Integer objId, Integer objInstId, Integer resId) {
         return this.onenetConfigDeviceMapper.getDescBy(objId, objInstId, resId);
     }
 
-    @Override
     @Cacheable
     public List<Integer> getDeviceIds() {
         return this.onenetConfigDeviceMapper.getDeviceIds();
     }
 
-    @Override
     @Cacheable
     public Map<Integer, String> getDeviceIdNameMap() {
         List<DeviceIdName> list = this.onenetConfigDeviceMapper.getDeviceIdNames();
@@ -105,19 +80,16 @@ public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNet
         return map;
     }
 
-    @Override
     @Cacheable
     public String getApiKeyByDeviceId(Integer deviceId) {
         return this.onenetConfigDeviceMapper.getApiKeyByDeviceId(deviceId);
     }
 
-    @Override
     @Cacheable
     public String getOneNetKey(String name) {
         return this.onenetConfigDeviceMapper.getOneNetKey(name);
     }
 
-    @Override
     @Cacheable
     public Map<String, String> getInstanceMap(Integer deviceId) {
         List<NameAndOneNetKey> list = this.onenetConfigDeviceMapper.getInstanceMap(deviceId);
@@ -126,5 +98,5 @@ public class OneNetConfigDeviceServiceImpl extends BaseService implements OneNet
             map.put(item.name, item.oneNetKey);
         }
         return map;
-    }
+    }*/
 }

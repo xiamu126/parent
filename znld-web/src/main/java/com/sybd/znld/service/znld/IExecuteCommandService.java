@@ -7,6 +7,6 @@ import com.sybd.znld.onenet.dto.OneNetKey;
 public interface IExecuteCommandService {
     ExecuteCommandModel getExecuteCommandById(Integer id);
     ExecuteCommandModel getExecuteCommandByValue(String value);
-    OneNetKey getOneNetKeyByCommand(String cmd, boolean evict);
-    OneNetExecuteParams getParamsByCommand(String cmd, boolean evict);
+    OneNetKey getOneNetKeyByCommand(String cmd);
+    OneNetExecuteParams getParamsByCommand(String cmd);
 }

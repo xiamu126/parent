@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@DbSource("com/sybd/znld/model/oauth")
 public class OAuthService implements IOAuthService {
     private final OAuthClientDetailsMapper oauthClientDetailsMapper;
 

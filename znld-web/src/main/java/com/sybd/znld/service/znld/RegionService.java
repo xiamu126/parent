@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@DbSource("znld")
 public class RegionService implements IRegionService {
     private final Logger log = LoggerFactory.getLogger(RegionService.class);
     private final RegionMapper regionMapper;

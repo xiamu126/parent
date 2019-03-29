@@ -32,4 +32,14 @@ public class MyNumber {
     public static boolean isNegativeOrZero(Integer it){
         return it != null && it <= 0;
     }
+
+    public static boolean isInteger(Object obj){
+        if(obj == null) return false;
+        try {
+            Integer.parseInt(obj.toString());
+            return true;
+        }catch (Exception ex){
+            return false;
+        }
+    }
 }

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@DbSource("znld")
 public class LogService implements ILogService {
     private final Logger log = LoggerFactory.getLogger(LogService.class);
     private final HttpLogMapper httpLogMapper;

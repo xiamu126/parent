@@ -144,6 +144,14 @@ public final class MyString {
         System.out.println(toUrlParams(map));
         System.out.println(isEmail("xxx@xxx.com.cn.cn"));
         System.out.println(isIPv4("00.1.1.1"));
+
+        var bytes = "DGXXX".getBytes();
+        var DG = "DG".getBytes();
+        if(!MyByte.equals(DG, Arrays.copyOfRange(bytes,0,2))){
+            System.out.println("!=");
+        }else {
+            System.out.println("==");
+        }
     }
 }
 

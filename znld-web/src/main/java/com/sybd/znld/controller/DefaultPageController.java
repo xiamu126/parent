@@ -1,6 +1,5 @@
 package com.sybd.znld.controller;
 
-import com.sybd.znld.service.OneNetConfigDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -13,11 +12,9 @@ import java.security.Principal;
 
 @Controller
 public class DefaultPageController {
-    private final OneNetConfigDeviceService onenetConfigDeviceService;
 
     @Autowired
-    public DefaultPageController(OneNetConfigDeviceService onenetConfigDeviceService) {
-        this.onenetConfigDeviceService = onenetConfigDeviceService;
+    public DefaultPageController() {
     }
 
     /*@RequestMapping(value = {"/", "/index"}, method = RequestMethod.GET, produces = {MediaType.TEXT_HTML_VALUE})

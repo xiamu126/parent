@@ -1,6 +1,6 @@
 package com.sybd.znld;
 
-import com.sybd.znld.onenet.BetterOneNetService;
+import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.dto.GetDataStreamByIdResult;
 import com.sybd.znld.onenet.dto.GetDataStreamsByIdsResult;
 import com.sybd.znld.onenet.dto.GetDeviceResult;
@@ -25,7 +25,7 @@ import java.util.Locale;
 public class OneNetTest {
     private final Logger log = LoggerFactory.getLogger(OneNetTest.class);
     @Autowired
-    private BetterOneNetService oneNet;
+    private IOneNetService oneNet;
 
     @Autowired
     private WebApplicationContext wac;

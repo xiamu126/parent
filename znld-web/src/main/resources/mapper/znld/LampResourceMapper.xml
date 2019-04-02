@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.service.znld.mapper.LampResourceMapper">
+    <select id="selectByLampIdAndResourceId" resultType="com.sybd.znld.model.znld.LampResourceModel">
+        select * from lamp_resource where lamp_id = #{lampId} and onenet_resource_id = #{resourceId};
+    </select>
+
+    <select id="selectByLampId" resultType="com.sybd.znld.model.znld.LampResourceModel">
+        select * from lamp_resource where lamp_id = #{lampId};
+    </select>
+
+    <select id="selectByCommandValue" resultType="com.sybd.znld.model.znld.LampResourceModel">
+        select * from lamp_resource where value = #{_parameter} and type = 0;
+    </select>
+</mapper>

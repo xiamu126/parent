@@ -63,6 +63,9 @@ public class ExecuteCommandService extends BaseService implements IExecuteComman
         if(entity == null) return null;
         var oneNetKey = getOneNetKeyByCommand(cmd);
         if(oneNetKey == null) return null;
-        return new OneNetExecuteParams(oneNetKey, entity.timeout);
+        var tmp = new OneNetExecuteParams();
+        tmp.oneNetKey = oneNetKey;
+        tmp.timeout = entity.timeout;
+        return tmp;
     }
 }

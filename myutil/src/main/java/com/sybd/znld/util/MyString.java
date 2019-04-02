@@ -9,11 +9,11 @@ public final class MyString {
     public static String Empty = "";
 
     public static String replace(String template, Map<String, Object> params) {
-        StringBuffer sb = new StringBuffer();
-        Matcher m = Pattern.compile("\\$\\{\\w+}").matcher(template);
+        var sb = new StringBuffer();
+        var m = Pattern.compile("\\$\\{\\w+}").matcher(template);
         while (m.find()) {
-            String param = m.group();
-            Object value = params.get(param.substring(2, param.length() - 1));
+            var param = m.group();
+            var value = params.get(param.substring(2, param.length() - 1));
             m.appendReplacement(sb, value == null ? "" : value.toString());
         }
         m.appendTail(sb);
@@ -34,7 +34,7 @@ public final class MyString {
     }
 
     public static String combine(List<String> values, String split){
-        StringBuilder tmp = new StringBuilder();
+        var tmp = new StringBuilder();
         int count = 1;
         for(var value : values){
             if(count < values.size()) tmp.append(value).append(split);
@@ -65,7 +65,7 @@ public final class MyString {
     }
 
     public static String toUrlParams(Map<String, String> nameAndValues){
-        StringBuilder tmp = new StringBuilder("?");
+        var tmp = new StringBuilder("?");
         for(var item : nameAndValues.entrySet()){
             tmp.append(item.getKey()).append("=").append(item.getValue()).append("&");
         }
@@ -73,7 +73,7 @@ public final class MyString {
     }
 
     public static String bytesToHex(byte[] nums){
-        StringBuilder result = new StringBuilder();
+        var result = new StringBuilder();
         for(var num : nums){
             result.append(byteToHex(num));
         }
@@ -81,13 +81,13 @@ public final class MyString {
     }
 
     public static String byteToHex(byte num){
-        char[] hexDigits = new char[2];
+        var hexDigits = new char[2];
         hexDigits[0] = Character.forDigit((num >> 4) & 0xf, 16);
         hexDigits[1] = Character.forDigit(num & 0xf, 16);
         return new String(hexDigits);
     }
     private static int toDigit(char hexChar) {
-        int digit = Character.digit(hexChar, 16);
+        var digit = Character.digit(hexChar, 16);
         if(digit == -1) {
             throw new IllegalArgumentException("Invalid Hexadecimal Character: "+ hexChar);
         }

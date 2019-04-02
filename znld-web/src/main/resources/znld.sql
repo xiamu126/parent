@@ -108,7 +108,7 @@ begin
     set @organization_table = 'RBAC_V2.organization';
     set @o_name = '神宇北斗测试';
     set @o_id = null;
-    set @s = CONCAT('select id into @o_id from ', @organization_table, ' where name = \'', @o_name, '\'');
+    set @s = concat('select id into @o_id from ', @organization_table, ' where name = \'', @o_name, '\'');
     prepare stmt from @s;
     execute stmt;
     deallocate prepare stmt;
@@ -157,11 +157,11 @@ begin
     declare tmp_lamp_id varchar(32);
     declare r_cur cursor for select id from region;
     declare continue handler for not found set r_done = true;
-    declare l_cur cursor for select id from lamp;
     open r_cur;
     while r_done != true do
       fetch r_cur into tmp_region_id;
       begin
+        declare l_cur cursor for select id from lamp;
         declare continue handler for not found set l_done = true;
         open l_cur;
         inner_loop:

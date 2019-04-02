@@ -2,21 +2,23 @@ package com.sybd.znld.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.device.dto.*;
-import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.core.ApiResultEx;
+import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
-import com.sybd.znld.service.OneNetConfigDeviceService;
+import com.sybd.znld.service.ministar.dto.Subtitle;
 import com.sybd.znld.service.znld.IExecuteCommandService;
+import com.sybd.znld.service.znld.ILampService;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,17 +31,14 @@ import java.util.*;
 @RequestMapping("/api/v1/device")
 public class DeviceController extends BaseDeviceController implements IDeviceController{
 
-    private final OneNetConfigDeviceService oneNetConfigDeviceService;
     private final Logger log = LoggerFactory.getLogger(DeviceController.class);
 
     @Autowired
     public DeviceController(RedisTemplate<String, Object> redisTemplate,
                             OneNetService oneNet,
-                            IExecuteCommandService executeCommandService,
                             ProjectConfig projectConfig,
-                            OneNetConfigDeviceService oneNetConfigDeviceService) {
-        super(redisTemplate, oneNet, executeCommandService, projectConfig);
-        this.oneNetConfigDeviceService = oneNetConfigDeviceService;
+                            ILampService lampService) {
+        super(redisTemplate, oneNet, lampService, projectConfig);
     }
 
     private Map<Integer, String> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin) {
@@ -106,7 +105,9 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     public LastDataResult getLastData(@PathVariable(name = "deviceId") Integer deviceId,
                                       @PathVariable(name = "dataStreamId") String dataStreamId, HttpServletRequest request) {
         try {
-            if(!this.oneNetConfigDeviceService.isDataStreamIdEnabled(dataStreamId)){
+            var oneNetKey = OneNetKey.from(dataStreamId);
+            if(oneNetKey == null) return LastDataResult.fail("非法的参数");
+            if(!this.lampService.isDataStreamIdEnabled(deviceId, oneNetKey)){
                 return LastDataResult.fail("当前dataStreamId已禁用");
             }
             var ret = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
@@ -119,25 +120,6 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
         return LastDataResult.fail("获取最新数据失败");
     }
 
-    @Deprecated
-    public ApiResult getLastData(Integer deviceId){
-        try{
-            var ret = this.oneNet.getLastDataStream(deviceId);
-            var dataStreams = ret.getData().getDevices().get(0).getDataStreams();
-            var map = this.oneNet.getInstanceMap(deviceId);
-            var resultMap = new HashMap<String, Object>();
-            map.forEach((key, value) -> {
-                GetLastDataStreamsResult.DataStream tmp = dataStreams.stream().filter(dataStream -> dataStream.getId().equals(value))
-                        .findFirst().orElse(null);
-                resultMap.put(key, tmp);
-            });
-            return ApiResultEx.success(resultMap);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-        }
-        return ApiResult.fail("获取最新数据失败");
-    }
-
     private double modifyLocation(String value){
         var idx = value.indexOf(".");
         var location = 0.0;
@@ -147,37 +129,6 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             location = pre+aft/60;
         }
         return location;
-    }
-
-    @Deprecated
-    public ApiResult getLastData(Integer deviceId, Integer objId, Integer objInstId, Integer resId,
-                                 HttpServletRequest request){
-        try{
-            var data = oneNet.getLastDataStream(deviceId);
-            var oneNetKey = new OneNetKey(objId, objInstId, resId);
-            oneNetKey.objId = objId;
-            oneNetKey.objInstId = objInstId;
-            oneNetKey.resId = resId;
-            var dataStreamId = oneNet.getDataStreamId(oneNetKey);
-            var theData = (data.getData().getDevices().get(0)).getDataStreams();
-            var jsonObj = theData.stream()
-                    .filter(dataStream -> dataStream.getId().equals(dataStreamId))
-                    .findFirst().orElse(null);
-            final var weidu = this.oneNet.getOneNetKey("weidu");
-            final var jingdu = this.oneNet.getOneNetKey("jingdu");
-            if(dataStreamId.equals(weidu) || dataStreamId.equals(jingdu)){
-                if(jsonObj != null){
-                    jsonObj.setValue(modifyLocation(jsonObj.getValue().toString()));
-                }
-            }
-            if(jsonObj == null){
-                return ApiResult.fail("没有数据");
-            }
-            return ApiResult.success(jsonObj);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-            return ApiResult.fail("获取最新数据失败");
-        }
     }
 
     @ApiOperation(value = "获取设备的历史数据")
@@ -313,22 +264,41 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @PostMapping(value = "execute/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public ExecuteResult execute(@PathVariable("deviceId") Integer deviceId,
-                                 @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgsEx command,
+                                 @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgs data,
                                  HttpServletRequest request){
         try{
-            var cmd = command.getArgsEx();
+            var cmd = data.cmd;
             if(cmd.equals("")){
                 return ExecuteResult.fail("非法的参数");
             }
-            var tmp = this.executeCommandService.getParamsByCommand(command.getArgs());
-            if(tmp == null) {
-                return ExecuteResult.fail("获取命令失败");
+            var resource = this.lampService.getResourceByCommandValue(data.cmd);
+            if(resource == null) {
+                return ExecuteResult.fail("获取命令相关数据失败");
             }
-            var imei = oneNetConfigDeviceService.getImeiByDeviceId(deviceId);
+            if(data.cmd.equals("A") || data.cmd.equals("B") || data.cmd.equals("C")){// 针对修改频率的
+                if(!MyNumber.isBetween(data.json,10,99)){
+                    return ExecuteResult.fail("非法的参数");
+                }
+                cmd = cmd + data.json;
+            } else if (data.cmd.equals("204")) {// 针对灯带指令的
+                try{
+                    var modelMapper = new ModelMapper();
+                    var subtitle = modelMapper.map(data.json, Subtitle.class);
+                    cmd = cmd + ":"+subtitle.toString()+";";
+                }catch (Exception ex){
+                    return ExecuteResult.fail("非法的参数");
+                }
+            }
+            var imei = this.lampService.getImeiByDeviceId(deviceId);
             if(MyString.isEmptyOrNull(imei)){
                 return ExecuteResult.fail("未找到指定设备的imei");
             }
-            var params = new CommandParams(deviceId, imei, tmp.getOneNetKey(), tmp.getTimeout(), cmd);
+            var params = new CommandParams();
+            params.deviceId = deviceId;
+            params.imei = imei;
+            params.oneNetKey = resource.toOneNetKey();
+            params.timeout = resource.timeout;
+            params.command = cmd;
             var ret = oneNet.execute(params);
 
             if(ret.isOk()) return ExecuteResult.success(ret);
@@ -347,7 +317,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @Override
     public DeviceIdAndNameResult getDeviceIdAndName(HttpServletRequest request){
         try{
-            var tmp = this.oneNetConfigDeviceService.getDeviceIdAndDeviceNames();
+            var tmp = this.lampService.getDeviceIdAndDeviceNames();
             if(tmp == null || tmp.isEmpty()){
                 return DeviceIdAndNameResult.fail("获取数据为空");
             }
@@ -367,7 +337,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     @Override
     public CheckedResourcesResult getCheckedResources(@PathVariable("deviceId") Integer deviceId, HttpServletRequest request) {
         try{
-            var ret = this.oneNetConfigDeviceService.getCheckedResources(deviceId);
+            var ret = this.lampService.getCheckedResourceByDeviceId(deviceId);
             if(ret == null || ret.isEmpty()){
                 return CheckedResourcesResult.fail("获取数据为空");
             }

@@ -2,6 +2,7 @@ package com.sybd.znld.onenet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.onenet.dto.*;
 import com.sybd.znld.service.znld.dto.DeviceIdAndIMEI;
 import com.sybd.znld.service.znld.mapper.LampMapper;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 public class OneNetService implements IOneNetService {
     private final Logger log = LoggerFactory.getLogger(OneNetService.class);
     private final LampMapper lampMapper;
+
     @Getter @Setter public String getHistoryDataStreamUrl;
     @Getter @Setter public String postExecuteUrl;
     @Getter @Setter public String getLastDataStreamUrl;
@@ -111,7 +113,7 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public String getDataStreamId(OneNetKey oneNetKey){
-        return oneNetKey.getObjId() + "_" + oneNetKey.getObjInstId() + "_" + oneNetKey.getResId();
+        return oneNetKey.objId + "_" + oneNetKey.objInstId + "_" + oneNetKey.resId;
     }
 
     @Override
@@ -124,11 +126,6 @@ public class OneNetService implements IOneNetService {
         return this.lampMapper.selectApiKeyByDeviceId(deviceId);
     }
 
-    @Override
-    public String getOneNetKeyByResourceName(String name){
-        return this.lampMapper.selectOneNetKeyByResourceName(name);
-    }
-
     private String getLastDataStreamUrl(Integer deviceId){
         return MyString.replace(getLastDataStreamUrl, deviceId.toString());
     }
@@ -139,8 +136,7 @@ public class OneNetService implements IOneNetService {
         return MyString.replace(getDataStreamByIdUrl, deviceId.toString(), dataStreamId);
     }
     private String getDataStreamsByIdsUrl(Integer deviceId, String... dataStreamIds){
-        String tmp = Arrays.stream(dataStreamIds).reduce((a, b)->a+","+b).orElse("");
-        log.debug(tmp);
+        var tmp = Arrays.stream(dataStreamIds).reduce((a, b)->a+","+b).orElse("");
         return MyString.replace(getDataStreamsByIdsUrl, deviceId.toString(), tmp);
     }
     private String getDeviceUrl(Integer deviceId){
@@ -201,25 +197,25 @@ public class OneNetService implements IOneNetService {
     @Override
     public GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId) {
         var restTemplate = new RestTemplate();
-        HttpEntity<String> httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
-        String url = this.getDataStreamUrl(deviceId, dataStreamId);
-        ResponseEntity<GetDataStreamByIdResult> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamByIdResult.class);
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var url = this.getDataStreamUrl(deviceId, dataStreamId);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamByIdResult.class);
         return responseEntity.getBody();
     }
 
     @Override
     public GetDataStreamsByIdsResult getLastDataStreamsByIds(Integer deviceId, String... dataStreamIds) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<String> httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
-        String url = this.getDataStreamsByIdsUrl(deviceId, dataStreamIds);
-        ResponseEntity<GetDataStreamsByIdsResult> responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamsByIdsResult.class);
+        var restTemplate = new RestTemplate();
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var url = this.getDataStreamsByIdsUrl(deviceId, dataStreamIds);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamsByIdsResult.class);
         return responseEntity.getBody();
     }
 
     @Override
     public double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end) {
-        GetHistoryDataStreamResult historyData = getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
-        List<GetHistoryDataStreamResult.DataPoint> data = historyData.getData().getDataStreams().get(0).getDataPoints();
+        var historyData = getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
+        var data = historyData.getData().getDataStreams().get(0).getDataPoints();
         return data.stream().collect(Collectors.averagingDouble(d -> Double.parseDouble(d.getValue())));
     }
 
@@ -228,7 +224,8 @@ public class OneNetService implements IOneNetService {
         try {
             var restTemplate = new RestTemplate();
             var objectMapper = new ObjectMapper();
-            var executeEntity = new OneNetExecuteArgs(params.command);
+            var executeEntity = new OneNetExecuteParams();
+            executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
             var httpEntity = getHttpEntity(params.getDeviceId(), MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var url = this.postExecuteUrl;

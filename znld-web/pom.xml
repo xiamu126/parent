@@ -18,6 +18,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>com.sybd.znld</groupId>
             <artifactId>znld-model</artifactId>
         </dependency>

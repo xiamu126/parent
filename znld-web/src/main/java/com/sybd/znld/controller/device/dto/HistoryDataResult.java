@@ -31,7 +31,7 @@ public class HistoryDataResult extends BaseApiResult{
         return new HistoryDataResult(1, msg);
     }
     public static HistoryDataResult success(GetHistoryDataStreamResult result){
-        PropertyMap<GetHistoryDataStreamResult, HistoryDataResult> propertyMap = new PropertyMap<GetHistoryDataStreamResult, HistoryDataResult>(){
+        var propertyMap = new PropertyMap<GetHistoryDataStreamResult, HistoryDataResult>(){
             @Override
             protected void configure() {
                 map(source.data.cursor, destination.cursor);
@@ -40,10 +40,10 @@ public class HistoryDataResult extends BaseApiResult{
                 skip(destination.msg);
             }
         };
-        ModelMapper modelMapper = new ModelMapper();
+        var modelMapper = new ModelMapper();
         modelMapper.addMappings(propertyMap);
         modelMapper.validate();
-        HistoryDataResult tmp = modelMapper.map(result, HistoryDataResult.class);
+        var tmp = modelMapper.map(result, HistoryDataResult.class);
         tmp.dataPoints = result.data.dataStreams.get(0).dataPoints;
         tmp.code = 0;
         tmp.msg = "";

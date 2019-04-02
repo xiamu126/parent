@@ -44,8 +44,8 @@ public class OneNetConfigDeviceServiceImpl {
     }
 
     public boolean isDataStreamIdEnabled(String dataStreamId) {
-        OneNetKey oneNetKey = OneNetKey.from(dataStreamId);
-        Boolean ret =this.onenetConfigDeviceMapper.isDataStreamIdEnabled(oneNetKey);
+        OneNetKey dataStreamId = OneNetKey.from(dataStreamId);
+        Boolean ret =this.onenetConfigDeviceMapper.isDataStreamIdEnabled(dataStreamId);
         return ret != null && ret;
     }
 
@@ -86,8 +86,8 @@ public class OneNetConfigDeviceServiceImpl {
     }
 
     @Cacheable
-    public String getOneNetKey(String name) {
-        return this.onenetConfigDeviceMapper.getOneNetKey(name);
+    public String getDataStreamId(String name) {
+        return this.onenetConfigDeviceMapper.getDataStreamId(name);
     }
 
     @Cacheable
@@ -95,7 +95,7 @@ public class OneNetConfigDeviceServiceImpl {
         List<NameAndOneNetKey> list = this.onenetConfigDeviceMapper.getInstanceMap(deviceId);
         HashMap<String, String> map = new HashMap<>();
         for(NameAndOneNetKey item : list){
-            map.put(item.name, item.oneNetKey);
+            map.put(item.name, item.dataStreamId);
         }
         return map;
     }*/

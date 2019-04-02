@@ -1,29 +1,12 @@
 package com.sybd.znld.onenet.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 
+// 这个类为发送给OneNet的数据
+@Getter @Setter
 public class OneNetExecuteParams implements Serializable {
-    public OneNetKey oneNetKey;
-    public int timeout;
-
-    public OneNetExecuteParams(OneNetKey oneNetKey, int timeout) {
-        this.oneNetKey = oneNetKey;
-        this.timeout = timeout;
-    }
-
-    public OneNetKey getOneNetKey() {
-        return oneNetKey;
-    }
-
-    public void setOneNetKey(OneNetKey oneNetKey) {
-        this.oneNetKey = oneNetKey;
-    }
-
-    public int getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
+    public String args;
 }

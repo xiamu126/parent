@@ -42,4 +42,22 @@ public class MyNumber {
             return false;
         }
     }
+    public static boolean isBetween(String s, int min, int max){
+        if(s == null) return false;
+        try {
+            var ret = Integer.parseInt(s);
+            return ret >= min && ret <= max;
+        }catch (Exception ex){
+            return false;
+        }
+    }
+    public static boolean isPositive(String s){
+        if(s == null) return false;
+        try {
+            var ret = Integer.parseInt(s);
+            return ret > 0;
+        }catch (Exception ex){
+            return false;
+        }
+    }
 }

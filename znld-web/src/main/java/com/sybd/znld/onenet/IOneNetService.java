@@ -1,11 +1,13 @@
 package com.sybd.znld.onenet;
 
+import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.onenet.dto.*;
 import com.sybd.znld.service.znld.dto.DeviceIdAndIMEI;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public interface IOneNetService {
     Map<Integer, String> getDeviceIdAndIMEI();
@@ -13,7 +15,6 @@ public interface IOneNetService {
     String getImeiByDeviceId(Integer deviceId);
     String getApiKeyByDeviceId(Integer deviceId);
     OneNetExecuteResult execute(CommandParams params);
-    String getOneNetKeyByResourceName(String name);
     Map<String, String> getResourceMapByDeviceId(Integer deviceId);
     GetDeviceResult getDeviceById(Integer deviceId);
     GetLastDataStreamsResult getLastDataStream(Integer deviceId);

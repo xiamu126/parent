@@ -1,9 +1,14 @@
 package com.sybd.znld.service.ministar.dto;
 
-import com.sybd.znld.util.MyByte;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
@@ -14,14 +19,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Getter @Setter
 public class Subtitle implements Serializable {
     public Integer deviceId;
     public Short action; // 0为停止，1为开始，2为存储指令
     public Effect effect; // 具体的效果
     public Short speed; // 效果速度
-    public LocalDateTime beginTime;
-    public LocalDateTime endTime;
+    public Long beginTimestamp;
+    public Long endTimestamp;
     public Short effectTotalCount;
     public Short effectCurrentIndex;
 
@@ -80,8 +86,8 @@ public class Subtitle implements Serializable {
         if(!Action.isValid(action)) return false;
         if(!effect.isValid()) return false;
         if(speed <=0) return false;
-        if(MyDateTime.isPast(beginTime)) return false;
-        if(!endTime.isAfter(beginTime)) return false;
+        if(MyDateTime.isPast(beginTimestamp, ZoneOffset.UTC)) return false;
+        if(MyDateTime.isBeforeOrEqual(endTimestamp, beginTimestamp, ZoneOffset.UTC)) return false;
         if(effectTotalCount <= 0) return false;
         return effectCurrentIndex < effectTotalCount;
     }
@@ -90,43 +96,57 @@ public class Subtitle implements Serializable {
     public String toString() {
         try{
             if(!this.isValid()) return "";
-            var bytes = new ByteArrayOutputStream();
-            bytes.write("DG".getBytes());
+            var stringBuilder = new StringBuilder();
+            stringBuilder.append("DG");
             var lamp_number = 0x3fff; // 14位，最大0x3fff
             var lamp_status = action;
             var number_status = (short)(lamp_number << 2 | lamp_status);
             var t1 = (byte)(number_status >>> 8);
             var t2 = (byte)(number_status & 0x00ff);
-            bytes.write(t1);
-            bytes.write(t2);
+            stringBuilder.append(String.format("%02X", t1));
+            stringBuilder.append(String.format("%02X", t2));
             var cmd_count = (byte)0;
-            bytes.write(cmd_count);
+            stringBuilder.append(String.format("%02X", cmd_count));
             var item_count = (byte)(effectTotalCount & 0x00ff);
             var current_item = (byte)(effectCurrentIndex & 0x00ff);
-            bytes.write(item_count);
-            bytes.write(current_item);
+            stringBuilder.append(String.format("%02X", item_count));
+            stringBuilder.append(String.format("%02X", current_item));
             var color_info = effect.type;
             var color_count = effect.colors.size();
-            var color_info_count = (byte)(color_info >>> 5 | color_count << 3);
-            bytes.write(color_info_count);
+            var color_info_count = (byte)(color_info << 5 | (color_count & 0x1f));
+            stringBuilder.append(String.format("%02X", color_info_count));
             for(var i = 0; i < effect.colors.size(); i++){
                 var color_index = (byte)i;
                 var color_r = (byte)(effect.colors.get(i).r & 0x00ff);
                 var color_g = (byte)(effect.colors.get(i).g & 0x00ff);
                 var color_b = (byte)(effect.colors.get(i).b & 0x00ff);
-                bytes.write(color_index);
-                bytes.write(color_r);
-                bytes.write(color_g);
-                bytes.write(color_b);
+                stringBuilder.append(String.format("%02X", color_r));
+                stringBuilder.append(String.format("%02X", color_g));
+                stringBuilder.append(String.format("%02X", color_b));
             }
             var speed = (byte)(this.speed & 0x00ff);
-            bytes.write(speed);
-            var begin_time = this.beginTime.toInstant(ZoneOffset.UTC).toEpochMilli();
-            var end_time = this.endTime.toInstant(ZoneOffset.UTC).toEpochMilli();
-            bytes.write((int)begin_time);
-            bytes.write((int)end_time);
-            bytes.write("JW".getBytes());
-            return new String(bytes.toByteArray(), StandardCharsets.UTF_8);
+            stringBuilder.append(String.format("%02X", speed));
+            var begin_time = (int)(this.beginTimestamp/1000); // +1取整
+            var end_time = (int)(this.endTimestamp/1000);
+            var b1 = (byte)(begin_time >>> 24);
+            var b2 = (byte)((begin_time >>> 16) & 0x0000_00ff);
+            var b3 = (byte)((begin_time >>> 8) & 0x0000_00ff);
+            var b4 = (byte)(begin_time & 0x0000_00ff);
+            stringBuilder.append(String.format("%02X", b1));
+            stringBuilder.append(String.format("%02X", b2));
+            stringBuilder.append(String.format("%02X", b3));
+            stringBuilder.append(String.format("%02X", b4));
+            b1 = (byte)(end_time >>> 24);
+            b2 = (byte)((end_time >>> 16) & 0x0000_00ff);
+            b3 = (byte)((end_time >>> 8) & 0x0000_00ff);
+            b4 = (byte)(end_time & 0x0000_00ff);
+            stringBuilder.append(String.format("%02X", b1));
+            stringBuilder.append(String.format("%02X", b2));
+            stringBuilder.append(String.format("%02X", b3));
+            stringBuilder.append(String.format("%02X", b4));
+            stringBuilder.append("JW");
+            log.debug(stringBuilder.toString());
+            return stringBuilder.toString();
         }catch (Exception ex){
             return "";
         }
@@ -159,8 +179,6 @@ public class Subtitle implements Serializable {
         System.out.println(current_item);
         System.out.println(effect_number);
         System.out.println(color_count);
-
-
         /*if(!MyByte.equals(DG, Arrays.copyOfRange(bytes,0,2))){
             return false;
         }*/

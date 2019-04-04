@@ -8,7 +8,7 @@ import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import java.util.List;
 
 public interface ILampService {
-    boolean isDataStreamIdEnabled(Integer deviceId, OneNetKey key);
+    boolean isDataStreamIdEnabled(OneNetKey key);
     String getImeiByDeviceId(Integer deviceId);
     List<DeviceIdAndDeviceName> getDeviceIdAndDeviceNames();
     List<CheckedResource> getCheckedResourceByDeviceId(Integer deviceId);

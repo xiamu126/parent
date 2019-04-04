@@ -16,8 +16,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class AuthorityServiceTest {
-    private final Logger log = LoggerFactory.getLogger(AuthorityServiceTest.class);
+public class RbacServiceTest {
+    private final Logger log = LoggerFactory.getLogger(RbacServiceTest.class);
     @Autowired
     private WebApplicationContext wac;
     private MockMvc mockMvc;
@@ -27,7 +27,22 @@ public class AuthorityServiceTest {
     }
 
     @Autowired
-    private IAuthorityService authorityService;
+    private IRbacService rbacService;
+
+    @Test
+    public void addOrgan(){
+        var model = new OrganizationModel();
+        model.name = "神宇北斗";
+        model.oauth2ClientId = "sybd_znld_test";
+        var ret = this.rbacService.addOrganization(model);
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void removeOrgan(){
+        var ret = this.rbacService.removeOrganizationByName("神宇北斗测试");
+        Assert.assertTrue(ret.isSuccess());
+    }
 
     @Test
     public void addAuthGroup(){
@@ -35,7 +50,7 @@ public class AuthorityServiceTest {
         model.name = "测试权限组";
         model.parentId = "e22eb96b4f8f11e9804a0242ac110007";
         model.position = 0;
-        var ret = this.authorityService.addAuthGroup(model);
+        var ret = this.rbacService.addAuthGroup(model);
         Assert.assertNotNull(ret);
     }
 
@@ -46,7 +61,7 @@ public class AuthorityServiceTest {
         model.authorityGroupId = "bfb302934f8f11e9804a0242ac1100071";
         model.url = "/";
         model.type = AuthorityModel.Type.Other;
-        var ret = this.authorityService.addAuth(model);
+        var ret = this.rbacService.addAuth(model);
         Assert.assertNotNull(ret);
     }
 
@@ -55,7 +70,7 @@ public class AuthorityServiceTest {
         var model = new RoleModel();
         model.name = "测试角色";
         model.type = RoleModel.Type.ANONYMOUS;
-        var ret = this.authorityService.addRole(model);
+        var ret = this.rbacService.addRole(model);
         Assert.assertNotNull(ret);
     }
 
@@ -64,7 +79,7 @@ public class AuthorityServiceTest {
         var model = new UserRoleModel();
         model.roleId = "3c0a4d524f9611e9804a0242ac110007";
         model.userId = "3dfc0a90446d11e993a60242ac110006";
-        var ret = this.authorityService.addUserRole(model);
+        var ret = this.rbacService.addUserRole(model);
         Assert.assertNotNull(ret);
     }
 
@@ -73,13 +88,13 @@ public class AuthorityServiceTest {
         var model = new RoleAuthModel();
         model.roleId = "3c0a4d524f9611e9804a0242ac110007";
         model.authId = "dd468b264f9211e9804a0242ac110007";
-        var ret = this.authorityService.addRoleAuth(model);
+        var ret = this.rbacService.addRoleAuth(model);
         Assert.assertNotNull(ret);
     }
 
     @Test
     public void getAuthList(){
-        var ret = this.authorityService.getAuthoritiesByUserId("3dfc0a90446d11e993a60242ac110006");
+        var ret = this.rbacService.getAuthoritiesByUserId("3dfc0a90446d11e993a60242ac110006");
         Assert.assertNotNull(ret);
     }
 }

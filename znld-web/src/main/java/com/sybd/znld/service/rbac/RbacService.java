@@ -1,38 +1,39 @@
 package com.sybd.znld.service.rbac;
 
-import com.sybd.znld.db.DbSource;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MysqlDeallocatePrepareStatement;
+import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
 import com.sybd.znld.service.rbac.mapper.*;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
-public class AuthorityService implements IAuthorityService {
-    private final Logger log = LoggerFactory.getLogger(AuthorityService.class);
+public class RbacService implements IRbacService {
     private final AuthGroupMapper authGroupMapper;
     private final AuthorityMapper authorityMapper;
     private final RoleMapper roleMapper;
     private final UserRoleMapper userRoleMapper;
     private final UserMapper userMapper;
     private final RoleAuthMapper roleAuthMapper;
+    private final OrganizationMapper organizationMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public AuthorityService(AuthGroupMapper authGroupMapper, AuthorityMapper authorityMapper,
-                            RoleMapper roleMapper, UserRoleMapper userRoleMapper, UserMapper userMapper, RoleAuthMapper roleAuthMapper) {
+    public RbacService(AuthGroupMapper authGroupMapper, AuthorityMapper authorityMapper, RoleMapper roleMapper, UserRoleMapper userRoleMapper, UserMapper userMapper, RoleAuthMapper roleAuthMapper, OrganizationMapper organizationMapper) {
         this.authGroupMapper = authGroupMapper;
         this.authorityMapper = authorityMapper;
         this.roleMapper = roleMapper;
         this.userRoleMapper = userRoleMapper;
         this.userMapper = userMapper;
         this.roleAuthMapper = roleAuthMapper;
+        this.organizationMapper = organizationMapper;
     }
 
     @Override
@@ -166,5 +167,94 @@ public class AuthorityService implements IAuthorityService {
             });
         });
         return authList.size() > 0 ? authList : null;
+    }
+
+    @Override
+    public OrganizationModel addOrganization(OrganizationModel model) {
+        if(model == null || !model.isValid()) {
+            log.debug("输入参数为空");
+            return null;
+        }
+        // 不可以有同名的组织（组织名称唯一，类似于公司名称）
+        var organization = this.organizationMapper.selectByName(model.name);
+        if(organization != null){
+            if(organization.status == OrganizationModel.Status.DELETED){
+                log.debug("已存在同名的组织，但这个组织处在删除状态，更新为可用状态");
+                organization.status = OrganizationModel.Status.OK;
+                this.organizationMapper.updateById(organization);
+                return organization;
+            }
+            log.debug("已存在同名的组织，且这个组织处在非删除状态，无法新增");
+            return null;
+        }
+        // 如果设置了父节点，则检测此父节点是否存在，若没设置意味着顶级节点
+        if(!MyString.isEmptyOrNull(model.parentId) && this.organizationMapper.selectById(model.parentId) == null) {
+            log.debug("设置了父节点（不为空），但此父节点是无效的");
+            return null;
+        }
+        // 监测position节点，同一个parentId下，不能重复；
+        // 一个组织只能由一个顶级节点；也就是组织A''0与组织B''0可以共存
+        if(model.parentId.equals("") && model.position == 0){// 是顶级节点
+
+        }
+        var ret = this.organizationMapper.selectByParentIdAndPosition(model.parentId, model.position);
+        if(ret != null && !ret.isEmpty()) {
+            log.debug("已经存在相同的父节点与位置");
+            return null;
+        }
+        if(this.organizationMapper.insert(model) > 0) return model;
+        return null;
+    }
+
+    @Override
+    public OrganizationModel getOrganizationByName(String name) {
+        if(MyString.isEmptyOrNull(name)) return null;
+        return this.organizationMapper.selectByName(name);
+    }
+
+    @Override
+    public OrganizationModel getOrganizationById(String id) {
+        if(MyString.isEmptyOrNull(id)) return null;
+        return this.organizationMapper.selectById(id);
+    }
+
+    @Override
+    public OrganizationModel modifyOrganization(OrganizationModel organization) {
+        if(organization == null || !MyString.isUuid(organization.id)) return null;
+        if(this.organizationMapper.updateById(organization) > 0) return organization;
+        return null;
+    }
+
+    @Override
+    public List<OrganizationModel> getOrganizationByParenIdAndPosition(String parentId, Integer position) {
+        if(!parentId.equals("") && !MyString.isUuid(parentId)) return null;
+        if(MyNumber.isNegative(position)) return null;
+        return this.organizationMapper.selectByParentIdAndPosition(parentId, position);
+    }
+
+    @Override
+    public DbDeleteResult removeOrganizationById(String id) {
+        if(MyString.isEmptyOrNull(id) || !MyString.isUuid(id)) return DbDeleteResult.PARAM_ERROR;
+        //查看此parentId是否被其他人引用过，如果存在有效引用，则不能删除
+        var ret = this.organizationMapper.selectByParentId(id);
+        if(ret != null && !ret.isEmpty()) return DbDeleteResult.CASCADE_ERROR;
+        var organization = this.organizationMapper.selectById(id);
+        if(organization.status == OrganizationModel.Status.DELETED) return DbDeleteResult.ALREADY_DELETED;
+        if(this.organizationMapper.deleteById(id, OrganizationModel.Status.DELETED) > 0) return DbDeleteResult.SUCCESS;
+        return DbDeleteResult.NOT_FOUND;
+    }
+
+    @Override
+    public DbDeleteResult removeOrganizationByName(String name) {
+        if(MyString.isEmptyOrNull(name)) return DbDeleteResult.PARAM_ERROR;
+        var organization = this.organizationMapper.selectByName(name);
+        if(organization == null) return DbDeleteResult.NOT_FOUND;
+        return removeOrganizationById(organization.id);
+    }
+
+    @Override
+    public List<OrganizationModel> getOrganizationByParenId(String parentId) {
+        if(!MyString.isUuid(parentId)) return null;
+        return this.organizationMapper.selectByParentId(parentId);
     }
 }

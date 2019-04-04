@@ -18,9 +18,8 @@ import java.lang.annotation.Annotation;
 @Order(1)
 @Component
 public class DataSourceAspect {
-    private final Logger log = LoggerFactory.getLogger(DataSourceAspect.class);
-
-    @Pointcut("@annotation(com.sybd.znld.db.DbSource) || within(com.sybd.znld.service..*)") //within针对class级别的注解
+    //@Pointcut("@annotation(com.sybd.znld.db.DbSource)|| within(com.sybd.znld.service..*)") //within针对class级别的注解
+    @Pointcut("@within(com.sybd.znld.db.DbSource)") //within针对class级别的注解
     public void dataSourcePointCut() {}
 
     @Around("dataSourcePointCut()")

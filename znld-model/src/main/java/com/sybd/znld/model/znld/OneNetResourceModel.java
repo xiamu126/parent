@@ -13,9 +13,10 @@ public class OneNetResourceModel implements Serializable {
     public Integer objInstId;
     public Integer resId;
     public String value;
-    public String  description;
+    public String description;
     public Short timeout;
     public Short type;
+    public Short status = Status.Monitor;
 
     public OneNetKey toOneNetKey(){
         return OneNetKey.from(objId, objInstId, resId);
@@ -31,6 +32,18 @@ public class OneNetResourceModel implements Serializable {
         public boolean isValid(short v){
             switch (v){
                 case Command: case Value: case Unit: case State: case Other: return true;
+                default: return false;
+            }
+        }
+    }
+
+    public static class Status{
+        public static final short Monitor = 0;
+        public static final short Skip = 1;
+
+        public boolean isValid(short v){
+            switch (v){
+                case Monitor: case Skip: return true;
                 default: return false;
             }
         }

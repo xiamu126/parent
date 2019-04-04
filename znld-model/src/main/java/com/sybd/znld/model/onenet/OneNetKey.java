@@ -1,15 +1,17 @@
 package com.sybd.znld.model.onenet;
 
+import com.sybd.znld.model.IValid;
 import com.sybd.znld.util.MyNumber;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
 
-public class OneNetKey implements Serializable{
+public class OneNetKey implements IValid, Serializable{
     public Integer objId;
     public Integer objInstId;
     public Integer resId;
 
+    @Override
     public boolean isValid(){
         return MyNumber.isPositive(objId) && MyNumber.isPositiveOrZero(objInstId) && MyNumber.isPositive(resId);
     }

@@ -24,7 +24,7 @@ public class RegionServiceTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private RegionService regionService;
+    private IRegionService regionService;
 
     @Before
     public void setup() {
@@ -34,23 +34,15 @@ public class RegionServiceTest {
     @Test
     public void addRegion(){
         var model = new RegionModel();
-        model.name = "测试区域";
-        model.status = 0;
+        model.name = "SYBD测试区域1";
         var ret = this.regionService.addRegion(model);
         Assert.assertNotNull(ret);
-        Assert.assertNotEquals("", ret.id);
-    }
-
-    @Test
-    public void addRegion2(){
-        for(var i = 1; i < 10; i++){
-            var model = new RegionModel();
-            model.name = "街道"+i;
-            model.status = 0;
-            var ret = this.regionService.addRegion(model);
-            Assert.assertNotNull(ret);
-            Assert.assertNotEquals("", ret.id);
-        }
+        model.name = "SYBD测试区域2";
+        ret = this.regionService.addRegion(model);
+        Assert.assertNotNull(ret);
+        model.name = "SYBD测试区域3";
+        ret = this.regionService.addRegion(model);
+        Assert.assertNotNull(ret);
     }
 
     @Test

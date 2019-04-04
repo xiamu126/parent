@@ -7,7 +7,6 @@ import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
 import com.sybd.znld.service.ministar.dto.Subtitle;
-import com.sybd.znld.service.znld.IExecuteCommandService;
 import com.sybd.znld.service.znld.ILampService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
@@ -19,8 +18,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -107,7 +108,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
         try {
             var oneNetKey = OneNetKey.from(dataStreamId);
             if(oneNetKey == null) return LastDataResult.fail("非法的参数");
-            if(!this.lampService.isDataStreamIdEnabled(deviceId, oneNetKey)){
+            if(!this.lampService.isDataStreamIdEnabled(oneNetKey)){
                 return LastDataResult.fail("当前dataStreamId已禁用");
             }
             var ret = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
@@ -267,28 +268,15 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                  @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgs data,
                                  HttpServletRequest request){
         try{
-            var cmd = data.cmd;
-            if(cmd.equals("")){
+            if(!MyNumber.isPositive(deviceId) || !data.isValid()){
                 return ExecuteResult.fail("非法的参数");
             }
             var resource = this.lampService.getResourceByCommandValue(data.cmd);
             if(resource == null) {
                 return ExecuteResult.fail("获取命令相关数据失败");
             }
-            if(data.cmd.equals("A") || data.cmd.equals("B") || data.cmd.equals("C")){// 针对修改频率的
-                if(!MyNumber.isBetween(data.json,10,99)){
-                    return ExecuteResult.fail("非法的参数");
-                }
-                cmd = cmd + data.json;
-            } else if (data.cmd.equals("204")) {// 针对灯带指令的
-                try{
-                    var modelMapper = new ModelMapper();
-                    var subtitle = modelMapper.map(data.json, Subtitle.class);
-                    cmd = cmd + ":"+subtitle.toString()+";";
-                }catch (Exception ex){
-                    return ExecuteResult.fail("非法的参数");
-                }
-            }
+
+            var cmd = data.getPackedCmd();
             var imei = this.lampService.getImeiByDeviceId(deviceId);
             if(MyString.isEmptyOrNull(imei)){
                 return ExecuteResult.fail("未找到指定设备的imei");

@@ -2,8 +2,7 @@ package com.sybd.znld.service.znld;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.config.RedisKeyConfig;
-import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.znld.VideoConfigModel;
+import com.sybd.znld.model.znld.CameraModel;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.video.VideoAsyncTask;
 import com.sybd.znld.service.znld.mapper.VideoConfigMapper;
@@ -49,13 +48,13 @@ public class VideoService extends BaseService implements IVideoService {
     }
 
     @Override
-    public VideoConfigModel getConfigByCameraId(String cameraId) {
+    public CameraModel getConfigByCameraId(String cameraId) {
         if(!MyString.isUuid(cameraId)) return null;
         return this.videoConfigMapper.getConfigByCameraId(cameraId);
     }
 
     @Override
-    public VideoConfigModel setConfigByCameraId(VideoConfigModel model) {
+    public CameraModel setConfigByCameraId(CameraModel model) {
         if(model == null || !MyString.isUuid(model.id)) return null;
         if(videoConfigMapper.setConfigByCameraId(model) > 0) return model;
         return null;

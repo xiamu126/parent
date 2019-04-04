@@ -1,6 +1,6 @@
-drop database if exists ZNLD_V3;
-create database ZNLD_V3 default character set utf8mb4 collate utf8mb4_unicode_ci;
-use ZNLD_V3;
+drop database if exists ZNLD_V4;
+create database ZNLD_V4 default character set utf8mb4 collate utf8mb4_unicode_ci;
+use ZNLD_V4;
 
 create table onenet_resource(
   id                   varchar(32) not null primary key,
@@ -10,13 +10,13 @@ create table onenet_resource(
   value                varchar(32) not null  comment '对于命令资源，这个值就是具体的命令，对于一般资源，这个值暂时不用',
   description          varchar(100) not null  comment '',
   timeout              tinyint unsigned not null default 5  comment '',
-  type                 tinyint unsigned not null default 0 comment '0：命令资源，1：数值资源，2：单位资源，3：状态资源，4：其它资源'
+  type                 tinyint unsigned not null default 0 comment '0：命令资源，1：数值资源，2：单位资源，3：状态资源，4：其它资源',
+  status               tinyint unsigned not null default 0 comment '0：需要监测，1：跳过监测即平台不会读取这个资源的值'
 );
 create table lamp_resource(
   id                   varchar(32) not null primary key,
   lamp_id              varchar(32) not null  comment '',
-  onenet_resource_id   varchar(32) not null  comment '',
-  status               tinyint not null default 0 comment '0：需要监测，1：跳过监测即平台不会读取这个资源的值'
+  onenet_resource_id   varchar(32) not null  comment ''
 );
 create table lamp(
   id                   varchar(32) not null primary key,
@@ -26,8 +26,7 @@ create table lamp(
   device_name          varchar(50) not null  comment '路灯名字',
   longitude            varchar(20) not null default '' comment '经度',
   latitude             varchar(20) not null default '' comment '纬度',
-  status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废',
-  organization_id      varchar(32) not null  comment '所属组织'
+  status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废'
 );
 create table lamp_region(
   id         varchar(32) not null primary key,
@@ -36,17 +35,25 @@ create table lamp_region(
 );
 
 create table region(
-  id      varchar(32)  not null primary key,
-  name    varchar(50)  not null comment '区域名字',
-  status  tinyint unsigned default 0 not null comment '0：启用，1：冻结'
+  id                 varchar(32)  not null primary key,
+  name               varchar(50)  not null comment '区域名字',
+  type               tinyint unsigned default 0 not null comment '0：对应着真实的物理街道（区域），1：虚拟区域；一盏路灯只能属于一个物理区域，但可以属于多个虚拟区域',
+  organization_id    varchar(32) not null  comment '所属组织',
+  status             tinyint unsigned default 0 not null comment '0：启用，1：删除'
 );
 
-create table video_config(
+create table lamp_camera(
+    id         varchar(32) not null primary key,
+    lamp_id    varchar(32) not null,
+    camera_id  varchar(32) not null
+);
+
+create table camera(
   id               varchar(32)  not null primary key,
   rtsp_url         varchar(100) not null,
   rtmp_url         varchar(100) not null,
-  record_audio     bit default false not null ,
-  organization_id  varchar(32) not null
+  record_audio     bit default false not null comment '是否录制声音',
+  status  tinyint unsigned default 0 not null comment '0：启用，1：禁用，2：删除'
 );
 
 create table http_log(
@@ -64,22 +71,25 @@ create procedure znld_init()
 begin
   # 创建资源数据
   begin
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3300, 0, 5700, '000', '心跳', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5551, '001', '屏幕_开', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5551, '002', '屏幕_关', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 1, 5551, '003', '气象站_开', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 1, 5551, '004', '气象站_关', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3302, 0, 5700, '101', '气象站_数据上传', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3302, 0, 5700, '102', '路灯状态查询', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3302, 0, 5700, '103', '位置信息查询', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3318, 0, 5700, 'A', '气象信息上传频率', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3318, 1, 5700, 'B', '位置信息上传频率', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3318, 2, 5700, 'C', '路灯状态信息上传频率', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5503, '104', '路灯与平台握手', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3303, 0, 5700, '200', '环境监测开始上传信息', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3303, 0, 5700, '201', '环境监测停止上传信息', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3303, 0, 5700, '202', '位置信息开始上传', 0);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 303, 0, 5700, '203', '位置信息停止上传', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5700, '000', '心跳', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5701, '001', '屏幕_开', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5702, '002', '屏幕_关', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5703, '003', '环境监测_开', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5704, '004', '环境监测_关', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5705, '102', '路灯状态查询', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5706, '103', '位置信息查询', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5707, '104', '路灯与平台握手', 0);
+
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5708, 'A', '气象信息上传频率', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5709, 'B', '位置信息上传频率', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5710, 'C', '路灯状态信息上传频率', 0);
+
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5711, '200', '环境监测开始上传信息', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5712, '201', '环境监测停止上传信息', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5713, '202', '位置信息开始上传', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5714, '203', '位置信息停止上传', 0);
+    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5715, '204', '景观灯工作状态，0为停止，1为正常', 0);
+
     insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3303, 0, 5500, '', '环境监测整体是否开始上传信息，0为停止，1为开始', 3);
     insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3303, 0, 5700, '', '温度值', 1);
     insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3303, 0, 5701, '', '温度单位', 2);
@@ -99,22 +109,14 @@ begin
     insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3336, 0, 5517, '', '北斗速度', 1);
     insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3336, 0, 5518, '', '北斗时间戳', 1);
     insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5503, '', '握手状态，0为停止，1为已连接onenet，2为已握手', 3);
-    insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5501, '', '景观灯工作状态，0为停止，1为正常', 3);
     insert into onenet_resource (id, obj_id, obj_inst_id, res_id, value, description, type) values (replace(uuid(), '-', ''), 3201, 0, 5502, '', '心跳状态，0为停止，1为正常', 3);
   end;
 
   # 添加路灯数据
   begin
-    set @organization_table = 'RBAC_V2.organization';
-    set @o_name = '神宇北斗测试';
-    set @o_id = null;
-    set @s = concat('select id into @o_id from ', @organization_table, ' where name = \'', @o_name, '\'');
-    prepare stmt from @s;
-    execute stmt;
-    deallocate prepare stmt;
-    insert into lamp(id, api_key, device_id, imei, device_name, organization_id) values (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', '路灯0001', @o_id);
-    insert into lamp(id, api_key, device_id, imei, device_name, organization_id) values (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '42939715', '868194030006003', '路灯0002',  @o_id);
-    insert into lamp(id, api_key, device_id, imei, device_name, organization_id) values (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '520914939', '868194030005971', '路灯0003', @o_id);
+    insert into lamp(id, api_key, device_id, imei, device_name, status) values (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '518452664', '868194030005849', '路灯0001', 2);
+    insert into lamp(id, api_key, device_id, imei, device_name, status) values (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '42939715', '868194030006003', '路灯0002', 2);
+    insert into lamp(id, api_key, device_id, imei, device_name) values (replace(uuid(), '-', ''), 'fN8PGSJ3VoIOSoznGWuGeC25PGY=', '520914939', '868194030005971', '路灯0003');
   end;
 
   # 关联路灯与资源
@@ -142,11 +144,39 @@ begin
     close l_cur;
   end;
 
+  # 创建摄像头数据
+  begin
+      insert into camera(id, rtsp_url, rtmp_url) values (replace(uuid(), '-', ''), 'rtsp:\/\/admin:admin888@192.168.11.64:554/Streaming/Channels/101', 'rtmp:\/\/localhost:1935/live/livestream');
+  end;
+
+  # 创建路灯摄像头数据
+  begin
+      declare `ERROR` condition for sqlstate '45000';
+      set @l_id = null;
+      select id into @l_id from lamp where device_name = '路灯0003' and status = 0;
+      if @l_id is null then
+          signal `ERROR` set message_text = 'l_id is null';
+      end if;
+      set @c_id = null;
+      select id into @c_id from camera where true limit 1;
+      if @c_id is null then
+        signal `ERROR` set message_text = 'c_id is null';
+      end if;
+      insert into lamp_camera(id, lamp_id, camera_id) values (replace(uuid(), '-', ''), @l_id, @c_id);
+  end;
+
   # 创建区域数据
   begin
-    insert into region (id, name) values (replace(uuid(), '-', ''), '神宇北斗测试区域1');
-    insert into region (id, name) values (replace(uuid(), '-', ''), '神宇北斗测试区域2');
-    insert into region (id, name) values (replace(uuid(), '-', ''), '神宇北斗测试区域3');
+    set @organization_table = 'RBAC_V2.organization';
+    set @o_name = '神宇北斗测试';
+    set @o_id = null;
+    set @s = concat('select id into @o_id from ', @organization_table, ' where name = \'', @o_name, '\'');
+    prepare stmt from @s;
+    execute stmt;
+    deallocate prepare stmt;
+    insert into region (id, name, organization_id) values (replace(uuid(), '-', ''), '神宇北斗测试区域1', @o_id);
+    insert into region (id, name, organization_id) values (replace(uuid(), '-', ''), '神宇北斗测试区域2', @o_id);
+    insert into region (id, name, organization_id) values (replace(uuid(), '-', ''), '神宇北斗测试区域3', @o_id);
   end;
 
   # 创建路灯区域

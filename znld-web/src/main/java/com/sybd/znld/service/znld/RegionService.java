@@ -29,12 +29,8 @@ public class RegionService implements IRegionService {
 
     @Override
     public RegionModel addRegion(RegionModel model) {
-        if(model == null) {
+        if(model == null || !model.isValid()) {
             log.debug("错误的参数");
-            return null;
-        }
-        if(MyString.isEmptyOrNull(model.name)){
-            log.debug("区域名称为空");
             return null;
         }
         //区域不能重复定义

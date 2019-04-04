@@ -1,9 +1,10 @@
 package com.sybd.znld.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.GetLastDataStreamsResult;
-import com.sybd.znld.service.znld.IExecuteCommandService;
+import com.sybd.znld.service.znld.ILampService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,10 @@ public class PageDeviceController extends BaseDeviceController implements IPageD
 
     @Autowired
     public PageDeviceController(RedisTemplate<String, Object> redisTemplate,
-                                OneNetService oneNet,
-                                IExecuteCommandService executeCommandService,
+                                IOneNetService oneNet,
+                                ILampService lampService,
                                 ProjectConfig projectConfig) {
-        super(redisTemplate, oneNet, executeCommandService, projectConfig);
+        super(redisTemplate, oneNet, lampService, projectConfig);
     }
 
     @RequestMapping(value = "/cmd", method = RequestMethod.GET, produces = {MediaType.TEXT_HTML_VALUE})

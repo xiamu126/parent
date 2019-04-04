@@ -21,7 +21,7 @@
         <result column="deviceId" jdbcType="INTEGER" property="device_id"/>
         <result column="imei" jdbcType="VARCHAR" property="imei"/>
     </resultMap>
-    <select id="selectAllDeviceIdAndIMEI" resultMap="java.util.HashMap">
+    <select id="selectAllDeviceIdAndIMEI" resultType="java.util.HashMap">
         select distinct device_id, imei from lamp;
     </select>
 
@@ -31,5 +31,12 @@
     </resultMap>
     <select id="selectDeviceIdAndDeviceNames" resultMap="DeviceIdAndDeviceNames">
         select distinct device_id, device_name from lamp;
+    </select>
+
+    <select id="selectCheckedResourceByDeviceId" resultType="com.sybd.znld.service.znld.dto.CheckedResource">
+        select concat(obj_id, '_', obj_inst_id, '_',res_id) as dataStreamId, description from lamp as a
+        left join lamp_resource as b on a.id = b.lamp_id
+        left join onenet_resource as c on c.id = b.onenet_resource_id
+        where device_id = #{_parameter} and c.status = 0;
     </select>
 </mapper>

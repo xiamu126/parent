@@ -1,9 +1,9 @@
 package com.sybd.znld.service.znld;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.modelmapper.internal.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +30,7 @@ public class LampServiceTest {
 
     @Test
     public void test(){
-        var ret = this.lampService.getOneNetKeyByCommand("000");
-        Assert.notNull(ret);
+       var ret = this.lampService.getCheckedResourceByDeviceId(520914939);
+        Assert.assertTrue(ret != null && !ret.isEmpty());
     }
-
 }

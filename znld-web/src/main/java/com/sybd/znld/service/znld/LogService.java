@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class LogService implements ILogService {
@@ -26,8 +28,11 @@ public class LogService implements ILogService {
         if(model == null || MyString.isAnyEmptyOrNull(model.path, model.method, model.ip) || !HttpMethod.isValid(model.method)){
             return null;
         }
-        if(httpLogMapper.selectByAll(model) != null) return null;
-        if(httpLogMapper.insert(model) > 0) return model;
+        var tmp = httpLogMapper.selectByAll(model);
+        if(tmp != null && !tmp.isEmpty()) return null;
+        if(httpLogMapper.insert(model) > 0) {
+            return model;
+        }
         return null;
     }
 }

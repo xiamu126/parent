@@ -1,7 +1,6 @@
 package com.sybd.znld.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sybd.znld.onenet.dto.OneNetExecuteArgsEx;
 import com.sybd.znld.service.znld.ILampService;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,24 +57,5 @@ public class GetDeviceResultControllerTest {
             }
             log.debug(result);
         });*/
-    }
-
-    @Test
-    public void testPV(){
-        OneNetExecuteArgsEx command = new OneNetExecuteArgsEx("ZNLD_PM_G");
-        MockHttpServletRequestBuilder action = MockMvcRequestBuilders.post("/api/execute", command).accept(MediaType.APPLICATION_JSON_UTF8);
-        ObjectMapper mapper = new ObjectMapper();
-        String result = "";
-        try {
-            result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .content(mapper.writeValueAsString(command)))
-                    .andExpect(MockMvcResultMatchers.status().isOk())
-                    .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                    //.andExpect(MockMvcResultMatchers.jsonPath("$.code").cachePrefix(0))
-                    .andReturn().getResponse().getContentAsString();
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-        }
-        log.debug(result);
     }
 }

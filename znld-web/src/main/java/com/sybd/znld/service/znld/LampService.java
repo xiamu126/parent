@@ -1,8 +1,8 @@
 package com.sybd.znld.service.znld;
 
+import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.znld.LampResourceModel;
 import com.sybd.znld.model.znld.OneNetResourceModel;
-import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.znld.dto.CheckedResource;
 import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.service.znld.mapper.LampMapper;
@@ -34,13 +34,11 @@ public class LampService implements ILampService {
     }
 
     @Override
-    public boolean isDataStreamIdEnabled(Integer deviceId, OneNetKey key) {
-        if(!MyNumber.isPositive(deviceId) || !key.isValid()) return false;
-        var lamp = this.lampMapper.selectByDeviceId(deviceId);
+    public boolean isDataStreamIdEnabled(OneNetKey key) {
+        if(!key.isValid()) return false;
         var resource = this.oneNetResourceMapper.selectByOneNetKey(key);
-        if(lamp == null || resource == null) return false;
-        var ret = this.lampResourceMapper.selectByLampIdAndResourceId(lamp.id, resource.id);
-        return ret.status == LampResourceModel.Status.Monitor;
+        if(resource == null) return false;
+        return resource.status == OneNetResourceModel.Status.Monitor;
     }
 
     @Override
@@ -57,19 +55,7 @@ public class LampService implements ILampService {
     @Override
     public List<CheckedResource> getCheckedResourceByDeviceId(Integer deviceId) {
         if(!MyNumber.isPositive(deviceId)) return null;
-        var lamp = this.lampMapper.selectByDeviceId(deviceId);
-        if(lamp == null) return null;
-        var ret = this.lampResourceMapper.selectByLampId(lamp.id);
-        var filteredRet = ret.stream().takeWhile(p -> p.status == LampResourceModel.Status.Monitor);
-        var ids = filteredRet.map(t -> t.id).collect(Collectors.toList());
-        var res = this.oneNetResourceMapper.selectByIds(ids);
-        return res.stream().map(t -> {
-            var key = OneNetKey.from(t.objId, t.objInstId, t.resId);
-            var tmp = new CheckedResource();
-            tmp.dataStreamId = key.toDataStreamId();
-            tmp.description = t.description;
-            return tmp;
-        }).collect(Collectors.toList());
+        return this.lampMapper.selectCheckedResourceByDeviceId(deviceId);
     }
 
     @Override

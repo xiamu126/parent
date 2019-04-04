@@ -2,7 +2,6 @@ package com.sybd.znld.service.znld.mapper;
 
 import com.sybd.znld.db.DbSource;
 import com.sybd.znld.model.znld.LampModel;
-import com.sybd.znld.onenet.dto.OneNetKey;
 import com.sybd.znld.service.znld.dto.CheckedResource;
 import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.service.znld.dto.DeviceIdAndIMEI;
@@ -22,4 +21,5 @@ public interface LampMapper {
     String selectImeiByDeviceId(Integer deviceId);
     Map<Integer, String> selectAllDeviceIdAndIMEI();
     List<DeviceIdAndDeviceName> selectDeviceIdAndDeviceNames();
+    List<CheckedResource> selectCheckedResourceByDeviceId(Integer deviceId);
 }

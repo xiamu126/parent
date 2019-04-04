@@ -14,6 +14,6 @@ public interface OrganizationMapper {
     OrganizationModel selectById(String id);
     int updateById(OrganizationModel model);
     List<OrganizationModel> selectByParentIdAndPosition(String parentId, Integer position);
-    int deleteById(String id);
+    int deleteById(String id, Short status);
     List<OrganizationModel> selectByParentId(String parentId);
 }

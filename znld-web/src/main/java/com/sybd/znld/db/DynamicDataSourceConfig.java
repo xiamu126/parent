@@ -1,6 +1,7 @@
 package com.sybd.znld.db;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -56,10 +58,7 @@ public class DynamicDataSourceConfig {
     }
 
     public static class DynamicDataSource extends AbstractRoutingDataSource {
-        private static final ThreadLocal<Stack<String>> contextHolder = new ThreadLocal<>();
-        static {
-            contextHolder.set(new Stack<>());
-        }
+        private static final ThreadLocal<ArrayDeque<String>> contextHolder = new ThreadLocal<>();
         /**
          * 配置DataSource, defaultTargetDataSource为主数据库
          */
@@ -74,17 +73,21 @@ public class DynamicDataSourceConfig {
             return getDataSource();
         }
 
-        static void setDataSource(String dataSource) {
-            contextHolder.get().push(dataSource);
+        public static void setDataSource(String dataSource) {
+            var stack = contextHolder.get();
+            if(stack == null){
+                stack = new ArrayDeque<>();
+                contextHolder.set(stack);
+            }
+            stack.push(dataSource);
         }
 
         private static String getDataSource() {
             return contextHolder.get().peek();
         }
 
-        static void clearDataSource() {
+        public static void clearDataSource() {
             contextHolder.get().pop();
         }
-
     }
 }

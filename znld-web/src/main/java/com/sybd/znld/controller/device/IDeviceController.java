@@ -3,7 +3,6 @@ package com.sybd.znld.controller.device;
 import com.sybd.znld.controller.device.dto.*;
 import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.onenet.dto.OneNetExecuteArgs;
-import com.sybd.znld.onenet.dto.OneNetExecuteArgsEx;
 
 import javax.servlet.http.HttpServletRequest;
 

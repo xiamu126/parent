@@ -6,8 +6,8 @@ import lombok.Setter;
 import java.io.Serializable;
 
 @Getter @Setter
-public class LampResourceModel implements Serializable {
+public class LampCameraModel implements Serializable {
     public String id;
     public String lampId;
-    public String oneNetResourceId;
+    public String cameraId;
 }

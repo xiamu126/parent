@@ -13,7 +13,7 @@ import java.util.List;
 public interface HttpLogMapper {
     int insert(HttpLogModel model);
     HttpLogModel selectById(String id);
-    HttpLogModel selectByAll(HttpLogModel model);
+    List<HttpLogModel> selectByAll(HttpLogModel model);
     List<HttpLogModel> selectByTimeAfter(LocalDateTime time);
     List<HttpLogModel> selectByTimeBetween(LocalDateTime begin, LocalDateTime end);
     List<HttpLogModel> selectByTimeAfterAndMethod(LocalDateTime time, HttpMethod method);

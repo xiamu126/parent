@@ -1,6 +1,6 @@
 package com.sybd.znld;
 
-import com.sybd.znld.onenet.dto.OneNetKey;
+import com.sybd.znld.model.onenet.OneNetKey;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;

@@ -6,9 +6,11 @@ import com.sybd.znld.model.rbac.AuthorityModel;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.rbac.dto.LoginInput;
+import com.sybd.znld.service.rbac.dto.RbacInfo;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
 import com.sybd.znld.service.rbac.mapper.OrganizationMapper;
 import com.sybd.znld.service.rbac.mapper.UserMapper;
+import com.sybd.znld.service.rbac.mapper.UserRoleMapper;
 import com.sybd.znld.util.MyString;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
@@ -24,6 +26,7 @@ import java.util.List;
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Service
 public class UserService extends BaseService implements IUserService {
+    private final UserRoleMapper userRoleMapper;
     private final UserMapper userMapper;
     private final OrganizationMapper organizationMapper;
     private final BCryptPasswordEncoder encoder;
@@ -31,9 +34,10 @@ public class UserService extends BaseService implements IUserService {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public UserService(UserMapper userMapper,
-                       CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, OrganizationMapper organizationMapper) {
+                       CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, UserRoleMapper userRoleMapper, OrganizationMapper organizationMapper) {
         super(cacheManager, taskScheduler, projectConfig);
         this.userMapper = userMapper;
+        this.userRoleMapper = userRoleMapper;
         this.organizationMapper = organizationMapper;
         this.encoder = new BCryptPasswordEncoder(10);
     }

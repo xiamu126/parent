@@ -2,6 +2,8 @@ package com.sybd.znld.service.v2;
 
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.UserService;
+import com.sybd.znld.service.rbac.dto.RbacInfo;
+import com.sybd.znld.service.rbac.mapper.UserMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class UserServiceTest {
@@ -25,6 +29,9 @@ public class UserServiceTest {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Before
     public void setup() {
@@ -65,5 +72,37 @@ public class UserServiceTest {
         user.phone = "12345678900";
         var ret = this.userService.modifyUserById(user);
         Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void getAuthPack(){
+        var ret = this.userMapper.selectAuthPackByUserId("a6a96ebc51f111e9804a0242ac110007");
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void addAuth(){
+        var serverInclude = new RbacInfo.Rbac.Server.Include();
+        serverInclude.methods = List.of("*");
+        serverInclude.path = "*";
+        var serverExclude = new RbacInfo.Rbac.Server.Exclude();
+        serverExclude.methods = List.of("*");
+        serverExclude.path = "/api/v1/device/execute/*";
+        var htmlInclude = new RbacInfo.Rbac.Html.Include();
+        var htmlExclude =  new RbacInfo.Rbac.Html.Exclude();
+        htmlExclude.path = "/LandscapeLight";
+        htmlExclude.selectors = List.of("*");
+
+        var html = new RbacInfo.Rbac.Html();
+        html.includes = List.of(htmlInclude);
+        html.excludes = List.of(htmlExclude);
+        var server = new RbacInfo.Rbac.Server();
+        server.includes = List.of(serverInclude);
+        server.excludes = List.of(serverExclude);
+        var rbac = new RbacInfo.Rbac();
+        rbac.html = html;
+        rbac.server = server;
+        var rbacInfo = new RbacInfo();
+        rbacInfo.rbac = rbac;
     }
 }

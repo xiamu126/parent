@@ -3,6 +3,7 @@ package com.sybd.znld.service.rbac;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MysqlDeallocatePrepareStatement;
 import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
+import com.sybd.znld.service.rbac.dto.RbacInfo;
 import com.sybd.znld.service.rbac.mapper.*;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
@@ -26,7 +27,13 @@ public class RbacService implements IRbacService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public RbacService(AuthGroupMapper authGroupMapper, AuthorityMapper authorityMapper, RoleMapper roleMapper, UserRoleMapper userRoleMapper, UserMapper userMapper, RoleAuthMapper roleAuthMapper, OrganizationMapper organizationMapper) {
+    public RbacService(AuthGroupMapper authGroupMapper,
+                       AuthorityMapper authorityMapper,
+                       RoleMapper roleMapper,
+                       UserRoleMapper userRoleMapper,
+                       UserMapper userMapper,
+                       RoleAuthMapper roleAuthMapper,
+                       OrganizationMapper organizationMapper) {
         this.authGroupMapper = authGroupMapper;
         this.authorityMapper = authorityMapper;
         this.roleMapper = roleMapper;
@@ -67,23 +74,25 @@ public class RbacService implements IRbacService {
     @Override
     public AuthorityModel addAuth(AuthorityModel model) {
         if(model == null) return null;
+        // 判断权限名称，名称可以重复，即不同的组织可以有相同名称的权限
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("传入的name为空"); return null;
         }
-        if(!MyString.isUuid(model.authorityGroupId)){
-            log.debug("传入的权限组id非法"); return null;
-        }
+        // 判断路径
         if(MyString.isEmptyOrNull(model.url)){
             log.debug("url不能为空"); return null;
         }
+        // 判断类型
         if(!AuthorityModel.Type.isValid(model.type)){
             log.debug("非法的type"); return null;
         }
+        // 判断状态
         if(!AuthorityModel.Status.isValid(model.status)){
             log.debug("非法的status"); return null;
         }
-        if(this.authorityMapper.selectByName(model.name) != null){
-            log.debug("名称为["+model.name+"]已经存在"); return null;
+        // 判断权限组
+        if(!MyString.isUuid(model.authorityGroupId)){
+            log.debug("传入的权限组id非法"); return null;
         }
         if(this.authGroupMapper.selectById(model.authorityGroupId) == null){
             log.debug("指定的权限组不存在"); return null;
@@ -95,11 +104,11 @@ public class RbacService implements IRbacService {
     @Override
     public RoleModel addRole(RoleModel model) {
         if(model == null) return null;
+        // 判断角色名称，名称可以重复，即不同的组织可以有相同名称的权限
+        // 注意，不可以让不同的组织共用相同名称的角色，如此、会出现相同的角色名称关联不同组织的权限，
+        // 即最终会出现相同的角色关联了多个不同组织的URI路径
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("名称不能为空"); return null;
-        }
-        if(!RoleModel.Type.isValid(model.type)){
-            log.debug("错误的角色类型"); return null;
         }
         if(!RoleModel.Status.isValid(model.status)){
             log.debug("错误的状态"); return null;
@@ -256,5 +265,17 @@ public class RbacService implements IRbacService {
     public List<OrganizationModel> getOrganizationByParenId(String parentId) {
         if(!MyString.isUuid(parentId)) return null;
         return this.organizationMapper.selectByParentId(parentId);
+    }
+
+    @Override
+    public RbacInfo getRbacInfo(String userId) {
+        var user = this.userMapper.selectById(userId);
+        var userRoles = this.userRoleMapper.selectByUserId(userId);
+        return null;
+    }
+
+    @Override
+    public boolean addAuth(RbacInfo rbacInfo) {
+        return false;
     }
 }

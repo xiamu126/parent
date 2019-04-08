@@ -86,11 +86,12 @@ public class UserController implements IUserController {
         if(rightCaptcha == null) return LoginResult.fail("验证码已失效");
         if(!input.captcha.equalsIgnoreCase(rightCaptcha)) return LoginResult.fail("验证码错误");
         try {
-            var user = userService.getUserByName(input.user);
+            var user = this.userService.getUserByName(input.user);
             if(user != null){
                 if(!this.encoder.matches(input.password, user.password)) return LoginResult.fail("用户名或密码错误");
                 this.stringRedisTemplate.delete(getCaptchaKey(input.uuid));
                 long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
+                // 获取rbac权限信息
                 return LoginResult.success(user.getId(), clientId, clientSecret, seconds);
             }
         } catch (Exception ex) {

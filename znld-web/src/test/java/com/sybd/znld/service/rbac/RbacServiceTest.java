@@ -69,7 +69,6 @@ public class RbacServiceTest {
     public void addRole(){
         var model = new RoleModel();
         model.name = "测试角色";
-        model.type = RoleModel.Type.ANONYMOUS;
         var ret = this.rbacService.addRole(model);
         Assert.assertNotNull(ret);
     }

@@ -299,8 +299,8 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     }
 
     @ApiOperation(value = "获取所有的设备Id和名字")
-    //@PreAuthorize("isOk()")
-    //@PreAuthorize("hasAuthority('ADMIN')")
+    // @PreAuthorize("isOk()")
+    // @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(value = "info", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public DeviceIdAndNameResult getDeviceIdAndName(HttpServletRequest request){

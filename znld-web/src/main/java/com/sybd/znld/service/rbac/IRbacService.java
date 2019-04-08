@@ -2,6 +2,7 @@ package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
+import com.sybd.znld.service.rbac.dto.RbacInfo;
 
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface IRbacService {
     DbDeleteResult removeOrganizationById(String id);
     DbDeleteResult removeOrganizationByName(String name);
     List<OrganizationModel> getOrganizationByParenId(String parentId);
+    RbacInfo getRbacInfo(String userId);
+    boolean addAuth(RbacInfo rbacInfo);
 }

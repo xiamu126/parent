@@ -1,6 +1,8 @@
 package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.rbac.*;
+import com.sybd.znld.service.rbac.dto.RbacHtmlInfo;
+import com.sybd.znld.service.rbac.dto.RbacApiInfo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,8 +61,7 @@ public class RbacServiceTest {
         var model = new AuthorityModel();
         model.name = "测试权限";
         model.authorityGroupId = "bfb302934f8f11e9804a0242ac1100071";
-        model.url = "/";
-        model.type = AuthorityModel.Type.Other;
+        model.uri = "/";
         var ret = this.rbacService.addAuth(model);
         Assert.assertNotNull(ret);
     }
@@ -95,5 +96,32 @@ public class RbacServiceTest {
     public void getAuthList(){
         var ret = this.rbacService.getAuthoritiesByUserId("3dfc0a90446d11e993a60242ac110006");
         Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void testRbacInfo(){
+        var rbacHtmlInfo = new RbacHtmlInfo.Builder()
+                .setApp("znld").setPath("/LandscapeLight")
+                .setSelectors("div[class*='selectDateTimeLine'] > button[class*='sendBtn'] > span", "div[class*='tableBox2'] table td button:not([disabled]) > span")
+                .build();
+        log.debug(rbacHtmlInfo.getJsonString());
+        log.debug(RbacHtmlInfo.getType(rbacHtmlInfo.getJsonString()));
+
+        var rbacServerInfo = new RbacApiInfo.Builder()
+                .setApp("znld").setPath("/api/v1/device/execute/*")
+                .setMethods("POST")
+                .build();
+        log.debug(rbacServerInfo.getJsonString());
+        log.debug(RbacApiInfo.getType(rbacServerInfo.getJsonString()));
+
+    }
+
+    @Test
+    public void addHtmlAuth(){
+        var rbacHtmlInfo = new RbacHtmlInfo.Builder()
+                .setApp("znld").setPath("/LandscapeLight")
+                .setSelectors("div[class*='selectDateTimeLine'] > button[class*='sendBtn'] > span", "div[class*='tableBox2'] table td button:not([disabled]) > span")
+                .build();
+        var ret = this.rbacService.addHtmlAuth("a6bf84cc51f111e9804a0242ac110007", rbacHtmlInfo, "测试权限1");
     }
 }

@@ -1,6 +1,8 @@
 package com.sybd.znld.security;
 
+import com.sybd.znld.service.rbac.mapper.UserMapper;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
@@ -13,9 +15,16 @@ import org.springframework.stereotype.Component;
 public class MyMethodSecurityExpressionHandler extends OAuth2MethodSecurityExpressionHandler {
     private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
+    private final UserMapper userMapper;
+
+    @Autowired
+    public MyMethodSecurityExpressionHandler(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
     @Override
     protected MethodSecurityExpressionOperations createSecurityExpressionRoot(Authentication authentication, MethodInvocation invocation) {
-        var root = new MySecurityExpressionRoot(authentication);
+        var root = new MySecurityExpressionRoot(authentication, userMapper);
         root.setPermissionEvaluator(getPermissionEvaluator());
         root.setTrustResolver(this.trustResolver);
         root.setRoleHierarchy(getRoleHierarchy());

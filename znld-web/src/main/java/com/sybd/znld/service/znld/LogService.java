@@ -1,8 +1,8 @@
 package com.sybd.znld.service.znld;
 
 import com.sybd.znld.db.DbSource;
+import com.sybd.znld.model.HttpMethod;
 import com.sybd.znld.model.znld.HttpLogModel;
-import com.sybd.znld.model.znld.HttpLogModel.HttpMethod;
 import com.sybd.znld.service.znld.mapper.HttpLogMapper;
 import com.sybd.znld.util.MyString;
 import org.slf4j.Logger;

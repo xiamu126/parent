@@ -33,6 +33,7 @@ public class MyUserDetailsService implements UserDetailsService {
         var tmp = user;
         String[] auth = {"xxx"};
         var ret = this.authorityService.getAuthoritiesByUserId(user.id);
+        var ret2 = this.authorityService.getAuthPackByUserId(user.id);
         return User.builder().username(username).password(user.password).authorities(auth).build();
     }
 }

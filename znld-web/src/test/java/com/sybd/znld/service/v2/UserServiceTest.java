@@ -82,7 +82,7 @@ public class UserServiceTest {
 
     @Test
     public void addAuth(){
-        var serverInclude = new RbacInfo.Rbac.Server.Include();
+        /*var serverInclude = new RbacInfo.Rbac.Server.Include();
         serverInclude.methods = List.of("*");
         serverInclude.path = "*";
         var serverExclude = new RbacInfo.Rbac.Server.Exclude();
@@ -103,6 +103,6 @@ public class UserServiceTest {
         rbac.html = html;
         rbac.server = server;
         var rbacInfo = new RbacInfo();
-        rbacInfo.rbac = rbac;
+        rbacInfo.rbac = rbac;*/
     }
 }

@@ -1,24 +1,27 @@
 package com.sybd.znld.security;
 
-import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.znld.service.rbac.mapper.UserMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 
-import java.util.Arrays;
-
+@Slf4j
 public class MySecurityExpressionRoot extends SecurityExpressionRoot implements MethodSecurityExpressionOperations  {
     private Object filterObject;
     private Object returnObject;
+    private UserMapper userMapper;
 
-    public MySecurityExpressionRoot(Authentication authentication) {
+    public MySecurityExpressionRoot(Authentication authentication, UserMapper userMapper) {
         super(authentication);
+        this.userMapper = userMapper;
     }
 
     public boolean isOk(){
-        var user = this.getPrincipal();
-        var tmp = this.getThis();
+        var userName = this.getPrincipal();
+        var user = this.userMapper.selectByName(userName.toString());
+        var tmp = this.userMapper.selectAuthPackByUserId(user.id);
+        log.debug(tmp.toString());
         var auth = this.getAuthentication().getAuthorities();
         var ret = auth.stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
         return ret;

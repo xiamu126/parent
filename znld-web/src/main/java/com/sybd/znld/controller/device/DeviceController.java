@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
@@ -299,7 +300,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     }
 
     @ApiOperation(value = "获取所有的设备Id和名字")
-    // @PreAuthorize("isOk()")
+    @PreAuthorize("isOk()")
     // @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(value = "info", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override

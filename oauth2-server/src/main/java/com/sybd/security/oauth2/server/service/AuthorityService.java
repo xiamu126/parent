@@ -3,6 +3,7 @@ package com.sybd.security.oauth2.server.service;
 import com.sybd.security.oauth2.server.db.DbSource;
 import com.sybd.security.oauth2.server.mapper.*;
 import com.sybd.znld.model.rbac.*;
+import com.sybd.znld.model.rbac.dto.AuthPackByUser;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import org.slf4j.Logger;
@@ -73,11 +74,8 @@ public class AuthorityService implements IAuthorityService {
         if(!MyString.isUuid(model.authorityGroupId)){
             log.debug("传入的权限组id非法"); return null;
         }
-        if(MyString.isEmptyOrNull(model.url)){
+        if(MyString.isEmptyOrNull(model.uri)){
             log.debug("url不能为空"); return null;
-        }
-        if(!AuthorityModel.Type.isValid(model.type)){
-            log.debug("非法的type"); return null;
         }
         if(!AuthorityModel.Status.isValid(model.status)){
             log.debug("非法的status"); return null;
@@ -97,9 +95,6 @@ public class AuthorityService implements IAuthorityService {
         if(model == null) return null;
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("名称不能为空"); return null;
-        }
-        if(!RoleModel.Type.isValid(model.type)){
-            log.debug("错误的角色类型"); return null;
         }
         if(!RoleModel.Status.isValid(model.status)){
             log.debug("错误的状态"); return null;
@@ -167,5 +162,10 @@ public class AuthorityService implements IAuthorityService {
             });
         });
         return authList.size() > 0 ? authList : null;
+    }
+
+    @Override
+    public List<AuthPackByUser> getAuthPackByUserId(String userId) {
+        return this.userMapper.selectAuthPackByUserId(userId);
     }
 }

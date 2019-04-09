@@ -1,8 +1,8 @@
 package com.sybd.znld.service.rbac;
 
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MysqlDeallocatePrepareStatement;
 import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
+import com.sybd.znld.service.rbac.dto.RbacHtmlInfo;
 import com.sybd.znld.service.rbac.dto.RbacInfo;
 import com.sybd.znld.service.rbac.mapper.*;
 import com.sybd.znld.util.MyNumber;
@@ -24,6 +24,7 @@ public class RbacService implements IRbacService {
     private final UserMapper userMapper;
     private final RoleAuthMapper roleAuthMapper;
     private final OrganizationMapper organizationMapper;
+    private final OrganizationAuthGroupMapper organizationAuthGroupMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -33,7 +34,8 @@ public class RbacService implements IRbacService {
                        UserRoleMapper userRoleMapper,
                        UserMapper userMapper,
                        RoleAuthMapper roleAuthMapper,
-                       OrganizationMapper organizationMapper) {
+                       OrganizationMapper organizationMapper,
+                       OrganizationAuthGroupMapper organizationAuthGroupMapper) {
         this.authGroupMapper = authGroupMapper;
         this.authorityMapper = authorityMapper;
         this.roleMapper = roleMapper;
@@ -41,6 +43,7 @@ public class RbacService implements IRbacService {
         this.userMapper = userMapper;
         this.roleAuthMapper = roleAuthMapper;
         this.organizationMapper = organizationMapper;
+        this.organizationAuthGroupMapper = organizationAuthGroupMapper;
     }
 
     @Override
@@ -79,12 +82,8 @@ public class RbacService implements IRbacService {
             log.debug("传入的name为空"); return null;
         }
         // 判断路径
-        if(MyString.isEmptyOrNull(model.url)){
+        if(MyString.isEmptyOrNull(model.uri)){
             log.debug("url不能为空"); return null;
-        }
-        // 判断类型
-        if(!AuthorityModel.Type.isValid(model.type)){
-            log.debug("非法的type"); return null;
         }
         // 判断状态
         if(!AuthorityModel.Status.isValid(model.status)){
@@ -275,7 +274,39 @@ public class RbacService implements IRbacService {
     }
 
     @Override
-    public boolean addAuth(RbacInfo rbacInfo) {
-        return false;
+    public AuthorityModel addHtmlAuth(String authGroupId, RbacHtmlInfo rbacHtmlInfo, String authName) {
+        if(!rbacHtmlInfo.isValid()) return null;
+        // 检测权限组是否存在
+        var authGroup = this.authGroupMapper.selectById(authGroupId);
+        if(authGroup == null) {
+            log.debug("指定的权限组不存在");
+            return null;
+        }
+        // 获取此权限组对应的组织
+        var organAuthGroup = this.organizationAuthGroupMapper.selectByAuthGroupId(authGroupId);
+        if(organAuthGroup == null) {
+            log.debug("无法获取此权限组关联的组织信息");
+            return null;
+        }
+        // 获取组织信息
+        var organ = this.organizationMapper.selectById(organAuthGroup.organizationId);
+        if(organ == null) {
+            log.debug("获取组织信息失败");
+            return null;
+        }
+        // 检测此组织名下的所有权限是否已经包含了相同的权限
+        // 同一组织下的同一个权限组不能包含相同的权限（包括name和uri）
+        var authValue = rbacHtmlInfo.getJsonString();
+        var pack = this.organizationMapper.selectAuthPackByGroupIdAuthValueAndName(authGroupId, authValue, authName);
+        if(pack != null) {
+            log.debug("已经存在权限[" + authName + "]: " + authValue);
+            return null;
+        }
+        var authModel = new AuthorityModel();
+        authModel.name = authName;
+        authModel.uri = authValue;
+        authModel.authorityGroupId = authGroupId;
+        if(this.authorityMapper.insert(authModel) > 0) return authModel;
+        return null;
     }
 }

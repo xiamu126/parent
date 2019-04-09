@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,21 +34,36 @@ public class DynamicDataSourceConfig {
         return DruidDataSourceBuilder.create().build();
     }
 
+    @Bean("ministarDataSource")
+    @ConfigurationProperties("spring.datasource.druid.ministar")
+    public DataSource ministarDataSource(){
+        return DruidDataSourceBuilder.create().build();
+    }
+
+    private static final String defaultDataSource = "oauth";
+
     @Bean
     @Primary
-    @DependsOn({"oauthDataSource","znldDataSource","rbacDataSource"})
+    @DependsOn({"oauthDataSource","znldDataSource","rbacDataSource", "ministarDataSource"})
     public DynamicDataSource dataSource(@Qualifier("oauthDataSource") DataSource oauthDataSource,
                                         @Qualifier("znldDataSource") DataSource znldDataSource,
-                                        @Qualifier("rbacDataSource") DataSource rbacDataSource) {
+                                        @Qualifier("rbacDataSource") DataSource rbacDataSource,
+                                        @Qualifier("ministarDataSource") DataSource ministarDataSource) {
         var targetDataSources = new HashMap<Object, Object>();
         targetDataSources.put("oauth", oauthDataSource);
         targetDataSources.put("znld", znldDataSource);
         targetDataSources.put("rbac", rbacDataSource);
+        targetDataSources.put("ministar", ministarDataSource);
         return new DynamicDataSource(oauthDataSource, targetDataSources);
     }
 
     public static class DynamicDataSource extends AbstractRoutingDataSource {
-        private static final ThreadLocal<String> contextHolder = new ThreadLocal<>();
+        private static final ThreadLocal<ArrayDeque<String>> contextHolder = new ThreadLocal<>();
+        static {
+            var stack = new ArrayDeque<String>();
+            stack.add(defaultDataSource);
+            contextHolder.set(stack);
+        }
         /**
          * 配置DataSource, defaultTargetDataSource为主数据库
          */
@@ -62,17 +78,29 @@ public class DynamicDataSourceConfig {
             return getDataSource();
         }
 
-        static void setDataSource(String dataSource) {
-            contextHolder.set(dataSource);
+        public static void setDataSource(String dataSource) {
+            var stack = contextHolder.get();
+            if(stack == null){
+                stack = new ArrayDeque<>();
+                contextHolder.set(stack);
+            }
+            stack.push(dataSource);
         }
 
         private static String getDataSource() {
-            return contextHolder.get();
+            var stack = contextHolder.get();
+            if(stack == null){
+                stack = new ArrayDeque<>();
+                contextHolder.set(stack);
+                return defaultDataSource;
+            }
+            var ret = stack.peek();
+            if(ret == null) return defaultDataSource;
+            return ret;
         }
 
-        static void clearDataSource() {
-            contextHolder.remove();
+        public static void clearDataSource() {
+            contextHolder.get().pop();
         }
-
     }
 }

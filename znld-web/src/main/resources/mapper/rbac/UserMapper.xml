@@ -75,8 +75,12 @@
         select * from user where name=#{name} and password=#{password};
     </select>
 
-    <select id="selectAuthPackByUserId" resultType="com.sybd.znld.service.rbac.dto.AuthPack">
-        select a.id as 'userId',e.name as 'authName',e.uri as 'authValue',h.oauth2_client_id as 'oauth2ClientId'
+    <select id="selectAuthPackByUserId" resultType="com.sybd.znld.model.rbac.dto.AuthPackByUser">
+        select a.id as 'userId',
+               c.name as 'roleName',
+               e.name as 'authName',
+               e.uri as 'authValue',
+               h.oauth2_client_id as 'oauth2ClientId'
         from user as a
         left join user_role as b on a.id = b.user_id
         left join role as c on c.id = b.role_id

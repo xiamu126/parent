@@ -166,6 +166,13 @@ public class AuthorityService implements IAuthorityService {
 
     @Override
     public List<AuthPackByUser> getAuthPackByUserId(String userId) {
+        if(!MyString.isUuid(userId)) return null;
         return this.userMapper.selectAuthPackByUserId(userId);
+    }
+
+    @Override
+    public List<RoleModel> getRolesByUserId(String userId) {
+        if(!MyString.isUuid(userId)) return null;
+        return this.userMapper.selectRolesByUserId(userId);
     }
 }

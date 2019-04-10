@@ -2,7 +2,6 @@ package com.sybd.znld.service.v2;
 
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.UserService;
-import com.sybd.znld.service.rbac.dto.RbacInfo;
 import com.sybd.znld.service.rbac.mapper.UserMapper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,8 +15,6 @@ import org.slf4j.Logger;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

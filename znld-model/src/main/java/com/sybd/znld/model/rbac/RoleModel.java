@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class RoleModel implements Serializable {
     public String id;
     public String name;
+    public String organizationId;
     public Short status = Status.OK;
 
     public static class Status{

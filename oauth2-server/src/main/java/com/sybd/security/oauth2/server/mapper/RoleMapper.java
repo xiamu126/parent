@@ -10,4 +10,5 @@ public interface RoleMapper {
     int insert(RoleModel model);
     RoleModel selectById(String id);
     RoleModel selectByName(String name);
+    RoleModel selectByNameAndOrganId(String name, String organizationId);
 }

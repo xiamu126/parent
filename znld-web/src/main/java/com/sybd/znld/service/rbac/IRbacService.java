@@ -2,8 +2,8 @@ package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.service.rbac.dto.RbacHtmlInfo;
-import com.sybd.znld.service.rbac.dto.RbacInfo;
+import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
+import com.sybd.znld.model.rbac.dto.RbacInfo;
 
 import java.util.List;
 

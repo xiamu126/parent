@@ -13,4 +13,5 @@ public interface IAuthorityService {
     RoleAuthModel addRoleAuth(RoleAuthModel model);
     List<AuthorityModel> getAuthoritiesByUserId(String userId);
     List<AuthPackByUser> getAuthPackByUserId(String userId);
+    List<RoleModel> getRolesByUserId(String userId);
 }

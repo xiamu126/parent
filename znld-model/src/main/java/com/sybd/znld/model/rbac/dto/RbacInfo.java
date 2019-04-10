@@ -1,4 +1,4 @@
-package com.sybd.znld.service.rbac.dto;
+package com.sybd.znld.model.rbac.dto;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,8 +36,8 @@ public abstract class RbacInfo<T extends RbacInfo.Base> implements IValid, Seria
         objectMapper.registerModule(module);
         try {
             var tmp = objectMapper.readValue(json, Base.class);
-            return tmp.type;
-        } catch (IOException ex) {
+            return tmp == null ? "" : tmp.type;
+        } catch (Exception ex) {
             log.error(ex.getMessage());
         }
         return "";

@@ -15,4 +15,8 @@
     <select id="selectByName" resultType="com.sybd.znld.model.rbac.RoleModel">
         select * from role where name = #{name};
     </select>
+
+    <select id="selectByNameAndOrganId" resultType="com.sybd.znld.model.rbac.RoleModel">
+        select * from role where name = #{name} and organization_id = #{organizationId};
+    </select>
 </mapper>

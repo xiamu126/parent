@@ -1,8 +1,9 @@
 package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.service.rbac.dto.RbacHtmlInfo;
-import com.sybd.znld.service.rbac.dto.RbacApiInfo;
+import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
+import com.sybd.znld.model.rbac.dto.RbacApiInfo;
+import com.sybd.znld.service.rbac.mapper.UserMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +31,9 @@ public class RbacServiceTest {
 
     @Autowired
     private IRbacService rbacService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Test
     public void addOrgan(){
@@ -69,7 +73,8 @@ public class RbacServiceTest {
     @Test
     public void addRole(){
         var model = new RoleModel();
-        model.name = "测试角色";
+        model.name = "USER";
+        model.organizationId = "a69ce5bf51f111e9804a0242ac110007";
         var ret = this.rbacService.addRole(model);
         Assert.assertNotNull(ret);
     }
@@ -123,5 +128,12 @@ public class RbacServiceTest {
                 .setSelectors("div[class*='selectDateTimeLine'] > button[class*='sendBtn'] > span", "div[class*='tableBox2'] table td button:not([disabled]) > span")
                 .build();
         var ret = this.rbacService.addHtmlAuth("a6bf84cc51f111e9804a0242ac110007", rbacHtmlInfo, "测试权限1");
+    }
+
+    @Test
+    public void getRoles(){
+        var tmp = this.userMapper.selectRolesByUserId("a6a96ebc51f111e9804a0242ac110007");
+        Assert.assertNotNull(tmp);
+        Assert.assertFalse(tmp.isEmpty());
     }
 }

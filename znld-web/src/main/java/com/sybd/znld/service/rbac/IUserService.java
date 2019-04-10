@@ -3,7 +3,6 @@ package com.sybd.znld.service.rbac;
 import com.sybd.znld.model.rbac.AuthorityModel;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.dto.LoginInput;
-import com.sybd.znld.service.rbac.dto.RbacInfo;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
 
 import java.util.List;

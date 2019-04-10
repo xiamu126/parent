@@ -1,6 +1,7 @@
 package com.sybd.security.oauth2.server.mapper;
 
 import com.sybd.security.oauth2.server.db.DbSource;
+import com.sybd.znld.model.rbac.RoleModel;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.model.rbac.dto.AuthPackByUser;
 import org.apache.ibatis.annotations.Mapper;
@@ -22,4 +23,5 @@ public interface UserMapper {
     int updatePasswordByName(UserModel model);
     int updateByName(UserModel model);
     List<AuthPackByUser> selectAuthPackByUserId(String userId);
+    List<RoleModel> selectRolesByUserId(String userId);
 }

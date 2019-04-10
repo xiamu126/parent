@@ -52,6 +52,7 @@ create table organization(
 create table role(
   id       varchar(32) not null primary key comment '编号',
   name     varchar(32) not null comment '名称',
+  organization_id varchar(32) not null comment '此角色所属的组织',
   status   tinyint not null default 0 comment '0：可用，1：冻结'
 );
 

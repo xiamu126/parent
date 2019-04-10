@@ -2,8 +2,8 @@ package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.service.rbac.dto.RbacHtmlInfo;
-import com.sybd.znld.service.rbac.dto.RbacInfo;
+import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
+import com.sybd.znld.model.rbac.dto.RbacInfo;
 import com.sybd.znld.service.rbac.mapper.*;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
@@ -103,17 +103,24 @@ public class RbacService implements IRbacService {
     @Override
     public RoleModel addRole(RoleModel model) {
         if(model == null) return null;
-        // 判断角色名称，名称可以重复，即不同的组织可以有相同名称的权限
-        // 注意，不可以让不同的组织共用相同名称的角色，如此、会出现相同的角色名称关联不同组织的权限，
-        // 即最终会出现相同的角色关联了多个不同组织的URI路径
+        // 判断角色名称，名称可以重复，即不同的组织可以有相同名称的角色
+        // 注意，不可以让不同的组织共用相同的角色，如此、会出现相同的角色关联不同组织的权限，
+        // 即最终会出现相同的角色关联了多个不同组织的URI
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("名称不能为空"); return null;
         }
         if(!RoleModel.Status.isValid(model.status)){
             log.debug("错误的状态"); return null;
         }
-        if(this.roleMapper.selectByName(model.name) != null){
-            log.debug("已经存在名为["+model.name+"]的角色"); return null;
+        if(!MyString.isUuid(model.organizationId)){
+            log.debug("错误的组织id"); return null;
+        }
+        if(this.organizationMapper.selectById(model.organizationId) == null){
+            log.debug("指定的组织id不存在"); return null;
+        }
+        // 相同组织下不能有相同的角色
+        if(this.roleMapper.selectByNameAndOrganId(model.name, model.organizationId) != null){
+            log.debug("此组织["+model.organizationId+"]下已经存在相同名称的角色"); return null;
         }
         if(this.roleMapper.insert(model) > 0) return model;
         return null;

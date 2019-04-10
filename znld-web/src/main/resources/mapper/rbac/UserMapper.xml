@@ -91,4 +91,11 @@
         left join organization as h on h.id = g.organization_id
         where a.id = #{userId} and e.status = 0 and a.status = 0;
     </select>
+
+    <select id="selectRolesByUserId" resultType="com.sybd.znld.model.rbac.RoleModel">
+        select c.* from user as a
+        left join user_role as b on b.user_id = a.id
+        left join role as c on c.id = b.role_id
+        where a.id = #{_parameter}
+    </select>
 </mapper>

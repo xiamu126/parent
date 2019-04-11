@@ -4,6 +4,7 @@ import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.GetLastDataStreamsResult;
+import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.znld.ILampService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,9 @@ public class PageDeviceController extends BaseDeviceController implements IPageD
     public PageDeviceController(RedisTemplate<String, Object> redisTemplate,
                                 IOneNetService oneNet,
                                 ILampService lampService,
-                                ProjectConfig projectConfig) {
-        super(redisTemplate, oneNet, lampService, projectConfig);
+                                ProjectConfig projectConfig,
+                                IUserService userService) {
+        super(redisTemplate, oneNet, lampService, projectConfig, userService);
     }
 
     @RequestMapping(value = "/cmd", method = RequestMethod.GET, produces = {MediaType.TEXT_HTML_VALUE})

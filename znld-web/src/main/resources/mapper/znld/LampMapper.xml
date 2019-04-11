@@ -1,8 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.znld.mapper.LampMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.znld.LampModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert into lamp(id, api_key, device_id, imei, device_name, longitude, latitude, status)
+        values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status});
+    </insert>
+
     <select id="selectByDeviceId" resultType="com.sybd.znld.model.znld.LampModel">
         select * from lamp where device_id=#{_parameter}
+    </select>
+
+    <select id="selectByDeviceName" resultType="com.sybd.znld.model.znld.LampModel">
+        select * from lamp where device_name=#{_parameter}
+    </select>
+
+    <select id="selectById" resultType="com.sybd.znld.model.znld.LampModel">
+        select * from lamp where id = #{_parameter};
+    </select>
+
+    <select id="selectByLatitude" resultType="com.sybd.znld.model.znld.LampModel">
+        select * from lamp where latitude = #{_parameter};
+    </select>
+
+    <select id="selectByLongitude" resultType="com.sybd.znld.model.znld.LampModel">
+        select * from lamp where longitude = #{_parameter};
     </select>
 
     <select id="selectAllDeviceIds" resultType="java.lang.Integer">
@@ -30,7 +54,10 @@
         <result column="deviceName" jdbcType="VARCHAR" property="device_name"/>
     </resultMap>
     <select id="selectDeviceIdAndDeviceNames" resultMap="DeviceIdAndDeviceNames">
-        select distinct device_id, device_name from lamp;
+        select distinct device_id, device_name from lamp
+        where id in (
+            select lamp_id from lamp_region
+            where region_id in (select id from region where organization_id = #{organId}));
     </select>
 
     <select id="selectCheckedResourceByDeviceId" resultType="com.sybd.znld.service.znld.dto.CheckedResource">
@@ -38,5 +65,29 @@
         left join lamp_resource as b on a.id = b.lamp_id
         left join onenet_resource as c on c.id = b.onenet_resource_id
         where device_id = #{_parameter} and c.status = 0;
+    </select>
+
+    <select id="selectLampByDeviceIdAndRegionType" resultType="com.sybd.znld.service.znld.dto.LampAndRegion">
+        select distinct a.device_name as DeviceName, c.name as RegionName, c.id as RegionId
+        from lamp as a
+        left join lamp_region as b on b.lamp_id = a.id
+        left join region as c on c.id = b.region_id
+        where a.device_id = #{deviceId} and c.type = #{regionType};
+    </select>
+
+    <select id="selectLampByLampIdAndRegionType" resultType="com.sybd.znld.service.znld.dto.LampAndRegion">
+        select distinct a.device_name as DeviceName, c.name as RegionName, c.id as RegionId
+        from lamp as a
+        left join lamp_region as b on b.lamp_id = a.id
+        left join region as c on c.id = b.region_id
+        where a.id = #{lampId} and c.type = #{regionType};
+    </select>
+
+    <select id="selectBoundResourceByDeviceId" resultType="com.sybd.znld.service.znld.dto.BoundResource">
+        select a.device_id as deviceId, a.device_name as deviceName, c.id as resourceId, c.description as resourceDesc, c.type as resourceType
+        from lamp as a
+        left join lamp_resource as b on b.lamp_id = a.id
+        left join onenet_resource as c on c.id = b.onenet_resource_id
+        where a.device_id = #{deviceId};
     </select>
 </mapper>

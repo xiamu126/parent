@@ -9,6 +9,7 @@ import java.util.List;
 @Mapper
 @DbSource("znld")
 public interface LampResourceMapper {
+    int insert(LampResourceModel model);
     LampResourceModel selectByLampIdAndResourceId(String lampId, String resourceId);
     List<LampResourceModel> selectByLampId(String lampId);
 }

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,26 +24,33 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
         this.userMapper = userMapper;
     }
 
-    public boolean isOk(String role, HttpServletRequest request){
+    public boolean isRequestAllowed(HttpServletRequest request){
         var userName = this.getPrincipal();
         var user = this.userMapper.selectByName(userName.toString());
-        var roles = this.userMapper.selectRolesByUserId(user.id);
-        if(roles.stream().noneMatch(r -> r.name.equals(role))) return false;
-        var path = request.getServletPath();
+        var path = request.getRequestURI();
         var method = request.getMethod();
         var authPack = this.userMapper.selectAuthPackByUserId(user.id);
         if(authPack == null || authPack.isEmpty()) return false;
+        var antPathMatcher = new AntPathMatcher();
         for(var a: authPack){
             var type = RbacInfo.getType(a.authValue);
             if(type.equals(RbacInfo.RbacType.API.getValue())){
-                var tmp = RbacApiInfo.from(a.authValue);
-            }else if (type.equals(RbacInfo.RbacType.HTML.getValue())){
-                var tmp = RbacHtmlInfo.from(a.authValue);
+                var rbacApiInfo = RbacApiInfo.from(a.authValue);
+                if(antPathMatcher.match(rbacApiInfo.rbac.detail.include.path, path)){ // 请求的路径是允许的
+                    if(rbacApiInfo.rbac.detail.include.methods.stream().anyMatch(m -> m.equals("*"))){ // 支持任意的请求方法
+                        return true;
+                    }
+                    if(rbacApiInfo.rbac.detail.include.methods.stream().anyMatch(m -> m.equals(method))){ // 请求的方法是允许的
+                        return true;
+                    }
+                }
+            }else if (type.equals(RbacInfo.RbacType.HTML.getValue())){ // 这部分内容交给前端处理，不做处理
+                //var tmp = RbacHtmlInfo.from(a.authValue);
             }
         }
-        var auth = this.getAuthentication().getAuthorities();
-        var ret = auth.stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
-        return ret;
+       /* var auth = this.getAuthentication().getAuthorities();
+        var ret = auth.stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));*/
+        return false;
     }
 
     @Override

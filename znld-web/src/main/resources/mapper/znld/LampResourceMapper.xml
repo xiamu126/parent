@@ -12,4 +12,11 @@
     <select id="selectByCommandValue" resultType="com.sybd.znld.model.znld.LampResourceModel">
         select * from lamp_resource where value = #{_parameter} and type = 0;
     </select>
+
+    <insert id="insert" parameterType="com.sybd.znld.model.znld.LampRegionModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert into lamp_resource(id, lamp_id, onenet_resource_id) values (#{id}, #{lampId}, #{oneNetResourceId});
+    </insert>
 </mapper>

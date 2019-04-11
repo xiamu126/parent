@@ -7,13 +7,8 @@ create table authority_group(
   name                 varchar(32) not null  comment '名称',
   parent_id            varchar(32) not null default 0 comment '上级权限模块编号，0为顶级模块',
   position             int not null default 0 comment '在当前权限模块层级中的位置，0为第一个位置',
-  status               tinyint not null default 0 comment '0：正常，1：冻结'
-);
-
-create table organization_authority_group(
-  id                  varchar(32) not null primary key,
-  organization_id     varchar(32) not null,
-  authority_group_id  varchar(32) not null
+  organization_id      varchar(32) not null comment '此权限组所属的组织',
+  status               tinyint not null default 0 comment '0：正常，1：删除'
 );
 
 create table authority(
@@ -99,13 +94,11 @@ begin
   insert into user(id, name, password, organization_id)
     value (replace(uuid(), '-', ''), 'sybd_test_user', '$2a$10$EumDON8cvvcKVk5QwQwHm.q2WsUoCD43Y8W0uCzkoRCHeAXsDEOSK', o_id);
   # 创建测试权限组
-  insert into authority_group(id, name) value (replace(uuid(), '-', ''), '神宇北斗测试权限组1');
+  insert into authority_group(id, name, organization_id) value (replace(uuid(), '-', ''), '神宇北斗测试权限组1', o_id);
   select id into a_group_id from authority_group where name = '神宇北斗测试权限组1';
   if a_group_id is null or a_group_id = '' then
     signal 'ERROR' set message_text = 'a_group_id is null';
   end if;
-  # 创建组织权限组
-  insert into organization_authority_group(id, organization_id, authority_group_id) value (replace(uuid(), '-', ''), o_id, a_group_id);
   # 创建测试权限
   insert into authority(id, name, uri, authority_group_id) value (replace(uuid(), '-', ''), '神宇北斗测试权限1', '/api/v1/user/**', a_group_id);
   insert into authority(id, name, uri, authority_group_id) value (replace(uuid(), '-', ''), '神宇北斗测试权限2', '/api/v1/device/**', a_group_id);

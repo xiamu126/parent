@@ -2,6 +2,7 @@ package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
+import com.sybd.znld.model.rbac.dto.RbacApiInfo;
 import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
 import com.sybd.znld.model.rbac.dto.RbacInfo;
 import com.sybd.znld.service.rbac.mapper.*;
@@ -24,7 +25,6 @@ public class RbacService implements IRbacService {
     private final UserMapper userMapper;
     private final RoleAuthMapper roleAuthMapper;
     private final OrganizationMapper organizationMapper;
-    private final OrganizationAuthGroupMapper organizationAuthGroupMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -34,8 +34,7 @@ public class RbacService implements IRbacService {
                        UserRoleMapper userRoleMapper,
                        UserMapper userMapper,
                        RoleAuthMapper roleAuthMapper,
-                       OrganizationMapper organizationMapper,
-                       OrganizationAuthGroupMapper organizationAuthGroupMapper) {
+                       OrganizationMapper organizationMapper) {
         this.authGroupMapper = authGroupMapper;
         this.authorityMapper = authorityMapper;
         this.roleMapper = roleMapper;
@@ -43,7 +42,6 @@ public class RbacService implements IRbacService {
         this.userMapper = userMapper;
         this.roleAuthMapper = roleAuthMapper;
         this.organizationMapper = organizationMapper;
-        this.organizationAuthGroupMapper = organizationAuthGroupMapper;
     }
 
     @Override
@@ -289,14 +287,8 @@ public class RbacService implements IRbacService {
             log.debug("指定的权限组不存在");
             return null;
         }
-        // 获取此权限组对应的组织
-        var organAuthGroup = this.organizationAuthGroupMapper.selectByAuthGroupId(authGroupId);
-        if(organAuthGroup == null) {
-            log.debug("无法获取此权限组关联的组织信息");
-            return null;
-        }
         // 获取组织信息
-        var organ = this.organizationMapper.selectById(organAuthGroup.organizationId);
+        var organ = this.organizationMapper.selectById(authGroup.organizationId);
         if(organ == null) {
             log.debug("获取组织信息失败");
             return null;
@@ -314,6 +306,63 @@ public class RbacService implements IRbacService {
         authModel.uri = authValue;
         authModel.authorityGroupId = authGroupId;
         if(this.authorityMapper.insert(authModel) > 0) return authModel;
+        return null;
+    }
+
+    @Override
+    public AuthorityModel addApiAuth(String authGroupId, RbacApiInfo rbacApiInfo, String authName) {
+        if(!rbacApiInfo.isValid()) return null;
+        // 检测权限组是否存在
+        var authGroup = this.authGroupMapper.selectById(authGroupId);
+        if(authGroup == null) {
+            log.debug("指定的权限组不存在");
+            return null;
+        }
+        // 获取组织信息
+        var organ = this.organizationMapper.selectById(authGroup.organizationId);
+        if(organ == null) {
+            log.debug("获取组织信息失败");
+            return null;
+        }
+        // 检测此组织名下的所有权限是否已经包含了相同的权限
+        // 同一组织下的同一个权限组不能包含相同的权限（包括name和uri）
+        var authValue = rbacApiInfo.getJsonString();
+        var pack = this.organizationMapper.selectAuthPackByGroupIdAuthValueAndName(authGroupId, authValue, authName);
+        if(pack != null) {
+            log.debug("已经存在权限[" + authName + "]: " + authValue);
+            return null;
+        }
+        var authModel = new AuthorityModel();
+        authModel.name = authName;
+        authModel.uri = authValue;
+        authModel.authorityGroupId = authGroupId;
+        if(this.authorityMapper.insert(authModel) > 0) return authModel;
+        return null;
+    }
+
+    @Override
+    public RoleAuthModel addAuthToRole(String authId, String roleId) {
+        if(!MyString.isUuid(authId) || !MyString.isUuid(roleId)) {
+            log.debug("非法的参数");
+            return null;
+        }
+        if(this.authorityMapper.selectById(authId) == null){
+            log.debug("指定的权限不存在");
+            return null;
+        }
+        if(this.roleMapper.selectById(roleId) == null){
+            log.debug("指定的角色不存在");
+            return null;
+        }
+        // 判断是否已经存在
+        if(this.roleAuthMapper.selectByRoleIdAndAuthId(roleId, authId) != null){
+            log.debug("此权限与此角色已经关联，无法再次绑定");
+            return null;
+        }
+        var model = new RoleAuthModel();
+        model.authId = authId;
+        model.roleId = roleId;
+        if(this.roleAuthMapper.insert(model) > 0) return model;
         return null;
     }
 }

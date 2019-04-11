@@ -42,28 +42,26 @@
         select a.id as 'organId',
                a.name as 'organName',
                a.oauth2_client_id as 'oauth2ClientId',
-               c.id as 'authGroupId',
-               c.name as 'authGroupName',
-               d.name as 'authName',
-               d.uri as 'authValue'
+               b.id as 'authGroupId',
+               b.name as 'authGroupName',
+               c.name as 'authName',
+               c.uri as 'authValue'
         from organization as a
-        left join organization_authority_group as b on b.organization_id = a.id
-        left join authority_group as c on b.authority_group_id = c.id
-        left join authority as d on d.authority_group_id = c.id
-        where c.id = #{authGroupId};
+        left join authority_group as b on b.organization_id = a.id
+        left join authority as c on c.authority_group_id = b.id
+        where b.id = #{authGroupId};
     </select>
     <select id="selectAuthPackByGroupIdAuthValueAndName" resultType="com.sybd.znld.model.rbac.dto.AuthPackByGroup">
         select a.id as 'organId',
                a.name as 'organName',
                a.oauth2_client_id as 'oauth2ClientId',
-               c.id as 'authGroupId',
-               c.name as 'authGroupName',
-               d.name as 'authName',
-               d.uri as 'authValue'
+               b.id as 'authGroupId',
+               b.name as 'authGroupName',
+               c.name as 'authName',
+               c.uri as 'authValue'
         from organization as a
-                 left join organization_authority_group as b on b.organization_id = a.id
-                 left join authority_group as c on b.authority_group_id = c.id
-                 left join authority as d on d.authority_group_id = c.id
-        where c.id = #{authGroupId} and d.uri = #{authValue} and d.name = #{authName};
+        left join authority_group as b on b.organization_id = a.id
+        left join authority as c on c.authority_group_id = b.id
+        where b.id = #{authGroupId} and c.uri = #{authValue} and c.name = #{authName};
     </select>
 </mapper>

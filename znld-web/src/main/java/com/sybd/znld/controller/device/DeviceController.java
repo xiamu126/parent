@@ -7,11 +7,13 @@ import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
 import com.sybd.znld.service.ministar.dto.Subtitle;
+import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.znld.ILampService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,19 +30,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Slf4j
 @Api(tags = "设备接口")
 @RestController
 @RequestMapping("/api/v1/device")
 public class DeviceController extends BaseDeviceController implements IDeviceController{
-
-    private final Logger log = LoggerFactory.getLogger(DeviceController.class);
-
     @Autowired
     public DeviceController(RedisTemplate<String, Object> redisTemplate,
                             OneNetService oneNet,
                             ProjectConfig projectConfig,
-                            ILampService lampService) {
-        super(redisTemplate, oneNet, lampService, projectConfig);
+                            ILampService lampService,
+                            IUserService userService) {
+        super(redisTemplate, oneNet, lampService, projectConfig, userService);
     }
 
     private Map<Integer, String> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin) {
@@ -300,13 +301,15 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     }
 
     @ApiOperation(value = "获取所有的设备Id和名字")
-    @PreAuthorize("isOk('USER', #request)")
-    //@PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping(value = "info", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PreAuthorize("hasAuthority('USER') and isRequestAllowed(#request)")
+    @GetMapping(value = "info", produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
     @Override
     public DeviceIdAndNameResult getDeviceIdAndName(HttpServletRequest request){
         try{
-            var tmp = this.lampService.getDeviceIdAndDeviceNames();
+            var principal = request.getUserPrincipal();
+            var userName = principal.getName();
+            var user = this.userService.getUserByName(userName.toString());
+            var tmp = this.lampService.getDeviceIdAndDeviceNames(user.organizationId);
             if(tmp == null || tmp.isEmpty()){
                 return DeviceIdAndNameResult.fail("获取数据为空");
             }

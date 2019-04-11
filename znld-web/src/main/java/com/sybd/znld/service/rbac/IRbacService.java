@@ -2,6 +2,7 @@ package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
+import com.sybd.znld.model.rbac.dto.RbacApiInfo;
 import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
 import com.sybd.znld.model.rbac.dto.RbacInfo;
 
@@ -23,5 +24,7 @@ public interface IRbacService {
     DbDeleteResult removeOrganizationByName(String name);
     List<OrganizationModel> getOrganizationByParenId(String parentId);
     RbacInfo getRbacInfo(String userId);
-    AuthorityModel addHtmlAuth(String authGroupId, RbacHtmlInfo rbacHtmlInfo, String describe);
+    AuthorityModel addHtmlAuth(String authGroupId, RbacHtmlInfo rbacHtmlInfo, String authName);
+    AuthorityModel addApiAuth(String authGroupId, RbacApiInfo rbacApiInfo, String authName);
+    RoleAuthModel addAuthToRole(String authId, String roleId);
 }

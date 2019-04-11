@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
@@ -131,9 +132,37 @@ public class RbacServiceTest {
     }
 
     @Test
+    public void addApiAuth(){
+        var rbacApiInfo = new RbacApiInfo.Builder().setApp("znld").setPath("/api/v1/device/*").setMethods("GET").build();
+        var ret = this.rbacService.addApiAuth("a6bf84cc51f111e9804a0242ac110007", rbacApiInfo, "测试权限2");
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void addAuthToUser(){
+        var authId = "56da794d5bf811e98edc0242ac110007";
+        var roleId = "a70a253951f111e9804a0242ac110007";
+        var ret = this.rbacService.addAuthToRole(authId, roleId);
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
     public void getRoles(){
         var tmp = this.userMapper.selectRolesByUserId("a6a96ebc51f111e9804a0242ac110007");
         Assert.assertNotNull(tmp);
         Assert.assertFalse(tmp.isEmpty());
+    }
+
+    @Test
+    public void pathMatch(){
+        var matcher = new AntPathMatcher();
+        Assert.assertFalse(matcher.match("/api/v1/user/**", "/api/v1/device/info"));
+        Assert.assertTrue(matcher.match("/api/v1/user/**", "/api/v1/user/a"));
+        Assert.assertTrue(matcher.match("/api/v1/user/*", "/api/v1/user/a?p=0"));
+        Assert.assertTrue(matcher.match("/api/v1/user/*", "/api/v1/user/"));
+        Assert.assertFalse(matcher.match("/api/v1/user/*", "/api/v1/user"));
+        Assert.assertTrue(matcher.match("/api/v1/user/**", "/api/v1/user/a/b?p=1"));
+        Assert.assertTrue(matcher.match("/api/v1/user/?", "/api/v1/user/a"));
+        Assert.assertFalse(matcher.match("/api/v1/user/?", "/api/v1/user/ab"));
     }
 }

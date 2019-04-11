@@ -1,6 +1,7 @@
 package com.sybd.znld.model.znld;
 
 import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,9 +15,17 @@ public class OneNetResourceModel implements Serializable {
     public Integer resId;
     public String value;
     public String description;
-    public Short timeout;
+    public Short timeout = 5;
     public Short type;
     public Short status = Status.Monitor;
+
+    public boolean isValidBeforeInsert(){
+        if(objId == null || objInstId == null || resId == null || type == null ||status == null) return false;
+        if(!Type.isValid(type)) return false;
+        if(!Status.isValid(status)) return false;
+        if(type == Type.Command && MyString.isEmptyOrNull(value)) return false; // 如果时命令，value不能为空
+        return true;
+    }
 
     public OneNetKey toOneNetKey(){
         return OneNetKey.from(objId, objInstId, resId);
@@ -29,7 +38,7 @@ public class OneNetResourceModel implements Serializable {
         public static final short State = 3;
         public static final short Other = 4;
 
-        public boolean isValid(short v){
+        public static boolean isValid(short v){
             switch (v){
                 case Command: case Value: case Unit: case State: case Other: return true;
                 default: return false;
@@ -41,7 +50,7 @@ public class OneNetResourceModel implements Serializable {
         public static final short Monitor = 0;
         public static final short Skip = 1;
 
-        public boolean isValid(short v){
+        public static boolean isValid(short v){
             switch (v){
                 case Monitor: case Skip: return true;
                 default: return false;

@@ -23,6 +23,18 @@ public class MyNumber {
     public static boolean isNegative(Short it){
         return it != null && it < 0;
     }
+    public static boolean isAnyNegative(Integer ...its){
+        for(var it: its){
+            if(isNegative(it)) return true;
+        }
+        return false;
+    }
+    public static boolean isAnyNegative(Short ...its){
+        for(var it: its){
+            if(isNegative(it)) return true;
+        }
+        return false;
+    }
     public static boolean isZero(Integer it){
         return  it != null && it == 0;
     }
@@ -30,6 +42,9 @@ public class MyNumber {
         return it != null && it >= 0;
     }
     public static boolean isNegativeOrZero(Integer it){
+        return it != null && it <= 0;
+    }
+    public static boolean isNegativeOrZero(Short it){
         return it != null && it <= 0;
     }
 

@@ -22,8 +22,8 @@ public class OneNetConfigDeviceServiceImpl {
     }
 
     @Cacheable
-    public Map<Integer, String> getDeviceIdAndIMEI() {
-        List<DeviceIdAndImei> list = this.onenetConfigDeviceMapper.getDeviceIdAndIMEI();
+    public Map<Integer, String> getDeviceIdAndImei() {
+        List<DeviceIdAndImei> list = this.onenetConfigDeviceMapper.getDeviceIdAndImei();
         if(list == null || list.size() <= 0){
             return null;
         }

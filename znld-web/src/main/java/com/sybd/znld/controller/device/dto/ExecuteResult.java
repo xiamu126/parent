@@ -16,4 +16,7 @@ public class ExecuteResult extends BaseApiResult{
     public static ExecuteResult success(OneNetExecuteResult result){
         return new ExecuteResult(0, "");
     }
+    public static ExecuteResult success(String msg){
+        return new ExecuteResult(0, msg);
+    }
 }

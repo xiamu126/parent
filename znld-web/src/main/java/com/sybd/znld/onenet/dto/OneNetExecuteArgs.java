@@ -1,10 +1,9 @@
 package com.sybd.znld.onenet.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sybd.znld.model.IValid;
+import com.sybd.IValid;
 import com.sybd.znld.onenet.OneNetService;
-import com.sybd.znld.service.ministar.dto.Subtitle;
-import com.sybd.znld.util.MyByte;
+import com.sybd.ministar.model.dto.Subtitle;
 import com.sybd.znld.util.MyNumber;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,12 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 
 // 这个类为接受前端传来的数据
 @Slf4j

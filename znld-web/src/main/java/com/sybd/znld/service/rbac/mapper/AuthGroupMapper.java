@@ -1,7 +1,7 @@
 package com.sybd.znld.service.rbac.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.rbac.AuthGroupModel;
+import com.sybd.rbac.model.AuthGroupModel;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

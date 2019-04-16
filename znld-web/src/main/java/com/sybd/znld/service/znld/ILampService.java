@@ -1,9 +1,9 @@
 package com.sybd.znld.service.znld;
 
-import com.sybd.znld.model.onenet.OneNetKey;
-import com.sybd.znld.model.znld.LampModel;
-import com.sybd.znld.model.znld.LampRegionModel;
-import com.sybd.znld.model.znld.OneNetResourceModel;
+import com.sybd.onenet.model.OneNetKey;
+import com.sybd.znld.model.LampModel;
+import com.sybd.znld.model.LampRegionModel;
+import com.sybd.znld.model.OneNetResourceModel;
 import com.sybd.znld.service.znld.dto.CheckedResource;
 import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 

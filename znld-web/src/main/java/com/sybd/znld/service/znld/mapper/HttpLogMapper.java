@@ -1,8 +1,8 @@
 package com.sybd.znld.service.znld.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.HttpMethod;
-import com.sybd.znld.model.znld.HttpLogModel;
+import com.sybd.http.model.HttpMethod;
+import com.sybd.znld.model.HttpLogModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.time.LocalDateTime;

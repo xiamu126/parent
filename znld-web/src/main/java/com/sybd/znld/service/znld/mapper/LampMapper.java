@@ -1,7 +1,8 @@
 package com.sybd.znld.service.znld.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.znld.LampModel;
+import com.sybd.znld.model.LampModel;
+import com.sybd.znld.model.dto.DeviceIdAndImei;
 import com.sybd.znld.service.znld.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -22,7 +23,7 @@ public interface LampMapper {
     String selectApiKeyByDeviceId(Integer deviceId);
     HashMap<String, String> selectResourceMapByDeviceId(Integer deviceId);
     String selectImeiByDeviceId(Integer deviceId);
-    Map<Integer, String> selectAllDeviceIdAndIMEI();
+    List<DeviceIdAndImei> selectAllDeviceIdAndImei();
     List<DeviceIdAndDeviceName> selectDeviceIdAndDeviceNames(String organId);
     List<CheckedResource> selectCheckedResourceByDeviceId(Integer deviceId);
     List<LampAndRegion> selectLampByDeviceIdAndRegionType(Integer deviceId, Short regionType);

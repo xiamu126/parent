@@ -2,9 +2,9 @@ package com.sybd.znld.onenet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.onenet.model.OneNetKey;
+import com.sybd.znld.model.dto.DeviceIdAndImei;
 import com.sybd.znld.onenet.dto.*;
-import com.sybd.znld.service.znld.dto.DeviceIdAndIMEI;
 import com.sybd.znld.service.znld.mapper.LampMapper;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -107,8 +108,8 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
-    public Map<Integer, String> getDeviceIdAndIMEI() {
-        return this.lampMapper.selectAllDeviceIdAndIMEI();
+    public List<DeviceIdAndImei> getDeviceIdAndImei() {
+        return this.lampMapper.selectAllDeviceIdAndImei();
     }
 
     @Override
@@ -181,8 +182,8 @@ public class OneNetService implements IOneNetService {
         var url = this.getHistoryDataStreamUrl(deviceId);
 
         var map = new HashMap<String, String>();
-        if(start != null) map.put("start", start.toString());
-        if(end != null) map.put("end", end.toString());
+        if(start != null) map.put("start", start.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        if(end != null) map.put("end", end.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         if(dataStreamId != null) map.put("datastream_id", dataStreamId);
         if(limit != null) map.put("limit", limit.toString());
         if(sort != null) map.put("sort", sort);

@@ -1,9 +1,9 @@
 package com.sybd.security.oauth2.server.mapper;
 
 import com.sybd.security.oauth2.server.db.DbSource;
-import com.sybd.znld.model.rbac.RoleModel;
-import com.sybd.znld.model.rbac.UserModel;
-import com.sybd.znld.model.rbac.dto.AuthPackByUser;
+import com.sybd.rbac.model.RoleModel;
+import com.sybd.rbac.model.UserModel;
+import com.sybd.rbac.model.dto.AuthPackByUser;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

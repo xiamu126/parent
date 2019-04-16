@@ -1,7 +1,7 @@
 package com.sybd.znld.service.znld.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.znld.RegionModel;
+import com.sybd.znld.model.RegionModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

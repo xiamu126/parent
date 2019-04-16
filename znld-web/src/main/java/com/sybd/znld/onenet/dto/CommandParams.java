@@ -1,6 +1,6 @@
 package com.sybd.znld.onenet.dto;
 
-import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.onenet.model.OneNetKey;
 import lombok.Getter;
 import lombok.Setter;
 

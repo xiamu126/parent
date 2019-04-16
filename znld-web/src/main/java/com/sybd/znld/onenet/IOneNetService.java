@@ -1,16 +1,15 @@
 package com.sybd.znld.onenet;
 
-import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.onenet.model.OneNetKey;
+import com.sybd.znld.model.dto.DeviceIdAndImei;
 import com.sybd.znld.onenet.dto.*;
-import com.sybd.znld.service.znld.dto.DeviceIdAndIMEI;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public interface IOneNetService {
-    Map<Integer, String> getDeviceIdAndIMEI();
+    List<DeviceIdAndImei> getDeviceIdAndImei();
     String getDataStreamId(OneNetKey oneNetKey);
     String getImeiByDeviceId(Integer deviceId);
     String getApiKeyByDeviceId(Integer deviceId);

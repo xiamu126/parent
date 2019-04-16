@@ -1,6 +1,6 @@
 package com.sybd.znld.service.ministar;
 
-import com.sybd.znld.model.ministar.TwinkleBeautyGroupModel;
+import com.sybd.ministar.model.TwinkleBeautyGroupModel;
 
 import java.util.List;
 

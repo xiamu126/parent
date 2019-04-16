@@ -1,7 +1,7 @@
 package com.sybd.security.oauth2.server.service;
 
-import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.model.rbac.dto.AuthPackByUser;
+import com.sybd.rbac.model.*;
+import com.sybd.rbac.model.dto.AuthPackByUser;
 
 import java.util.List;
 

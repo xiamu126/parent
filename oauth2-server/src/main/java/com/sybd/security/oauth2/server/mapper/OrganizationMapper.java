@@ -1,8 +1,8 @@
 package com.sybd.security.oauth2.server.mapper;
 
 import com.sybd.security.oauth2.server.db.DbSource;
-import com.sybd.znld.model.rbac.OrganizationModel;
-import com.sybd.znld.model.rbac.dto.AuthPackByGroup;
+import com.sybd.rbac.model.OrganizationModel;
+import com.sybd.rbac.model.dto.AuthPackByGroup;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

@@ -1,16 +1,13 @@
 package com.sybd.znld.service.znld;
 
-import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.HttpMethod;
-import com.sybd.znld.model.znld.HttpLogModel;
+import com.sybd.http.model.HttpMethod;
+import com.sybd.znld.model.HttpLogModel;
 import com.sybd.znld.service.znld.mapper.HttpLogMapper;
 import com.sybd.znld.util.MyString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class LogService implements ILogService {

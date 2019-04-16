@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.security.oauth2.server.mapper.OAuthClientDetailsMapper">
-    <select id="selectAll" resultType="com.sybd.znld.model.oauth.OAuthClientDetailsModel">
+    <select id="selectAll" resultType="com.sybd.oauth.model.OAuthClientDetailsModel">
         select * from oauth_client_details;
     </select>
 </mapper>

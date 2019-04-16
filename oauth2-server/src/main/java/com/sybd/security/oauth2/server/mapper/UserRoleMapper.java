@@ -1,7 +1,7 @@
 package com.sybd.security.oauth2.server.mapper;
 
 import com.sybd.security.oauth2.server.db.DbSource;
-import com.sybd.znld.model.rbac.UserRoleModel;
+import com.sybd.rbac.model.UserRoleModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

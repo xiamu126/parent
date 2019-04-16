@@ -1,8 +1,6 @@
 package com.sybd.znld.service.ministar;
 
-import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.ministar.TwinkleBeautyGroupModel;
-import com.sybd.znld.model.znld.RegionModel;
+import com.sybd.ministar.model.TwinkleBeautyGroupModel;
 import com.sybd.znld.service.ministar.mapper.TwinkleBeautyGroupMapper;
 import com.sybd.znld.service.znld.mapper.RegionMapper;
 import com.sybd.znld.util.MyDateTime;

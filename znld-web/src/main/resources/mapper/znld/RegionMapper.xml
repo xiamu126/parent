@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.znld.mapper.RegionMapper">
-    <insert id="insert" parameterType="com.sybd.znld.model.znld.RegionModel">
+    <insert id="insert" parameterType="com.sybd.znld.model.RegionModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>
         insert region(id, name, status) VALUES (#{id}, #{name}, #{status});
     </insert>
 
-    <select id="selectById" resultType="com.sybd.znld.model.znld.RegionModel">
+    <select id="selectById" resultType="com.sybd.znld.model.RegionModel">
         select * from region where id = #{_parameter};
     </select>
-    <select id="selectByName" resultType="com.sybd.znld.model.znld.RegionModel">
+    <select id="selectByName" resultType="com.sybd.znld.model.RegionModel">
         select * from region where name = #{_parameter};
     </select>
-    <select id="selectAll" resultType="com.sybd.znld.model.znld.RegionModel">
+    <select id="selectAll" resultType="com.sybd.znld.model.RegionModel">
         select * from region;
     </select>
-    <select id="selectOne" resultType="com.sybd.znld.model.znld.RegionModel">
+    <select id="selectOne" resultType="com.sybd.znld.model.RegionModel">
         select * from region limit 1;
     </select>
-    <select id="select" resultType="com.sybd.znld.model.znld.RegionModel">
+    <select id="select" resultType="com.sybd.znld.model.RegionModel">
         select * from region limit #{_parameter};
     </select>
 
-    <update id="updateById" parameterType="com.sybd.znld.model.znld.RegionModel">
+    <update id="updateById" parameterType="com.sybd.znld.model.RegionModel">
         update region
         set name = #{name}, status = #{status}
         where id = #{id};

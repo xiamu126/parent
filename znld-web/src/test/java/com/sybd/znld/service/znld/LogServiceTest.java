@@ -1,11 +1,10 @@
 package com.sybd.znld.service.znld;
 
-import com.sybd.znld.model.znld.HttpLogModel;
+import com.sybd.znld.model.HttpLogModel;
 import com.sybd.znld.service.znld.mapper.HttpLogMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

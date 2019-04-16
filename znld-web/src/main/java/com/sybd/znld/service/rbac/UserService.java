@@ -1,8 +1,8 @@
 package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.model.rbac.AuthorityModel;
-import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.rbac.model.AuthorityModel;
+import com.sybd.rbac.model.UserModel;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.rbac.dto.LoginInput;
 import com.sybd.znld.service.rbac.dto.RegisterInput;

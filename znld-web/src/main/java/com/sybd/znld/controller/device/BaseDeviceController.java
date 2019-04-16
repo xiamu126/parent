@@ -5,21 +5,22 @@ import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.znld.ILampService;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 
 public class BaseDeviceController{
-    protected RedisTemplate<String, Object> redisTemplate;
+    protected RedissonClient redissonClient;
     protected IOneNetService oneNet;
     protected ILampService lampService;
     protected ProjectConfig projectConfig;
     protected IUserService userService;
 
-    public BaseDeviceController(RedisTemplate<String, Object> redisTemplate,
+    public BaseDeviceController(RedissonClient redissonClient,
                                 IOneNetService oneNet,
                                 ILampService lampService,
                                 ProjectConfig projectConfig,
                                 IUserService userService) {
-        this.redisTemplate = redisTemplate;
+        this.redissonClient = redissonClient;
         this.oneNet = oneNet;
         this.lampService = lampService;
         this.projectConfig = projectConfig;

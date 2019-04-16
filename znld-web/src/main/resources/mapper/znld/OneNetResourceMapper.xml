@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.znld.mapper.OneNetResourceMapper">
-    <select id="selectOneNetResourceIdByOneNetKey" parameterType="com.sybd.znld.model.onenet.OneNetKey" resultType="com.sybd.znld.model.znld.OneNetResourceModel">
+    <select id="selectByOneNetKey" parameterType="com.sybd.onenet.model.OneNetKey" resultType="com.sybd.znld.model.OneNetResourceModel">
         select * from onenet_resource where obj_id = #{objId} and obj_inst_id = #{objInstId} and res_id = #{resId};
     </select>
-    <select id="selectById" resultType="com.sybd.znld.model.znld.OneNetResourceModel">
+    <select id="selectById" resultType="com.sybd.znld.model.OneNetResourceModel">
         select * from onenet_resource where id = #{_paramter};
     </select>
-    <select id="selectByIds" resultType="com.sybd.znld.model.znld.OneNetResourceModel">
+    <select id="selectByIds" resultType="com.sybd.znld.model.OneNetResourceModel">
         select * from onenet_resource where id in
         <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">#{item}</foreach>;
     </select>
-    <select id="selectByCommandValue" resultType="com.sybd.znld.model.znld.OneNetResourceModel">
+    <select id="selectByCommandValue" resultType="com.sybd.znld.model.OneNetResourceModel">
         select * from onenet_resource where value = #{_paramter};
     </select>
-    <select id="selectByResourceType" resultType="com.sybd.znld.model.znld.OneNetResourceModel">
+    <select id="selectByResourceType" resultType="com.sybd.znld.model.OneNetResourceModel">
         select * from onenet_resource where type = #{_parameter};
     </select>
 
-    <insert id="insert" parameterType="com.sybd.znld.model.znld.OneNetResourceModel">
+    <insert id="insert" parameterType="com.sybd.znld.model.OneNetResourceModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>

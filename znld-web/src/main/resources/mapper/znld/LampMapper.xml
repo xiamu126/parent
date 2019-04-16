@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.znld.mapper.LampMapper">
-    <insert id="insert" parameterType="com.sybd.znld.model.znld.LampModel">
+    <insert id="insert" parameterType="com.sybd.znld.model.LampModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>
@@ -9,23 +9,23 @@
         values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status});
     </insert>
 
-    <select id="selectByDeviceId" resultType="com.sybd.znld.model.znld.LampModel">
+    <select id="selectByDeviceId" resultType="com.sybd.znld.model.LampModel">
         select * from lamp where device_id=#{_parameter}
     </select>
 
-    <select id="selectByDeviceName" resultType="com.sybd.znld.model.znld.LampModel">
+    <select id="selectByDeviceName" resultType="com.sybd.znld.model.LampModel">
         select * from lamp where device_name=#{_parameter}
     </select>
 
-    <select id="selectById" resultType="com.sybd.znld.model.znld.LampModel">
+    <select id="selectById" resultType="com.sybd.znld.model.LampModel">
         select * from lamp where id = #{_parameter};
     </select>
 
-    <select id="selectByLatitude" resultType="com.sybd.znld.model.znld.LampModel">
+    <select id="selectByLatitude" resultType="com.sybd.znld.model.LampModel">
         select * from lamp where latitude = #{_parameter};
     </select>
 
-    <select id="selectByLongitude" resultType="com.sybd.znld.model.znld.LampModel">
+    <select id="selectByLongitude" resultType="com.sybd.znld.model.LampModel">
         select * from lamp where longitude = #{_parameter};
     </select>
 
@@ -45,7 +45,7 @@
         <result column="deviceId" jdbcType="INTEGER" property="device_id"/>
         <result column="imei" jdbcType="VARCHAR" property="imei"/>
     </resultMap>
-    <select id="selectAllDeviceIdAndIMEI" resultType="java.util.HashMap">
+    <select id="selectAllDeviceIdAndImei" resultType="com.sybd.znld.model.dto.DeviceIdAndImei">
         select distinct device_id, imei from lamp;
     </select>
 

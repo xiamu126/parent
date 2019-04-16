@@ -5,11 +5,10 @@ import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.user.dto.LoginResult;
 import com.sybd.znld.controller.user.dto.LogoutResult;
 import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.rbac.model.UserModel;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.rbac.dto.LoginInput;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
-import com.sybd.znld.service.znld.ILogService;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
 import org.redisson.api.RedissonClient;
@@ -19,16 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.awt.image.BufferedImage;
-import java.security.SecureRandom;
 
 @Api(tags = "用户接口")
 @RestController

@@ -1,7 +1,7 @@
 package com.sybd.znld.service.rbac.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.rbac.RoleAuthModel;
+import com.sybd.rbac.model.RoleAuthModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

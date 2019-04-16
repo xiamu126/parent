@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.service.rbac.mapper.UserMapper">
-    <insert id="insert" parameterType="com.sybd.znld.model.rbac.UserModel">
+    <insert id="insert" parameterType="com.sybd.rbac.model.UserModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>
@@ -10,7 +10,7 @@
         (#{id},#{name},#{password},#{phone},#{email},#{gender},#{age},#{contactAddress},#{realName},#{idCardNo},#{lastLoginIp},#{organizationId},#{status})
     </insert>
 
-    <update id="updateById" parameterType="com.sybd.znld.model.rbac.UserModel">
+    <update id="updateById" parameterType="com.sybd.rbac.model.UserModel">
         update user
         <set>
             <if test=" name != null and name != '' ">name = #{name},</if>
@@ -28,14 +28,14 @@
         </set>
         where id = #{id}
     </update>
-    <update id="updatePasswordByName" parameterType="com.sybd.znld.model.rbac.UserModel">
+    <update id="updatePasswordByName" parameterType="com.sybd.rbac.model.UserModel">
         update user
         <set>
             <if test="password != null and password != '' ">password=#{password}</if>
         </set>
         where name = #{name};
     </update>
-    <update id="updateByName" parameterType="com.sybd.znld.model.rbac.UserModel">
+    <update id="updateByName" parameterType="com.sybd.rbac.model.UserModel">
         update user
         <set>
             <if test=" password != null and password != '' ">password = #{password},</if>
@@ -53,29 +53,29 @@
         where name = #{name};
     </update>
 
-    <select id="selectById" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectById" resultType="com.sybd.rbac.model.UserModel">
         select * from user where id = #{_parameter}
     </select>
-    <select id="selectByName" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByName" resultType="com.sybd.rbac.model.UserModel">
         select * from user where name = #{_parameter}
     </select>
-    <select id="selectByPhone" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByPhone" resultType="com.sybd.rbac.model.UserModel">
         select * from user where phone = #{_parameter}
     </select>
-    <select id="selectByEmail" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByEmail" resultType="com.sybd.rbac.model.UserModel">
         select * from user where email = #{_parameter}
     </select>
-    <select id="selectByIdCardNo" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByIdCardNo" resultType="com.sybd.rbac.model.UserModel">
         select * from user where id_card_no = #{_parameter}
     </select>
-    <select id="selectByOrganizationId" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByOrganizationId" resultType="com.sybd.rbac.model.UserModel">
         select * from user where organization_id = #{_parameter}
     </select>
-    <select id="selectByNameAndPassword" resultType="com.sybd.znld.model.rbac.UserModel">
+    <select id="selectByNameAndPassword" resultType="com.sybd.rbac.model.UserModel">
         select * from user where name=#{name} and password=#{password};
     </select>
 
-    <select id="selectAuthPackByUserId" resultType="com.sybd.znld.model.rbac.dto.AuthPackByUser">
+    <select id="selectAuthPackByUserId" resultType="com.sybd.rbac.model.dto.AuthPackByUser">
         select a.id as 'userId',
                c.name as 'roleName',
                e.name as 'authName',
@@ -91,7 +91,7 @@
         where a.id = #{userId} and e.status = 0 and a.status = 0;
     </select>
 
-    <select id="selectRolesByUserId" resultType="com.sybd.znld.model.rbac.RoleModel">
+    <select id="selectRolesByUserId" resultType="com.sybd.rbac.model.RoleModel">
         select c.* from user as a
         left join user_role as b on b.user_id = a.id
         left join role as c on c.id = b.role_id

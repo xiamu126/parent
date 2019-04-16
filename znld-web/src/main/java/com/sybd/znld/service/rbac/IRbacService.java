@@ -1,10 +1,10 @@
 package com.sybd.znld.service.rbac;
 
-import com.sybd.znld.model.DbDeleteResult;
-import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.model.rbac.dto.RbacApiInfo;
-import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
-import com.sybd.znld.model.rbac.dto.RbacInfo;
+import com.sybd.rbac.model.*;
+import com.sybd.db.model.DbDeleteResult;
+import com.sybd.rbac.model.dto.RbacApiInfo;
+import com.sybd.rbac.model.dto.RbacHtmlInfo;
+import com.sybd.rbac.model.dto.RbacInfo;
 
 import java.util.List;
 

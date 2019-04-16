@@ -6,6 +6,7 @@ import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.GetLastDataStreamsResult;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.znld.ILampService;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,12 @@ public class PageDeviceController extends BaseDeviceController implements IPageD
     private final Logger log = LoggerFactory.getLogger(PageDeviceController.class);
 
     @Autowired
-    public PageDeviceController(RedisTemplate<String, Object> redisTemplate,
+    public PageDeviceController(RedissonClient redissonClient,
                                 IOneNetService oneNet,
                                 ILampService lampService,
                                 ProjectConfig projectConfig,
                                 IUserService userService) {
-        super(redisTemplate, oneNet, lampService, projectConfig, userService);
+        super(redissonClient, oneNet, lampService, projectConfig, userService);
     }
 
     @RequestMapping(value = "/cmd", method = RequestMethod.GET, produces = {MediaType.TEXT_HTML_VALUE})

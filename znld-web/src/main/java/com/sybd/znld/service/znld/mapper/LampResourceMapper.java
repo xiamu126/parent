@@ -1,7 +1,7 @@
 package com.sybd.znld.service.znld.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.znld.LampResourceModel;
+import com.sybd.znld.model.LampResourceModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

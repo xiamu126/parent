@@ -1,7 +1,7 @@
 package com.sybd.znld.service;
 
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.rbac.model.UserModel;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
 import org.junit.After;

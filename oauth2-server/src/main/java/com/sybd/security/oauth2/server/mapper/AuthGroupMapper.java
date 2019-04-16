@@ -1,7 +1,7 @@
 package com.sybd.security.oauth2.server.mapper;
 
 import com.sybd.security.oauth2.server.db.DbSource;
-import com.sybd.znld.model.rbac.AuthGroupModel;
+import com.sybd.rbac.model.AuthGroupModel;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

@@ -152,6 +152,14 @@ public final class MyString {
         }else {
             System.out.println("==");
         }
+
+        var ret = Pattern.compile("^(\\d+)_(\\d+)_(\\d+)$").matcher("3303_0_5700");
+        System.out.println("3303_0_5700".matches("^(\\d+)_(\\d+)_(\\d+)$"));
+        if(ret.find()){
+            System.out.println(ret.group(1));
+            System.out.println(ret.group(2));
+            System.out.println(ret.group(3));
+        }
     }
 }
 

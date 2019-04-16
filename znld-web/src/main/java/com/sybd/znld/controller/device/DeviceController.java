@@ -1,30 +1,24 @@
 package com.sybd.znld.controller.device;
 
+import com.sybd.ministar.model.dto.Subtitles;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.device.dto.*;
-import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.onenet.model.OneNetKey;
 import com.sybd.znld.onenet.IOneNetService;
 import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.*;
-import com.sybd.znld.service.ministar.dto.Subtitle;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.service.znld.ILampService;
+import com.sybd.znld.service.znld.IRegionService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,14 +28,26 @@ import java.util.*;
 @Api(tags = "设备接口")
 @RestController
 @RequestMapping("/api/v1/device")
-public class DeviceController extends BaseDeviceController implements IDeviceController{
+public class DeviceController implements IDeviceController{
+    private final RedissonClient redissonClient;
+    private final IOneNetService oneNet;
+    private final ILampService lampService;
+    private final ProjectConfig projectConfig;
+    private final IUserService userService;
+    private final IRegionService regionService;
     @Autowired
-    public DeviceController(RedisTemplate<String, Object> redisTemplate,
-                            OneNetService oneNet,
-                            ProjectConfig projectConfig,
+    public DeviceController(RedissonClient redissonClient,
+                            IOneNetService oneNet,
                             ILampService lampService,
-                            IUserService userService) {
-        super(redisTemplate, oneNet, lampService, projectConfig, userService);
+                            ProjectConfig projectConfig,
+                            IUserService userService,
+                            IRegionService regionService) {
+        this.redissonClient = redissonClient;
+        this.oneNet = oneNet;
+        this.lampService = lampService;
+        this.projectConfig = projectConfig;
+        this.userService = userService;
+        this.regionService = regionService;
     }
 
     private Map<Integer, String> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin) {
@@ -109,7 +115,7 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
                                       @PathVariable(name = "dataStreamId") String dataStreamId, HttpServletRequest request) {
         try {
             var oneNetKey = OneNetKey.from(dataStreamId);
-            if(oneNetKey == null) return LastDataResult.fail("非法的参数");
+             if(oneNetKey == null) return LastDataResult.fail("非法的参数");
             if(!this.lampService.isDataStreamIdEnabled(oneNetKey)){
                 return LastDataResult.fail("当前dataStreamId已禁用");
             }
@@ -291,8 +297,12 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             params.command = cmd;
             var ret = oneNet.execute(params);
 
-            if(ret.isOk()) return ExecuteResult.success(ret);
-            else log.debug(ret.error);
+            if(ret.isOk()) {
+                return ExecuteResult.success(ret);
+            }
+            else {
+                log.debug(ret.error);
+            }
 
         }catch (Exception ex){
             log.error(ex.getMessage());
@@ -301,14 +311,18 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
     }
 
     @ApiOperation(value = "获取所有的设备Id和名字")
-    @PreAuthorize("hasAuthority('USER') and isRequestAllowed(#request)")
+    //@PreAuthorize("hasAuthority('USER') and isRequestAllowed(#request)")
     @GetMapping(value = "info", produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
     @Override
-    public DeviceIdAndNameResult getDeviceIdAndName(HttpServletRequest request){
+    public DeviceIdAndNameResult getDeviceIdAndName(@RequestHeader("userId") String userId, HttpServletRequest request){
         try{
-            var principal = request.getUserPrincipal();
-            var userName = principal.getName();
-            var user = this.userService.getUserByName(userName.toString());
+            //var principal = request.getUserPrincipal(); // 这个传来的是token中的用户名，不是登入用户名
+            //var userName = principal.getName();
+            //var user = this.userService.getUserByName(userName);
+            if(!MyString.isUuid(userId)){
+                return DeviceIdAndNameResult.fail("非法的参数");
+            }
+            var user = this.userService.getUserById(userId);
             var tmp = this.lampService.getDeviceIdAndDeviceNames(user.organizationId);
             if(tmp == null || tmp.isEmpty()){
                 return DeviceIdAndNameResult.fail("获取数据为空");
@@ -338,6 +352,59 @@ public class DeviceController extends BaseDeviceController implements IDeviceCon
             log.error(ex.getMessage());
         }
         return CheckedResourcesResult.fail("获取数据失败");
+    }
+
+    @ApiOperation(value = "新建灯带效果")
+    @PostMapping(value = "ministar", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public ExecuteResult newMiniStar(@ApiParam(value = "具体的指令", required = true) @RequestBody Subtitles subtitles, HttpServletRequest request) {
+        try{
+            if(subtitles == null || subtitles.value == null || subtitles.value.isEmpty()){
+                return ExecuteResult.fail("非法的参数");
+            }
+            for(var i = 0; i < subtitles.value.size(); i++){
+                var subtitle = subtitles.value.get(i);
+                if(!subtitle.isValid()) return ExecuteResult.fail("非法的参数");
+            }
+            for(var i = 0; i < subtitles.value.size(); i++){
+                var subtitle = subtitles.value.get(i);
+                var user = this.userService.getUserById(subtitle.userId);
+                if(user == null){
+                    return ExecuteResult.fail("指定的用户不存在");
+                }
+                var region = this.regionService.getRegionById(subtitle.regionId);
+                if(region == null){
+                    return ExecuteResult.fail("指定的区域不存在");
+                }
+
+                var cmd = OneNetService.ZNLD_DD_EXECUTE;
+                var resource = this.lampService.getResourceByCommandValue(cmd);
+                if(resource == null) {
+                    return ExecuteResult.fail("获取命令相关数据失败");
+                }
+
+                var imei = this.lampService.getImeiByDeviceId(subtitle.deviceId);
+                if(MyString.isEmptyOrNull(imei)){
+                    return ExecuteResult.fail("未找到指定设备的imei");
+                }
+                var params = new CommandParams();
+                params.deviceId = subtitle.deviceId;
+                params.imei = imei;
+                params.oneNetKey = resource.toOneNetKey();
+                params.timeout = resource.timeout;
+                params.command = cmd;
+                var ret = oneNet.execute(params);
+
+                if(!ret.isOk()) {
+                    log.debug(ret.error);
+                    return ExecuteResult.fail("上传效果失败");
+                }
+            }
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+            return ExecuteResult.fail("上传效果失败");
+        }
+        return ExecuteResult.success("上传效果成功");
     }
 
     public void getWeightedData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp){

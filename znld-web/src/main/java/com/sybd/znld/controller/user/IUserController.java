@@ -3,13 +3,12 @@ package com.sybd.znld.controller.user;
 import com.sybd.znld.controller.user.dto.LoginResult;
 import com.sybd.znld.controller.user.dto.LogoutResult;
 import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.rbac.model.UserModel;
 import com.sybd.znld.service.rbac.dto.LoginInput;
 import com.sybd.znld.service.rbac.dto.RegisterInput;
 import org.springframework.validation.BindingResult;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 
 interface IUserController {

@@ -1,8 +1,8 @@
 package com.sybd.znld.service.znld.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.onenet.OneNetKey;
-import com.sybd.znld.model.znld.OneNetResourceModel;
+import com.sybd.onenet.model.OneNetKey;
+import com.sybd.znld.model.OneNetResourceModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

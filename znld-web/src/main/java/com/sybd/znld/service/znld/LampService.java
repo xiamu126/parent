@@ -1,7 +1,7 @@
 package com.sybd.znld.service.znld;
 
-import com.sybd.znld.model.onenet.OneNetKey;
-import com.sybd.znld.model.znld.*;
+import com.sybd.onenet.model.OneNetKey;
+import com.sybd.znld.model.*;
 import com.sybd.znld.service.znld.dto.CheckedResource;
 import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.service.znld.mapper.*;

@@ -1,8 +1,8 @@
 package com.sybd.znld.service.rbac;
 
-import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
-import com.sybd.znld.model.rbac.dto.RbacApiInfo;
+import com.sybd.rbac.model.*;
+import com.sybd.rbac.model.dto.RbacHtmlInfo;
+import com.sybd.rbac.model.dto.RbacApiInfo;
 import com.sybd.znld.service.rbac.mapper.UserMapper;
 import org.junit.Assert;
 import org.junit.Before;

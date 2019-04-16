@@ -1,6 +1,6 @@
 package com.sybd.znld.service.ministar;
 
-import com.sybd.znld.model.ministar.TwinkleBeautyGroupModel;
+import com.sybd.ministar.model.TwinkleBeautyGroupModel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,13 +16,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

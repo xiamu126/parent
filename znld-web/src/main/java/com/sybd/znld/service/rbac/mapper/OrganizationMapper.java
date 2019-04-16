@@ -1,8 +1,8 @@
 package com.sybd.znld.service.rbac.mapper;
 
 import com.sybd.znld.db.DbSource;
-import com.sybd.znld.model.rbac.OrganizationModel;
-import com.sybd.znld.model.rbac.dto.AuthPackByGroup;
+import com.sybd.rbac.model.OrganizationModel;
+import com.sybd.rbac.model.dto.AuthPackByGroup;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

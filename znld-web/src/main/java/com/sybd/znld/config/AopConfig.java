@@ -1,7 +1,7 @@
 package com.sybd.znld.config;
 
 import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.model.znld.HttpLogModel;
+import com.sybd.znld.model.HttpLogModel;
 import com.sybd.znld.service.znld.ILogService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

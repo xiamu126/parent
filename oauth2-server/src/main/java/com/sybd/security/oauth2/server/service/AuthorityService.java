@@ -1,9 +1,9 @@
 package com.sybd.security.oauth2.server.service;
 
+import com.sybd.rbac.model.*;
 import com.sybd.security.oauth2.server.db.DbSource;
 import com.sybd.security.oauth2.server.mapper.*;
-import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.model.rbac.dto.AuthPackByUser;
+import com.sybd.rbac.model.dto.AuthPackByUser;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import org.slf4j.Logger;

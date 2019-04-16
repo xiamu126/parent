@@ -2,7 +2,7 @@ package com.sybd.znld.service.znld;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.config.RedisKeyConfig;
-import com.sybd.znld.model.znld.CameraModel;
+import com.sybd.znld.model.CameraModel;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.video.VideoAsyncTask;
 import com.sybd.znld.service.znld.mapper.VideoConfigMapper;

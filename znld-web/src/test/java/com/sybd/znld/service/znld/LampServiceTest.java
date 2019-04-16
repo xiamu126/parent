@@ -1,7 +1,7 @@
 package com.sybd.znld.service.znld;
 
-import com.sybd.znld.model.znld.LampModel;
-import com.sybd.znld.model.znld.OneNetResourceModel;
+import com.sybd.znld.model.LampModel;
+import com.sybd.znld.model.OneNetResourceModel;
 import com.sybd.znld.service.znld.mapper.LampMapper;
 import com.sybd.znld.service.znld.mapper.OneNetResourceMapper;
 import org.junit.Assert;
@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)

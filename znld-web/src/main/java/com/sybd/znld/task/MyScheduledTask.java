@@ -10,6 +10,7 @@ import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -57,12 +58,12 @@ public class MyScheduledTask {
                     //log.error("执行定时任务错误，获取指令为空");
                     return;
                 }
-                var map = this.oneNetService.getDeviceIdAndIMEI();
-                for(var item: map.entrySet()){
+                var map = this.oneNetService.getDeviceIdAndImei();
+                for(var item: map){
                     var params = new CommandParams();
                     params.command = OneNetService.ZNLD_HEART_BEAT;
-                    params.deviceId = item.getKey();
-                    params.imei = item.getValue();
+                    params.deviceId = item.deviceId;
+                    params.imei = item.imei;
                     params.oneNetKey = model.toOneNetKey();
                     params.timeout = model.timeout;
                     oneNetService.execute(params);

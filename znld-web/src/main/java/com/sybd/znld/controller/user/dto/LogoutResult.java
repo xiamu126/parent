@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModel;
 
 @ApiModel(value = "登出返回数据")
 public class LogoutResult extends BaseApiResult{
-    public LogoutResult(){}
     public LogoutResult(Integer code, String msg){
         super(code, msg);
     }

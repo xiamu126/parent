@@ -32,7 +32,7 @@ public class VideoController {
     @PostMapping(value = "play", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult play(@ApiParam(name = "jsonData", value = "视频相关数据", required = true) @RequestBody VideoData jsonData){
         try{
-            if(jsonData.getCmd().equals("push")){
+            if(jsonData.cmd.equals("push")){
                 if(videoService.push(jsonData.channelGuid)){
                     return ApiResult.success("推流成功");
                 }

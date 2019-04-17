@@ -5,12 +5,14 @@ import com.sybd.znld.core.BaseApiResult;
 import com.sybd.znld.onenet.dto.GetHistoryDataStreamResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 
 import java.util.List;
 
 @ApiModel(value = "获取设备历史数据的返回值")
+@NoArgsConstructor
 public class HistoryDataResult extends BaseApiResult{
     @ApiModelProperty(value = "当前的游标位置")
     public String cursor;
@@ -18,7 +20,6 @@ public class HistoryDataResult extends BaseApiResult{
     @JsonProperty("data_points")
     public List<GetHistoryDataStreamResult.DataPoint> dataPoints;
 
-    public HistoryDataResult(){}
     public HistoryDataResult(Integer code, String msg){
         super(code, msg);
     }

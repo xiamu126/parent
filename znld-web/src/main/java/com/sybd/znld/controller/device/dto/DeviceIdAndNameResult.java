@@ -5,10 +5,12 @@ import com.sybd.znld.core.BaseApiResult;
 import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @ApiModel(value = "获取设备Id与名字的返回值")
+@NoArgsConstructor
 public class DeviceIdAndNameResult extends BaseApiResult{
     @ApiModelProperty(value = "设备Id与名字的集合")
     @JsonProperty("data")

@@ -5,12 +5,14 @@ import com.sybd.znld.core.BaseApiResult;
 import com.sybd.znld.onenet.dto.GetDataStreamByIdResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 
 import java.time.LocalDateTime;
 
 @ApiModel(value = "获取设备当前最新数据的返回值")
+@NoArgsConstructor
 public class LastDataResult extends BaseApiResult{
     @ApiModelProperty(value = "最后的更新时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", locale = "CN")
@@ -18,7 +20,6 @@ public class LastDataResult extends BaseApiResult{
     @ApiModelProperty(value = "当前的数值")
     public String currentValue;
 
-    public LastDataResult(){}
     public LastDataResult(Integer code, String msg){
         super(code, msg);
     }

@@ -1,6 +1,7 @@
 package com.sybd.znld.service.znld;
 
 import com.sybd.znld.model.RegionModel;
+import com.sybd.znld.service.znld.dto.RegionIdAndName;
 import com.sybd.znld.service.znld.mapper.RegionMapper;
 import com.sybd.znld.util.MyString;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RegionService implements IRegionService {
@@ -91,5 +93,14 @@ public class RegionService implements IRegionService {
     public List<RegionModel> getRegion(int count) {
         if(count <= 0) return null;
         return this.regionMapper.select(count);
+    }
+
+    @Override
+    public List<RegionIdAndName> getAllRegionWithValidLamp(String organId) {
+        var ret = this.regionMapper.selectAllRegionWithValidLamp(organId);
+        if(ret != null){
+            return ret.stream().map( t -> new RegionIdAndName(t.id, t.name)).collect(Collectors.toList());
+        }
+        return null;
     }
 }

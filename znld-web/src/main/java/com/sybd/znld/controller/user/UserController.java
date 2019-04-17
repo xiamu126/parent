@@ -88,7 +88,7 @@ public class UserController implements IUserController {
                 this.stringRedisTemplate.delete(getCaptchaKey(input.uuid));
                 long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
                 // 获取rbac权限信息
-                return LoginResult.success(user.getId(), clientId, clientSecret, seconds);
+                return LoginResult.success(user.id, user.organizationId, clientId, clientSecret, seconds);
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());

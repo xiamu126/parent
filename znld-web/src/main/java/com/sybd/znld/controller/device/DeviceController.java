@@ -395,7 +395,6 @@ public class DeviceController implements IDeviceController{
         }
         return ExecuteResult.success("上传效果成功");
     }
-
     public void getWeightedData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp){
         var begin = MyDateTime.toLocalDateTime(beginTimestamp);
         var end = MyDateTime.toLocalDateTime(endTimestamp);

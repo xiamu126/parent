@@ -5,6 +5,7 @@ import com.sybd.znld.core.BaseApiResult;
 import com.sybd.znld.onenet.dto.GetHistoryDataStreamResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 
@@ -12,12 +13,12 @@ import java.util.List;
 import java.util.Map;
 
 @ApiModel(value = "获取设备历史数据的返回值，并按时间格式化")
+@NoArgsConstructor
 public class PrettyHistoryDataResult extends BaseApiResult {
     @ApiModelProperty(value = "具体的历史数据")
     @JsonProperty("data_points")
     public Map<Integer, String> dataPoints;
 
-    public PrettyHistoryDataResult(){}
     public PrettyHistoryDataResult(Integer code, String msg){
         super(code, msg);
     }

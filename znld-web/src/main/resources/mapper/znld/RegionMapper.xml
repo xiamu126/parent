@@ -29,4 +29,12 @@
         set name = #{name}, status = #{status}
         where id = #{id};
     </update>
+
+    <select id="selectAllRegionWithValidLamp" resultType="com.sybd.znld.model.RegionModel">
+        select a.*
+        from region as a
+        left join lamp_region as b on b.region_id = a.id
+        left join lamp as c on c.id = b.lamp_id
+        where c.status = 0 and a.status = 0 and a.organization_id = #{organId};
+    </select>
 </mapper>

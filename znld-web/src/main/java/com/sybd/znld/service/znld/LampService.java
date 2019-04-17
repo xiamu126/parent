@@ -152,4 +152,10 @@ public class LampService implements ILampService {
         }
         return null;
     }
+
+    @Override
+    public List<LampModel> getLampsByRegionId(String regionId) {
+        if(!MyString.isUuid(regionId)) return null;
+        return this.lampMapper.selectByRegionId(regionId);
+    }
 }

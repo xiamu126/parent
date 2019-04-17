@@ -90,4 +90,10 @@
         left join onenet_resource as c on c.id = b.onenet_resource_id
         where a.device_id = #{deviceId};
     </select>
+
+    <select id="selectByRegionId" resultType="com.sybd.znld.model.LampModel">
+        select b.* from lamp_region as a
+        left join lamp as b on a.lamp_id = b.id
+        where a.region_id = #{regionId};
+    </select>
 </mapper>

@@ -1,13 +1,13 @@
 package com.sybd.znld.controller.device;
 
 import com.sybd.ministar.model.dto.Subtitle;
-import com.sybd.ministar.model.dto.Subtitles;
 import com.sybd.znld.controller.device.dto.*;
 import com.sybd.znld.core.ApiResult;
 import com.sybd.znld.model.dto.DeviceInfoParam;
 import com.sybd.znld.onenet.dto.OneNetExecuteArgs;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 public interface IDeviceController {
     LastDataResult getLastData(Integer deviceId, String dataStreamId, HttpServletRequest request);
@@ -18,5 +18,5 @@ public interface IDeviceController {
     ExecuteResult execute(Integer deviceId, OneNetExecuteArgs command, HttpServletRequest request);
     DeviceIdAndNameResult getDeviceIdAndName(String userId, HttpServletRequest request);
     CheckedResourcesResult getCheckedResources(Integer deviceId, HttpServletRequest request);
-    ExecuteResult newMiniStar(Subtitles subtitles, HttpServletRequest request);
+    ExecuteResult newMiniStar(List<OneNetExecuteArgs> data, HttpServletRequest request);
 }

@@ -17,4 +17,5 @@ public interface ILampService {
     OneNetResourceModel getResourceByCommandValue(String cmd);
     LampRegionModel addLampToRegion(String lampId, String regionId);
     LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds);
+    List<LampModel> getLampsByRegionId(String regionId);
 }

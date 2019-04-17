@@ -29,4 +29,5 @@ public interface LampMapper {
     List<LampAndRegion> selectLampByDeviceIdAndRegionType(Integer deviceId, Short regionType);
     List<LampAndRegion> selectLampByLampIdAndRegionType(String lampId, Short regionType);
     List<BoundResource> selectBoundResourceByDeviceId(Integer deviceId);
+    List<LampModel> selectByRegionId(String regionId);
 }

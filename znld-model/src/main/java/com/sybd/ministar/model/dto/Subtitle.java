@@ -1,23 +1,22 @@
 package com.sybd.ministar.model.dto;
 
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Getter @Setter
 public class Subtitle implements Serializable {
     public String title;
+    public String userId;
     public String regionId;
-    public Integer deviceId;
     public Short action; // 0为停止，1为开始，2为存储指令
     public Effect effect; // 具体的效果
     public Short speed; // 效果速度
@@ -25,7 +24,6 @@ public class Subtitle implements Serializable {
     public Long endTimestamp;
     public Short effectTotalCount;
     public Short effectCurrentIndex;
-    public String userId;
 
     public static class Effect{
         public Short type; // 0为呼吸灯，1为跑马灯，2为全彩
@@ -44,9 +42,8 @@ public class Subtitle implements Serializable {
             public Short r;
             public Short g;
             public Short b;
-
             public boolean isValid(){
-                return r >= 0 && g >= 0 && b >= 0;
+                return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255;
             }
         }
 
@@ -78,16 +75,16 @@ public class Subtitle implements Serializable {
     }
 
     public boolean isValid(){
-        if(!MyString.isUuid(userId)) return false;
         if(MyString.isEmptyOrNull(title)) return false;
+        if(!MyString.isUuid(userId)) return false;
         if(!MyString.isUuid(regionId)) return false;
-        if(deviceId <= 0) return false;
         if(!Action.isValid(action)) return false;
         if(!effect.isValid()) return false;
-        if(speed <=0) return false;
-        if(MyDateTime.isPast(beginTimestamp, ZoneOffset.UTC)) return false;
-        if(MyDateTime.isBeforeOrEqual(endTimestamp, beginTimestamp, ZoneOffset.UTC)) return false;
-        if(effectTotalCount <= 0) return false;
+        if(!MyNumber.isPositive(speed)) return false;
+        if(beginTimestamp == null || MyDateTime.isPast(beginTimestamp, ZoneOffset.UTC)) return false;
+        if(endTimestamp == null || MyDateTime.isBeforeOrEqual(endTimestamp, beginTimestamp, ZoneOffset.UTC)) return false;
+        if(!MyNumber.isPositive(effectTotalCount)) return false;
+        if(!MyNumber.isPositiveOrZero(effectCurrentIndex)) return false;
         return effectCurrentIndex < effectTotalCount;
     }
 
@@ -149,37 +146,5 @@ public class Subtitle implements Serializable {
         }catch (Exception ex){
             return "";
         }
-    }
-
-    public static void test(String s){
-        var bytes = s.getBytes();
-        var DG = "DG".getBytes();
-        var index = 0;
-        var head = Arrays.copyOfRange(bytes, index, index += 2); // 校验头
-        var number_status = Arrays.copyOfRange(bytes, index, index += 2); // 路灯编号与当前状态
-        var lamp_index = number_status[0] << 6 | number_status[1] >>> 2; // 前十四位为路灯编号
-        var lamp_status = number_status[1] & 0x03; // 最后两位为状态
-        var cmd_count = bytes[index]; // 当前指令数
-        var item_count = bytes[index += 1]; // 总效果数
-        var current_item = bytes[index += 1]; // 当前效果序号
-        var effect_color = bytes[index += 1]; // 效果编码与颜色数
-        var effect_number = effect_color >>> 5; // 效果编码
-        var color_count = effect_color & 0x1f; // 颜色数
-        var color_info = Arrays.copyOfRange(bytes, index += 1, index += (4 * color_count)); // 所有颜色信息
-        var speed = bytes[index];
-        var begin_time = Arrays.copyOfRange(bytes, index += 1, index += 4);
-        var end_time = Arrays.copyOfRange(bytes, index, index += 4);
-        var tail = bytes[index];
-        System.out.println(new String(head, StandardCharsets.UTF_8));
-        System.out.println(lamp_index);
-        System.out.println(lamp_status);
-        System.out.println(cmd_count);
-        System.out.println(item_count);
-        System.out.println(current_item);
-        System.out.println(effect_number);
-        System.out.println(color_count);
-        /*if(!MyByte.equals(DG, Arrays.copyOfRange(bytes,0,2))){
-            return false;
-        }*/
     }
 }

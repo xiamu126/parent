@@ -17,6 +17,9 @@ public class MyNumber {
     public static boolean isPositive(Integer it){
         return it != null && it > 0;
     }
+    public static boolean isPositive(Short it){
+        return it != null && it > 0;
+    }
     public static boolean isNegative(Integer it){
         return it != null && it < 0;
     }
@@ -39,6 +42,9 @@ public class MyNumber {
         return  it != null && it == 0;
     }
     public static boolean isPositiveOrZero(Integer it){
+        return it != null && it >= 0;
+    }
+    public static boolean isPositiveOrZero(Short it){
         return it != null && it >= 0;
     }
     public static boolean isNegativeOrZero(Integer it){

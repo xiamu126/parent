@@ -1,6 +1,5 @@
 package com.sybd.znld.controller.device;
 
-import com.sybd.ministar.model.dto.Subtitles;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.controller.device.dto.*;
 import com.sybd.onenet.model.OneNetKey;
@@ -357,47 +356,37 @@ public class DeviceController implements IDeviceController{
     @ApiOperation(value = "新建灯带效果")
     @PostMapping(value = "ministar", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ExecuteResult newMiniStar(@ApiParam(value = "具体的指令", required = true) @RequestBody Subtitles subtitles, HttpServletRequest request) {
+    public ExecuteResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody List<OneNetExecuteArgs> data, HttpServletRequest request) {
         try{
-            if(subtitles == null || subtitles.value == null || subtitles.value.isEmpty()){
-                return ExecuteResult.fail("非法的参数");
-            }
-            for(var i = 0; i < subtitles.value.size(); i++){
-                var subtitle = subtitles.value.get(i);
-                if(!subtitle.isValid()) return ExecuteResult.fail("非法的参数");
-            }
-            for(var i = 0; i < subtitles.value.size(); i++){
-                var subtitle = subtitles.value.get(i);
+            if(data == null || data.isEmpty()) return ExecuteResult.fail("非法的参数");
+            for(var arg : data){
+                if(!arg.isValid()) {
+                    return ExecuteResult.fail("非法的参数");
+                }
+                var subtitle = arg.getSubtitle();
                 var user = this.userService.getUserById(subtitle.userId);
-                if(user == null){
+                if(user == null) {
                     return ExecuteResult.fail("指定的用户不存在");
                 }
                 var region = this.regionService.getRegionById(subtitle.regionId);
-                if(region == null){
+                if(region == null) {
                     return ExecuteResult.fail("指定的区域不存在");
                 }
-
-                var cmd = OneNetService.ZNLD_DD_EXECUTE;
-                var resource = this.lampService.getResourceByCommandValue(cmd);
+                var resource = this.lampService.getResourceByCommandValue(OneNetService.ZNLD_DD_EXECUTE);
                 if(resource == null) {
                     return ExecuteResult.fail("获取命令相关数据失败");
                 }
-
-                var imei = this.lampService.getImeiByDeviceId(subtitle.deviceId);
-                if(MyString.isEmptyOrNull(imei)){
-                    return ExecuteResult.fail("未找到指定设备的imei");
+                var lamps = this.lampService.getLampsByRegionId(subtitle.regionId);
+                if(lamps == null || lamps.isEmpty()) {
+                    return ExecuteResult.fail("获取该区域下的路灯为空");
                 }
-                var params = new CommandParams();
-                params.deviceId = subtitle.deviceId;
-                params.imei = imei;
-                params.oneNetKey = resource.toOneNetKey();
-                params.timeout = resource.timeout;
-                params.command = cmd;
-                var ret = oneNet.execute(params);
-
-                if(!ret.isOk()) {
-                    log.debug(ret.error);
-                    return ExecuteResult.fail("上传效果失败");
+                arg.cmd = OneNetService.ZNLD_DD_EXECUTE;
+                for (var lamp : lamps) {
+                    var ret = this.execute(lamp.deviceId, arg, request);
+                    if (!ret.isOk()) {
+                        log.debug(ret.msg);
+                        return ExecuteResult.fail("上传效果失败");
+                    }
                 }
             }
         }catch (Exception ex){

@@ -6,7 +6,7 @@ redis-server: 58.210.51.74
 redis-server-port: 8000
 
 server:
-  port: 8181
+  port: 8080
 spring:
   datasource:
     druid:

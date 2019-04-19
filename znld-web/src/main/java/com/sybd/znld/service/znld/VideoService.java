@@ -97,7 +97,7 @@ public class VideoService extends BaseService implements IVideoService {
     @Override
     public void verify(){//这个函数已经没有必要了，因为globalKey会自动过期
         var persistentKeys = redissonClient.getKeys().getKeysByPattern(RedisKeyConfig.CLIENT_CHANNEL_GUID_PERSISTENCE_PREFIX_MATCH);//client:channelGuid:persistence:*
-        for(var key: persistentKeys){//client:channelGuid:persistence:2
+        for(var key: persistentKeys){ // client:channelGuid:persistence:2
             var redisKey = getRedisKey(key);
             if(this.redissonClient.getKeys().countExists(redisKey) > 0) {
                 log.debug("当前key有效："+ redisKey+",不关闭");
@@ -132,7 +132,7 @@ public class VideoService extends BaseService implements IVideoService {
             /*while(!result.isDone()){
                 Thread.sleep(1000);
             }*/
-            return result.get(30, TimeUnit.SECONDS); //等待3秒
+            return result.get(30, TimeUnit.SECONDS); // 等待3秒
         } catch (InterruptedException | ExecutionException | TimeoutException ex) {
             log.error(ex.getMessage());
         }

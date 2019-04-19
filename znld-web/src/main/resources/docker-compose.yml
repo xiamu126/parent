@@ -1,0 +1,104 @@
+version: '3.7'
+services:
+  nginx:
+    container_name: znld-nginx
+    image: nginx:1.14.2
+    ports:
+      - target: 80
+        published: 81
+        protocol: tcp
+        mode: host
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - type: bind
+        source: ./nginx/nginx.conf
+        target: /etc/nginx/nginx.conf
+      - type: bind
+        source: ./znld/html
+        target: /usr/share/nginx/html
+      - type: bind
+        source: ./nginx/access.log
+        target: /var/log/nginx/access.log
+      - type: bind
+        source: ./nginx/error.log
+        target: /var/log/nginx/error.log
+    depends_on:
+      - api
+      - oauth2
+
+  mysql:
+    container_name: znld-mysql
+    image: mysql:8.0.15
+    ports:
+      - target: 3306
+        published: 3307
+        protocol: tcp
+        mode: host
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "mysql", "--user=root", "--password=znld@DB#188188", "--silent", "--execute 'SELECT 1;'"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - type: bind
+        source: ./mysql/data/
+        target: /var/lib/mysql
+      - type: bind
+        source: ./mysql/my.cnf
+        target: /etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: znld@DB#188188
+
+  redis:
+    container_name: znld-redis
+    image: redis:5.0.4
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - target: 6379
+        published: 6380
+        protocol: tcp
+        mode: host
+
+  oauth2:
+    container_name: znld-oauth2
+    image: openjdk:11.0.3-jre-slim-stretch
+    restart: on-failure
+    ports:
+      - target: 8081
+        published: 82
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: ./znld/oauth2/
+        target: /znld/oauth2/
+    command: java -jar /znld/oauth2/app.jar
+
+  api:
+    container_name: znld-api
+    image: openjdk:11.0.3-jre-slim-stretch
+    restart: on-failure
+    ports:
+      - target: 8080
+        published: 83
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: ./znld/api/
+        target: /znld/api/
+    command: java -jar /znld/oauth2/app.jar

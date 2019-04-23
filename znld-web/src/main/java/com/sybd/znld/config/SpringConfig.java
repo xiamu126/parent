@@ -36,14 +36,14 @@ public class SpringConfig {
 
     @Bean
     public ModelMapper modelMapper(){
-        ModelMapper modelMapper = new ModelMapper();
+        var modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper;
     }
 
     @Bean
     ServletListenerRegistrationBean<ServletContextListener> servletListener() {
-        ServletListenerRegistrationBean<ServletContextListener> srb = new ServletListenerRegistrationBean<>();
+        var srb = new ServletListenerRegistrationBean<ServletContextListener>();
         srb.setListener(new MyServletContextListener());
         return srb;
     }

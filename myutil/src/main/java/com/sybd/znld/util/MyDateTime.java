@@ -20,6 +20,34 @@ public final class MyDateTime {
         return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(format));
     }
 
+    // 检测时间戳有效性
+    public static boolean isValid(Long timestamp){
+        var max = Instant.MAX.toEpochMilli();
+        var min = Instant.MIN.toEpochMilli();
+        return timestamp <= max && timestamp >= min;
+    }
+
+    public static boolean isBefore(Long timestamp1, Long timestamp2){
+        var a = toLocalDateTime(timestamp1);
+        var b = toLocalDateTime(timestamp2);
+        return a.isBefore(b);
+    }
+    public static boolean isBefore(Long timestamp1, Long timestamp2, ZoneOffset zoneOffset){
+        var a = toLocalDateTime(timestamp1, zoneOffset);
+        var b = toLocalDateTime(timestamp2, zoneOffset);
+        return a.isBefore(b);
+    }
+    public static boolean isAfter(Long timestamp1, Long timestamp2){
+        var a = toLocalDateTime(timestamp1);
+        var b = toLocalDateTime(timestamp2);
+        return a.isAfter(b);
+    }
+    public static boolean isAfter(Long timestamp1, Long timestamp2, ZoneOffset zoneOffset){
+        var a = toLocalDateTime(timestamp1, zoneOffset);
+        var b = toLocalDateTime(timestamp2, zoneOffset);
+        return a.isAfter(b);
+    }
+
     // 时间字符串转换为时间戳
     public static Long toTimestamp(String value, String format){
         var tmp = toLocalDateTime(value, format);
@@ -36,11 +64,7 @@ public final class MyDateTime {
     public static LocalDateTime toLocalDateTime(Long timestamp){
         var instant = Instant.ofEpochMilli(timestamp);
         var zoneId = ZoneId.systemDefault();
-        var localDateTime = LocalDateTime.ofInstant(instant, zoneId);
-        /*if(localDateTime.getSecond() == 0){
-            localDateTime = localDateTime.plusSeconds(1);
-        }*/
-        return localDateTime;
+        return LocalDateTime.ofInstant(instant, zoneId);
     }
     public static LocalDateTime toLocalDateTime(Long timestamp, ZoneOffset zoneOffset){
         var instant = Instant.ofEpochMilli(timestamp);

@@ -5,49 +5,53 @@ services:
     image: nginx:1.14.2
     ports:
       - target: 80
-        published: 81
+        published: 9000
         protocol: tcp
         mode: host
     restart: on-failure
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
+      test: ["CMD", "service", "nginx", "status"]
       interval: 1m30s
       timeout: 10s
       retries: 3
       start_period: 40s
     volumes:
       - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
         source: ./nginx/nginx.conf
         target: /etc/nginx/nginx.conf
       - type: bind
-        source: ./znld/html
+        source: ./nginx/html
         target: /usr/share/nginx/html
       - type: bind
-        source: ./nginx/access.log
-        target: /var/log/nginx/access.log
-      - type: bind
-        source: ./nginx/error.log
-        target: /var/log/nginx/error.log
+        source: ./nginx
+        target: /var/log/nginx
     depends_on:
       - api
-      - oauth2
 
   mysql:
     container_name: znld-mysql
     image: mysql:8.0.15
     ports:
       - target: 3306
-        published: 3307
+        published: 8307
         protocol: tcp
         mode: host
     restart: on-failure
     healthcheck:
-      test: ["CMD", "mysql", "--user=root", "--password=znld@DB#188188", "--silent", "--execute 'SELECT 1;'"]
+      test: ["CMD", "mysqladmin", "--user=root", "--password=znld@DB#188188", "--silent", "ping"]
       interval: 1m30s
       timeout: 10s
       retries: 3
       start_period: 40s
     volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
       - type: bind
         source: ./mysql/data/
         target: /var/lib/mysql
@@ -67,38 +71,67 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./redis/redis.conf
+        target: /usr/local/etc/redis/redis.conf
+      - type: bind
+        source: ./redis/data
+        target: /data
     ports:
       - target: 6379
-        published: 6380
+        published: 8380
         protocol: tcp
         mode: host
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
 
   oauth2:
     container_name: znld-oauth2
     image: openjdk:11.0.3-jre-slim-stretch
     restart: on-failure
+    working_dir: /oauth2
     ports:
-      - target: 8081
-        published: 82
+      - target: 8888
+        published: 8081
         protocol: tcp
         mode: host
     volumes:
       - type: bind
-        source: ./znld/oauth2/
-        target: /znld/oauth2/
-    command: java -jar /znld/oauth2/app.jar
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./oauth2
+        target: /oauth2
+    depends_on:
+      - mysql
+      - redis
+    command: java -jar -Duser.timezone=Asia/Shanghai app.jar
 
   api:
     container_name: znld-api
     image: openjdk:11.0.3-jre-slim-stretch
     restart: on-failure
+    working_dir: /api
     ports:
-      - target: 8080
-        published: 83
+      - target: 8082
+        published: 8082
         protocol: tcp
         mode: host
     volumes:
       - type: bind
-        source: ./znld/api/
-        target: /znld/api/
-    command: java -jar /znld/oauth2/app.jar
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./api
+        target: /api
+    depends_on:
+      - redis
+      - mysql
+      - oauth2
+    command: java -jar -Duser.timezone=Asia/Shanghai app.jar

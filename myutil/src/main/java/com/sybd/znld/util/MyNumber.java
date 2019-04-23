@@ -3,6 +3,9 @@ package com.sybd.znld.util;
 import java.util.Random;
 
 public class MyNumber {
+    public static String toString(Double v){
+        return Double.toString(v);
+    }
     public static int rand(int min, int max){
         var random = new Random();
         return random.nextInt(max - min + 1) + min;
@@ -10,6 +13,12 @@ public class MyNumber {
     public static double rand(double min, double max){
         var random = new Random();
         return min + (max - min) * random.nextDouble();
+    }
+    public static Double getDouble(String num){
+        try{
+            return Double.parseDouble(num);
+        }catch (Exception ignored){}
+        return null;
     }
     public static boolean isBetween(int it, int min, int max){
         return it >= min && it <= max;

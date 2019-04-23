@@ -58,7 +58,7 @@ spring:
     cache: true
   profiles:
     include:
-    active: dev
+    active: prod
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   type-aliases-package: com.sybd.security.oauth2.server.model

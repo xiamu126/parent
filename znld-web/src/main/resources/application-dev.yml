@@ -5,8 +5,6 @@ db-server: 58.210.51.74:8306
 redis-server: 58.210.51.74
 redis-server-port: 8000
 
-server:
-  port: 8080
 spring:
   datasource:
     druid:
@@ -30,7 +28,7 @@ spring:
   redis:
     host: ${redis-server}
     port: ${redis-server-port}
-    #password: 123456
+    #password: 94f76e0864c411e980f50242ac110005
     ssl: false
     timeout: 2s
     cluster:

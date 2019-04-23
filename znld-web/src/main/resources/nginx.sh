@@ -7,9 +7,9 @@ fi
 
 name=nginx_$1
 
-[[ -z "`docker images | sed -n '/nginx/p'`" ]] && docker pull nginx:latest
+[[ -z "`docker-build images | sed -n '/nginx/p'`" ]] && docker pull nginx:latest
 
-if [[ "`docker ps -aq | wc -l`" -gt 0 ]]; then
+if [[ "`docker-build ps -aq | wc -l`" -gt 0 ]]; then
     docker_id=`docker ps -a | sed -n "/${name}$/p" | cut -f1 -d " "`
     [[ -n "${docker_id}" ]] && docker stop ${docker_id}
 fi

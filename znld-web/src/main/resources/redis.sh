@@ -12,8 +12,8 @@ if [[ -z "`echo $1 | sed -n '/^[1-9][0-9]*$/p'`" || ! -f $2 ]]; then
         exit 1
 fi
 
-[[ -z "`docker images | sed -n '/redis/p'`" ]] && docker pull redis:latest
-if [[ "`docker ps -aq | wc -l`" -gt 0 ]]; then
+[[ -z "`docker-build images | sed -n '/redis/p'`" ]] && docker pull redis:latest
+if [[ "`docker-build ps -aq | wc -l`" -gt 0 ]]; then
     docker_id=`docker ps -a | sed -n "/${name_prefix}$1$/p" | cut -f1 -d " "`
     [[ -n "${docker_id}" ]] && docker stop "${docker_id}" >> /dev/null && echo "stop ${docker_id}"
 fi

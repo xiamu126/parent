@@ -15,8 +15,8 @@ for i in $@; do
     fi
 done
 
-[[ -z "`docker images | sed -n '/redis/p'`" ]] && docker pull redis:latest
-if [[ "`docker ps -aq | wc -l`" -gt 0 ]]; then
+[[ -z "`docker-build images | sed -n '/redis/p'`" ]] && docker pull redis:latest
+if [[ "`docker-build ps -aq | wc -l`" -gt 0 ]]; then
     case $# in
         3)
             docker_id1=`docker ps -a | sed -n "/${name_prefix}$1$/p" | cut -f1 -d " "`

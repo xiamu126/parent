@@ -2,6 +2,7 @@ server:
   servlet:
     session:
       timeout: 30m
+  port: 8082
 spring:
   task:
     execution:
@@ -30,7 +31,7 @@ spring:
     cache: false
   profiles:
     include: onenet,security,datasource
-    active: dev
+    active: prod
   cache:
     type: redis
   redis:

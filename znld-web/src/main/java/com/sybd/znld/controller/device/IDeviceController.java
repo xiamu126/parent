@@ -1,15 +1,14 @@
 package com.sybd.znld.controller.device;
 
-import com.sybd.ministar.model.dto.Subtitle;
 import com.sybd.znld.controller.device.dto.*;
-import com.sybd.znld.core.ApiResult;
-import com.sybd.znld.model.dto.DeviceInfoParam;
 import com.sybd.znld.onenet.dto.OneNetExecuteArgs;
-
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IDeviceController {
+    DataResult getAvgHistoryData(String regionId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
+    DataResult getAvgHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
     LastDataResult getLastData(Integer deviceId, String dataStreamId, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, Integer limit, HttpServletRequest request);

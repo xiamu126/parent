@@ -5,6 +5,8 @@ import com.sybd.znld.service.rbac.IRbacService;
 import com.sybd.znld.service.znld.IRegionService;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,10 @@ public class RegionController implements IRegionController {
         this.rbacService = rbacService;
     }
 
-    @ApiOperation(value = "获取所有有效的区域")
+    @ApiOperation(value = "获取所有有效区域")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "organId", value = "组织Id", required = true, dataType = "string", paramType = "path")
+    })
     @GetMapping(value="{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public RegionResult getAllRegionWithValidLamp(@PathVariable(name = "organId")String organId, HttpServletRequest request) {

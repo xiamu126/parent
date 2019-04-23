@@ -6,11 +6,11 @@ then
 fi
 
 name=mysql_$1
-[[ -z "`docker images | sed -n '/mysql/p'`" ]] && docker pull mysql:latest
+[[ -z "`docker-build images | sed -n '/mysql/p'`" ]] && docker pull mysql:latest
 
 echo ${name}
 
-if [[ "`docker ps -aq | wc -l`" -gt 0 ]]; then
+if [[ "`docker-build ps -aq | wc -l`" -gt 0 ]]; then
     docker_id=`docker ps -a | sed -n "/${name}$/p" | cut -f1 -d " "`
     [[ -n "${docker_id}" ]] && docker stop ${docker_id};
     docker_id=`docker ps -a | sed -n "/${name}$/p" | cut -f1 -d " "`

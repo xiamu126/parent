@@ -1,5 +1,6 @@
 package com.sybd.znld.config;
 
+import com.sybd.znld.util.MyString;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -16,6 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
@@ -38,25 +40,26 @@ public class RedisConfig extends CachingConfigurerSupport {
     private String host;
     @Value("${spring.redis.port}")
     private Integer port;
+    @Value("${spring.redis.password}")
+    private String password;
     @Value("${spring.profiles.active}")
     private String environment;
 
     @Bean
     public StringRedisTemplate stringRedisTemplate(@Qualifier("MyRedisConnectionFactory") RedisConnectionFactory factory){
-        /*
-         * SpringBoot扩展了ClassLoader，进行分离打包的时候，使用到JdkSerializationRedisSerializer的地方
+
+        /* SpringBoot扩展了ClassLoader，进行分离打包的时候，使用到JdkSerializationRedisSerializer的地方
          * 会因为ClassLoader的不同导致加载不到Class
          * 指定使用项目的ClassLoader
-         *
          * JdkSerializationRedisSerializer默认使用{@link sun.misc.Launcher.AppClassLoader}
-         * SpringBoot默认使用{@link org.springframework.boot.loader.LaunchedURLClassLoader}
-         */
+         * SpringBoot默认使用{@link org.springframework.boot.loader.LaunchedURLClassLoader}*/
+
         return new StringRedisTemplate(factory);
     }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(@Qualifier("MyRedisConnectionFactory") RedisConnectionFactory factory){
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        var redisTemplate = new RedisTemplate<String, Object>();
         redisTemplate.setConnectionFactory(factory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
@@ -72,9 +75,10 @@ public class RedisConfig extends CachingConfigurerSupport {
     @Bean(name = "MyRedisConnectionFactory")
     public RedisConnectionFactory lettuceConnectionFactory(GenericObjectPoolConfig config) {
         // 单机版配置
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(host, port);
-        //redisStandaloneConfiguration.setPassword(RedisPassword.of(password));
-
+        var redisStandaloneConfiguration = new RedisStandaloneConfiguration(host, port);
+        if(!MyString.isEmptyOrNull(password)){
+            redisStandaloneConfiguration.setPassword(RedisPassword.of(password));
+        }
         // 集群版配置
         /*var clusterNodes = "";
         RedisClusterConfiguration redisClusterConfiguration = new RedisClusterConfiguration();
@@ -88,17 +92,14 @@ public class RedisConfig extends CachingConfigurerSupport {
         redisClusterConfiguration.setClusterNodes(nodes);*/
 
         // 客户端配置
-        LettucePoolingClientConfiguration lettuceClientConfiguration =
-                LettucePoolingClientConfiguration.builder()
-                        .poolConfig(config)
-                        .build();
+        var lettuceClientConfiguration = LettucePoolingClientConfiguration.builder().poolConfig(config).build();
         return new LettuceConnectionFactory(redisStandaloneConfiguration, lettuceClientConfiguration);
         //return new LettuceConnectionFactory(redisClusterConfiguration, lettuceClientConfiguration);
     }
 
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redisson() throws IOException {
-        Config config = Config.fromYAML(new ClassPathResource("redisson-single-prod.yml").getInputStream());
+        var config = Config.fromYAML(new ClassPathResource("redisson-single-prod.yml").getInputStream());
         if(this.environment.equalsIgnoreCase("dev")){
             config = Config.fromYAML(new ClassPathResource("redisson-single-dev.yml").getInputStream());
         }
@@ -108,11 +109,9 @@ public class RedisConfig extends CachingConfigurerSupport {
     @Bean
     @Override
     public CacheManager cacheManager() {
-        RedisConnectionFactory factory = lettuceConnectionFactory(genericObjectPoolConfig());
-        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();//.prefixKeysWith("sybd::znld::web");//.entryTtl(Duration.ofSeconds(30));
-        return RedisCacheManager.builder(factory)
-                .cacheDefaults(redisCacheConfiguration)
-                .build();
+        var factory = lettuceConnectionFactory(genericObjectPoolConfig());
+        var redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();//.prefixKeysWith("sybd::znld::web");//.entryTtl(Duration.ofSeconds(30));
+        return RedisCacheManager.builder(factory).cacheDefaults(redisCacheConfiguration).build();
     }
 
     @Bean

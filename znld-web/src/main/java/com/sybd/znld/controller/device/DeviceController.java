@@ -439,44 +439,6 @@ public class DeviceController implements IDeviceController{
 
     }
 
-    @ApiOperation(value = "获取某个设备的所有可用的资源Id和名字，通过设备Id")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path")
-    })
-    @GetMapping(value = "resource/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    @Override
-    public CheckedResourcesResult getCheckedResources(@PathVariable("deviceId") Integer deviceId, HttpServletRequest request) {
-        try{
-            var ret = this.lampService.getCheckedResourceByDeviceId(deviceId);
-            if(ret == null || ret.isEmpty()){
-                return CheckedResourcesResult.fail("获取数据为空");
-            }
-            return CheckedResourcesResult.success(ret);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-        }
-        return CheckedResourcesResult.fail("获取数据失败");
-    }
-
-    @ApiOperation(value = "获取某个设备的所有可用的资源Id和名字，通过组织Id")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "organId", value = "组织Id", required = true, dataType = "string", paramType = "path")
-    })
-    @GetMapping(value = "resource/{organId:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    @Override
-    public CheckedResourcesResult getCheckedResources(@PathVariable("organId") String organId, HttpServletRequest request) {
-        try{
-            var ret = this.lampService.getCheckedResourceByOrganId(organId);
-            if(ret == null || ret.isEmpty()){
-                return CheckedResourcesResult.fail("获取数据为空");
-            }
-            return CheckedResourcesResult.success(ret);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-        }
-        return CheckedResourcesResult.fail("获取数据失败");
-    }
-
     @ApiOperation(value = "新建灯带效果")
     @PostMapping(value = "ministar", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override

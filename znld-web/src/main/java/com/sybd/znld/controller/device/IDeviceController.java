@@ -16,7 +16,5 @@ public interface IDeviceController {
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, Integer limit, String cursor, String sort, HttpServletRequest request);
     ExecuteResult execute(Integer deviceId, OneNetExecuteArgs command, HttpServletRequest request);
     DeviceIdAndNameResult getDeviceIdAndName(String userId, HttpServletRequest request);
-    CheckedResourcesResult getCheckedResources(Integer deviceId, HttpServletRequest request);
-    CheckedResourcesResult getCheckedResources(String organId, HttpServletRequest request);
     ExecuteResult newMiniStar(List<OneNetExecuteArgs> data, HttpServletRequest request);
 }

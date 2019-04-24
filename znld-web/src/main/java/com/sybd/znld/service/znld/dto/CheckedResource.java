@@ -12,6 +12,7 @@ import java.io.Serializable;
 @ApiModel(value = "选中资源的单元值")
 public class CheckedResource implements Serializable {
     @ApiModelProperty(value = "元素Id")
+    @JsonProperty("resourceKey")
     public String dataStreamId;
     @ApiModelProperty(value = "元素的描述")
     public String description;

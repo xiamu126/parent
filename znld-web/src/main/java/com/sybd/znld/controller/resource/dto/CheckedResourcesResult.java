@@ -1,13 +1,16 @@
-package com.sybd.znld.controller.device.dto;
+package com.sybd.znld.controller.resource.dto;
 
 import com.sybd.znld.core.BaseApiResult;
 import com.sybd.znld.service.znld.dto.CheckedResource;
 import io.swagger.annotations.ApiModel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @ApiModel(value = "获取选中资源的返回值")
+@Getter @Setter
 @NoArgsConstructor
 public class CheckedResourcesResult extends BaseApiResult{
     public List<CheckedResource> checkedResources;
@@ -25,13 +28,5 @@ public class CheckedResourcesResult extends BaseApiResult{
     }
     public static CheckedResourcesResult success(List<CheckedResource> checkedResources){
         return new CheckedResourcesResult(0, "", checkedResources);
-    }
-
-    public List<CheckedResource> getCheckedResources() {
-        return checkedResources;
-    }
-
-    public void setCheckedResources(List<CheckedResource> checkedResources) {
-        this.checkedResources = checkedResources;
     }
 }

@@ -10,10 +10,11 @@ import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import java.util.List;
 
 public interface ILampService {
-    boolean isDataStreamIdEnabled(OneNetKey key);
+    boolean isDataStreamIdEnabled(Integer deviceId, OneNetKey key);
     String getImeiByDeviceId(Integer deviceId);
     List<DeviceIdAndDeviceName> getDeviceIdAndDeviceNames(String organId);
     List<CheckedResource> getCheckedResourceByDeviceId(Integer deviceId);
+    List<CheckedResource> getCheckedResourceByOrganId(String organId);
     OneNetResourceModel getResourceByCommandValue(String cmd);
     LampRegionModel addLampToRegion(String lampId, String regionId);
     LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds);

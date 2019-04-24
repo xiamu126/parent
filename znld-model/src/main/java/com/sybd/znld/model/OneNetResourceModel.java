@@ -17,12 +17,10 @@ public class OneNetResourceModel implements Serializable {
     public String description;
     public Short timeout = 5;
     public Short type;
-    public Short status = Status.Monitor;
 
     public boolean isValidBeforeInsert(){
-        if(objId == null || objInstId == null || resId == null || type == null ||status == null) return false;
+        if(objId == null || objInstId == null || resId == null || type == null) return false;
         if(!Type.isValid(type)) return false;
-        if(!Status.isValid(status)) return false;
         if(type == Type.Command && MyString.isEmptyOrNull(value)) return false; // 如果时命令，value不能为空
         return true;
     }
@@ -46,15 +44,5 @@ public class OneNetResourceModel implements Serializable {
         }
     }
 
-    public static class Status{
-        public static final short Monitor = 0;
-        public static final short Skip = 1;
 
-        public static boolean isValid(short v){
-            switch (v){
-                case Monitor: case Skip: return true;
-                default: return false;
-            }
-        }
-    }
 }

@@ -15,8 +15,8 @@ create table authority(
   id                   varchar(32) not null primary key,
   name                 varchar(32) not null comment '名称',
   authority_group_id   varchar(32) not null comment '权限组编号',
-  uri                  varchar(1024) not null default '' comment '具体的路径；默认为空字符串，即不能访问任何路径',
-  status               tinyint not null default 0 comment '0：正常，1：冻结，2：删除'
+  uri                  json not null comment '具体的路径；默认为空字符串，即不能访问任何路径',
+  status               tinyint not null default 0 comment '0：正常，1：删除'
 );
 
 create table user(
@@ -39,8 +39,8 @@ create table organization(
   id                   varchar(32) not null primary key comment '编号',
   name                 varchar(32) not null comment '名称',
   parent_id            varchar(32) not null default '' comment '上级组织编号，空字符串为顶级组织',
-  position             int not null default 0 comment '在当前组织层级的位置',
-  status               tinyint not null default 0 comment '0：正常，1：冻结，2：删除',
+  position             int not null default 0 comment '在当前组织层级中的位置，0为第一个位置',
+  status               tinyint not null default 0 comment '0：正常，1：删除',
   oauth2_client_id     varchar(256) not null comment 'oauth2认证信息，不同于组织表，用于用户名密码授权模式'
 );
 
@@ -48,7 +48,7 @@ create table role(
   id       varchar(32) not null primary key comment '编号',
   name     varchar(32) not null comment '名称',
   organization_id varchar(32) not null comment '此角色所属的组织',
-  status   tinyint not null default 0 comment '0：可用，1：冻结'
+  status   tinyint not null default 0 comment '0：可用，1：删除'
 );
 
 create table user_role(
@@ -77,7 +77,6 @@ begin
   delete from organization where true;
   delete from user where true;
   delete from authority_group where true;
-  delete from organization_authority_group where true;
   delete from authority where true;
   delete from role where true;
   delete from user_role where true;

@@ -1,0 +1,31 @@
+systemLog:
+  verbosity: 5  #日志级别:范围是0-5,0是MongoDB的默认日志级别，5包含了debug信息
+  quiet: false  #安静模式，是否输出日志
+  traceAllExceptions: true
+  path: /var/log/mongodb/mongod.log
+  logAppend: true   #在mongodb重启时,继续往已有的日志文件中追加内容，而不是新建一个文件.
+  logRotate: reopen   #3.0.0,两个值:rename=重命名日志文件，reopen=关闭并重新打开日志文件.如果使用reopen则要使systemLog.logAppend=true.
+  destination: file
+  timeStampFormat: iso8601-local #日志中时间戳的格式:ctime=Wed Dec 31 18:17:54.811,iso8601-utc=1970-01-01T00:00:00.000Z,#iso8601-local=本地时间格式
+
+processManagement:
+  fork: true  # 以守护线程模式在后台运行
+
+net:
+  port: 27017   #mongodb监听的TCP端口
+  bindIp: 0.0.0.0  #允许访问的IP地址集合，不设置默认是127.0.0.1，如果需要设置多个路径可以通过[,]分割，例如:A,B,C
+  bindIpAll: false  #是否绑定所有的IP，允许访问. version:3.6
+  maxIncomingConnections: 65536 #最大连接数，默认65536
+  wireObjectCheck: true    #验证客户端的所有请求，防止客户端插入恶意或者无效的BSON数据，对于高度嵌套的自问当对象，性能影响很小.
+  ipv6: false   #启用或禁用ipv6支持.
+
+storage:
+  dbPath: /data/db
+  indexBuildRetry: true #指定mongodb在下次启动时是否重建不完整的索引,默认:true.
+  journal:
+      enabled: true #启用或禁用耐久性日志以确保数据文件保持有效并可恢复。64bit默认开启,32bit默认关闭.
+      commitIntervalMs: 100 #mongod日志操作之间进程允许的最大时间量(毫秒),范围是1-500,默认值是100，
+
+operationProfiling:
+  mode: slowOp
+  slowOpThresholdMs: 100 #慢操作时间阈值，默认100.

@@ -17,5 +17,6 @@ public interface IDeviceController {
     ExecuteResult execute(Integer deviceId, OneNetExecuteArgs command, HttpServletRequest request);
     DeviceIdAndNameResult getDeviceIdAndName(String userId, HttpServletRequest request);
     CheckedResourcesResult getCheckedResources(Integer deviceId, HttpServletRequest request);
+    CheckedResourcesResult getCheckedResources(String organId, HttpServletRequest request);
     ExecuteResult newMiniStar(List<OneNetExecuteArgs> data, HttpServletRequest request);
 }

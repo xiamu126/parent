@@ -2,3 +2,4 @@
 /target
 znld-web.iml
 *.log
+/logs

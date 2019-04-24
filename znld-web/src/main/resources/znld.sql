@@ -4,19 +4,19 @@ use ZNLD_V4;
 
 create table onenet_resource(
   id                   varchar(32) not null primary key,
-  obj_id               int unsigned not null  comment '',
-  obj_inst_id          int unsigned not null  comment '',
-  res_id               int unsigned not null  comment '',
+  obj_id               int not null  comment '',
+  obj_inst_id          int not null  comment '',
+  res_id               int not null  comment '',
   value                varchar(32) not null  comment '对于命令资源，这个值就是具体的命令，对于一般资源，这个值暂时不用',
   description          varchar(100) not null  comment '',
-  timeout              tinyint unsigned not null default 5  comment '',
-  type                 tinyint unsigned not null default 0 comment '0：命令资源，1：数值资源，2：单位资源，3：状态资源，4：其它资源',
-  status               tinyint unsigned not null default 0 comment '0：需要监测，1：跳过监测即平台不会读取这个资源的值'
+  timeout              tinyint not null default 5  comment '',
+  type                 tinyint not null default 0 comment '0：命令资源，1：数值资源，2：单位资源，3：状态资源，4：其它资源'
 );
 create table lamp_resource(
   id                   varchar(32) not null primary key,
   lamp_id              varchar(32) not null  comment '',
-  onenet_resource_id   varchar(32) not null  comment ''
+  onenet_resource_id   varchar(32) not null  comment '',
+  status               tinyint not null default 0 comment '0：需要监测这个资源，1：跳过监测即平台不会读取这个资源的值'
 );
 create table lamp(
   id                   varchar(32) not null primary key,
@@ -37,9 +37,9 @@ create table lamp_region(
 create table region(
   id                 varchar(32)  not null primary key,
   name               varchar(50)  not null comment '区域名字',
-  type               tinyint unsigned default 0 not null comment '0：对应着真实的物理街道（区域），1：虚拟区域；一盏路灯只能属于一个物理区域，但可以属于多个虚拟区域',
+  type               tinyint default 0 not null comment '0：对应着真实的物理街道（区域），1：虚拟区域；一盏路灯只能属于一个物理区域，但可以属于多个虚拟区域',
   organization_id    varchar(32) not null  comment '所属组织',
-  status             tinyint unsigned default 0 not null comment '0：启用，1：删除'
+  status             tinyint default 0 not null comment '0：启用，1：删除'
 );
 
 create table lamp_camera(
@@ -53,7 +53,7 @@ create table camera(
   rtsp_url         varchar(100) not null,
   rtmp_url         varchar(100) not null,
   record_audio     bit default false not null comment '是否录制声音',
-  status  tinyint unsigned default 0 not null comment '0：启用，1：禁用，2：删除'
+  status  tinyint default 0 not null comment '0：启用，1：禁用，2：删除'
 );
 
 create table http_log(

@@ -1,7 +1,9 @@
 package com.sybd.znld.service.znld.mapper;
 
+import com.sybd.onenet.model.OneNetKey;
 import com.sybd.znld.db.DbSource;
 import com.sybd.znld.model.LampModel;
+import com.sybd.znld.model.OneNetResourceModel;
 import com.sybd.znld.model.dto.DeviceIdAndImei;
 import com.sybd.znld.service.znld.dto.*;
 import org.apache.ibatis.annotations.Mapper;
@@ -30,4 +32,5 @@ public interface LampMapper {
     List<LampAndRegion> selectLampByLampIdAndRegionType(String lampId, Short regionType);
     List<BoundResource> selectBoundResourceByDeviceId(Integer deviceId);
     List<LampModel> selectByRegionId(String regionId);
+    List<LampModel> selectByOrganId(String organId, int count, int position);
 }

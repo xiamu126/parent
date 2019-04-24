@@ -165,4 +165,10 @@ public class RbacServiceTest {
         Assert.assertTrue(matcher.match("/api/v1/user/?", "/api/v1/user/a"));
         Assert.assertFalse(matcher.match("/api/v1/user/?", "/api/v1/user/ab"));
     }
+
+    @Test
+    public void test(){
+        var ret = this.userMapper.selectAuthPackByUserId("a6a96ebc51f111e9804a0242ac110007");
+        log.debug(ret.toString());
+    }
 }

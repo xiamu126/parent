@@ -39,11 +39,11 @@ public class LampService implements ILampService {
     }
 
     @Override
-    public boolean isDataStreamIdEnabled(OneNetKey key) {
+    public boolean isDataStreamIdEnabled(Integer deviceId, OneNetKey key) {
         if(!key.isValid()) return false;
-        var resource = this.oneNetResourceMapper.selectByOneNetKey(key);
-        if(resource == null) return false;
-        return resource.status == OneNetResourceModel.Status.Monitor;
+        var resources = this.lampMapper.selectCheckedResourceByDeviceId(deviceId);
+        if(resources == null || resources.isEmpty()) return false;
+        return resources.stream().anyMatch( r -> r.dataStreamId.equals(key.toDataStreamId()));
     }
 
     @Override
@@ -61,6 +61,16 @@ public class LampService implements ILampService {
     public List<CheckedResource> getCheckedResourceByDeviceId(Integer deviceId) {
         if(!MyNumber.isPositive(deviceId)) return null;
         return this.lampMapper.selectCheckedResourceByDeviceId(deviceId);
+    }
+
+    @Override
+    public List<CheckedResource> getCheckedResourceByOrganId(String organId) {
+        if(!MyString.isUuid(organId)) return null;
+        var ret = this.lampMapper.selectByOrganId(organId,1,0);
+        if(ret == null || ret.isEmpty()) return null;
+        var lamp = ret.get(0);
+        if(lamp == null) return null;
+        return this.getCheckedResourceByDeviceId(lamp.deviceId);
     }
 
     @Override

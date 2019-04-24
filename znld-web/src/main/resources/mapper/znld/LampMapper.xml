@@ -61,10 +61,11 @@
     </select>
 
     <select id="selectCheckedResourceByDeviceId" resultType="com.sybd.znld.service.znld.dto.CheckedResource">
-        select concat(obj_id, '_', obj_inst_id, '_',res_id) as dataStreamId, description from lamp as a
+        select concat(obj_id, '_', obj_inst_id, '_',res_id) as dataStreamId, description
+        from lamp as a
         left join lamp_resource as b on a.id = b.lamp_id
         left join onenet_resource as c on c.id = b.onenet_resource_id
-        where device_id = #{_parameter} and c.status = 0;
+        where device_id = #{_parameter} and b.status = 0;
     </select>
 
     <select id="selectLampByDeviceIdAndRegionType" resultType="com.sybd.znld.service.znld.dto.LampAndRegion">
@@ -95,5 +96,14 @@
         select b.* from lamp_region as a
         left join lamp as b on a.lamp_id = b.id
         where a.region_id = #{regionId};
+    </select>
+
+    <select id="selectByOrganId" resultType="com.sybd.znld.model.LampModel">
+        select a.* from
+        lamp as a
+        left join lamp_region as b on b.lamp_id = a.id
+        left join region as c on c.id = b.region_id
+        where c.organization_id = #{organId}
+        limit #{count} offset #{position}
     </select>
 </mapper>

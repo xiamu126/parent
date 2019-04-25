@@ -86,6 +86,13 @@ public class DeviceController implements IDeviceController{
        return null;
     }
 
+    @ApiOperation(value = "获取设备的某个资源历史数据，指定开始时间、结束时间")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
     @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
@@ -97,6 +104,12 @@ public class DeviceController implements IDeviceController{
         return PrettyHistoryDataResult.success(result);
     }
 
+    @ApiOperation(value = "获取设备的某个资源历史数据，仅指定开始时间，结束时间为当前时间")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
     @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
@@ -131,9 +144,6 @@ public class DeviceController implements IDeviceController{
             if(!MyDateTime.isAllPast(beginTimestamp, endTimestamp) || beginTimestamp > endTimestamp){
                 return DataResult.fail("错误的参数");
             }
-            log.debug(MyDateTime.toLocalDateTime(beginTimestamp).toString());
-            log.debug(MyDateTime.toLocalDateTime(endTimestamp).toString());
-
             var lamps = this.lampService.getLampsByRegionId(regionId);
             if(lamps == null || lamps.isEmpty()){
                 return DataResult.fail("获取数据失败");
@@ -142,7 +152,7 @@ public class DeviceController implements IDeviceController{
             var count = 0;
             for(var lamp: lamps){
                 var ret = this.getAvgHistoryData(lamp.deviceId, dataStreamId, beginTimestamp, endTimestamp, request);
-                if(ret.isOk()){
+                if(ret != null && ret.isOk()){
                     var d = MyNumber.getDouble(ret.value);
                     if(d != null) {
                         sum += d;
@@ -150,8 +160,11 @@ public class DeviceController implements IDeviceController{
                     }
                 }
             }
-            var avg = sum /count;
-            return DataResult.success(MyNumber.toString(avg));
+            if(count > 0){
+                var avg = sum / count;
+                return DataResult.success(MyNumber.toString(avg));
+            }
+            return DataResult.fail("获取数据失败");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -182,24 +195,22 @@ public class DeviceController implements IDeviceController{
             if(!MyDateTime.isAllPast(beginTimestamp, endTimestamp) || beginTimestamp > endTimestamp){
                 return DataResult.fail("错误的参数");
             }
-            log.debug(MyDateTime.toLocalDateTime(beginTimestamp).toString());
-            log.debug(MyDateTime.toLocalDateTime(endTimestamp).toString());
-
             var start = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
             var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
-            if(ret.isOk()){
+            if(ret != null && ret.isOk()){
                 Supplier<Stream<Double>> streamSupplier = () -> ret.data.dataStreams.stream().map(s -> {
                     var p = s.dataPoints.get(0);
+                    if(p == null) return null;
                     return MyNumber.getDouble(p.value);
                 });
-                var count = streamSupplier.get().count();
-                var sum = streamSupplier.get().reduce(0.0, (v1, v2) -> {
-                    if(v1 ==null || v2 == null) return null;
-                    return v1 + v2;
-                });
-                var avg = sum / count;
-                return DataResult.success(MyNumber.toString(avg));
+                var count = streamSupplier.get().filter(Objects::nonNull).count();
+                var sum = streamSupplier.get().filter(Objects::nonNull).reduce(0.0, Double::sum);
+                if(count > 0){
+                    var avg = sum / count;
+                    return DataResult.success(MyNumber.toString(avg));
+                }
+                return DataResult.fail("获取数据失败");
             }
             return DataResult.fail("获取数据失败");
         }catch (Exception ex){

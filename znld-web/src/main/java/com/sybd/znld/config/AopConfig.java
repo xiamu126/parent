@@ -50,9 +50,9 @@ public class AopConfig {
                 httpLog.header = "";
                 httpLog.body = "";
                 httpLog.ip = request.getRemoteAddr();
-                this.logService.addLog(httpLog);
-                log.debug(request.getRemoteHost());
-                log.debug(String.valueOf(request.getRemotePort()));
+                //this.logService.addLog(httpLog);
+                //log.debug(request.getRemoteHost());
+                //log.debug(String.valueOf(request.getRemotePort()));
             }
         }
         try {

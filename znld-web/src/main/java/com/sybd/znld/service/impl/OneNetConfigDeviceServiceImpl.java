@@ -39,8 +39,8 @@ public class OneNetConfigDeviceServiceImpl {
         return this.onenetConfigDeviceMapper.getDeviceIdAndDeviceNames();
     }
 
-    public List<CheckedResource> getCheckedResources(Integer deviceId) {
-        return this.onenetConfigDeviceMapper.getCheckedResources(deviceId);
+    public List<CheckedResource> getResources(Integer deviceId) {
+        return this.onenetConfigDeviceMapper.getResources(deviceId);
     }
 
     public boolean isDataStreamIdEnabled(String dataStreamId) {

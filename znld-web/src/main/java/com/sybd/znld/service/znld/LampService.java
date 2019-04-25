@@ -7,6 +7,7 @@ import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.service.znld.mapper.*;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class LampService implements ILampService {
-    private final Logger log = LoggerFactory.getLogger(LampService.class);
     private final LampMapper lampMapper;
     private final LampResourceMapper lampResourceMapper;
     private final OneNetResourceMapper oneNetResourceMapper;
@@ -64,6 +65,12 @@ public class LampService implements ILampService {
     }
 
     @Override
+    public List<CheckedResource> getCheckedEnvResourceByDeviceId(Integer deviceId) {
+        if(!MyNumber.isPositive(deviceId)) return null;
+        return this.lampMapper.selectCheckedEnvResourceByDeviceId(deviceId);
+    }
+
+    @Override
     public List<CheckedResource> getCheckedResourceByOrganId(String organId) {
         if(!MyString.isUuid(organId)) return null;
         var ret = this.lampMapper.selectByOrganId(organId,1,0);
@@ -71,6 +78,16 @@ public class LampService implements ILampService {
         var lamp = ret.get(0);
         if(lamp == null) return null;
         return this.getCheckedResourceByDeviceId(lamp.deviceId);
+    }
+
+    @Override
+    public List<CheckedResource> getCheckedEnvResourceByOrganId(String organId) {
+        if(!MyString.isUuid(organId)) return null;
+        var ret = this.lampMapper.selectByOrganId(organId,1,0);
+        if(ret == null || ret.isEmpty()) return null;
+        var lamp = ret.get(0);
+        if(lamp == null) return null;
+        return this.getCheckedEnvResourceByDeviceId(lamp.deviceId);
     }
 
     @Override

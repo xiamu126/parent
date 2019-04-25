@@ -28,6 +28,7 @@ public interface LampMapper {
     List<DeviceIdAndImei> selectAllDeviceIdAndImei();
     List<DeviceIdAndDeviceName> selectDeviceIdAndDeviceNames(String organId);
     List<CheckedResource> selectCheckedResourceByDeviceId(Integer deviceId);
+    List<CheckedResource> selectCheckedEnvResourceByDeviceId(Integer deviceId);
     List<LampAndRegion> selectLampByDeviceIdAndRegionType(Integer deviceId, Short regionType);
     List<LampAndRegion> selectLampByLampIdAndRegionType(String lampId, Short regionType);
     List<BoundResource> selectBoundResourceByDeviceId(Integer deviceId);

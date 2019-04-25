@@ -13,14 +13,14 @@ import java.util.List;
 @Getter @Setter
 @NoArgsConstructor
 public class CheckedResourcesResult extends BaseApiResult{
-    public List<CheckedResource> checkedResources;
+    public List<CheckedResource> resources;
 
     public CheckedResourcesResult(Integer code, String msg){
         super(code, msg);
     }
-    public CheckedResourcesResult(Integer code, String msg, List<CheckedResource> checkedResources){
+    public CheckedResourcesResult(Integer code, String msg, List<CheckedResource> resources){
         super(code, msg);
-        this.checkedResources = checkedResources;
+        this.resources = resources;
     }
 
     public static CheckedResourcesResult fail(String msg){

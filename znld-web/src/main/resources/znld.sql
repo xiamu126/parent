@@ -16,7 +16,7 @@ create table lamp_resource(
   id                   varchar(32) not null primary key,
   lamp_id              varchar(32) not null  comment '',
   onenet_resource_id   varchar(32) not null  comment '',
-  status               tinyint not null default 0 comment '0：需要监测这个资源，1：跳过监测即平台不会读取这个资源的值'
+  status               tinyint not null default 0 comment '0：需要监测这个环境资源，1：需要监测这个其它资源，2：跳过监测即平台不会读取这个资源的值，'
 );
 create table lamp(
   id                   varchar(32) not null primary key,

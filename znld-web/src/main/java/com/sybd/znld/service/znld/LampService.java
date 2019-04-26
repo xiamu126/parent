@@ -4,6 +4,7 @@ import com.sybd.onenet.model.OneNetKey;
 import com.sybd.znld.model.*;
 import com.sybd.znld.service.znld.dto.CheckedResource;
 import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
+import com.sybd.znld.service.znld.dto.LampAndCamera;
 import com.sybd.znld.service.znld.mapper.*;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
@@ -184,5 +185,11 @@ public class LampService implements ILampService {
     public List<LampModel> getLampsByRegionId(String regionId) {
         if(!MyString.isUuid(regionId)) return null;
         return this.lampMapper.selectByRegionId(regionId);
+    }
+
+    @Override
+    public LampAndCamera getActiveCameraByDeviceId(Integer deviceId) {
+        if(!MyNumber.isPositive(deviceId)) return null;
+        return this.lampMapper.selectActiveCameraByDeviceId(deviceId);
     }
 }

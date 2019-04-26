@@ -6,6 +6,7 @@ import com.sybd.znld.model.LampRegionModel;
 import com.sybd.znld.model.OneNetResourceModel;
 import com.sybd.znld.service.znld.dto.CheckedResource;
 import com.sybd.znld.service.znld.dto.DeviceIdAndDeviceName;
+import com.sybd.znld.service.znld.dto.LampAndCamera;
 
 import java.util.List;
 
@@ -21,4 +22,5 @@ public interface ILampService {
     LampRegionModel addLampToRegion(String lampId, String regionId);
     LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds);
     List<LampModel> getLampsByRegionId(String regionId);
+    LampAndCamera getActiveCameraByDeviceId(Integer deviceId);
 }

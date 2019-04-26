@@ -51,9 +51,10 @@ create table lamp_camera(
 create table camera(
   id               varchar(32)  not null primary key,
   rtsp_url         varchar(100) not null,
-  rtmp_url         varchar(100) not null,
+  rtmp             json not null,
+  flv_rul          varchar(100) not null,
   record_audio     bit default false not null comment '是否录制声音',
-  status  tinyint default 0 not null comment '0：启用，1：禁用，2：删除'
+  status           tinyint default 0 not null comment '0：启用，1：禁用'
 );
 
 create table http_log(

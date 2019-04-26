@@ -34,4 +34,5 @@ public interface LampMapper {
     List<BoundResource> selectBoundResourceByDeviceId(Integer deviceId);
     List<LampModel> selectByRegionId(String regionId);
     List<LampModel> selectByOrganId(String organId, int count, int position);
+    LampAndCamera selectActiveCameraByDeviceId(Integer deviceId);
 }

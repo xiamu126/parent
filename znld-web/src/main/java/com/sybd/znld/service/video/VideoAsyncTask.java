@@ -1,9 +1,11 @@
 package com.sybd.znld.service.video;
 
 import com.sybd.znld.config.RedisKeyConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacpp.avcodec;
 import org.bytedeco.javacpp.avutil;
 import org.bytedeco.javacv.*;
+import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,14 +14,17 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
 import java.awt.image.BufferedImage;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.*;
 
+@Slf4j
 @Component
 public class VideoAsyncTask {
     private final RedissonClient redissonClient;
-    private final Logger log = LoggerFactory.getLogger(VideoAsyncTask.class);
+    private final RLock locker;
+    private static final int RECURSIVE_DEPTH = 5;
 
     @PreDestroy
     public void preDestroy(){
@@ -29,24 +34,28 @@ public class VideoAsyncTask {
     @Autowired
     public VideoAsyncTask(RedissonClient redissonClient) {
         this.redissonClient = redissonClient;
+        this.locker = this.redissonClient.getLock(RedisKeyConfig.RLOCK_CHANNEL_GLOBAL_REGISTER);
     }
 
     public void  stop(String channelGuid){
         globalUnregister(channelGuid);
     }
 
+    private String getGlobalKey(String channelGuid){
+        return RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
+    }
+
     private String globalRegister(String channelGuid){
-        //全局标记，用于线程循环
-        var globalKey = RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
-        if(redissonClient.getKeys().countExists(globalKey) <= 0){
-            return "";
+        var globalKey = getGlobalKey(channelGuid);
+        if(redissonClient.getKeys().countExists(globalKey) > 0){ // 存在，不能再次注册
+            return null;
         }
-        redissonClient.getBucket(globalKey).set("", 59, TimeUnit.SECONDS); //持续30秒，若无心跳则自动结束
+        redissonClient.getBucket(globalKey).set("init", 59, TimeUnit.SECONDS); //持续59秒，若无心跳则自动结束
         return globalKey;
     }
 
     private void globalUnregister(String channelGuid){
-        var globalKey = RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
+        var globalKey = getGlobalKey(channelGuid);
         redissonClient.getKeys().delete(globalKey);
     }
 
@@ -55,44 +64,53 @@ public class VideoAsyncTask {
     }
 
     public boolean isChannelInUsing(String channelGuid){
-        var globalKey = RedisKeyConfig.CLIENT_CHANNEL_GUID_GLOBAL_PREFIX + channelGuid;
+        var globalKey = getGlobalKey(channelGuid);
         return redissonClient.getKeys().countExists(globalKey) > 0;
+    }
+
+    public boolean heartbeat(String channelGuid){
+        var globalKey = getGlobalKey(channelGuid);
+        if(redissonClient.getKeys().countExists(globalKey) > 0){
+            log.debug("当前频道不存在，" + channelGuid);
+            return false;
+        }
+        redissonClient.getBucket(globalKey).set("heartbeat", 59, TimeUnit.SECONDS); //持续59秒，若无心跳则自动结束
+        return true;
     }
 
     @Async
     public Future<BufferedImage> pickImage(String channelGuid, String rtspPath){
         int width = 1920,height = 1080;
-        FFmpegFrameGrabber grabber = null;
-        try {
-            var globalKey = globalRegister(channelGuid);
-            if(globalKey.equals("")){
-                log.debug("注册频道失败，"+channelGuid);
-                return CompletableFuture.completedFuture(null);
-            }
-            grabber = FFmpegFrameGrabber.createDefault(rtspPath);
-            grabber.setOption("rtsp_transport", "tcp"); //使用tcp的方式，不然会丢包很严重
-            grabber.setImageWidth(width);
-            grabber.setImageHeight(height);
-            grabber.setAudioStream(0);//海康威视的回放视频，回答带出一个stream 1的Audio输入，但为none
-            grabber.start();
-            var frame = grabber.grabImage();
-            var converter = new Java2DFrameConverter();
-            var bufferedImage = converter.convert(frame);
-            return CompletableFuture.completedFuture(bufferedImage);
-        } catch (FrameGrabber.Exception e) {
-            log.error(e.getMessage());
-        } finally {
-            stop(channelGuid);
+        var globalKey = globalRegister(channelGuid);
+        if(globalKey != null){// 如果已经有在看视频，那么截图就不能用了
+            FFmpegFrameGrabber grabber = null;
             try {
-                if (grabber != null) {
-                    grabber.stop();
-                    grabber.release();
+                grabber = FFmpegFrameGrabber.createDefault(rtspPath);
+                grabber.setOption("rtsp_transport", "tcp"); //使用tcp的方式，不然会丢包很严重
+                grabber.setImageWidth(width);
+                grabber.setImageHeight(height);
+                grabber.setAudioStream(0);//海康威视的回放视频，回答带出一个stream 1的Audio输入，但为none
+                grabber.start();
+                var frame = grabber.grabImage();
+                var converter = new Java2DFrameConverter();
+                var bufferedImage = converter.convert(frame);
+                return CompletableFuture.completedFuture(bufferedImage);
+            } catch (FrameGrabber.Exception ex) {
+                log.error(ex.getMessage());
+            } finally {
+                try {
+                    if (grabber != null) {
+                        grabber.stop();
+                        grabber.release();
+                    }
+                } catch (FrameGrabber.Exception ex) {
+                    log.error(ex.getMessage());
                 }
-            } catch (FrameGrabber.Exception e) {
-                log.error(e.getMessage());
+                log.debug("截取图片结束，结束视频推流");
+                globalUnregister(channelGuid);
             }
-            log.debug("截取图片结束，结束视频推流");
         }
+        // 其它情况意味着错误
         return CompletableFuture.completedFuture(null);
     }
 
@@ -110,8 +128,8 @@ public class VideoAsyncTask {
             * */
             //推流继续与否主要看这个全局标记，本地的频道记录
             var globalKey = globalRegister(channelGuid);
-            if(globalKey.equals("")){
-                log.error("当前频道已经在全局缓存注册过，"+channelGuid);
+            if(globalKey == null){
+                log.debug("获取globalKey失败，当前频道已经在全局缓存注册过，" + channelGuid);
                 return;
             }
             grabber = FFmpegFrameGrabber.createDefault(rtspPath);
@@ -130,7 +148,8 @@ public class VideoAsyncTask {
             recorder.setFrameRate(25);
             recorder.setPixelFormat(avutil.AV_PICTURE_TYPE_NONE);
             recorder.start();
-            while (redissonClient.getKeys().countExists(globalKey) > 0) {
+            var keys = redissonClient.getKeys();
+            while (keys.countExists(globalKey) > 0) {
                 //每个运行中的线程必然关联一个全局标记，因此若全局标记失效则立即结束线程
                 var frame = grabber.grabImage();
                 recorder.record(frame);
@@ -156,7 +175,7 @@ public class VideoAsyncTask {
                 log.error(e.getMessage());
             }
             log.debug("视频推流结束");
-            this.stop(channelGuid);
+            globalUnregister(channelGuid);
         }
     }
 }

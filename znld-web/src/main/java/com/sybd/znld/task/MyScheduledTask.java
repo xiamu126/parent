@@ -5,6 +5,7 @@ import com.sybd.znld.onenet.OneNetService;
 import com.sybd.znld.onenet.dto.CommandParams;
 import com.sybd.znld.service.znld.ILampService;
 import com.sybd.znld.service.znld.IVideoService;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class MyScheduledTask {
     private final ILampService lampService;
@@ -24,8 +26,6 @@ public class MyScheduledTask {
     private final IOneNetService oneNetService;
     private static Map<String, RLock> lockers;
     private static final String heartBeat = "oneNetHeartBeat";
-
-    private final Logger log = LoggerFactory.getLogger(MyScheduledTask.class);
 
     @PreDestroy
     public void preDestroy(){
@@ -75,10 +75,5 @@ public class MyScheduledTask {
         }else{
             log.debug("获取锁失败");
         }
-    }
-
-    //@Scheduled(initialDelay = 1000, fixedDelay = 1000*10)
-    public void videoCheck(){
-        this.videoService.verify();
     }
 }

@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 @DbSource("znld")
-public interface VideoConfigMapper {
-    CameraModel getConfigByCameraId(String cameraId);
-    int setConfigByCameraId(CameraModel model);
+public interface CameraMapper {
+    CameraModel selectById(String id);
+    int updateById(CameraModel model);
 }

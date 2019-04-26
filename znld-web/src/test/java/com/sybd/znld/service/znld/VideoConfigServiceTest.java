@@ -30,15 +30,15 @@ public class VideoConfigServiceTest {
 
     @Test
     public void getById(){
-        var ret = this.videoConfigService.getConfigByCameraId("30040c0e4bb011e993a60242ac110006");
+        var ret = this.videoConfigService.getCameraById("30040c0e4bb011e993a60242ac110006");
         Assert.notNull(ret);
     }
 
     @Test
     public void setById(){
-        var model = this.videoConfigService.getConfigByCameraId("30040c0e4bb011e993a60242ac110006");
+        var model = this.videoConfigService.getCameraById("30040c0e4bb011e993a60242ac110006");
         model.recordAudio = false;
-        var ret = this.videoConfigService.setConfigByCameraId(model);
+        var ret = this.videoConfigService.setCameraById(model);
         Assert.notNull(ret);
         Assert.isTrue(!ret.recordAudio);
     }

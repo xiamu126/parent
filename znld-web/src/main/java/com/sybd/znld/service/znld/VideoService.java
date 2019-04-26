@@ -1,15 +1,15 @@
 package com.sybd.znld.service.znld;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.config.RedisKeyConfig;
 import com.sybd.znld.model.CameraModel;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.service.video.VideoAsyncTask;
-import com.sybd.znld.service.znld.mapper.VideoConfigMapper;
+import com.sybd.znld.service.znld.mapper.CameraMapper;
 import com.sybd.znld.util.MyString;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
@@ -17,26 +17,28 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+@Slf4j
 @Service
 public class VideoService extends BaseService implements IVideoService {
     private final RedissonClient redissonClient;
-    private final Logger log = LoggerFactory.getLogger(VideoService.class);
-    private final VideoConfigMapper videoConfigMapper;
+    private final CameraMapper cameraMapper;
     private final VideoAsyncTask videoAsyncTask;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public VideoService(VideoConfigMapper videoConfigMapper,
+    public VideoService(CameraMapper cameraMapper,
                         CacheManager cacheManager,
                         TaskScheduler taskScheduler, ProjectConfig projectConfig,
                         RedissonClient redissonClient,
                         VideoAsyncTask videoAsyncTask) {
         super(cacheManager, taskScheduler, projectConfig);
-        this.videoConfigMapper = videoConfigMapper;
+        this.cameraMapper = cameraMapper;
         this.redissonClient = redissonClient;
         this.videoAsyncTask = videoAsyncTask;
     }
@@ -48,65 +50,55 @@ public class VideoService extends BaseService implements IVideoService {
     }
 
     @Override
-    public CameraModel getConfigByCameraId(String cameraId) {
+    public CameraModel getCameraById(String cameraId) {
         if(!MyString.isUuid(cameraId)) return null;
-        return this.videoConfigMapper.getConfigByCameraId(cameraId);
+        return this.cameraMapper.selectById(cameraId);
     }
 
     @Override
-    public CameraModel setConfigByCameraId(CameraModel model) {
+    public CameraModel setCameraById(CameraModel model) {
         if(model == null || !MyString.isUuid(model.id)) return null;
-        if(videoConfigMapper.setConfigByCameraId(model) > 0) return model;
+        if(cameraMapper.updateById(model) > 0) return model;
         return null;
     }
 
     @Override
     public boolean push(String channelGuid) {
-        var videoConfig = videoConfigMapper.getConfigByCameraId(channelGuid);
-        if(videoConfig == null){
-            log.error("获取摄像头配置为空，"+channelGuid);
+        if(!MyString.isUuid(channelGuid)) {
+            log.error("channelGuid错误，"+channelGuid);
             return false;
         }
-        var rtspUrl = videoConfig.getRtspUrl();
-        var rtmpUrl = videoConfig.getRtmpUrl();
-        var recordAudio = videoConfig.getRecordAudio();
-        this.videoAsyncTask.push(channelGuid, rtspUrl, rtmpUrl, recordAudio ? 1 : 0);
-        return true;
-    }
-
-    private String getPersistentKey(String redisKey){
-        String channel = getChannel(redisKey);
-        return RedisKeyConfig.CLIENT_CHANNEL_GUID_PERSISTENCE_PREFIX+channel;//client:channelGuid:persistence:2
-    }
-
-    private String getChannel(String redisKey){
-        int index = redisKey.lastIndexOf(":"); //client:channelGuid:2
-        return redisKey.substring(index+1);
+        try {
+            var camera = cameraMapper.selectById(channelGuid);
+            if(camera == null){
+                log.error("获取摄像头配置为空，"+channelGuid);
+                return false;
+            }
+            var rtspUrl = camera.rtspUrl;
+            var objectMapper = new ObjectMapper();
+            var rtmp = objectMapper.readValue(camera.rtmp, CameraModel.Rtmp.class);
+            if(rtmp == null) return false;
+            var recordAudio = camera.recordAudio;
+            this.videoAsyncTask.push(channelGuid, rtspUrl, rtmp.liveUrl, recordAudio ? 1 : 0);
+            try{
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 3000));
+            }catch (InterruptedException ex) {
+                log.error(ex.getMessage()); // 发生超时异常，意味着推流成功，进入了循环状态
+            }
+            var tmp = this.videoAsyncTask.isChannelInUsing(channelGuid);
+            if(!tmp){
+                log.error("已经推送，但isChannelInUsing返回false");
+            }
+            return tmp;
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+        }
+       return false;
     }
 
     @Override
     public void stop(String channelGuid){
         this.videoAsyncTask.stop(channelGuid);
-    }
-
-    private String getRedisKey(String redisPersistenceKey){//client:channelGuid:persistence:2
-        var channel = getChannel(redisPersistenceKey);
-        return RedisKeyConfig.CLIENT_CHANNEL_GUID_PREFIX+channel;//client:channelGuid:2
-    }
-
-    @Override
-    public void verify(){//这个函数已经没有必要了，因为globalKey会自动过期
-        var persistentKeys = redissonClient.getKeys().getKeysByPattern(RedisKeyConfig.CLIENT_CHANNEL_GUID_PERSISTENCE_PREFIX_MATCH);//client:channelGuid:persistence:*
-        for(var key: persistentKeys){ // client:channelGuid:persistence:2
-            var redisKey = getRedisKey(key);
-            if(this.redissonClient.getKeys().countExists(redisKey) > 0) {
-                log.debug("当前key有效："+ redisKey+",不关闭");
-            }else{
-                var channelGuid = getChannel(redisKey);
-                log.debug("当前key无效："+ redisKey+"，关闭channel："+channelGuid);
-                this.stop(channelGuid);
-            }
-        }
     }
 
     @Override
@@ -121,21 +113,26 @@ public class VideoService extends BaseService implements IVideoService {
 
     @Override
     public BufferedImage pickImage(String channelGuid){
-        var videoConfig = videoConfigMapper.getConfigByCameraId(channelGuid);
-        if(videoConfig == null){
+        var camera = cameraMapper.selectById(channelGuid);
+        if(camera == null){
             log.error("获取摄像头配置为空，"+channelGuid);
             return null;
         }
-        var rtspUrl = videoConfig.getRtspUrl();
+        var rtspUrl = camera.rtspUrl;
         var result = videoAsyncTask.pickImage(channelGuid, rtspUrl);
         try {
-            /*while(!result.isDone()){
+            while(!result.isDone()){
                 Thread.sleep(1000);
-            }*/
-            return result.get(30, TimeUnit.SECONDS); // 等待3秒
-        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            }
+            return result.get();
+        } catch (InterruptedException | ExecutionException ex) {
             log.error(ex.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public boolean heartbeat(String channelGuid) {
+        return this.videoAsyncTask.heartbeat(channelGuid);
     }
 }

@@ -113,4 +113,12 @@
         where c.organization_id = #{organId}
         limit #{count} offset #{position}
     </select>
+
+    <select id="selectActiveCameraByDeviceId" resultType="com.sybd.znld.service.znld.dto.LampAndCamera">
+        select device_id, device_name, c.id as cameraId, c.rtsp_url, c.rtmp, c.record_audio, c.flv_url
+        from lamp as a
+        left join lamp_camera as b on b.lamp_id = a.id
+        left join camera as c on c.id = b.camera_id
+        where a.device_id = #{deviceId} and a.status != 2 and c.status != 1;
+    </select>
 </mapper>

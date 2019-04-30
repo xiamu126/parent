@@ -1,4 +1,4 @@
-package com.sybd.znld.validate;
+package com.sybd.znld.znld.validate;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

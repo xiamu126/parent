@@ -18,7 +18,7 @@
     <dependencies>
         <dependency>
             <groupId>com.sybd.znld</groupId>
-            <artifactId>znld-model</artifactId>
+            <artifactId>model</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -101,7 +101,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sybd.security.oauth2.server.OAuth2Application</mainClass>
+                            <mainClass>com.sybd.znld.security.oauth2.server.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.znld.service.znld.mapper.LampResourceMapper">
+    <select id="selectByLampIdAndResourceId" resultType="com.sybd.znld.model.lamp.LampResourceModel">
+        select * from lamp_resource where lamp_id = #{lampId} and onenet_resource_id = #{resourceId};
+    </select>
+
+    <select id="selectByLampId" resultType="com.sybd.znld.model.lamp.LampResourceModel">
+        select * from lamp_resource where lamp_id = #{lampId};
+    </select>
+
+    <select id="selectByCommandValue" resultType="com.sybd.znld.model.lamp.LampResourceModel">
+        select * from lamp_resource where value = #{_parameter} and type = 0;
+    </select>
+
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampRegionModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert into lamp_resource(id, lamp_id, onenet_resource_id) values (#{id}, #{lampId}, #{oneNetResourceId});
+    </insert>
+</mapper>

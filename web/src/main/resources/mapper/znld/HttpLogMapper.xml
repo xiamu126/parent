@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.znld.service.znld.mapper.HttpLogMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.HttpLogModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert http_log(id, path, method, header, body, ip, trigger_time)
+        VALUES (#{id}, #{path}, #{method}, #{header}, #{body}, #{ip}, #{triggerTime});
+    </insert>
+
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.HttpLogModel">
+        select * from http_log where id = #{_paramter};
+    </select>
+
+    <select id="selectByTimeAfter" resultType="com.sybd.znld.model.lamp.HttpLogModel">
+        select * from http_log where trigger_time > #{_paramter};
+    </select>
+
+    <select id="selectByTimeBetween" resultType="com.sybd.znld.model.lamp.HttpLogModel">
+        select * from http_log where trigger_time between #{begin} and #{end};
+    </select>
+
+    <select id="selectByTimeAfterAndMethod" resultType="com.sybd.znld.model.lamp.HttpLogModel">
+        select * from http_log where trigger_time > #{_paramter} and method = #{method};
+    </select>
+
+    <select id="selectByTimeBetweenAndMethod" resultType="com.sybd.znld.model.lamp.HttpLogModel">
+        select * from http_log
+        where method = #{method} and trigger_time <![CDATA[ <= ]]> #{begin} and trigger_time > #{end};
+    </select>
+
+    <select id="selectByAll" resultType="com.sybd.znld.model.lamp.HttpLogModel">
+        select * from http_log
+        where <if test="id != null and id != '' ">id = #{id} and</if>
+        path = #{path} and method = #{method} and trigger_time = #{triggerTime} and ip = #{ip}
+        and header = #{header} and body = #{body}
+    </select>
+
+</mapper>

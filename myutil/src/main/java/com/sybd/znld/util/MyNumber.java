@@ -1,4 +1,4 @@
-package com.sybd.znld.util;
+package com.sybd.znld.znld.util;
 
 import java.util.Random;
 
@@ -17,6 +17,18 @@ public class MyNumber {
     public static Double getDouble(String num){
         try{
             return Double.parseDouble(num);
+        }catch (Exception ignored){}
+        return null;
+    }
+    public static Integer getInteger(Object num){
+        try{
+            return (Integer) num;
+        }catch (Exception ignored){}
+        return null;
+    }
+    public static Long getLong(Object num){
+        try{
+            return (Long) num;
         }catch (Exception ignored){}
         return null;
     }

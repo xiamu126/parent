@@ -1,4 +1,4 @@
-package com.sybd.znld.util;
+package com.sybd.znld.znld.util;
 
 public class MyByte {
     public static boolean startsWith(byte[] source, byte[] dest) {

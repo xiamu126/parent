@@ -1,0 +1,21 @@
+version: '3.7'
+services:
+  api:
+    container_name: znld-video
+    image: openjdk:11.0.3-jre-slim-stretch
+    restart: on-failure
+    working_dir: /video
+    ports:
+      - target: 8083
+        published: 8083
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./
+        target: /video
+    command: java -jar -Duser.timezone=Asia/Shanghai app.jar

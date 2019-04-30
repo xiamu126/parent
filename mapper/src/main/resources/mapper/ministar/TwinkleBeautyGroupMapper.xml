@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.ministar.TwinkleBeautyGroupMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.ministar.TwinkleBeautyGroupModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert twinkle_beauty_group(id, begin_time, end_time, status, region_id)
+        VALUES (#{id}, #{beginTime}, #{endTime}, #{status}, #{regionId});
+    </insert>
+
+    <select id="selectById" resultType="com.sybd.znld.model.ministar.TwinkleBeautyGroupModel">
+        select * from twinkle_beauty_group where id = #{_parameter};
+    </select>
+    <select id="selectByRegionId" resultType="com.sybd.znld.model.ministar.TwinkleBeautyGroupModel">
+        select * from twinkle_beauty_group where region_id = #{_parameter};
+    </select>
+    <select id="selectActiveByRegionId" resultType="com.sybd.znld.model.ministar.TwinkleBeautyGroupModel">
+        select * from twinkle_beauty_group where region_id = #{regionId} and status in (0,1);
+    </select>
+    <select id="selectActiveByRegionIdAndIntersectWith" resultType="com.sybd.znld.model.ministar.TwinkleBeautyGroupModel">
+        select * from twinkle_beauty_group
+        where region_id = #{regionId} and status in (0,1) and (#{beginTime} >= begin_time or #{endTime} <![CDATA[ <= ]]> end_time);
+    </select>
+</mapper>

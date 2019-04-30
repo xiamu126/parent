@@ -48,23 +48,44 @@
         <mysql.version>5.1.47</mysql.version>
         <modelmapper.version>2.3.2</modelmapper.version>
         <kaptcha.version>2.3.2</kaptcha.version>
-        <javacv.version>1.4.4</javacv.version>
+        <javacvVersion>1.5</javacvVersion>
+        <javacvFfmpegVersion>4.1.3-1.5</javacvFfmpegVersion>
         <redisson.version>3.10.4</redisson.version>
         <swaggerVersion>2.9.2</swaggerVersion>
         <mybatis.version>2.0.0</mybatis.version>
         <guava.version>27.0.1-jre</guava.version>
         <commonsValidator.version>1.6</commonsValidator.version>
         <springVersion>2.1.3.RELEASE</springVersion>
-        <myutil.version>1.3.10</myutil.version>
-        <znld-model.version>0.0.1</znld-model.version>
+        <springSecurityVersion>5.1.5.RELEASE</springSecurityVersion>
+
         <netty-version>4.1.34.Final</netty-version>
         <jacksonVersion>2.9.8</jacksonVersion>
         <mongodbVersion>3.10.2</mongodbVersion>
         <javatuplesVersion>1.2</javatuplesVersion>
+
+        <myutilVersion>1.3.10</myutilVersion>
+        <znldModelVersion>0.0.2</znldModelVersion>
+        <znldConfigVersion>0.0.2</znldConfigVersion>
+        <znldAccountVersion>0.0.2</znldAccountVersion>
+        <znldVideoVersion>0.0.2</znldVideoVersion>
+        <znldServiceVersion>0.0.2</znldServiceVersion>
+        <znldOAuth2ServerVersion>0.0.2</znldOAuth2ServerVersion>
+        <znldMapperVersion>0.0.2</znldMapperVersion>
+
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>${springSecurityVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sybd.znld</groupId>
+                <artifactId>mapper</artifactId>
+                <version>${znldMapperVersion}</version>
+            </dependency>
             <dependency>
                 <groupId>org.javatuples</groupId>
                 <artifactId>javatuples</artifactId>
@@ -95,16 +116,43 @@
                 <artifactId>netty-all</artifactId>
                 <version>${netty-version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.sybd.znld</groupId>
-                <artifactId>znld-model</artifactId>
-                <version>${znld-model.version}</version>
+                <artifactId>model</artifactId>
+                <version>${znldModelVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sybd.znld</groupId>
+                <artifactId>config</artifactId>
+                <version>${znldConfigVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sybd.znld</groupId>
+                <artifactId>account</artifactId>
+                <version>${znldAccountVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sybd.znld</groupId>
+                <artifactId>video</artifactId>
+                <version>${znldVideoVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sybd.znld</groupId>
+                <artifactId>service</artifactId>
+                <version>${znldServiceVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sybd.znld</groupId>
+                <artifactId>oauth2-server</artifactId>
+                <version>${znldOAuth2ServerVersion}</version>
             </dependency>
             <dependency>
                 <groupId>com.sybd.znld</groupId>
                 <artifactId>myutil</artifactId>
-                <version>${myutil.version}</version>
+                <version>${myutilVersion}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -164,7 +212,12 @@
             <dependency>
                 <groupId>org.bytedeco</groupId>
                 <artifactId>javacv-platform</artifactId>
-                <version>${javacv.version}</version>
+                <version>${javacvVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bytedeco</groupId>
+                <artifactId>ffmpeg-platform</artifactId>
+                <version>${javacvFfmpegVersion}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -172,6 +225,30 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>testCompile</id>
+                            <phase>test-compile</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <release>11</release>
+                        <!--<forceJavacCompilerUse>true</forceJavacCompilerUse>-->
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
@@ -201,37 +278,14 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>compile</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>testCompile</id>
-                            <phase>test-compile</phase>
-                            <goals>
-                                <goal>testCompile</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <release>11</release>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <configuration>
-                        <finalName>${project.artifactId}</finalName>
+                        <finalName>app</finalName>
                         <archive>
                             <manifest>
                                 <addClasspath>true</addClasspath>
                                 <classpathPrefix>libs/</classpathPrefix>
-                                <mainClass>com.sybd.znld.ZnldApplication</mainClass>
+                                <mainClass>com.sybd.znld.App</mainClass>
                             </manifest>
                         </archive>
                     </configuration>
@@ -241,12 +295,17 @@
     </build>
 
     <modules>
-        <module>znld-web</module>
-        <module>znld-socket</module>
+        <module>web</module>
+        <module>socket</module>
         <module>oauth2-server</module>
         <module>oauth2-resource</module>
-        <module>znld-model</module>
+        <module>model</module>
         <module>myutil</module>
+        <module>video</module>
+        <module>account</module>
+        <module>service</module>
+        <module>config</module>
+        <module>mapper</module>
     </modules>
 
 </project>

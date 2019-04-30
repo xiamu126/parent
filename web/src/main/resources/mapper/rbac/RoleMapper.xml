@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.znld.service.rbac.mapper.RoleMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.rbac.RoleModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert role(id, name, type, status)
+        values (#{id},#{name},#{type},#{status})
+    </insert>
+
+    <select id="selectById" resultType="com.sybd.znld.model.rbac.RoleModel">
+        select * from role where id = #{id};
+    </select>
+    <select id="selectByName" resultType="com.sybd.znld.model.rbac.RoleModel">
+        select * from role where name = #{name};
+    </select>
+
+    <select id="selectByNameAndOrganId" resultType="com.sybd.znld.model.rbac.RoleModel">
+        select * from role where name = #{name} and organization_id = #{organizationId};
+    </select>
+</mapper>

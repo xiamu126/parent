@@ -60,7 +60,7 @@ captcha:
   border-color: 105,179,90
   font-color: red
   image-width: 150
-  image-height: 42
-  font-size: 30
+  image-height: 56
+  font-size: 50
   length: 4
   font-names: 宋体,楷体,微软雅黑

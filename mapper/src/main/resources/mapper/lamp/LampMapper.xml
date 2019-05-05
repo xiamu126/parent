@@ -41,10 +41,6 @@
         select distinct imei from lamp where device_id=#{deviceId};
     </select>
 
-    <resultMap id="DeviceIdAndIMEI" type="com.sybd.znld.model.lamp.dto.DeviceIdAndImei">
-        <result column="deviceId" jdbcType="INTEGER" property="device_id"/>
-        <result column="imei" jdbcType="VARCHAR" property="imei"/>
-    </resultMap>
     <select id="selectAllDeviceIdAndImei" resultType="com.sybd.znld.model.lamp.dto.DeviceIdAndImei">
         select distinct device_id, imei from lamp;
     </select>
@@ -54,10 +50,9 @@
         <result column="deviceName" jdbcType="VARCHAR" property="device_name"/>
     </resultMap>
     <select id="selectDeviceIdAndDeviceNames" resultMap="DeviceIdAndDeviceNames">
-        select distinct device_id, device_name from lamp
-        where id in (
-            select lamp_id from lamp_region
-            where region_id in (select id from region where organization_id = #{organId}));
+        with regionIds as (select id from region where organization_id = #{organId}),
+             lampIds as (select lamp_id from lamp_region where region_id in (select * from regionIds))
+        select distinct device_id, device_name from lamp where id in (select * from lampIds) and status != 2;
     </select>
 
     <select id="selectCheckedResourceByDeviceId" resultType="com.sybd.znld.model.lamp.dto.CheckedResource">

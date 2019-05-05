@@ -27,13 +27,8 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
     public static void setDataSource(String dataSource) {
         var stack = threadLocal.get();
         if(stack == null){
-            synchronized (DynamicDataSource.class){
-                stack = threadLocal.get();
-                if(stack == null){
-                    stack = new ArrayDeque<>();
-                    threadLocal.set(stack);
-                }
-            }
+            stack = new ArrayDeque<>();
+            threadLocal.set(stack);
         }
         stack.push(dataSource);
     }

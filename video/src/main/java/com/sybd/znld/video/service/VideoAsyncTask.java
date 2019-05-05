@@ -84,7 +84,7 @@ public class VideoAsyncTask {
         var map = redissonClient.getMapCache(globalKey);
         if(map == null) {
             if(depth < RECURSIVE_DEPTH) {
-                return isChannelInUsing(channelGuid);
+                return isChannelInUsing(channelGuid, ++depth);
             }
             throw new RuntimeException("获取redis map失败");
         }else {
@@ -160,6 +160,7 @@ public class VideoAsyncTask {
                 saveImage(channelGuid, bufferedImage);
                 recorder.record(frame);
             }
+            log.debug("视频推流结束");
         } catch (FrameGrabber.Exception | FrameRecorder.Exception ex) {
             log.error(ex.getMessage());
             Arrays.stream(ex.getStackTrace()).forEach(t -> log.error(t.toString()));
@@ -181,7 +182,6 @@ public class VideoAsyncTask {
             } catch (FrameRecorder.Exception e) {
                 log.error(e.getMessage());
             }
-            log.debug("视频推流结束");
         }
     }
 }

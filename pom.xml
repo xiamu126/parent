@@ -295,7 +295,7 @@
     </build>
 
     <modules>
-        <module>web</module>
+        <module>api</module>
         <module>socket</module>
         <module>oauth2-server</module>
         <module>oauth2-resource</module>

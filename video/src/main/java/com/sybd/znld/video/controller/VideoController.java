@@ -52,7 +52,7 @@ public class VideoController {
         if(jsonData == null || !jsonData.isValid()) return ApiResult.fail("错误的参数");
         try{
             if(jsonData.cmd.equals("push")){
-                if(videoService.push(jsonData.channelGuid)){
+                if(videoService.push(jsonData.channelGuid) && this.videoService.isChannelInUsing(jsonData.channelGuid)){
                     return ApiResult.success("推流成功");
                 }
                 return ApiResult.fail("推流失败");

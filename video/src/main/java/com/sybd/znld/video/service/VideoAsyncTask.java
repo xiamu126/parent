@@ -26,6 +26,10 @@ public class VideoAsyncTask {
     private static final int RECURSIVE_DEPTH = 50;
     private static ConcurrentHashMap<String ,BufferedImage> images = new ConcurrentHashMap<>(1024);
 
+    public enum HeartbeatResult{
+        SUCCESS, FAILED,TERMINATED
+    }
+
     @PreDestroy
     public void preDestroy(){
         log.debug("VideoAsyncTask关闭线程池");
@@ -51,8 +55,11 @@ public class VideoAsyncTask {
         }
         var globalKey = getGlobalKey(channelGuid);
         var map = redissonClient.getMapCache(globalKey);
+        if(map == null) return null;
         var count = MyNumber.getLong(map.get("init"));
         map.put("init", count == null ? 0 : ++count);
+        count = MyNumber.getLong(map.get("init"));
+        log.debug("init: " + (count == null ? "null" : count.toString()));
         map.put("heartbeat", 0, 59, TimeUnit.SECONDS);
         return globalKey;
     }
@@ -72,25 +79,12 @@ public class VideoAsyncTask {
             return false;
         }
         var map = redissonClient.getMapCache(globalKey);
-        if(map == null) return isChannelInUsing(channelGuid, 0);
-        var tmp = map.get("heartbeat");
-        return tmp != null;
-    }
-    public boolean isChannelInUsing(String channelGuid, int depth){
-        var globalKey = getGlobalKey(channelGuid);
-        if(redissonClient.getKeys().countExists(globalKey) <= 0){
+        if(map.get("init") == null){ // 可能视频异常导致被globalUnregister了
+            globalUnregister(channelGuid); // 确保关闭
             return false;
         }
-        var map = redissonClient.getMapCache(globalKey);
-        if(map == null) {
-            if(depth < RECURSIVE_DEPTH) {
-                return isChannelInUsing(channelGuid, ++depth);
-            }
-            throw new RuntimeException("获取redis map失败");
-        }else {
-            var tmp = map.get("heartbeat");
-            return tmp != null;
-        }
+        var tmp = map.get("heartbeat");
+        return tmp != null;
     }
 
     public boolean heartbeat(String channelGuid){
@@ -99,12 +93,14 @@ public class VideoAsyncTask {
             return false;
         }
         var map = redissonClient.getMapCache(globalKey);
-        if(map == null) return false;
+        if(map.get("init") == null){ // 可能视频异常导致被globalUnregister了
+            globalUnregister(channelGuid); // 确保关闭
+            return false;
+        }
         var count = MyNumber.getLong(map.get("heartbeat"));
         map.put("heartbeat", count == null ? 0 : ++count, 59, TimeUnit.SECONDS); //持续59秒，若无心跳则自动结束
-        //redissonClient.getBucket(globalKey).set("heartbeat", 59, TimeUnit.SECONDS); //持续59秒，若无心跳则自动结束
         count = MyNumber.getLong(map.get("heartbeat"));
-        log.debug(count == null ? "null" : count.toString());
+        log.debug("heartbeat: " + (count == null ? "null" : count.toString()));
         return true;
     }
 
@@ -134,6 +130,9 @@ public class VideoAsyncTask {
                 log.debug("获取globalKey失败，当前频道已经在推流中，" + channelGuid);
                 return;
             }
+            // 设置日志级别
+            avutil.av_log_set_level(avutil.AV_LOG_PANIC);
+            //
             grabber = FFmpegFrameGrabber.createDefault(rtspPath);
             grabber.setOption("rtsp_transport", "tcp"); //使用tcp的方式，不然会丢包很严重
             //一直报错的原因！！！就是因为是 2560 * 1440的太大了。。
@@ -164,6 +163,7 @@ public class VideoAsyncTask {
         } catch (FrameGrabber.Exception | FrameRecorder.Exception ex) {
             log.error(ex.getMessage());
             Arrays.stream(ex.getStackTrace()).forEach(t -> log.error(t.toString()));
+            globalUnregister(channelGuid);
         } finally {
             try {
                 if (grabber != null) {

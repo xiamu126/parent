@@ -1,8 +1,8 @@
 package com.sybd.znld.web.controller.device.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.web.onenet.dto.GetDataStreamByIdResult;
-import com.sybd.znld.znld.core.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @ApiModel(value = "获取设备当前最新数据的返回值")
 @NoArgsConstructor
 @Getter @Setter
-public class LastDataResult extends BaseApiResult{
+public class LastDataResult extends BaseApiResult {
     @ApiModelProperty(value = "最后的更新时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", locale = "CN")
     public LocalDateTime updateAt;

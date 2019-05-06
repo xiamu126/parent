@@ -2,6 +2,7 @@ package com.sybd.znld.video.controller;
 
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.service.lamp.ILampService;
+import com.sybd.znld.video.controller.dto.VideoInfoResult;
 import com.sybd.znld.video.service.IVideoService;
 import com.sybd.znld.video.service.dto.VideoData;
 import io.swagger.annotations.*;
@@ -32,18 +33,17 @@ public class VideoController {
         this.lampService = lampService;
     }
 
-
     @ApiOperation(value = "获取首页视频相关数据")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "channelGuid", value = "频道Id", required = true, dataType = "string", paramType = "path")
     })
     @GetMapping(value = "info/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public ApiResult getVideoInfo(@PathVariable("deviceId") Integer deviceId){
+    public VideoInfoResult getVideoInfo(@PathVariable("deviceId") Integer deviceId){
         var ret = this.lampService.getActiveCameraByDeviceId(deviceId);
         if(ret != null){
-            return ApiResult.success(ret);
+            return VideoInfoResult.success(ret);
         }
-        return ApiResult.fail("获取失败");
+        return VideoInfoResult.fail("获取失败");
     }
 
     @ApiOperation(value = "推送视频")

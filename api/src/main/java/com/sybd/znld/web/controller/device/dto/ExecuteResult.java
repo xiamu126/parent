@@ -1,13 +1,13 @@
 package com.sybd.znld.web.controller.device.dto;
 
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.web.onenet.dto.OneNetExecuteResult;
-import com.sybd.znld.znld.core.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 import lombok.NoArgsConstructor;
 
 @ApiModel(value = "执行命令后的返回值")
 @NoArgsConstructor
-public class ExecuteResult extends BaseApiResult{
+public class ExecuteResult extends BaseApiResult {
     public ExecuteResult(Integer code, String msg){
         super(code, msg);
     }

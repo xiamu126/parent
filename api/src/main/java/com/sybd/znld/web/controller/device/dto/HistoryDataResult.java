@@ -1,8 +1,8 @@
 package com.sybd.znld.web.controller.device.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.web.onenet.dto.GetHistoryDataStreamResult;
-import com.sybd.znld.znld.core.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.util.List;
 @ApiModel(value = "获取设备历史数据的返回值")
 @NoArgsConstructor
 @Getter @Setter
-public class HistoryDataResult extends BaseApiResult{
+public class HistoryDataResult extends BaseApiResult {
     @ApiModelProperty(value = "当前的游标位置")
     public String cursor;
     @ApiModelProperty(value = "具体的历史数据")

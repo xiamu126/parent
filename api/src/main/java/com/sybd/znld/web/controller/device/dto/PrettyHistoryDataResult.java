@@ -1,7 +1,7 @@
 package com.sybd.znld.web.controller.device.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sybd.znld.znld.core.BaseApiResult;
+import com.sybd.znld.model.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

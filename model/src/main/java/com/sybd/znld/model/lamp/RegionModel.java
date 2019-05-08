@@ -2,12 +2,11 @@ package com.sybd.znld.model.lamp;
 
 import com.sybd.znld.model.IValid;
 import com.sybd.znld.znld.util.MyString;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 
-@Getter @Setter
+@Getter @Setter @Builder @EqualsAndHashCode @NoArgsConstructor @AllArgsConstructor
 public class RegionModel implements IValid, Serializable {
     public String id;
     public String name;

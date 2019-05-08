@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.service;
+package com.sybd.znld.service;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.model.rbac.dto.RegisterInput;

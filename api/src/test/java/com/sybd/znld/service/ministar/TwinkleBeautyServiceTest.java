@@ -1,6 +1,7 @@
-package com.sybd.znld.znld.service;
+package com.sybd.znld.service.ministar;
 
-import com.sybd.znld.service.lamp.ILampService;
+import com.sybd.znld.service.ministar.IMiniStarService;
+import com.sybd.znld.service.ministar.MiniStarService;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -14,18 +15,17 @@ import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class OneNetConfigDeviceServiceTest {
-    private final Logger log = LoggerFactory.getLogger(OneNetConfigDeviceServiceTest.class);
+public class TwinkleBeautyServiceTest {
+    private final Logger log = LoggerFactory.getLogger(TwinkleBeautyServiceTest.class);
+
     @Autowired
     private WebApplicationContext wac;
-
-    @Autowired
-    private ILampService lampService;
-
     private MockMvc mockMvc;
-
     @Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
     }
+
+    @Autowired
+    private IMiniStarService twinkleBeautyService;
 }

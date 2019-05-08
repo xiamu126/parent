@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.service.ministar;
+package com.sybd.znld.service.ministar;
 
 import com.sybd.znld.model.ministar.TwinkleBeautyGroupModel;
 import com.sybd.znld.service.ministar.IMiniStarService;

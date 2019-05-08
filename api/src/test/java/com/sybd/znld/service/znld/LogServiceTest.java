@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.service.znld;
+package com.sybd.znld.service.znld;
 
 import com.sybd.znld.mapper.lamp.HttpLogMapper;
 import com.sybd.znld.model.lamp.HttpLogModel;

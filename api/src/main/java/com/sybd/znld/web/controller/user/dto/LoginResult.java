@@ -1,6 +1,6 @@
 package com.sybd.znld.web.controller.user.dto;
 
-import com.sybd.znld.znld.core.BaseApiResult;
+import com.sybd.znld.model.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter @Setter
 @ApiModel(value = "登入返回数据")
-public class LoginResult extends BaseApiResult{
+public class LoginResult extends BaseApiResult {
     @ApiModelProperty(value = "登入后返回的用户Id")
     public String userId;
     @ApiModelProperty(value = "登入后返回此用户所属组织Id")

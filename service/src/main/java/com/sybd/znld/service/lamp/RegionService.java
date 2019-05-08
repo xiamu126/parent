@@ -3,6 +3,7 @@ package com.sybd.znld.service.lamp;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.RegionIdAndName;
+import com.sybd.znld.model.lamp.dto.RegionWithLocation;
 import com.sybd.znld.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -10,8 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -100,7 +104,21 @@ public class RegionService implements IRegionService {
     public List<RegionIdAndName> getAllRegionWithValidLamp(String organId) {
         var ret = this.regionMapper.selectAllRegionWithValidLamp(organId);
         if(ret != null){
-            return ret.stream().map( t -> new RegionIdAndName(t.id, t.name)).collect(Collectors.toList());
+            Supplier<Stream<RegionWithLocation>> streamSupplier = ret::stream;
+            Supplier<Stream<RegionModel>> regionsSupplier = () -> streamSupplier.get().map(r -> RegionModel.builder().
+                            id(r.id).
+                            name(r.name).
+                            organizationId(r.organizationId).
+                            status(r.status).
+                            type(r.type).
+                            build()).distinct();
+            var list = new ArrayList<RegionIdAndName>();
+            regionsSupplier.get().forEach(r -> {
+                var locations = streamSupplier.get().filter(t -> t.id.equals(r.id));
+                locations.findFirst().ifPresent(first -> list.add(RegionIdAndName.builder()
+                        .id(first.id).name(first.name).longitude(first.longitude).latitude(first.latitude).build()));
+            });
+            return list;
         }
         return null;
     }

@@ -18,6 +18,8 @@ public interface ILampService {
     List<CheckedResource> getCheckedEnvResourceByDeviceId(Integer deviceId);
     List<CheckedResource> getCheckedResourceByOrganId(String organId);
     List<CheckedResource> getCheckedEnvResourceByOrganId(String organId);
+    CheckedResource getCheckedEnvResourceByDeviceIdAndResourceDesc(Integer deviceId, String resourceDesc);
+    CheckedResource getCheckedEnvResourceByOrganIdAndResourceDesc(String organId, String resourceDesc);
     OneNetResourceModel getResourceByCommandValue(String cmd);
     LampRegionModel addLampToRegion(String lampId, String regionId);
     LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds);

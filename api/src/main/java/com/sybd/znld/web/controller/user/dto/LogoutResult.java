@@ -1,11 +1,11 @@
 package com.sybd.znld.web.controller.user.dto;
 
-import com.sybd.znld.znld.core.BaseApiResult;
+import com.sybd.znld.model.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 
 
 @ApiModel(value = "登出返回数据")
-public class LogoutResult extends BaseApiResult{
+public class LogoutResult extends BaseApiResult {
     public LogoutResult(Integer code, String msg){
         super(code, msg);
     }

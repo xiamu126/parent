@@ -1,7 +1,7 @@
 package com.sybd.znld.web.controller.resource.dto;
 
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.CheckedResource;
-import com.sybd.znld.znld.core.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.List;
 @ApiModel(value = "获取选中资源的返回值")
 @Getter @Setter
 @NoArgsConstructor
-public class CheckedResourcesResult extends BaseApiResult{
+public class CheckedResourcesResult extends BaseApiResult {
     public List<CheckedResource> resources;
 
     public CheckedResourcesResult(Integer code, String msg){

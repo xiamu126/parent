@@ -218,6 +218,186 @@ public class DeviceController implements IDeviceController {
         return DataResult.fail("获取数据失败");
     }
 
+    @ApiOperation(value = "获取区域的某个时间段内的最大值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
+    @GetMapping(value = "data/max/{regionId:[0-9a-f]{32}}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResult getMaxHistoryData(@PathVariable(name = "regionId") String regionId,
+                                        @PathVariable(name = "dataStreamId") String dataStreamId,
+                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        try{
+            if(!MyString.isUuid(regionId)){
+                return DataResult.fail("错误的区域id");
+            }
+            if(OneNetKey.from(dataStreamId) == null){
+                return DataResult.fail("错误的资源id");
+            }
+            if(!MyDateTime.isAllPast(beginTimestamp, endTimestamp) || beginTimestamp > endTimestamp){
+                return DataResult.fail("错误的时间戳参数");
+            }
+            var lamps = this.lampService.getLampsByRegionId(regionId);
+            if(lamps == null || lamps.isEmpty()){
+                return DataResult.fail("获取数据失败");
+            }
+            var result = new ArrayList<Double>();
+            for(var lamp: lamps){
+                var ret = this.getMaxHistoryData(lamp.deviceId, dataStreamId, beginTimestamp, endTimestamp, request);
+                if(ret != null && ret.isOk()){
+                    var d = MyNumber.getDouble(ret.value);
+                    if(d != null) {
+                        result.add(d);
+                    }
+                }
+            }
+            var max = result.stream().max(Comparator.comparing(Double::valueOf)).orElse(null);
+            if(max != null) return DataResult.success(MyNumber.toString(max));
+            return DataResult.fail("获取数据失败");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
+        return DataResult.fail("获取数据失败");
+    }
+
+    @ApiOperation(value = "获取设备的某个时间段内的最大值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "Long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "Long", paramType = "path")
+    })
+    @GetMapping(value = "data/max/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResult getMaxHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
+                                        @PathVariable(name = "dataStreamId") String dataStreamId,
+                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        try{
+            if(deviceId == null || MyNumber.isNegativeOrZero(deviceId)) {
+                return DataResult.fail("错误的设备id");
+            }
+            if(OneNetKey.from(dataStreamId) == null){
+                return DataResult.fail("错误的资源id");
+            }
+            if(!MyDateTime.isAllPast(beginTimestamp, endTimestamp) || beginTimestamp > endTimestamp){
+                return DataResult.fail("错误的时间戳");
+            }
+            var start = MyDateTime.toLocalDateTime(beginTimestamp);
+            var end = MyDateTime.toLocalDateTime(endTimestamp);
+            var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
+            if(ret != null && ret.isOk()){
+                Supplier<Stream<Double>> streamSupplier = () -> ret.data.dataStreams.stream().map(s -> {
+                    var p = s.dataPoints.get(0);
+                    if(p == null) return null;
+                    return MyNumber.getDouble(p.value);
+                });
+                var max = streamSupplier.get().filter(Objects::nonNull).max(Comparator.comparing(Double::valueOf));
+                return max.map(a -> DataResult.success(MyNumber.toString(a))).orElseGet(() -> DataResult.fail("获取数据失败"));
+            }
+            return DataResult.fail("获取数据失败");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
+        return DataResult.fail("获取数据失败");
+    }
+
+    @ApiOperation(value = "获取区域的某个时间段内的最小值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
+    @GetMapping(value = "data/min/{regionId:[0-9a-f]{32}}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResult getMinHistoryData(@PathVariable(name = "regionId") String regionId,
+                                        @PathVariable(name = "dataStreamId") String dataStreamId,
+                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        try{
+            if(!MyString.isUuid(regionId)){
+                return DataResult.fail("错误的参数");
+            }
+            if(OneNetKey.from(dataStreamId) == null){
+                return DataResult.fail("错误的参数");
+            }
+            if(!MyDateTime.isAllPast(beginTimestamp, endTimestamp) || beginTimestamp > endTimestamp){
+                return DataResult.fail("错误的参数");
+            }
+            var lamps = this.lampService.getLampsByRegionId(regionId);
+            if(lamps == null || lamps.isEmpty()){
+                return DataResult.fail("获取数据失败");
+            }
+            var result = new ArrayList<Double>();
+            for(var lamp: lamps){
+                var ret = this.getMinHistoryData(lamp.deviceId, dataStreamId, beginTimestamp, endTimestamp, request);
+                if(ret != null && ret.isOk()){
+                    var d = MyNumber.getDouble(ret.value);
+                    if(d != null) {
+                        result.add(d);
+                    }
+                }
+            }
+            var min = result.stream().min(Comparator.comparing(Double::valueOf)).orElse(null);
+            if(min != null) return DataResult.success(MyNumber.toString(min));
+            return DataResult.fail("获取数据失败");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
+        return DataResult.fail("获取数据失败");
+    }
+
+    @ApiOperation(value = "获取设备的某个时间段内的最小值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "Long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "Long", paramType = "path")
+    })
+    @GetMapping(value = "data/min/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResult getMinHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
+                                        @PathVariable(name = "dataStreamId") String dataStreamId,
+                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        try{
+            if(deviceId == null || MyNumber.isNegativeOrZero(deviceId)) {
+                return DataResult.fail("错误的参数");
+            }
+            if(OneNetKey.from(dataStreamId) == null){
+                return DataResult.fail("错误的参数");
+            }
+            if(!MyDateTime.isAllPast(beginTimestamp, endTimestamp) || beginTimestamp > endTimestamp){
+                return DataResult.fail("错误的参数");
+            }
+            var start = MyDateTime.toLocalDateTime(beginTimestamp);
+            var end = MyDateTime.toLocalDateTime(endTimestamp);
+            var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
+            if(ret != null && ret.isOk()){
+                Supplier<Stream<Double>> streamSupplier = () -> ret.data.dataStreams.stream().map(s -> {
+                    var p = s.dataPoints.get(0);
+                    if(p == null) return null;
+                    return MyNumber.getDouble(p.value);
+                });
+                var min = streamSupplier.get().filter(Objects::nonNull).min(Comparator.comparing(Double::valueOf));
+                return min.map(a -> DataResult.success(MyNumber.toString(a))).orElseGet(() -> DataResult.fail("获取数据失败"));
+            }
+            return DataResult.fail("获取数据失败");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
+        return DataResult.fail("获取数据失败");
+    }
+
     @ApiOperation(value = "获取设备的最新数据")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),

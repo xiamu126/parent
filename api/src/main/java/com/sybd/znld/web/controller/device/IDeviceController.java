@@ -9,6 +9,10 @@ import java.util.List;
 public interface IDeviceController {
     DataResult getAvgHistoryData(String regionId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
     DataResult getAvgHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
+    DataResult getMaxHistoryData(String regionId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
+    DataResult getMaxHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
+    DataResult getMinHistoryData(String regionId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
+    DataResult getMinHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
     LastDataResult getLastData(Integer deviceId, String dataStreamId, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, Integer limit, HttpServletRequest request);

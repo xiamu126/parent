@@ -25,10 +25,12 @@ public interface LampMapper {
     List<DeviceIdAndDeviceName> selectDeviceIdAndDeviceNames(String organId);
     List<CheckedResource> selectCheckedResourceByDeviceId(Integer deviceId);
     List<CheckedResource> selectCheckedEnvResourceByDeviceId(Integer deviceId);
+    CheckedResource selectCheckedResourceByDeviceIdAndResourceDesc(Integer deviceId, String resourceDesc);
+    CheckedResource selectCheckedEnvResourceByDeviceIdAndResourceDesc(Integer deviceId, String resourceDesc);
     List<LampAndRegion> selectLampByDeviceIdAndRegionType(Integer deviceId, Short regionType);
     List<LampAndRegion> selectLampByLampIdAndRegionType(String lampId, Short regionType);
     List<BoundResource> selectBoundResourceByDeviceId(Integer deviceId);
     List<LampModel> selectByRegionId(String regionId);
-    List<LampModel> selectByOrganId(String organId, int count, int position);
+    List<LampModel> selectByOrganId(String organId, int limit, int offset);
     LampAndCamera selectActiveCameraByDeviceId(Integer deviceId);
 }

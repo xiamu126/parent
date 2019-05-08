@@ -90,6 +90,22 @@ public class LampService implements ILampService {
     }
 
     @Override
+    public CheckedResource getCheckedEnvResourceByDeviceIdAndResourceDesc(Integer deviceId, String resourceDesc) {
+        if(!MyNumber.isPositive(deviceId) || MyString.isEmptyOrNull(resourceDesc)) return null;
+        return this.lampMapper.selectCheckedEnvResourceByDeviceIdAndResourceDesc(deviceId, resourceDesc+"值");
+    }
+
+    @Override
+    public CheckedResource getCheckedEnvResourceByOrganIdAndResourceDesc(String organId, String resourceDesc) {
+        if(!MyString.isUuid(organId)) return null;
+        var ret = this.lampMapper.selectByOrganId(organId,1,0);
+        if(ret == null || ret.isEmpty()) return null;
+        var lamp = ret.get(0);
+        if(lamp == null) return null;
+        return this.getCheckedEnvResourceByDeviceIdAndResourceDesc(lamp.deviceId, resourceDesc);
+    }
+
+    @Override
     public OneNetResourceModel getResourceByCommandValue(String cmd) {
         if(MyString.isEmptyOrNull(cmd)) return null;
         return this.oneNetResourceMapper.selectByCommandValue(cmd);

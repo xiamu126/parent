@@ -2,12 +2,12 @@ package com.sybd.znld.web.controller.user;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.dto.LoginInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.web.controller.user.dto.LoginResult;
 import com.sybd.znld.web.controller.user.dto.LogoutResult;
-import com.sybd.znld.znld.core.ApiResult;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.znld.util.MyString;
 import io.swagger.annotations.*;

@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.service.znld;
+package com.sybd.znld.service.znld;
 
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.OneNetResourceMapper;

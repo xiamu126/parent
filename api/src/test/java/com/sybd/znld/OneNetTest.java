@@ -1,4 +1,4 @@
-package com.sybd.znld.znld;
+package com.sybd.znld;
 
 import com.sybd.znld.web.onenet.IOneNetService;
 import com.sybd.znld.web.onenet.dto.GetDataStreamByIdResult;

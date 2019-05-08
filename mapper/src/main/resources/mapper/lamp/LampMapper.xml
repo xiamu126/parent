@@ -62,12 +62,26 @@
         left join onenet_resource as c on c.id = b.onenet_resource_id
         where device_id = #{_parameter} and b.status != 2;
     </select>
+    <select id="selectCheckedResourceByDeviceIdAndResourceDesc" resultType="com.sybd.znld.model.lamp.dto.CheckedResource">
+        select concat(obj_id, '_', obj_inst_id, '_',res_id) as dataStreamId, description
+        from lamp as a
+        left join lamp_resource as b on a.id = b.lamp_id
+        left join onenet_resource as c on c.id = b.onenet_resource_id
+        where device_id = #{deviceId} and b.status != 2 and c.description = #{resourceDesc};
+    </select>
     <select id="selectCheckedEnvResourceByDeviceId" resultType="com.sybd.znld.model.lamp.dto.CheckedResource">
         select concat(obj_id, '_', obj_inst_id, '_',res_id) as dataStreamId, description
         from lamp as a
         left join lamp_resource as b on a.id = b.lamp_id
         left join onenet_resource as c on c.id = b.onenet_resource_id
         where device_id = #{_parameter} and b.status = 0;
+    </select>
+    <select id="selectCheckedEnvResourceByDeviceIdAndResourceDesc" resultType="com.sybd.znld.model.lamp.dto.CheckedResource">
+        select concat(obj_id, '_', obj_inst_id, '_',res_id) as dataStreamId, description
+        from lamp as a
+        left join lamp_resource as b on a.id = b.lamp_id
+        left join onenet_resource as c on c.id = b.onenet_resource_id
+        where device_id = #{deviceId} and b.status = 0 and c.description = #{resourceDesc};
     </select>
 
     <select id="selectLampByDeviceIdAndRegionType" resultType="com.sybd.znld.model.lamp.dto.LampAndRegion">
@@ -106,7 +120,7 @@
         left join lamp_region as b on b.lamp_id = a.id
         left join region as c on c.id = b.region_id
         where c.organization_id = #{organId}
-        limit #{count} offset #{position}
+        limit #{limit} offset #{offset}
     </select>
 
     <select id="selectActiveCameraByDeviceId" resultType="com.sybd.znld.model.lamp.dto.LampAndCamera">

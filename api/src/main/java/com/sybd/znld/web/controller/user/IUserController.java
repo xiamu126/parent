@@ -1,10 +1,10 @@
 package com.sybd.znld.web.controller.user;
 
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.dto.LoginInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.web.controller.user.dto.LoginResult;
 import com.sybd.znld.web.controller.user.dto.LogoutResult;
-import com.sybd.znld.znld.core.ApiResult;
 import com.sybd.znld.model.rbac.UserModel;
 import org.springframework.validation.BindingResult;
 

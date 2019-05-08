@@ -2,6 +2,7 @@ package com.sybd.znld.mapper.lamp;
 
 import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.lamp.RegionModel;
+import com.sybd.znld.model.lamp.dto.RegionWithLocation;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -16,5 +17,5 @@ public interface RegionMapper {
     RegionModel selectOne();
     List<RegionModel> select(int count);
     int updateById(RegionModel model);
-    List<RegionModel> selectAllRegionWithValidLamp(String organId);
+    List<RegionWithLocation> selectAllRegionWithValidLamp(String organId);
 }

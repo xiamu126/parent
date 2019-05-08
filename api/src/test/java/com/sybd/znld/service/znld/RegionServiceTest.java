@@ -1,7 +1,8 @@
-package com.sybd.znld.znld.service.znld;
+package com.sybd.znld.service.znld;
 
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.service.lamp.IRegionService;
+import com.sybd.znld.web.App;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = {App.class})
 public class RegionServiceTest {
     private final Logger log = LoggerFactory.getLogger(RegionServiceTest.class);
 
@@ -30,6 +31,11 @@ public class RegionServiceTest {
     @Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+    }
+
+    @Test
+    public void getAllRegionWithValidLamp(){
+        this.regionService.getAllRegionWithValidLamp("a69ce5bf51f111e9804a0242ac110007");
     }
 
     @Test

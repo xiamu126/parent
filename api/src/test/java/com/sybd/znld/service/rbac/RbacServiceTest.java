@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.service.rbac;
+package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.rbac.*;

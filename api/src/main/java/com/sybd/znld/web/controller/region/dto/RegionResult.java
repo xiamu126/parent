@@ -1,7 +1,7 @@
 package com.sybd.znld.web.controller.region.dto;
 
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.RegionIdAndName;
-import com.sybd.znld.znld.core.BaseApiResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.controller;
+package com.sybd.znld.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.service.rbac.IUserService;

@@ -1,7 +1,7 @@
 package com.sybd.znld.web.config;
 
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.service.lamp.ILogService;
-import com.sybd.znld.znld.core.ApiResult;
 import com.sybd.znld.model.lamp.HttpLogModel;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

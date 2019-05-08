@@ -1,4 +1,4 @@
-package com.sybd.znld.znld;
+package com.sybd.znld;
 
 import com.sybd.znld.model.onenet.OneNetKey;
 import org.junit.Test;

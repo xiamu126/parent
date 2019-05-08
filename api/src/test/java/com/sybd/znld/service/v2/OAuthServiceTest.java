@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.service.v2;
+package com.sybd.znld.service.v2;
 
 import com.sybd.znld.model.oauth.OAuthClientDetailsModel;
 import com.sybd.znld.service.oauth.IOAuthService;

@@ -30,8 +30,8 @@
         where id = #{id};
     </update>
 
-    <select id="selectAllRegionWithValidLamp" resultType="com.sybd.znld.model.lamp.RegionModel">
-        select distinct a.*
+    <select id="selectAllRegionWithValidLamp" resultType="com.sybd.znld.model.lamp.dto.RegionWithLocation">
+        select distinct a.*, c.latitude, c.longitude
         from region as a
         left join lamp_region as b on b.region_id = a.id
         left join lamp as c on c.id = b.lamp_id

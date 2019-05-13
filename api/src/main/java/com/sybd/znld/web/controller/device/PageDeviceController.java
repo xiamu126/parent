@@ -7,6 +7,7 @@ import com.sybd.znld.web.controller.device.BaseDeviceController;
 import com.sybd.znld.web.controller.device.IPageDeviceController;
 import com.sybd.znld.web.onenet.IOneNetService;
 import com.sybd.znld.web.onenet.dto.GetLastDataStreamsResult;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +21,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 public class PageDeviceController extends BaseDeviceController implements IPageDeviceController {
-
-    private final Logger log = LoggerFactory.getLogger(PageDeviceController.class);
-
     @Autowired
     public PageDeviceController(RedissonClient redissonClient,
                                 IOneNetService oneNet,
@@ -45,11 +44,11 @@ public class PageDeviceController extends BaseDeviceController implements IPageD
     public String getViewPage(@PathVariable(name = "deviceId") Integer deviceId, Model model){
         var ret = this.oneNet.getLastDataStream(deviceId);
         if(ret.errno == 0){
-            List<GetLastDataStreamsResult.DataStream> dataStreams = ret.getData().getDevices().get(0).getDataStreams();
-            GetLastDataStreamsResult.DataStream weidu = dataStreams.stream()
+            var dataStreams = ret.getData().getDevices().get(0).getDataStreams();
+            var weidu = dataStreams.stream()
                     .filter(dataStream -> dataStream.getId().equals("3336_0_5513"))
                     .findFirst().orElse(null);
-            GetLastDataStreamsResult.DataStream jingdu = dataStreams.stream()
+            var jingdu = dataStreams.stream()
                     .filter(dataStream -> dataStream.getId().equals("3336_0_5514"))
                     .findFirst().orElse(null);
             model.addAttribute("deviceId", deviceId);

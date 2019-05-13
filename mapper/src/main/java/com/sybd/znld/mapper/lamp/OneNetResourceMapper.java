@@ -16,4 +16,5 @@ public interface OneNetResourceMapper {
     List<OneNetResourceModel> selectByIds(List<String> ids);
     OneNetResourceModel selectByCommandValue(String cmd);
     List<OneNetResourceModel> selectByResourceType(short type);
+    OneNetResourceModel selectByResourceName(String resourceName);
 }

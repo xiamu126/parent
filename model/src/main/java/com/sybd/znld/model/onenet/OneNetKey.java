@@ -2,6 +2,7 @@ package com.sybd.znld.model.onenet;
 
 import com.sybd.znld.model.IValid;
 import com.sybd.znld.znld.util.MyNumber;
+import com.sybd.znld.znld.util.MyString;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
@@ -10,6 +11,11 @@ public class OneNetKey implements IValid, Serializable{
     public Integer objId;
     public Integer objInstId;
     public Integer resId;
+
+    public static final String DATA_STREAM_ID_REGEX = "^\\d+_\\d+_\\d+$";
+    public static boolean isDataStreamId(String dataStreamId){
+        return !MyString.isEmptyOrNull(dataStreamId) && dataStreamId.matches(DATA_STREAM_ID_REGEX);
+    }
 
     @Override
     public boolean isValid(){

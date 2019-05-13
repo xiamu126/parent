@@ -1,6 +1,8 @@
 package com.sybd.znld.web.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
+import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.service.lamp.ILampService;
 import com.sybd.znld.service.lamp.IRegionService;
 import com.sybd.znld.service.rbac.IUserService;
@@ -119,10 +121,193 @@ public class DeviceController implements IDeviceController {
         return PrettyHistoryDataResult.success(result);
     }
 
+    @ApiOperation(value = "获取多个区域的某时间段内的多个资源的各自的平均值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "regionsAndDataStreams", value = "区域id集合或名字集合与数据流Id集合或具体的资源名称集合", required = true, dataType = "List", paramType = "body"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
+    @GetMapping(value = "data/avg/regions/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResultsMap getAvgHistoryData(@RequestBody RegionsAndDataStreams regionsAndDataStreams,
+                                            @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                            @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        if(regionsAndDataStreams == null || regionsAndDataStreams.regions == null || regionsAndDataStreams.dataStreams == null){
+            return DataResultsMap.fail("获取数据失败");
+        }
+        var result = new HashMap<String, Map<String, String>>();
+        regionsAndDataStreams.regions.forEach(region -> {
+            String regionId = null;
+            if(!MyString.isEmptyOrNull(region) && !MyString.isUuid(region)){ // 传入的可能是区域名字，尝试从名字获取id
+                var regionModel = this.regionService.getRegionByName(region);
+                if(regionModel != null) {
+                    regionId = regionModel.id;
+                }
+            }else if(MyString.isUuid(region)) { // 如果是区域id
+                regionId = region;
+            }
+            final String theRegionId = regionId;
+            var map = new HashMap<String, String>();
+            regionsAndDataStreams.dataStreams.forEach(dataStream -> {
+                String dataStreamId = null;
+                if(!MyString.isEmptyOrNull(dataStream) && !OneNetKey.isDataStreamId(dataStream)) { // 传入的可能是资源名称
+                    dataStreamId = this.lampService.getDataStreamIdByResourceName(dataStream); // 尝试通过此名称获取资源id
+                }else if(OneNetKey.isDataStreamId(dataStream)){ // 如果是资源id
+                    dataStreamId = dataStream;
+                }
+                if(theRegionId != null && dataStreamId != null){
+                    var tmp = this.getAvgHistoryData(theRegionId, dataStreamId, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()) map.put(dataStream, tmp.value);
+                }
+            });
+            if(map.size() > 0){
+                result.put(region, map);
+            }
+        });
+        if(result.size() > 0) return DataResultsMap.success(result);
+        return DataResultsMap.fail("获取数据失败");
+    }
+
+    @ApiOperation(value = "获取某个区域的某时间段内的多个资源的各自的平均值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region", value = "区域id或名字", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreams", value = "查看的数据流Id集合或具体的资源名称集合", required = true, dataType = "List", paramType = "body"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
+    @GetMapping(value = "data/avg/region/{region}/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResults getAvgHistoryData(@PathVariable(name = "region") String region,
+                                         @RequestBody List<String> dataStreams,
+                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                         @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        var map = new HashMap<String, String>();
+        String regionId = null;
+        if(!MyString.isEmptyOrNull(region) && !MyString.isUuid(region)){ // 传入的可能是区域名字，尝试从名字获取id
+            var regionModel = this.regionService.getRegionByName(region);
+            if(regionModel != null) {
+                regionId = regionModel.id;
+            }
+        }else if(MyString.isUuid(region)) { // 如果是区域id
+            regionId = region;
+        }
+        final String theRegionId = regionId;
+        if(dataStreams == null){
+            return DataResults.fail("获取失败");
+        }
+        dataStreams.forEach(dataStream -> {
+            String dataStreamId = null;
+            if(!MyString.isEmptyOrNull(dataStream) && !OneNetKey.isDataStreamId(dataStream)) { // 传入的可能是资源名称
+                dataStreamId = this.lampService.getDataStreamIdByResourceName(dataStream); // 尝试通过此名称获取资源id
+            }else if(OneNetKey.isDataStreamId(dataStream)){ // 如果是资源id
+                dataStreamId = dataStream;
+            }
+            if(theRegionId != null && dataStreamId != null){
+                var tmp = this.getAvgHistoryData(theRegionId, dataStreamId, beginTimestamp, endTimestamp, request);
+                if(tmp != null && tmp.isOk()) map.put(dataStream, tmp.value);
+            }
+        });
+        if(map.size() > 0) return DataResults.success(map);
+        return DataResults.fail("获取失败");
+    }
+
+    @ApiOperation(value = "获取多个区域的某时间段内的某一资源的平均值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "regions", value = "区域的id集合或具体的名称集合", required = true, dataType = "List", paramType = "body"),
+            @ApiImplicitParam(name = "dataStream", value = "查看的数据流Id或资源名称", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
+    @GetMapping(value = "data/avg/regions/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResults getAvgHistoryData(@RequestBody List<String> regions,
+                                         @PathVariable(name = "dataStream") String dataStream,
+                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                         @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        var map = new HashMap<String, String>();
+        String dataStreamId = null;
+        if(!MyString.isEmptyOrNull(dataStream) && !OneNetKey.isDataStreamId(dataStream)) { // 传入的可能是资源名称
+            dataStreamId = this.lampService.getDataStreamIdByResourceName(dataStream); // 尝试通过此名称获取资源id
+        }else if(OneNetKey.isDataStreamId(dataStream)){ // 如果是资源id
+            dataStreamId = dataStream;
+        }
+        final String theDataStreamId = dataStreamId;
+        if(regions == null){
+            return DataResults.fail("获取失败");
+        }
+        regions.forEach(region -> {
+            String regionId = null;
+            if(MyString.isUuid(region)){ // 如果传入的是区域id
+               regionId = region;
+            }else if(!MyString.isEmptyOrNull(region) && !MyString.isUuid(region)){ // 传入的可能是区域名字，尝试从名字获取id
+                var regionModel = this.regionService.getRegionByName(region);
+                if(regionModel != null) {
+                    regionId = regionModel.id;
+                }
+            }
+            if(regionId != null && theDataStreamId != null){
+                var tmp = this.getAvgHistoryData(regionId, theDataStreamId, beginTimestamp, endTimestamp, request);
+                if(tmp != null && tmp.isOk()) map.put(region, tmp.value);
+            }
+        });
+        if(map.size() > 0) return DataResults.success(map);
+        return DataResults.fail("获取失败");
+    }
+
+    @Override
+    public DataResultsMap getAvgHistoryDataWithDeviceIdsAndDataStreams(DeviceIdsAndDataStreams deviceIdsAndDataStreams, Long beginTimestamp, Long endTimestamp, HttpServletRequest request) {
+        return null;
+    }
+
+    @Override
+    public DataResults getAvgHistoryDataWithDeviceIdAndDataStreams(Integer deviceId, List<String> dataStreams, Long beginTimestamp, Long endTimestamp, HttpServletRequest request) {
+        return null;
+    }
+
+    @ApiOperation(value = "获取多个设备的某时间段内的某一资源的平均值")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceIds", value = "设备id集合", required = true, dataType = "List", paramType = "body"),
+            @ApiImplicitParam(name = "dataStream", value = "查看的数据流Id或资源名称", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
+            @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
+    })
+    @GetMapping(value = "data/avg/deviceIds/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @Override
+    public DataResults getAvgHistoryDataWithDeviceIdsAndDataStream(@RequestBody List<Integer> deviceIds,
+                                                                   @PathVariable(name = "dataStream") String dataStream,
+                                                                   @PathVariable(name = "beginTimestamp") Long beginTimestamp,
+                                                                   @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
+        if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream) || MyDateTime.isAllPastAndStrictDesc(beginTimestamp, endTimestamp)){
+            return DataResults.fail("参数错误");
+        }
+        String dataStreamId = null;
+        if(!MyString.isEmptyOrNull(dataStream) && !OneNetKey.isDataStreamId(dataStream)) { // 传入的可能是资源名称
+            dataStreamId = this.lampService.getDataStreamIdByResourceName(dataStream); // 尝试通过此名称获取资源id
+        }else if(OneNetKey.isDataStreamId(dataStream)){ // 如果是资源id
+            dataStreamId = dataStream;
+        }
+        final String theDataStreamId = dataStreamId;
+        var map = new HashMap<String, String>();
+        deviceIds.forEach(deviceId -> {
+            if(MyNumber.isPositive(deviceId)){
+                var tmp = this.getAvgHistoryData(deviceId, theDataStreamId, beginTimestamp, endTimestamp, request);
+                if(tmp != null && tmp.isOk()){
+                    map.put(deviceId.toString(), tmp.value);
+                }
+            }
+        });
+        if(!map.isEmpty()) return DataResults.success(map);
+        return DataResults.fail("获取数据失败");
+    }
+
     @ApiOperation(value = "获取区域的某个时间段内的平均值")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "regionId", value = "区域Id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "String", paramType = "path"),
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })

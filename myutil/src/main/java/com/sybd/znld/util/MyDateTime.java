@@ -278,6 +278,7 @@ public final class MyDateTime {
                toLocalDateTime(its[i]).isEqual(toLocalDateTime(its[i+1]))) return false;
         }
         var now = LocalDateTime.now();
+        var tmp = toLocalDateTime(its[0]);
         return !toLocalDateTime(its[0]).isAfter(now);
     }
     public static boolean isAllPastAndStrictDesc(ZoneOffset zoneOffset, LocalDateTime ...its){

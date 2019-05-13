@@ -18,6 +18,10 @@
         select * from onenet_resource where type = #{_parameter};
     </select>
 
+    <select id="selectByResourceName" resultType="com.sybd.znld.model.lamp.OneNetResourceModel">
+        select * from onenet_resource where description like #{_parameter};
+    </select>
+
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.OneNetResourceModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->

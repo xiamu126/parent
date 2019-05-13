@@ -92,7 +92,7 @@ public class LampService implements ILampService {
     @Override
     public CheckedResource getCheckedEnvResourceByDeviceIdAndResourceDesc(Integer deviceId, String resourceDesc) {
         if(!MyNumber.isPositive(deviceId) || MyString.isEmptyOrNull(resourceDesc)) return null;
-        return this.lampMapper.selectCheckedEnvResourceByDeviceIdAndResourceDesc(deviceId, resourceDesc+"值");
+        return this.lampMapper.selectCheckedEnvResourceByDeviceIdAndResourceDesc(deviceId, resourceDesc);
     }
 
     @Override
@@ -205,5 +205,22 @@ public class LampService implements ILampService {
     public LampAndCamera getActiveCameraByDeviceId(Integer deviceId) {
         if(!MyNumber.isPositive(deviceId)) return null;
         return this.lampMapper.selectActiveCameraByDeviceId(deviceId);
+    }
+
+    @Override
+    public String getResourceNameByDataStreamId(String dataStreamId) {
+        if(dataStreamId == null || !dataStreamId.matches("")) return null;
+        var oneNetKey = OneNetKey.from(dataStreamId);
+        var oneNetResource = this.oneNetResourceMapper.selectByOneNetKey(oneNetKey);
+        if(oneNetResource != null) return oneNetResource.description;
+        return null;
+    }
+
+    @Override
+    public String getDataStreamIdByResourceName(String resourceName) {
+        if(resourceName == null) return null;
+        var oneNetResource = this.oneNetResourceMapper.selectByResourceName(resourceName);
+        if(oneNetResource != null) return oneNetResource.objId+"_"+oneNetResource.objInstId+"_"+oneNetResource.resId;
+        return null;
     }
 }

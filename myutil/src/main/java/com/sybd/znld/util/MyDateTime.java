@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.util;
+package com.sybd.znld.util;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -160,36 +160,44 @@ public final class MyDateTime {
         }
         return true;
     }
-    //全部为未来时间，并且它们按严格升序排列（越往后离现在越远）、即没有相等
-    public static boolean isAllFutureAndStrictAsc(LocalDateTime ...its){
-        for(var i = 0; i < its.length - 2; i++){
-            if(its[i].isBefore(its[i+1]) || its[i].isEqual(its[i+1])) return false;
+    //全部为未来时间，并且它们严格排列（从左往右离现在越来越远）、没有相等
+    public static boolean isAllFutureAndStrict(LocalDateTime ...its){
+        for(var i = 0; i < its.length-1; i++){
+            var tmp1 = its[i];
+            var tmp2 = its[i+1];
+            if(tmp2.isBefore(tmp1) || tmp2.isEqual(tmp1)) return false;
         }
         var now = LocalDateTime.now();
-        return !its[its.length - 1].isBefore(now);
+        return now.isBefore(its[0]);
     }
-    public static boolean isAllFutureAndStrictAsc(Long ...its){
-        for(var i = 0; i < its.length - 2; i++){
-            if(toLocalDateTime(its[i]).isBefore(toLocalDateTime(its[i+1])) ||
-               toLocalDateTime(its[i]).isEqual(toLocalDateTime(its[i+1]))) return false;
+    public static boolean isAllFutureAndStrict(Long ...its){
+        for(var i = 0; i < its.length-1; i++){
+            var tmp1 = toLocalDateTime(its[i]);
+            var tmp2 = toLocalDateTime(its[i+1]);
+            if(tmp2.isBefore(tmp1) || tmp2.isEqual(tmp1)) return false;
         }
         var now = LocalDateTime.now();
-        return !toLocalDateTime(its[its.length - 1]).isBefore(now);
+        var tmp = toLocalDateTime(its[0]);
+        return now.isBefore(tmp);
     }
-    public static boolean isAllFutureAndStrictAsc(ZoneOffset zoneOffset, LocalDateTime ...its){
-        for(var i = 0; i < its.length - 2; i++){
-            if(its[i].isBefore(its[i+1]) || its[i].isEqual(its[i+1])) return false;
+    public static boolean isAllFutureAndStrict(ZoneOffset zoneOffset, LocalDateTime ...its){
+        for(var i = 0; i < its.length-1; i++){
+            var tmp1 = its[i];
+            var tmp2 = its[i+1];
+            if(tmp2.isBefore(tmp1) || tmp2.isEqual(tmp1)) return false;
         }
         var now = LocalDateTime.now(zoneOffset);
-        return !its[its.length - 1].isBefore(now);
+        return now.isBefore(its[0]);
     }
-    public static boolean isAllFutureAndStrictAsc(ZoneOffset zoneOffset, Long ...its){
-        for(var i = 0; i < its.length - 2; i++){
-            if(toLocalDateTime(its[i]).isBefore(toLocalDateTime(its[i+1])) ||
-               toLocalDateTime(its[i]).isEqual(toLocalDateTime(its[i+1]))) return false;
+    public static boolean isAllFutureAndStrict(ZoneOffset zoneOffset, Long ...its){
+        for(var i = 0; i < its.length-1; i++){
+            var tmp1 = toLocalDateTime(its[i]);
+            var tmp2 = toLocalDateTime(its[i+1]);
+            if(tmp2.isBefore(tmp1) || tmp2.isEqual(tmp1)) return false;
         }
         var now = LocalDateTime.now(zoneOffset);
-        return !toLocalDateTime(its[its.length - 1]).isBefore(now);
+        var tmp = toLocalDateTime(its[0]);
+        return now.isBefore(tmp);
     }
     // 测试是否为过去时间
     public static boolean isPast(LocalDateTime it){
@@ -264,38 +272,40 @@ public final class MyDateTime {
         }
         return true;
     }
-    //全部为过去时间，并且它们按严格降序排列（越往前离现在越远）、即没有相等
-    public static boolean isAllPastAndStrictDesc(LocalDateTime ...its){
-        for(var i = 0; i < its.length - 2; i++){
+    //全部为过去时间，并且它们严格排列（从左往右离现在越来越近）、没有相等
+    public static boolean isAllPastAndStrict(LocalDateTime ...its){
+        for(var i = 0; i < its.length-1; i++){
             if(its[i].isAfter(its[i+1]) || its[i].isEqual(its[i+1])) return false;
         }
         var now = LocalDateTime.now();
-        return !its[0].isAfter(now);
+        return now.isAfter(its[its.length-1]);
     }
-    public static boolean isAllPastAndStrictDesc(Long ...its){
-        for(var i = 0; i < its.length - 2; i++){
-            if(toLocalDateTime(its[i]).isAfter(toLocalDateTime(its[i+1])) ||
-               toLocalDateTime(its[i]).isEqual(toLocalDateTime(its[i+1]))) return false;
+    public static boolean isAllPastAndStrict(Long ...its){
+        for(var i = 0; i < its.length-1; i++){
+            var tmp1 = toLocalDateTime(its[i]);
+            var tmp2 = toLocalDateTime(its[i+1]);
+            if(tmp1.isAfter(tmp2) || tmp1.isEqual(tmp2)) return false;
         }
         var now = LocalDateTime.now();
-        var tmp = toLocalDateTime(its[0]);
-        return !toLocalDateTime(its[0]).isAfter(now);
+        var tmp = toLocalDateTime(its[its.length-1]);
+        return now.isAfter(tmp);
     }
-    public static boolean isAllPastAndStrictDesc(ZoneOffset zoneOffset, LocalDateTime ...its){
-        for(var i = 0; i < its.length - 2; i++){
+    public static boolean isAllPastAndStrict(ZoneOffset zoneOffset, LocalDateTime ...its){
+        for(var i = 0; i < its.length-1; i++){
             if(its[i].isAfter(its[i+1]) || its[i].isEqual(its[i+1])) return false;
         }
         var now = LocalDateTime.now(zoneOffset);
-        return !its[0].isAfter(now);
+        return now.isAfter(its[its.length-1]);
     }
-    public static boolean isAllPastAndStrictDesc(ZoneOffset zoneOffset, Long ...its){
-        for(var i = 0; i < its.length - 2; i++){
+    public static boolean isAllPastAndStrict(ZoneOffset zoneOffset, Long ...its){
+        for(var i = 0; i < its.length-1; i++){
             if(toLocalDateTime(its[i]).isAfter(toLocalDateTime(its[i+1])) ||
                toLocalDateTime(its[i]).isEqual(toLocalDateTime(its[i+1]))) return false;
         }
         var now = LocalDateTime.now(zoneOffset);
-        return !toLocalDateTime(its[0]).isAfter(now);
+        return now.isAfter(toLocalDateTime(its[its.length-1]));
     }
+
     public static boolean isBeforeOrEqual(Long a, Long b, ZoneOffset zoneOffset){
         var t1 = LocalDateTime.ofInstant(Instant.ofEpochMilli(a), zoneOffset);
         var t2 = LocalDateTime.ofInstant(Instant.ofEpochMilli(b), zoneOffset);

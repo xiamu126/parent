@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

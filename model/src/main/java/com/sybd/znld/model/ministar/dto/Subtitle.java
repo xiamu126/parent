@@ -1,8 +1,8 @@
 package com.sybd.znld.model.ministar.dto;
 
-import com.sybd.znld.znld.util.MyDateTime;
-import com.sybd.znld.znld.util.MyNumber;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
+import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

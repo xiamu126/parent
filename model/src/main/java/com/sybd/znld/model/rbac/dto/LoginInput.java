@@ -1,7 +1,7 @@
 package com.sybd.znld.model.rbac.dto;
 
-import com.sybd.znld.znld.util.MyString;
-import com.sybd.znld.znld.validate.Uuid;
+import com.sybd.znld.util.MyString;
+import com.sybd.znld.validate.Uuid;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

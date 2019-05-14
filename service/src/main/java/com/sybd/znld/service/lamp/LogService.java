@@ -3,7 +3,7 @@ package com.sybd.znld.service.lamp;
 import com.sybd.znld.mapper.lamp.HttpLogMapper;
 import com.sybd.znld.model.http.HttpMethod;
 import com.sybd.znld.model.lamp.HttpLogModel;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

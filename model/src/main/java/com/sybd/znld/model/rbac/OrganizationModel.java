@@ -1,7 +1,7 @@
 package com.sybd.znld.model.rbac;
 
 import com.sybd.znld.model.IValid;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 

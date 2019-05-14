@@ -1,7 +1,7 @@
 package com.sybd.znld.model.lamp;
 
 import com.sybd.znld.model.onenet.OneNetKey;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 

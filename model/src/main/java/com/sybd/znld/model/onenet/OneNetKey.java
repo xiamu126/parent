@@ -1,8 +1,8 @@
 package com.sybd.znld.model.onenet;
 
 import com.sybd.znld.model.IValid;
-import com.sybd.znld.znld.util.MyNumber;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyNumber;
+import com.sybd.znld.util.MyString;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;

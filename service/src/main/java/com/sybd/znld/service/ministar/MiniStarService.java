@@ -3,11 +3,9 @@ package com.sybd.znld.service.ministar;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.mapper.ministar.TwinkleBeautyGroupMapper;
 import com.sybd.znld.model.ministar.TwinkleBeautyGroupModel;
-import com.sybd.znld.znld.util.MyDateTime;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +33,7 @@ public class MiniStarService implements IMiniStarService {
     @Override
     public TwinkleBeautyGroupModel addTwinkleBeautyGroup(TwinkleBeautyGroupModel model) {
         if(model == null) return null;
-        if(!MyDateTime.isAllFutureAndStrictAsc(model.beginTime, model.endTime)){
+        if(!MyDateTime.isAllFutureAndStrict(model.beginTime, model.endTime)){
             log.debug("错误的开始结束时间：["+model.beginTime+"],["+model.endTime+"]");
             return null;
         }

@@ -4,7 +4,7 @@ import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.RegionIdAndName;
 import com.sybd.znld.model.lamp.dto.RegionWithLocation;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

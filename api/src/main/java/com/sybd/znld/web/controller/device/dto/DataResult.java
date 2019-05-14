@@ -1,7 +1,7 @@
 package com.sybd.znld.web.controller.device.dto;
 
 import com.sybd.znld.model.BaseApiResult;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.NoArgsConstructor;

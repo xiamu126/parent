@@ -9,7 +9,7 @@ import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.model.rbac.dto.LoginInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.service.BaseService;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;

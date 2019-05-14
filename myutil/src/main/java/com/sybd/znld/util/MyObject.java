@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.util;
+package com.sybd.znld.util;
 
 import java.util.Arrays;
 import java.util.Objects;

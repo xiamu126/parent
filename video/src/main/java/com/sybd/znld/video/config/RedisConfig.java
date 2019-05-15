@@ -1,6 +1,6 @@
-package com.sybd.znld.znld.config;
+package com.sybd.znld.video.config;
 
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

@@ -1,6 +1,6 @@
 package com.sybd.znld.znld.socket;
 
-import com.sybd.znld.znld.util.MyByte;
+import com.sybd.znld.util.MyByte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

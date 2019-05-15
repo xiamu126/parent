@@ -1,7 +1,7 @@
 package com.sybd.znld.video.service;
 
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.video.config.RedisKeyConfig;
-import com.sybd.znld.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.ffmpeg.global.avutil;

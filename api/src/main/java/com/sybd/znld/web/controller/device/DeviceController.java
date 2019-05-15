@@ -133,21 +133,26 @@ public class DeviceController implements IDeviceController {
     public DataResultsMap getAvgHistoryDataWithRegionsAndDataStreams(@RequestBody RegionsAndDataStreams regionsAndDataStreams,
                                                                      @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                      @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(regionsAndDataStreams == null || !regionsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResultsMap.fail("获取数据失败");
-        }
-        var result = new HashMap<String, Map<String, String>>();
-        regionsAndDataStreams.regions.forEach(region -> {
-            var map = new HashMap<String, String>();
-            regionsAndDataStreams.dataStreams.forEach(dataStream -> {
-                var tmp = this.getAvgHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()) map.put(dataStream, tmp.value);
-            });
-            if(!map.isEmpty()){
-                result.put(region, map);
+        try{
+            if(regionsAndDataStreams == null || !regionsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResultsMap.fail("错误的参数");
             }
-        });
-        if(!result.isEmpty()) return DataResultsMap.success(result);
+            var result = new HashMap<String, Map<String, String>>();
+            regionsAndDataStreams.regions.forEach(region -> {
+                var map = new HashMap<String, String>();
+                regionsAndDataStreams.dataStreams.forEach(dataStream -> {
+                    var tmp = this.getAvgHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()) map.put(dataStream, tmp.value);
+                });
+                if(!map.isEmpty()){
+                    result.put(region, map);
+                }
+            });
+            if(!result.isEmpty()) return DataResultsMap.success(result);
+            return DataResultsMap.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResultsMap.fail("获取数据失败");
     }
 
@@ -165,18 +170,23 @@ public class DeviceController implements IDeviceController {
                                                                  @RequestBody List<String> dataStreams,
                                                                  @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                  @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(MyString.isEmptyOrNull(region) || dataStreams == null || dataStreams.isEmpty() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("获取失败");
-        }
-        var map = new HashMap<String, String>();
-        dataStreams.forEach(dataStream -> {
-            if(!MyString.isEmptyOrNull(dataStream)){
-                var tmp = this.getAvgHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()) map.put(dataStream, tmp.value);
+        try{
+            if(MyString.isEmptyOrNull(region) || dataStreams == null || dataStreams.isEmpty() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("错误的参数");
             }
-        });
-        if(!map.isEmpty()) return DataResults.success(map);
-        return DataResults.fail("获取失败");
+            var map = new HashMap<String, String>();
+            dataStreams.forEach(dataStream -> {
+                if(!MyString.isEmptyOrNull(dataStream)){
+                    var tmp = this.getAvgHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()) map.put(dataStream, tmp.value);
+                }
+            });
+            if(!map.isEmpty()) return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
+        return DataResults.fail("获取数据失败");
     }
 
     @ApiOperation(value = "获取多个区域的某时间段内的某一资源的平均值")
@@ -193,18 +203,23 @@ public class DeviceController implements IDeviceController {
                                                                  @PathVariable(name = "dataStream") String dataStream,
                                                                  @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                  @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(regions == null || regions.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("获取失败");
-        }
-        var map = new HashMap<String, String>();
-        regions.forEach(region -> {
-            if(!MyString.isEmptyOrNull(region)){
-                var tmp = this.getAvgHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()) map.put(region, tmp.value);
+        try{
+            if(regions == null || regions.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("错误的参数");
             }
-        });
-        if(!map.isEmpty()) return DataResults.success(map);
-        return DataResults.fail("获取失败");
+            var map = new HashMap<String, String>();
+            regions.forEach(region -> {
+                if(!MyString.isEmptyOrNull(region)){
+                    var tmp = this.getAvgHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()) map.put(region, tmp.value);
+                }
+            });
+            if(!map.isEmpty()) return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
+        return DataResults.fail("获取数据失败");
     }
 
     @ApiOperation(value = "获取多个设备的某时间段内的多个资源的平均值")
@@ -219,25 +234,30 @@ public class DeviceController implements IDeviceController {
     public DataResultsMap getAvgHistoryDataWithDeviceIdsAndDataStreams(@RequestBody DeviceIdsAndDataStreams deviceIdsAndDataStreams,
                                                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResultsMap.fail("参数错误");
-        }
-        var result = new HashMap<String, Map<String, String>>();
-        deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
-            var map = new HashMap<String, String>();
-            deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
-                if(!MyString.isEmptyOrNull(dataStream) && MyNumber.isPositive(deviceId)){
-                    var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
-                    if(tmp != null && tmp.isOk()) {
-                        map.put(dataStream, tmp.value);
+        try{
+            if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResultsMap.fail("参数错误");
+            }
+            var result = new HashMap<String, Map<String, String>>();
+            deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
+                var map = new HashMap<String, String>();
+                deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
+                    if(!MyString.isEmptyOrNull(dataStream) && MyNumber.isPositive(deviceId)){
+                        var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
+                        if(tmp != null && tmp.isOk()) {
+                            map.put(dataStream, tmp.value);
+                        }
                     }
+                });
+                if(!map.isEmpty()){
+                    result.put(deviceId.toString(), map);
                 }
             });
-            if(!map.isEmpty()){
-                result.put(deviceId.toString(), map);
-            }
-        });
-        if(!result.isEmpty()) return DataResultsMap.success(result);
+            if(!result.isEmpty()) return DataResultsMap.success(result);
+            return DataResultsMap.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResultsMap.fail("获取数据失败");
     }
 
@@ -255,19 +275,24 @@ public class DeviceController implements IDeviceController {
                                                                    @RequestBody List<String> dataStreams,
                                                                    @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                    @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(!MyNumber.isPositive(deviceId) || dataStreams == null || dataStreams.isEmpty() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("参数错误");
-        }
-        var map = new HashMap<String, String>();
-        dataStreams.forEach(dataStream -> {
-            if(!MyString.isEmptyOrNull(dataStream)){
-                var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()){
-                    map.put(dataStream, tmp.value);
-                }
+        try{
+            if(!MyNumber.isPositive(deviceId) || dataStreams == null || dataStreams.isEmpty() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("参数错误");
             }
-        });
-        if(!map.isEmpty())return DataResults.success(map);
+            var map = new HashMap<String, String>();
+            dataStreams.forEach(dataStream -> {
+                if(!MyString.isEmptyOrNull(dataStream)){
+                    var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()){
+                        map.put(dataStream, tmp.value);
+                    }
+                }
+            });
+            if(!map.isEmpty())return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResults.fail("获取数据失败");
     }
 
@@ -285,19 +310,24 @@ public class DeviceController implements IDeviceController {
                                                                    @PathVariable(name = "dataStream") String dataStream,
                                                                    @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                    @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("参数错误");
-        }
-        var map = new HashMap<String, String>();
-        deviceIds.forEach(deviceId -> {
-            if(MyNumber.isPositive(deviceId)){
-                var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()){
-                    map.put(deviceId.toString(), tmp.value);
-                }
+        try{
+            if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("参数错误");
             }
-        });
-        if(!map.isEmpty()) return DataResults.success(map);
+            var map = new HashMap<String, String>();
+            deviceIds.forEach(deviceId -> {
+                if(MyNumber.isPositive(deviceId)){
+                    var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()){
+                        map.put(deviceId.toString(), tmp.value);
+                    }
+                }
+            });
+            if(!map.isEmpty()) return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResults.fail("获取数据失败");
     }
 
@@ -348,7 +378,7 @@ public class DeviceController implements IDeviceController {
                 var avg = sum / count;
                 return DataResult.success(MyNumber.toString(avg));
             }
-            return DataResult.fail("获取数据失败");
+            return DataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -398,9 +428,8 @@ public class DeviceController implements IDeviceController {
                     var avg = sum / count;
                     return DataResult.success(MyNumber.toString(avg));
                 }
-                return DataResult.fail("获取数据失败");
+                return DataResult.fail("获取数据为空");
             }
-            return DataResult.fail("获取数据失败");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -419,25 +448,30 @@ public class DeviceController implements IDeviceController {
     public DataResultsMap getMaxHistoryDataWithRegionsAndDataStreams(@RequestBody RegionsAndDataStreams regionsAndDataStreams,
                                                                      @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                      @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(regionsAndDataStreams == null || !regionsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResultsMap.fail("错误的参数");
-        }
-        var result = new HashMap<String, Map<String, String>>();
-        regionsAndDataStreams.regions.forEach(region -> {
-            var map = new HashMap<String, String>();
-            regionsAndDataStreams.dataStreams.forEach(dataStream -> {
-                if(!MyString.isEmptyOrNull(region) && !MyString.isEmptyOrNull(dataStream)){
-                    var tmp = this.getMaxHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
-                    if(tmp != null && tmp.isOk()){
-                        map.put(dataStream, tmp.value);
+        try{
+            if(regionsAndDataStreams == null || !regionsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResultsMap.fail("错误的参数");
+            }
+            var result = new HashMap<String, Map<String, String>>();
+            regionsAndDataStreams.regions.forEach(region -> {
+                var map = new HashMap<String, String>();
+                regionsAndDataStreams.dataStreams.forEach(dataStream -> {
+                    if(!MyString.isEmptyOrNull(region) && !MyString.isEmptyOrNull(dataStream)){
+                        var tmp = this.getMaxHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
+                        if(tmp != null && tmp.isOk()){
+                            map.put(dataStream, tmp.value);
+                        }
                     }
+                });
+                if(!map.isEmpty()){
+                    result.put(region, map);
                 }
             });
-            if(!map.isEmpty()){
-                result.put(region, map);
-            }
-        });
-        if(!result.isEmpty()) return DataResultsMap.success(result);
+            if(!result.isEmpty()) return DataResultsMap.success(result);
+            return DataResultsMap.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResultsMap.fail("获取数据失败");
     }
 
@@ -453,25 +487,30 @@ public class DeviceController implements IDeviceController {
     public DataResultsMap getMaxHistoryDataWithDeviceIdsAndDataStreams(@RequestBody DeviceIdsAndDataStreams deviceIdsAndDataStreams,
                                                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResultsMap.fail("错误的参数");
-        }
-        var result = new HashMap<String, Map<String, String>>();
-        deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
-            var map = new HashMap<String, String>();
-            deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
-                if(MyNumber.isPositive(deviceId) && !MyString.isEmptyOrNull(dataStream)){
-                    var tmp = this.getMaxHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
-                    if(tmp != null && tmp.isOk()){
-                        map.put(dataStream, tmp.value);
+        try{
+            if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResultsMap.fail("错误的参数");
+            }
+            var result = new HashMap<String, Map<String, String>>();
+            deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
+                var map = new HashMap<String, String>();
+                deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
+                    if(MyNumber.isPositive(deviceId) && !MyString.isEmptyOrNull(dataStream)){
+                        var tmp = this.getMaxHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
+                        if(tmp != null && tmp.isOk()){
+                            map.put(dataStream, tmp.value);
+                        }
                     }
+                });
+                if(!map.isEmpty()){
+                    result.put(deviceId.toString(), map);
                 }
             });
-            if(!map.isEmpty()){
-                result.put(deviceId.toString(), map);
-            }
-        });
-        if(!result.isEmpty()) return DataResultsMap.success(result);
+            if(!result.isEmpty()) return DataResultsMap.success(result);
+            return DataResultsMap.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResultsMap.fail("获取数据失败");
     }
 
@@ -489,19 +528,24 @@ public class DeviceController implements IDeviceController {
                                                                  @PathVariable(name = "dataStream") String dataStream,
                                                                  @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                  @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(regions == null || regions.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("错误的参数");
-        }
-        var map = new HashMap<String, String>();
-        regions.forEach(region -> {
-            if(!MyString.isEmptyOrNull(region)){
-                var tmp = this.getMaxHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()){
-                    map.put(region, tmp.value);
-                }
+        try{
+            if(regions == null || regions.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("错误的参数");
             }
-        });
-        if(!map.isEmpty()) return DataResults.success(map);
+            var map = new HashMap<String, String>();
+            regions.forEach(region -> {
+                if(!MyString.isEmptyOrNull(region)){
+                    var tmp = this.getMaxHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()){
+                        map.put(region, tmp.value);
+                    }
+                }
+            });
+            if(!map.isEmpty()) return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResults.fail("获取数据失败");
     }
 
@@ -519,19 +563,24 @@ public class DeviceController implements IDeviceController {
                                                                    @PathVariable(name = "dataStream") String dataStream,
                                                                    @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                    @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("错误的参数");
-        }
-        var map = new HashMap<String, String>();
-        deviceIds.forEach(deviceId -> {
-            if(MyNumber.isPositive(deviceId)){
-                var tmp = this.getMaxHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()){
-                    map.put(deviceId.toString(), tmp.value);
-                }
+        try{
+            if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("错误的参数");
             }
-        });
-        if(!map.isEmpty()) return DataResults.success(map);
+            var map = new HashMap<String, String>();
+            deviceIds.forEach(deviceId -> {
+                if(MyNumber.isPositive(deviceId)){
+                    var tmp = this.getMaxHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()){
+                        map.put(deviceId.toString(), tmp.value);
+                    }
+                }
+            });
+            if(!map.isEmpty()) return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResults.fail("获取数据失败");
     }
 
@@ -578,7 +627,7 @@ public class DeviceController implements IDeviceController {
             }
             var max = result.stream().max(Comparator.comparing(Double::valueOf)).orElse(null);
             if(max != null) return DataResult.success(MyNumber.toString(max));
-            return DataResult.fail("获取数据失败");
+            return DataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -624,9 +673,8 @@ public class DeviceController implements IDeviceController {
                     return MyNumber.getDouble(p.value);
                 });
                 var max = streamSupplier.get().filter(Objects::nonNull).max(Comparator.comparing(Double::valueOf));
-                return max.map(a -> DataResult.success(MyNumber.toString(a))).orElseGet(() -> DataResult.fail("获取数据失败"));
+                return max.map(a -> DataResult.success(MyNumber.toString(a))).orElseGet(() -> DataResult.fail("获取数据为空"));
             }
-            return DataResult.fail("获取数据失败");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -645,25 +693,30 @@ public class DeviceController implements IDeviceController {
     public DataResultsMap getMinHistoryDataWithRegionsAndDataStreams(@RequestBody RegionsAndDataStreams regionsAndDataStreams,
                                                                      @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                      @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(regionsAndDataStreams == null || !regionsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResultsMap.fail("错误的参数");
-        }
-        var result = new HashMap<String, Map<String, String>>();
-        regionsAndDataStreams.regions.forEach(region -> {
-            var map = new HashMap<String, String>();
-            regionsAndDataStreams.dataStreams.forEach(dataStream -> {
-                if(!MyString.isEmptyOrNull(region) && !MyString.isEmptyOrNull(dataStream)){
-                    var tmp = this.getMinHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
-                    if(tmp != null && tmp.isOk()){
-                        map.put(dataStream, tmp.value);
+        try{
+            if(regionsAndDataStreams == null || !regionsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResultsMap.fail("错误的参数");
+            }
+            var result = new HashMap<String, Map<String, String>>();
+            regionsAndDataStreams.regions.forEach(region -> {
+                var map = new HashMap<String, String>();
+                regionsAndDataStreams.dataStreams.forEach(dataStream -> {
+                    if(!MyString.isEmptyOrNull(region) && !MyString.isEmptyOrNull(dataStream)){
+                        var tmp = this.getMinHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
+                        if(tmp != null && tmp.isOk()){
+                            map.put(dataStream, tmp.value);
+                        }
                     }
+                });
+                if(!map.isEmpty()){
+                    result.put(region, map);
                 }
             });
-            if(!map.isEmpty()){
-                result.put(region, map);
-            }
-        });
-        if(!result.isEmpty()) return DataResultsMap.success(result);
+            if(!result.isEmpty()) return DataResultsMap.success(result);
+            return DataResultsMap.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResultsMap.fail("获取数据失败");
     }
 
@@ -679,25 +732,30 @@ public class DeviceController implements IDeviceController {
     public DataResultsMap getMinHistoryDataWithDeviceIdsAndDataStreams(@RequestBody DeviceIdsAndDataStreams deviceIdsAndDataStreams,
                                                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                        @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResultsMap.fail("错误的参数");
-        }
-        var result = new HashMap<String, Map<String, String>>();
-        deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
-            var map = new HashMap<String, String>();
-            deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
-                if(MyNumber.isPositive(deviceId) && !MyString.isEmptyOrNull(dataStream)){
-                    var tmp = this.getMinHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
-                    if(tmp != null && tmp.isOk()){
-                        map.put(dataStream, tmp.value);
+        try{
+            if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid() || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResultsMap.fail("错误的参数");
+            }
+            var result = new HashMap<String, Map<String, String>>();
+            deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
+                var map = new HashMap<String, String>();
+                deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
+                    if(MyNumber.isPositive(deviceId) && !MyString.isEmptyOrNull(dataStream)){
+                        var tmp = this.getMinHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
+                        if(tmp != null && tmp.isOk()){
+                            map.put(dataStream, tmp.value);
+                        }
                     }
+                });
+                if(!map.isEmpty()){
+                    result.put(deviceId.toString(), map);
                 }
             });
-            if(!map.isEmpty()){
-                result.put(deviceId.toString(), map);
-            }
-        });
-        if(!result.isEmpty()) return DataResultsMap.success(result);
+            if(!result.isEmpty()) return DataResultsMap.success(result);
+            return DataResultsMap.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResultsMap.fail("获取数据失败");
     }
 
@@ -715,19 +773,24 @@ public class DeviceController implements IDeviceController {
                                                                  @PathVariable(name = "dataStream") String dataStream,
                                                                  @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                  @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(regions == null || regions.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("错误的参数");
-        }
-        var map = new HashMap<String, String>();
-        regions.forEach(region -> {
-            if(!MyString.isEmptyOrNull(region)){
-                var tmp = this.getMinHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()){
-                    map.put(region, tmp.value);
-                }
+        try{
+            if(regions == null || regions.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("错误的参数");
             }
-        });
-        if(!map.isEmpty()) return DataResults.success(map);
+            var map = new HashMap<String, String>();
+            regions.forEach(region -> {
+                if(!MyString.isEmptyOrNull(region)){
+                    var tmp = this.getMinHistoryDataWithRegionAndDataStream(region, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()){
+                        map.put(region, tmp.value);
+                    }
+                }
+            });
+            if(!map.isEmpty()) return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResults.fail("获取数据失败");
     }
 
@@ -745,28 +808,33 @@ public class DeviceController implements IDeviceController {
                                                                    @PathVariable(name = "dataStream") String dataStream,
                                                                    @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                                    @PathVariable(name = "endTimestamp") Long endTimestamp, HttpServletRequest request) {
-        if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
-            return DataResults.fail("错误的参数");
-        }
-        String dataStreamId = null;
-        if(OneNetKey.isDataStreamId(dataStream)){ // 为资源id
-            dataStreamId = dataStream;
-        }else { // 可能为资源名称
-            var tmp = this.lampService.getDataStreamIdByResourceName(dataStream);
-            if(!MyString.isEmptyOrNull(tmp)){
-                dataStreamId = tmp;
+        try{
+            if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream) || !MyDateTime.isAllPastAndStrict(beginTimestamp, endTimestamp)){
+                return DataResults.fail("错误的参数");
             }
-        }
-        if(dataStreamId == null) return DataResults.fail("获取数据失败");
-        var map = new HashMap<String, String>();
-        deviceIds.forEach(deviceId -> {
-            if(MyNumber.isPositive(deviceId)){
-                var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
-                if(tmp != null && tmp.isOk()) map.put(deviceId.toString(), tmp.value);
+            String dataStreamId = null;
+            if(OneNetKey.isDataStreamId(dataStream)){ // 为资源id
+                dataStreamId = dataStream;
+            }else { // 可能为资源名称
+                var tmp = this.lampService.getDataStreamIdByResourceName(dataStream);
+                if(!MyString.isEmptyOrNull(tmp)){
+                    dataStreamId = tmp;
+                }
             }
+            if(dataStreamId == null) return DataResults.fail("获取数据失败");
+            var map = new HashMap<String, String>();
+            deviceIds.forEach(deviceId -> {
+                if(MyNumber.isPositive(deviceId)){
+                    var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
+                    if(tmp != null && tmp.isOk()) map.put(deviceId.toString(), tmp.value);
+                }
 
-        });
-        if(!map.isEmpty()) return DataResults.success(map);
+            });
+            if(!map.isEmpty()) return DataResults.success(map);
+            return DataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return DataResults.fail("获取数据失败");
     }
 
@@ -822,7 +890,7 @@ public class DeviceController implements IDeviceController {
             }
             var min = result.stream().min(Comparator.comparing(Double::valueOf)).orElse(null);
             if(min != null) return DataResult.success(MyNumber.toString(min));
-            return DataResult.fail("获取数据失败");
+            return DataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -868,9 +936,8 @@ public class DeviceController implements IDeviceController {
                     return MyNumber.getDouble(p.value);
                 });
                 var min = streamSupplier.get().filter(Objects::nonNull).min(Comparator.comparing(Double::valueOf));
-                return min.map(a -> DataResult.success(MyNumber.toString(a))).orElseGet(() -> DataResult.fail("获取数据失败"));
+                return min.map(a -> DataResult.success(MyNumber.toString(a))).orElseGet(() -> DataResult.fail("获取数据为空"));
             }
-            return DataResult.fail("获取数据失败");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -884,28 +951,33 @@ public class DeviceController implements IDeviceController {
     @PostMapping(value = "data/last/deviceIds/dataStreams", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public LastDataResultsMap getLastDataWithDeviceIdsAndDataStreams(@RequestBody DeviceIdsAndDataStreams deviceIdsAndDataStreams, HttpServletRequest request) {
-        if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid()){
-            return LastDataResultsMap.fail("错误的参数");
-        }
-        var result = new HashMap<String, Map<String, LastData>>();
-        deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
-            var map = new HashMap<String, LastData>();
-            deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
-                if(MyNumber.isPositive(deviceId) && !MyString.isEmptyOrNull(dataStream)){
-                    var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
-                    if(tmp != null && tmp.isOk()){
-                        var lastData = new LastData();
-                        lastData.updateAt = tmp.updateAt;
-                        lastData.currentValue = tmp.currentValue;
-                        map.put(dataStream, lastData);
+        try{
+            if(deviceIdsAndDataStreams == null || !deviceIdsAndDataStreams.isValid()){
+                return LastDataResultsMap.fail("错误的参数");
+            }
+            var result = new HashMap<String, Map<String, LastData>>();
+            deviceIdsAndDataStreams.deviceIds.forEach(deviceId -> {
+                var map = new HashMap<String, LastData>();
+                deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
+                    if(MyNumber.isPositive(deviceId) && !MyString.isEmptyOrNull(dataStream)){
+                        var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
+                        if(tmp != null && tmp.isOk()){
+                            var lastData = new LastData();
+                            lastData.updateAt = tmp.updateAt;
+                            lastData.currentValue = tmp.currentValue;
+                            map.put(dataStream, lastData);
+                        }
                     }
+                });
+                if(!map.isEmpty()){
+                    result.put(deviceId.toString(), map);
                 }
             });
-            if(!map.isEmpty()){
-                result.put(deviceId.toString(), map);
-            }
-        });
-        if(!result.isEmpty()) return LastDataResultsMap.success(result);
+            if(!result.isEmpty()) return LastDataResultsMap.success(result);
+            return LastDataResultsMap.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return LastDataResultsMap.fail("获取数据失败");
     }
 
@@ -918,22 +990,27 @@ public class DeviceController implements IDeviceController {
     @Override
     public LastDataResults getLastDataWithDeviceIdAndDataStreams(@RequestBody List<Integer> deviceIds,
                                                                  @PathVariable(name = "dataStream") String dataStream, HttpServletRequest request) {
-        if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream)){
-            return LastDataResults.fail("错误的参数");
-        }
-        var map = new HashMap<String, LastData>();
-        deviceIds.forEach(deviceId -> {
-            if(MyNumber.isPositive(deviceId)){
-                var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
-                if(tmp != null && tmp.isOk()){
-                    var lastData = new LastData();
-                    lastData.updateAt = tmp.updateAt;
-                    lastData.currentValue = tmp.currentValue;
-                    map.put(deviceId.toString(), lastData);
-                }
+        try{
+            if(deviceIds == null || deviceIds.isEmpty() || MyString.isEmptyOrNull(dataStream)){
+                return LastDataResults.fail("错误的参数");
             }
-        });
-        if(!map.isEmpty()) return LastDataResults.success(map);
+            var map = new HashMap<String, LastData>();
+            deviceIds.forEach(deviceId -> {
+                if(MyNumber.isPositive(deviceId)){
+                    var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
+                    if(tmp != null && tmp.isOk()){
+                        var lastData = new LastData();
+                        lastData.updateAt = tmp.updateAt;
+                        lastData.currentValue = tmp.currentValue;
+                        map.put(deviceId.toString(), lastData);
+                    }
+                }
+            });
+            if(!map.isEmpty()) return LastDataResults.success(map);
+            return LastDataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return LastDataResults.fail("获取数据失败");
     }
 
@@ -946,22 +1023,27 @@ public class DeviceController implements IDeviceController {
     @Override
     public LastDataResults getLastDataWithDeviceIdAndDataStreams(@PathVariable(name = "deviceId") Integer deviceId,
                                                                  @RequestBody List<String> dataStreams, HttpServletRequest request) {
-        if(!MyNumber.isPositive(deviceId) || dataStreams == null || dataStreams.isEmpty()){
-            return LastDataResults.fail("错误的参数");
-        }
-        var map = new HashMap<String, LastData>();
-        dataStreams.forEach(dataStream -> {
-            if(!MyString.isEmptyOrNull(dataStream)){
-                var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
-                if(tmp != null && tmp.isOk()){
-                    var lastData = new LastData();
-                    lastData.updateAt = tmp.updateAt;
-                    lastData.currentValue = tmp.currentValue;
-                    map.put(dataStream, lastData);
-                }
+        try{
+            if(!MyNumber.isPositive(deviceId) || dataStreams == null || dataStreams.isEmpty()){
+                return LastDataResults.fail("错误的参数");
             }
-        });
-        if(!map.isEmpty()) return LastDataResults.success(map);
+            var map = new HashMap<String, LastData>();
+            dataStreams.forEach(dataStream -> {
+                if(!MyString.isEmptyOrNull(dataStream)){
+                    var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
+                    if(tmp != null && tmp.isOk()){
+                        var lastData = new LastData();
+                        lastData.updateAt = tmp.updateAt;
+                        lastData.currentValue = tmp.currentValue;
+                        map.put(dataStream, lastData);
+                    }
+                }
+            });
+            if(!map.isEmpty()) return LastDataResults.success(map);
+            return LastDataResults.fail("获取数据为空");
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
         return LastDataResults.fail("获取数据失败");
     }
 
@@ -987,22 +1069,23 @@ public class DeviceController implements IDeviceController {
                     dataStreamId = tmp;
                 }
             }
-            if(dataStreamId == null) return LastDataResult.fail("获取数据失败");
+            if(dataStreamId == null) return LastDataResult.fail("未知资源");
 
             var oneNetKey = OneNetKey.from(dataStreamId);
             if(oneNetKey == null) return LastDataResult.fail("非法的参数");
 
             if(!this.lampService.isDataStreamIdEnabled(deviceId, oneNetKey)){
-                return LastDataResult.fail("当前dataStreamId已禁用");
+                return LastDataResult.fail("当前资源已禁用");
             }
             var ret = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
             if(ret != null && ret.isOk()){
                 return LastDataResult.success(ret);
             }
+            return LastDataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
-        return LastDataResult.fail("获取最新数据失败");
+        return LastDataResult.fail("获取数据失败");
     }
 
     private double modifyLocation(String value){
@@ -1043,7 +1126,7 @@ public class DeviceController implements IDeviceController {
                     dataStreamId = tmp;
                 }
             }
-            if(dataStreamId == null) return HistoryDataResult.fail("获取数据失败");
+            if(dataStreamId == null) return HistoryDataResult.fail("未知资源");
 
             var begin = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
@@ -1051,10 +1134,11 @@ public class DeviceController implements IDeviceController {
             if(ret != null && ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
+            return HistoryDataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
-        return HistoryDataResult.fail("获取历史数据失败");
+        return HistoryDataResult.fail("获取数据失败");
     }
 
     @ApiOperation(value = "获取设备的历史数据")
@@ -1088,15 +1172,16 @@ public class DeviceController implements IDeviceController {
                     dataStreamId = tmp;
                 }
             }
-            if(dataStreamId == null) return HistoryDataResult.fail("获取数据失败");
+            if(dataStreamId == null) return HistoryDataResult.fail("未知资源");
             var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, null, null);
             if(ret != null && ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
+            return HistoryDataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
-        return HistoryDataResult.fail("获取历史数据失败");
+        return HistoryDataResult.fail("获取数据失败");
     }
 
     @ApiOperation(value = "获取设备的历史数据")
@@ -1130,17 +1215,18 @@ public class DeviceController implements IDeviceController {
                     dataStreamId = tmp;
                 }
             }
-            if(dataStreamId == null) return HistoryDataResult.fail("获取数据失败");
+            if(dataStreamId == null) return HistoryDataResult.fail("未知资源");
             var begin = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
             var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, sort, null);
             if(ret != null && ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
+            return HistoryDataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
-        return HistoryDataResult.fail("获取历史数据失败");
+        return HistoryDataResult.fail("获取数据失败");
     }
 
     @ApiOperation(value = "获取设备的历史数据")
@@ -1176,20 +1262,18 @@ public class DeviceController implements IDeviceController {
                     dataStreamId = tmp;
                 }
             }
-            if(dataStreamId == null) return HistoryDataResult.fail("获取数据失败");
+            if(dataStreamId == null) return HistoryDataResult.fail("未知资源");
             var begin = MyDateTime.toLocalDateTime(beginTimestamp);
             var end = MyDateTime.toLocalDateTime(endTimestamp);
-            if(begin.isAfter(end) || limit <= 0){
-                return HistoryDataResult.fail("参数错误");
-            }
             var ret = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, limit, sort, cursor);
             if(ret != null && ret.isOk()){
                 return HistoryDataResult.success(ret);
             }
+            return HistoryDataResult.fail("获取数据为空");
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
-        return HistoryDataResult.fail("获取历史数据失败");
+        return HistoryDataResult.fail("获取数据失败");
     }
 
     @ApiOperation(value = "针对某一设备执行某个命令")
@@ -1258,7 +1342,6 @@ public class DeviceController implements IDeviceController {
             log.error(ex.getMessage());
         }
         return DeviceIdAndNameResult.fail("获取数据失败");
-
     }
 
     @ApiOperation(value = "新建灯带效果")

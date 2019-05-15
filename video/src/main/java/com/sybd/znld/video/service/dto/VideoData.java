@@ -1,7 +1,7 @@
 package com.sybd.znld.video.service.dto;
 
 import com.sybd.znld.model.IValid;
-import com.sybd.znld.znld.util.MyDateTime;
+import com.sybd.znld.util.MyDateTime;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

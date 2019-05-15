@@ -9,7 +9,7 @@ import com.sybd.znld.service.BaseService;
 import com.sybd.znld.mapper.lamp.CameraMapper;
 import com.sybd.znld.model.lamp.CameraModel;
 import com.sybd.znld.service.rbac.IUserService;
-import com.sybd.znld.znld.util.MyString;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;

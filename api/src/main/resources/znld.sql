@@ -2,6 +2,13 @@ drop database if exists ZNLD_V4;
 create database ZNLD_V4 default character set utf8mb4 collate utf8mb4_unicode_ci;
 use ZNLD_V4;
 
+create table app(
+  id           varchar(32) not null primary key,
+  name         varchar(32) not null comment '此app的名字',
+  version      varchar(32) not null comment '当前版本',
+  url          varchar(100) not null  comment '下载地址',
+  description  varchar(100) not null  comment '此app的描述'
+);
 create table onenet_resource(
   id                   varchar(32) not null primary key,
   obj_id               int not null  comment '',

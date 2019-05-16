@@ -1285,6 +1285,7 @@ public class DeviceController implements IDeviceController {
     public ExecuteResult execute(@PathVariable("deviceId") Integer deviceId,
                                  @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgs data,
                                  HttpServletRequest request){
+        var msg = "";
         try{
             if(!MyNumber.isPositive(deviceId) || !data.isValid()){
                 return ExecuteResult.fail("非法的参数");
@@ -1312,6 +1313,7 @@ public class DeviceController implements IDeviceController {
             }
             else {
                 log.debug(ret.error);
+                return ExecuteResult.fail("执行命令发生错误，" + ret.error);
             }
 
         }catch (Exception ex){
@@ -1376,7 +1378,7 @@ public class DeviceController implements IDeviceController {
                     var ret = this.execute(lamp.deviceId, arg, request);
                     if (!ret.isOk()) {
                         log.debug(ret.msg);
-                        return ExecuteResult.fail("上传效果失败");
+                        return ExecuteResult.fail("上传效果失败，"+ret.msg);
                     }
                 }
             }

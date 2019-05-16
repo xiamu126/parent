@@ -23,6 +23,7 @@ public class LampService implements ILampService {
     private final OneNetResourceMapper oneNetResourceMapper;
     private final RegionMapper regionMapper;
     private final LampRegionMapper lampRegionMapper;
+    private final AppMapper appMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -30,12 +31,14 @@ public class LampService implements ILampService {
                        LampResourceMapper lampResourceMapper,
                        OneNetResourceMapper oneNetResourceMapper,
                        RegionMapper regionMapper,
-                       LampRegionMapper lampRegionMapper) {
+                       LampRegionMapper lampRegionMapper,
+                       AppMapper appMapper) {
         this.lampMapper = lampMapper;
         this.lampResourceMapper = lampResourceMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.regionMapper = regionMapper;
         this.lampRegionMapper = lampRegionMapper;
+        this.appMapper = appMapper;
     }
 
     @Override
@@ -222,5 +225,11 @@ public class LampService implements ILampService {
         var oneNetResource = this.oneNetResourceMapper.selectByResourceName(resourceName);
         if(oneNetResource != null) return oneNetResource.objId+"_"+oneNetResource.objInstId+"_"+oneNetResource.resId;
         return null;
+    }
+
+    @Override
+    public AppModel getAppInfoByName(String name) {
+        if(MyString.isEmptyOrNull(name)) return null;
+        return this.appMapper.selectByName(name);
     }
 }

@@ -29,7 +29,13 @@ public class MyNumber {
     public static Long getLong(Object num){
         try{
             return (Long) num;
-        }catch (Exception ignored){}
+        }catch (Exception ignored){ }
+        return null;
+    }
+    public static Long getLong(String num){
+        try{
+            return Long.parseLong(num);
+        }catch (Exception ignored){ }
         return null;
     }
     public static boolean isBetween(int it, int min, int max){

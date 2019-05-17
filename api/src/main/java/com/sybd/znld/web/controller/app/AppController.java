@@ -29,18 +29,15 @@ public class AppController implements IAppController {
     @PostMapping(value = "version", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public CheckVersionResult checkVersion(@RequestHeader(name = "app_name") String appName,
-                                           @RequestHeader(name = "app_version") String appVersion) {
-        if(MyString.isEmptyOrNull(appName) || MyString.isEmptyOrNull(appVersion) || !CheckVersionResult.isValidVersion(appVersion)){
+                                           @RequestHeader(name = "app_version_code") Integer appVersionCode) {
+        if(MyString.isEmptyOrNull(appName) || appVersionCode == null){
             return CheckVersionResult.fail("错误的参数");
         }
-        var tmp = CheckVersionResult.getVersionNumber(appVersion);
         var appModel = this.lampService.getAppInfoByName("hd");
         if(appModel == null) return CheckVersionResult.fail("检测版本失败");
-        var tmp1 = CheckVersionResult.getVersionNumber(appModel.version);
-        if(tmp == null || tmp1 == null) return CheckVersionResult.fail("检测版本失败");
-        if(CheckVersionResult.needUpdate(tmp, tmp1)){
-            return CheckVersionResult.success(true, appModel.url);
+        if(appVersionCode < appModel.versionCode){
+            return CheckVersionResult.success(true, appModel.url, appModel.versionCode);
         }
-        return CheckVersionResult.success(false, null);
+        return CheckVersionResult.success(false, null, null);
     }
 }

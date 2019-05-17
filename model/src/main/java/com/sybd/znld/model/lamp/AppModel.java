@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class AppModel implements Serializable {
     public String id;
     public String name;
-    public String version;
+    public Integer versionCode;
     public String url;
     public String description;
 }

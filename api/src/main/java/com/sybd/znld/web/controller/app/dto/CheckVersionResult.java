@@ -12,16 +12,19 @@ public class CheckVersionResult extends BaseApiResult {
     @JsonProperty("need_update")
     public Boolean needUpdate;
     public String url;
+    @JsonProperty("version_code")
+    public Integer versionCode;
 
     public CheckVersionResult(int code, String msg){
         super(code, msg);
         this.needUpdate = null;
         this.url = null;
     }
-    public CheckVersionResult(int code, String msg, Boolean needUpdate, String url){
+    public CheckVersionResult(int code, String msg, Boolean needUpdate, String url, Integer versionCode){
         super(code, msg);
         this.needUpdate = needUpdate;
         this.url = url;
+        this.versionCode = versionCode;
     }
 
     public static boolean isValidVersion(String version){
@@ -67,8 +70,8 @@ public class CheckVersionResult extends BaseApiResult {
         return true;
     }
 
-    public static CheckVersionResult success(boolean needUpdate, String url){
-        return new CheckVersionResult(0, "", needUpdate, url);
+    public static CheckVersionResult success(boolean needUpdate, String url, Integer versionCode){
+        return new CheckVersionResult(0, "", needUpdate, url, versionCode);
     }
 
     public static CheckVersionResult fail(String msg){

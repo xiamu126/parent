@@ -3,11 +3,12 @@ create database ZNLD_V4 default character set utf8mb4 collate utf8mb4_unicode_ci
 use ZNLD_V4;
 
 create table app(
-  id           varchar(32) not null primary key,
-  name         varchar(32) not null comment '此app的名字',
-  version      varchar(32) not null comment '当前版本',
-  url          varchar(100) not null  comment '下载地址',
-  description  varchar(100) not null  comment '此app的描述'
+  id               varchar(32) not null primary key,
+  name             varchar(32) not null comment '此app的名字',
+  version_code     int not null comment '版本检测主要看这个',
+  version_name     varchar(32) not null comment '这个版本号是给用户看的，版本检测不依赖于此',
+  url              varchar(100) not null  comment '下载地址',
+  description      varchar(100) not null  comment '此app的描述'
 );
 create table onenet_resource(
   id                   varchar(32) not null primary key,
@@ -19,6 +20,7 @@ create table onenet_resource(
   timeout              tinyint not null default 5  comment '',
   type                 tinyint not null default 0 comment '0：命令资源，1：数值资源，2：单位资源，3：状态资源，4：其它资源'
 );
+alter table onenet_resource add index idx_obj_inst_res(obj_id, obj_inst_id, res_id);
 create table lamp_resource(
   id                   varchar(32) not null primary key,
   lamp_id              varchar(32) not null  comment '',

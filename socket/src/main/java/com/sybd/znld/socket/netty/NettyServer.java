@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.socket;
+package com.sybd.znld.socket.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;

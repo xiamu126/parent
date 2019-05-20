@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.socket;
+package com.sybd.znld.socket.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;

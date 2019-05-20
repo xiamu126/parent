@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.socket;
+package com.sybd.znld.socket.test;
 
 import com.sybd.znld.util.MyByte;
 import lombok.*;

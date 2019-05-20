@@ -1,6 +1,7 @@
-package com.sybd.znld.znld.socket;
+package com.sybd.znld.socket.test;
 
 import com.sybd.znld.util.MyByte;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,8 +10,8 @@ import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+@Slf4j
 public final class ServerProvider extends Thread {
-    private final Logger log = LoggerFactory.getLogger(ServerProvider.class);
     public static final int PROVIDER_PORT = 30201;
     public static final byte[] HEADER = "com.sybd.znld.socket".getBytes();
 

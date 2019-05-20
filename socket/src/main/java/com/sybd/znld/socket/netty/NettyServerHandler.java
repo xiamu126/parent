@@ -1,17 +1,15 @@
-package com.sybd.znld.znld.socket;
+package com.sybd.znld.socket.netty;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
-    private final Logger log = LoggerFactory.getLogger(NettyClientHandler.class);
-
+public class NettyServerHandler extends SimpleChannelInboundHandler<String> {
+    private final Logger log = LoggerFactory.getLogger(NettyServerHandler.class);
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        log.debug(msg);
-        ctx.writeAndFlush("from client");
+        ctx.writeAndFlush("from server");
     }
 
     @Override

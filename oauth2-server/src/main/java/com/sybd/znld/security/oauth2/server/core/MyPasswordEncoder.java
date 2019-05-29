@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 @Component("PasswordEncoder")
 public class MyPasswordEncoder implements PasswordEncoder {
-    private final Logger log = LoggerFactory.getLogger(MyPasswordEncoder.class);
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
 
     @Override

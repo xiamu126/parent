@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MyUserDetailsService implements UserDetailsService {
-    private final Logger log = LoggerFactory.getLogger(MyUserDetailsService.class);
     private final UserMapper userMapper;
     private final AuthorityService authorityService;
 

@@ -1,11 +1,11 @@
 version: '3.7'
 services:
   nginx:
-    container_name: znld-nginx
+    container_name: znld-nginx-app
     image: nginx:1.14.2
     ports:
       - target: 80
-        published: 9000
+        published: 9001
         protocol: tcp
         mode: host
     restart: on-failure

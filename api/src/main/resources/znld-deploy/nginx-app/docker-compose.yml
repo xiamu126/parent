@@ -2,7 +2,7 @@ version: '3.7'
 services:
   nginx:
     container_name: znld-nginx-app
-    image: nginx:1.14.2
+    image: nginx:1.16.0
     ports:
       - target: 80
         published: 9001
@@ -29,3 +29,9 @@ services:
       - type: bind
         source: ./
         target: /var/log/nginx
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

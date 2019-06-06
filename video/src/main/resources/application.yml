@@ -24,7 +24,7 @@ spring:
   main:
     banner-mode: "off"
   profiles:
-    include: onenet,security,datasource
+    include: onenet
     active: prod
   cache:
     type: redis

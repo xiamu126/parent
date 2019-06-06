@@ -53,9 +53,9 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
     <logger name="org.thymeleaf" level="error"/>
     <logger name="io.swagger" level="error" />
     <logger name="springfox" level="error"/>
+    <logger name="com.zaxxer.hikari" level="error"/>
 
     <logger name="com.sybd.znld" level="debug"/> <!--没有设置addtivity，默认为true，将此logger的打印信息向上级传递,即传给root；-->
-    <logger name="com.sybd.znld.video.service" level="debug"/>
     <root level="debug">
         <appender-ref ref="stdout"/>
         <appender-ref ref="appLogAppender"/>

@@ -33,7 +33,7 @@ spring:
     suffix: .html
     cache: false
   profiles:
-    include: onenet,security,datasource
+    include: onenet
     active: prod
   cache:
     type: redis

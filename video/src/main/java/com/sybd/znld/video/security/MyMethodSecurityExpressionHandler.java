@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class MyMethodSecurityExpressionHandler extends OAuth2MethodSecurityExpressionHandler {
     private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
-
     private final UserMapper userMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

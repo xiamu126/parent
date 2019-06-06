@@ -6,6 +6,7 @@ import com.sybd.znld.security.oauth2.server.mapper.*;
 import com.sybd.znld.model.rbac.dto.AuthPackByUser;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,10 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @DbSource("rbac")
 public class AuthorityService implements IAuthorityService {
-    private final Logger log = LoggerFactory.getLogger(AuthorityService.class);
     private final AuthGroupMapper authGroupMapper;
     private final AuthorityMapper authorityMapper;
     private final RoleMapper roleMapper;

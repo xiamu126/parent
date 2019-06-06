@@ -2,7 +2,7 @@ version: '3.7'
 services:
   redis:
     container_name: znld-redis
-    image: redis:5.0.4
+    image: redis:5.0.5
     restart: on-failure
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -27,3 +27,9 @@ services:
         protocol: tcp
         mode: host
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

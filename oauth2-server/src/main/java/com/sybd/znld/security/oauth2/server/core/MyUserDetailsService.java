@@ -26,7 +26,6 @@ public class MyUserDetailsService implements UserDetailsService {
         this.authorityService = authorityService;
     }
 
-    @DbSource("rbac")
     @Override
     public UserDetails loadUserByUsername(String username) throws AuthenticationException {
         var user = userMapper.selectByName(username);

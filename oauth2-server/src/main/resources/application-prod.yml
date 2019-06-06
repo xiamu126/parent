@@ -1,6 +1,6 @@
-db-server: 58.210.51.74:8307
-redis-server: 58.210.51.74
-redis-server-port: 8380
+db-server: znld-mysql:3306
+redis-server: znld-redis
+redis-server-port: 6379
 
 spring:
   redis:
@@ -8,22 +8,25 @@ spring:
     port: ${redis-server-port}
     password: 94f76e0864c411e980f50242ac110005
   datasource:
-    druid:
-      oauth:
-        #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
-        url: jdbc:mysql://${db-server}/oauth?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
-        username: root
-        password: znld@DB#188188
-      znld:
-        #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
-        url: jdbc:mysql://${db-server}/ZNLD_V4?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
-        username: root
-        password: znld@DB#188188
-      rbac:
-        url: jdbc:mysql://${db-server}/RBAC_V2?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
-        username: root
-        password: znld@DB#188188
-      ministar:
-        url: jdbc:mysql://${db-server}/MINI_STAR?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
-        username: root
-        password: znld@DB#188188
+    oauth:
+      pool-name: HikariPool-oauth
+      #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
+      jdbc-url: jdbc:mysql://${db-server}/oauth?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188
+    znld:
+      pool-name: HikariPool-znld
+      #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
+      jdbc-url: jdbc:mysql://${db-server}/ZNLD_V4?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188
+    rbac:
+      pool-name: HikariPool-rbac
+      jdbc-url: jdbc:mysql://${db-server}/RBAC_V2?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188
+    ministar:
+      pool-name: HikariPool-ministar
+      jdbc-url: jdbc:mysql://${db-server}/MINI_STAR?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188

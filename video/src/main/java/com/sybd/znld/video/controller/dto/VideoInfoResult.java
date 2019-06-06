@@ -35,7 +35,7 @@ public class VideoInfoResult extends BaseApiResult {
                 map(source.cameraId, destination.cameraId);
                 map(source.flvUrl, destination.flvUrl);
                 map(0, destination.code);
-                map("xxx", destination.msg);
+                map("", destination.msg);
             }
         };
         var modelMapper = new ModelMapper();

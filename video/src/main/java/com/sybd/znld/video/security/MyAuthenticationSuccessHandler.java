@@ -14,7 +14,6 @@ import java.io.IOException;
 
 @Component
 public class MyAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-
     private final RequestCache requestCache = new HttpSessionRequestCache();
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 

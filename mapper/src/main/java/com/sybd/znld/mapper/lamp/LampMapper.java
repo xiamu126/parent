@@ -4,6 +4,7 @@ import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.model.lamp.LampModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,6 @@ public interface LampMapper {
     List<LampAndRegion> selectLampByLampIdAndRegionType(String lampId, Short regionType);
     List<BoundResource> selectBoundResourceByDeviceId(Integer deviceId);
     List<LampModel> selectByRegionId(String regionId);
-    List<LampModel> selectByOrganId(String organId, int limit, int offset);
+    List<LampModel> selectByOrganId(@Param("organId") String organId, @Param("limit") int limit, @Param("offset") int offset);
     LampAndCamera selectActiveCameraByDeviceId(Integer deviceId);
 }

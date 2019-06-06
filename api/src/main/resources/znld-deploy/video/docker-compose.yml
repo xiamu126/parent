@@ -18,4 +18,10 @@ services:
       - type: bind
         source: ./
         target: /video
-    command: java -jar -Duser.timezone=Asia/Shanghai app.jar
+    command: java -Duser.timezone=Asia/Shanghai -Xlog:gc*:./logs/gc.log -Xms512m -Xmx1024m -jar app.jar
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

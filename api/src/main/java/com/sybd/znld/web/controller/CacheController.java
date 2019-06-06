@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/cache")
 public class CacheController {
-    private final Logger log = LoggerFactory.getLogger(CacheController.class);
-
     @PostMapping(value = "evict", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public ApiResult removeCache(){
         return null;

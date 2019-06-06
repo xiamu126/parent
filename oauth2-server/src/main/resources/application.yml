@@ -1,53 +1,6 @@
 server:
-  port: 8888
+  port: 8081
 spring:
-  datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    type: com.alibaba.druid.pool.DruidDataSource
-    druid:
-      filter:
-        stat:
-          enabled: true
-          log-slow-sql: true
-          slow-sql-millis: 2000
-        wall:
-          enabled: true
-          config:
-            delete-allow: false
-            alter-table-allow: false
-            drop-table-allow: false
-            rename-table-allow: false
-            create-table-allow: false
-            delete-where-none-check: true
-            delete-where-alway-true-check: true
-            update-where-alay-true-check: true
-            update-where-none-check: true
-        slf4j:
-          enabled: true
-          statement-log-enabled: true
-          result-set-log-enabled: true
-          data-source-log-enabled: true
-          connection-log-enabled: true
-          statement-sql-pretty-format: true
-          statement-prepare-after-log-enabled: true
-          statement-prepare-call-after-log-enabled: true
-          statement-executable-sql-log-enable: true
-      web-stat-filter:
-        enabled: true
-        url-pattern: /*
-        exclusions: ["*.gif", "*.png", "*.jpg", "*.html", "*.js", "*.css", "*.ico", "/druid/*"]
-      stat-view-servlet: #http://localhost:8080/druid/
-        enabled: true
-        url-pattern: /druid/*
-        login-username: admin
-        login-password: 123456
-        allow: localhost
-      db-type: mysql
-      test-while-idle: true
-      test-on-borrow: false
-      test-on-return: false
-      validation-query: select 1
-      reset-stat-enable: false
   main:
     banner-mode: "off"
   session:

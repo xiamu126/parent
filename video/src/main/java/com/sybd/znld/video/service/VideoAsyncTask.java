@@ -133,6 +133,8 @@ public class VideoAsyncTask {
             // 设置日志级别
             avutil.av_log_set_level(avutil.AV_LOG_PANIC);
             //
+            log.debug("rtspPath: " + rtspPath);
+            log.debug("rtmpPath: " + rtmpPath);
             grabber = FFmpegFrameGrabber.createDefault(rtspPath);
             grabber.setOption("rtsp_transport", "tcp"); //使用tcp的方式，不然会丢包很严重
             //一直报错的原因！！！就是因为是 2560 * 1440的太大了。。

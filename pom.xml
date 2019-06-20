@@ -43,22 +43,21 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipTests>true</skipTests>
         <java.version>11</java.version>
-        <jackson.version>2.9.8</jackson.version>
-        <mysql.version>8.0.16</mysql.version>
-        <modelmapper.version>2.3.2</modelmapper.version>
-        <kaptcha.version>2.3.2</kaptcha.version>
+        <mysqlVersion>8.0.16</mysqlVersion>
+        <modelmapperVersion>2.3.4</modelmapperVersion>
+        <kaptchaVersion>2.3.2</kaptchaVersion>
         <javacvVersion>1.5</javacvVersion>
         <javacvFfmpegVersion>4.1.3-1.5</javacvFfmpegVersion>
-        <redisson.version>3.10.4</redisson.version>
+        <redissonVersion>3.11.0</redissonVersion>
         <swaggerVersion>2.9.2</swaggerVersion>
-        <mybatis.version>2.0.1</mybatis.version>
-        <guava.version>27.0.1-jre</guava.version>
-        <commonsValidator.version>1.6</commonsValidator.version>
-        <springVersion>2.1.3.RELEASE</springVersion>
+        <mybatisVersion>2.0.1</mybatisVersion>
+        <guavaVersion>27.1-jre</guavaVersion>
+        <commonsValidatorVersion>1.6</commonsValidatorVersion>
+        <springVersion>2.1.5.RELEASE</springVersion>
         <springSecurityVersion>5.1.5.RELEASE</springSecurityVersion>
 
-        <netty-version>4.1.34.Final</netty-version>
-        <jacksonVersion>2.9.8</jacksonVersion>
+        <nettyVersion>4.1.36.Final</nettyVersion>
+        <jacksonVersion>2.9.9</jacksonVersion>
         <mongodbVersion>3.10.2</mongodbVersion>
         <javatuplesVersion>1.2</javatuplesVersion>
 
@@ -127,7 +126,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
-                <version>${netty-version}</version>
+                <version>${nettyVersion}</version>
             </dependency>
 
             <dependency>
@@ -169,12 +168,12 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
+                <version>${guavaVersion}</version>
             </dependency>
             <dependency>
                 <groupId>commons-validator</groupId>
                 <artifactId>commons-validator</artifactId>
-                <version>${commonsValidator.version}</version>
+                <version>${commonsValidatorVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security.oauth.boot</groupId>
@@ -194,27 +193,27 @@
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson-spring-boot-starter</artifactId>
-                <version>${redisson.version}</version>
+                <version>${redissonVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis.version}</version>
+                <version>${mybatisVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.modelmapper</groupId>
                 <artifactId>modelmapper</artifactId>
-                <version>${modelmapper.version}</version>
+                <version>${modelmapperVersion}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.penggle</groupId>
                 <artifactId>kaptcha</artifactId>
-                <version>${kaptcha.version}</version>
+                <version>${kaptchaVersion}</version>
             </dependency>
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql.version}</version>
+                <version>${mysqlVersion}</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>

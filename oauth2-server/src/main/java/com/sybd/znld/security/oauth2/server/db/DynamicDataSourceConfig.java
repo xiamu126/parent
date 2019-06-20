@@ -91,12 +91,7 @@ public class DynamicDataSourceConfig {
     }
 
     public static class DynamicDataSource extends AbstractRoutingDataSource {
-        private static final ThreadLocal<ArrayDeque<String>> contextHolder = new ThreadLocal<>();
-        static {
-            var stack = new ArrayDeque<String>();
-            stack.add(defaultDataSource);
-            contextHolder.set(stack);
-        }
+        private static final ThreadLocal<ArrayDeque<String>> threadLocal = new ThreadLocal<>();
         /**
          * 配置DataSource, defaultTargetDataSource为主数据库
          */
@@ -112,28 +107,26 @@ public class DynamicDataSourceConfig {
         }
 
         public static void setDataSource(String dataSource) {
-            var stack = contextHolder.get();
+            var stack = threadLocal.get();
             if(stack == null){
                 stack = new ArrayDeque<>();
-                contextHolder.set(stack);
+                threadLocal.set(stack);
             }
             stack.push(dataSource);
         }
 
         private static String getDataSource() {
-            var stack = contextHolder.get();
-            if(stack == null){
-                stack = new ArrayDeque<>();
-                contextHolder.set(stack);
-                return defaultDataSource;
-            }
-            var ret = stack.peek();
-            if(ret == null) return defaultDataSource;
-            return ret;
+            var stack = threadLocal.get();
+            if(stack == null) return null;
+            return stack.peek();
         }
 
         public static void clearDataSource() {
-            contextHolder.get().pop();
+            var stack = threadLocal.get();
+            if(stack != null){
+                if(!stack.isEmpty()) stack.pop();
+                if(stack.isEmpty()) threadLocal.remove();
+            }
         }
     }
 }

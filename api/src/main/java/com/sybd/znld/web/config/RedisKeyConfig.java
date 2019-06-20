@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.config;
+package com.sybd.znld.web.config;
 
 public class RedisKeyConfig {
     public static final String CLIENT_CHANNEL_GUID_GLOBAL_PREFIX = "znld:web:client:channelGuid:global:";

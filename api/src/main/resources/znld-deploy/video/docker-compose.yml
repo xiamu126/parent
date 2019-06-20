@@ -2,7 +2,7 @@ version: '3.7'
 services:
   api:
     container_name: znld-video
-    image: openjdk:11.0.3-jre-slim-stretch
+    image: openjdk:11.0.3-jdk
     restart: on-failure
     working_dir: /video
     ports:
@@ -18,7 +18,7 @@ services:
       - type: bind
         source: ./
         target: /video
-    command: java -Duser.timezone=Asia/Shanghai -Xlog:gc*:./logs/gc.log -Xms512m -Xmx1024m -jar app.jar
+    command: java -Duser.timezone=Asia/Shanghai -Xlog:gc*:./logs/gc.log -Xms2048m -Xmx4096m -jar app.jar
     networks:
       - znld-network
 networks:

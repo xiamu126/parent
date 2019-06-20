@@ -34,10 +34,16 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
     }
 
     private static String getDataSource() {
-        return threadLocal.get().peek();
+        var stack = threadLocal.get();
+        if(stack == null) return null;
+        return stack.peek();
     }
 
     public static void clearDataSource() {
-        threadLocal.get().pop();
+        var stack = threadLocal.get();
+        if(stack != null){
+            if(!stack.isEmpty()) stack.pop();
+            if(stack.isEmpty()) threadLocal.remove();
+        }
     }
 }

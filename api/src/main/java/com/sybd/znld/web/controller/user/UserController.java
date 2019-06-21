@@ -76,7 +76,8 @@ public class UserController implements IUserController {
     @ApiOperation(value = "登入")
     @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public LoginResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input, HttpServletRequest request, BindingResult bindingResult){
+    public LoginResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
+                             HttpServletRequest request, BindingResult bindingResult){
         var key = getCaptchaKey(input.uuid);
         var rightCaptcha = this.stringRedisTemplate.opsForValue().get(key);
         if(rightCaptcha == null) return LoginResult.fail("验证码已失效");

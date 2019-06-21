@@ -1,5 +1,6 @@
 package com.sybd.znld.web.controller.device;
 
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.web.controller.device.dto.*;
@@ -41,7 +42,7 @@ public interface IDeviceController {
     LastDataResultsMap getLastDataWithDeviceIdsAndDataStreams(DeviceIdsAndDataStreams deviceIdsAndDataStreams, HttpServletRequest request);
     LastDataResults getLastDataWithDeviceIdAndDataStreams(List<Integer> deviceIds, String dataStream, HttpServletRequest request);
     LastDataResults getLastDataWithDeviceIdAndDataStreams(Integer deviceId, List<String> dataStreams, HttpServletRequest request);
-    LastDataResult getLastDataWithDeviceIdAndDataStream(Integer deviceId, String dataStream, HttpServletRequest request);
+    BaseApiResult getLastDataWithDeviceIdAndDataStream(Integer deviceId, String dataStream, HttpServletRequest request);
 
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, Integer limit, HttpServletRequest request);

@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter @Setter
 @ApiModel(value = "登入返回数据")
 public class LoginResult extends BaseApiResult {
@@ -19,6 +21,8 @@ public class LoginResult extends BaseApiResult {
     public String clientSecret;
     @ApiModelProperty(value = "OAuth2的过期时间")
     public Long auth2TokenExpirationTime;
+    @ApiModelProperty(value = "服务端当前时间")
+    public LocalDateTime now = LocalDateTime.now();
 
     public LoginResult(Integer code, String msg){
         super(code, msg);

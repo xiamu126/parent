@@ -25,4 +25,11 @@ public class BaseApiResult implements Serializable{
         this.code = code;
         this.msg = msg;
     }
+    public BaseApiResult(int code, String msg){
+        this.code = code;
+        this.msg = msg;
+    }
+    public static BaseApiResult fail(String msg){
+        return new BaseApiResult(1, msg);
+    }
 }

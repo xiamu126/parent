@@ -1,6 +1,7 @@
 package com.sybd.znld.web.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.service.lamp.ILampService;
@@ -688,7 +689,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "Long", paramType = "path")
     })
     @PostMapping(value = "data/min/regions/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
     @Override
     public DataResultsMap getMinHistoryDataWithRegionsAndDataStreams(@RequestBody RegionsAndDataStreams regionsAndDataStreams,
                                                                      @PathVariable(name = "beginTimestamp") Long beginTimestamp,
@@ -828,7 +829,6 @@ public class DeviceController implements IDeviceController {
                     var tmp = this.getAvgHistoryDataWithDeviceIdAndDataStream(deviceId, dataStream, beginTimestamp, endTimestamp, request);
                     if(tmp != null && tmp.isOk()) map.put(deviceId.toString(), tmp.value);
                 }
-
             });
             if(!map.isEmpty()) return DataResults.success(map);
             return DataResults.fail("获取数据为空");
@@ -960,7 +960,7 @@ public class DeviceController implements IDeviceController {
                 var map = new HashMap<String, LastData>();
                 deviceIdsAndDataStreams.dataStreams.forEach(dataStream -> {
                     if(MyNumber.isPositive(deviceId) && !MyString.isEmptyOrNull(dataStream)){
-                        var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
+                        var tmp = (LastDataResult) this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
                         if(tmp != null && tmp.isOk()){
                             var lastData = new LastData();
                             lastData.updateAt = tmp.updateAt;
@@ -997,7 +997,7 @@ public class DeviceController implements IDeviceController {
             var map = new HashMap<String, LastData>();
             deviceIds.forEach(deviceId -> {
                 if(MyNumber.isPositive(deviceId)){
-                    var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
+                    var tmp = (LastDataResult) this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
                     if(tmp != null && tmp.isOk()){
                         var lastData = new LastData();
                         lastData.updateAt = tmp.updateAt;
@@ -1030,7 +1030,7 @@ public class DeviceController implements IDeviceController {
             var map = new HashMap<String, LastData>();
             dataStreams.forEach(dataStream -> {
                 if(!MyString.isEmptyOrNull(dataStream)){
-                    var tmp = this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
+                    var tmp = (LastDataResult) this.getLastDataWithDeviceIdAndDataStream(deviceId, dataStream, request);
                     if(tmp != null && tmp.isOk()){
                         var lastData = new LastData();
                         lastData.updateAt = tmp.updateAt;
@@ -1054,8 +1054,8 @@ public class DeviceController implements IDeviceController {
     })
     @GetMapping(value = "data/last/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public LastDataResult getLastDataWithDeviceIdAndDataStream(@PathVariable(name = "deviceId") Integer deviceId,
-                                                               @PathVariable(name = "dataStream") String dataStream, HttpServletRequest request) {
+    public BaseApiResult getLastDataWithDeviceIdAndDataStream(@PathVariable(name = "deviceId") Integer deviceId,
+                                                              @PathVariable(name = "dataStream") String dataStream, HttpServletRequest request) {
         try {
             if(!MyNumber.isPositive(deviceId) || MyString.isEmptyOrNull(dataStream)){
                 return LastDataResult.fail("错误的参数");

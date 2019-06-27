@@ -34,4 +34,5 @@ public interface LampMapper {
     List<LampModel> selectByRegionId(String regionId);
     List<LampModel> selectByOrganId(@Param("organId") String organId, @Param("limit") int limit, @Param("offset") int offset);
     LampAndCamera selectActiveCameraByDeviceId(Integer deviceId);
+    LampAndCamera selectActiveCameraByLampId(String lampId);
 }

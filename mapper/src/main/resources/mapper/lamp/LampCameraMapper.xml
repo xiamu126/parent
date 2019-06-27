@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampCameraMapper">
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampCameraModel">
+        select * from lamp_camera where id = #{_parameter};
+    </select>
+    <select id="selectByCameraId" resultType="com.sybd.znld.model.lamp.LampCameraModel">
+        select * from lamp_camera where camera_id = #{cameraId};
+    </select>
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampCameraModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert into lamp_camera(id, lamp_id, camera_id) values (#{id}, #{lampId}, #{cameraId});
+    </insert>
+    <delete id="deleteById" parameterType="java.lang.String">
+        delete from lamp_camera where id = #{id};
+    </delete>
+    <delete id="deleteByLampIdAndCameraId">
+        delete from lamp_camera where lamp_id = #{lampId} and camera_id = #{cameraId};
+    </delete>
+</mapper>

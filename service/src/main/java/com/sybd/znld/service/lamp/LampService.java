@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 
@@ -24,6 +25,8 @@ public class LampService implements ILampService {
     private final RegionMapper regionMapper;
     private final LampRegionMapper lampRegionMapper;
     private final AppMapper appMapper;
+    private final CameraMapper cameraMapper;
+    private final LampCameraMapper lampCameraMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -32,13 +35,15 @@ public class LampService implements ILampService {
                        OneNetResourceMapper oneNetResourceMapper,
                        RegionMapper regionMapper,
                        LampRegionMapper lampRegionMapper,
-                       AppMapper appMapper) {
+                       AppMapper appMapper, CameraMapper cameraMapper, LampCameraMapper lampCameraMapper) {
         this.lampMapper = lampMapper;
         this.lampResourceMapper = lampResourceMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.regionMapper = regionMapper;
         this.lampRegionMapper = lampRegionMapper;
         this.appMapper = appMapper;
+        this.cameraMapper = cameraMapper;
+        this.lampCameraMapper = lampCameraMapper;
     }
 
     @Override
@@ -143,7 +148,7 @@ public class LampService implements ILampService {
     }
 
     @Override
-    @Transactional(rollbackFor = { Exception.class })
+    @Transactional(rollbackFor = { Exception.class }, transactionManager = "znldTransactionManager")
     public LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds) {
         if(lamp == null || !lamp.isValidBeforeInsert() || !MyString.isUuid(regionId) || resourceIds == null || resourceIds.isEmpty()){
             log.debug("非法的参数");
@@ -183,17 +188,21 @@ public class LampService implements ILampService {
             lampRegionModel.regionId = regionId;
             if(this.lampRegionMapper.insert(lampRegionModel) > 0) {
                 // 关联路灯与资源
-                resourceIds.forEach(resourceId -> {
+                for(var resourceId: resourceIds){
                     var lampResource = new LampResourceModel();
                     lampResource.lampId = lamp.id;
                     lampResource.oneNetResourceId = resourceId;
                     if(this.lampResourceMapper.insert(lampResource) <= 0){
-                        throw new RuntimeException("关联路灯与资源时发生失败，抛出异常，激活事务回滚");
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                        return null;
                     }
-                });
+                }
                 // 关联资源成功
                 return lampRegionModel;
-            } else throw new RuntimeException("新增lampRegion失败，抛出异常，激活事务回滚");
+            } else {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return null;
+            }
         }
         return null;
     }
@@ -231,5 +240,55 @@ public class LampService implements ILampService {
     public AppModel getAppInfoByName(String name) {
         if(MyString.isEmptyOrNull(name)) return null;
         return this.appMapper.selectByName(name);
+    }
+
+    @Override
+    @Transactional(rollbackFor = { Exception.class }, transactionManager = "znldTransactionManager")
+    public LampCameraModel addCamera(String lampId, CameraModel model) {
+        if(!MyString.isUuid(lampId) || model == null || !model.isValidForInsert()) {
+            return null;
+        }
+        var count = this.cameraMapper.insert(model);
+        if(count <= 0) {
+            return null; // 添加失败
+        }
+        var camera = this.cameraMapper.selectByRtspUrl(model.rtspUrl);
+        if(camera != null) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return null; // 已经添加过了
+        }
+
+        camera = this.cameraMapper.selectByRtspUrl(model.rtspUrl);
+        var lamp = this.lampMapper.selectById(lampId);
+        if(lamp == null || camera == null) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return null; // 指定的路灯或摄像头不存在
+        }
+
+        var lampCameraModel = new LampCameraModel();
+        lampCameraModel.lampId = lampId;
+        lampCameraModel.cameraId = camera.id;
+
+        count = this.lampCameraMapper.insert(lampCameraModel);
+        if( count <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return null;
+        }
+
+        return lampCameraModel;
+    }
+
+    @Override
+    @Transactional(rollbackFor = { Exception.class }, transactionManager = "znldTransactionManager")
+    public boolean removeCamera(String lampId, String cameraId) {
+        if(!MyString.isUuid(lampId) || !MyString.isUuid(cameraId)) return false;
+        var count = this.cameraMapper.deleteById(cameraId);
+        if(count <= 0) return false;
+        count = this.lampCameraMapper.deleteByLampIdAndCameraId(lampId, cameraId);
+        if(count <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return false;
+        }
+        return true;
     }
 }

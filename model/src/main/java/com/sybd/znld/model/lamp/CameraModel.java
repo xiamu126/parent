@@ -1,5 +1,6 @@
 package com.sybd.znld.model.lamp;
 
+import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,7 @@ public class CameraModel implements Serializable {
     public String rtspUrl;
     public String rtmp;
     public String flvUrl;
-    public Boolean recordAudio;
+    public Boolean recordAudio = false;
     public Short status = Status.ENABLED;
 
     public static class Status{
@@ -21,5 +22,12 @@ public class CameraModel implements Serializable {
     public static class Rtmp{
         public String liveUrl;
         public String trackUrl;
+    }
+
+    public boolean isValid(){
+        return MyString.isUuid(id) && !MyString.isAnyEmptyOrNull(rtspUrl, rtmp, flvUrl);
+    }
+    public boolean isValidForInsert(){
+        return !MyString.isAnyEmptyOrNull(rtspUrl, rtmp, flvUrl);
     }
 }

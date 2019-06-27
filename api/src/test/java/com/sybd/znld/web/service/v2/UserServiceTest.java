@@ -1,4 +1,4 @@
-package com.sybd.znld.service.v2;
+package com.sybd.znld.web.service.v2;
 
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.rbac.UserModel;
@@ -38,12 +38,9 @@ public class UserServiceTest {
     @Test
     public void insertUser(){
         var model = new UserModel();
-        model.id = "1";
-        model.name = "test3";
-        model.password = "123456";
-        model.gender = 1;
-        model.organizationId = "";
-        model.lastLoginIp = "";
+        model.name = "weihai";
+        model.password = "2019";
+        model.organizationId = "099060a6971911e9b0790242c0a8b006";
         var user = this.userService.addUser(model);
         Assert.assertNotNull(user);
         Assert.assertNotEquals(user.id, "");

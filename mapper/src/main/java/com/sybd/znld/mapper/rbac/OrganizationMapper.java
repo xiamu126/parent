@@ -4,6 +4,7 @@ import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.rbac.OrganizationModel;
 import com.sybd.znld.model.rbac.dto.AuthPackByGroup;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface OrganizationMapper {
     OrganizationModel selectByName(String name);
     OrganizationModel selectById(String id);
     int updateById(OrganizationModel model);
-    List<OrganizationModel> selectByParentIdAndPosition(String parentId, Integer position);
+    List<OrganizationModel> selectByParentIdAndPosition(@Param("parentId") String parentId, @Param("position") Integer position);
     int deleteById(String id, Short status);
     List<OrganizationModel> selectByParentId(String parentId);
     List<AuthPackByGroup> selectAuthPackByGroupId(String authGroupId);

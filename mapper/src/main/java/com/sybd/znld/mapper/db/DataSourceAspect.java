@@ -19,10 +19,12 @@ public class DataSourceAspect {
 
     @Around("dataSourcePointCut()")
     public Object around(ProceedingJoinPoint point) throws Throwable {
-        // 优先处理方法上的注解
         var signature = (MethodSignature) point.getSignature();
         var method = signature.getMethod();
-        var ds = method.getAnnotation(DbSource.class);
+        DbSource ds = null;
+
+        // 优先处理方法上的注解 // 不再支持方法上注解
+        /*ds = method.getAnnotation(DbSource.class);
         if(ds != null){// 方法上的注解
             // 通过判断DataSource中的值来判断当前方法应用哪个数据源
             DynamicDataSource.setDataSource(ds.value());
@@ -31,7 +33,8 @@ public class DataSourceAspect {
             } finally {
                 DynamicDataSource.clearDataSource();
             }
-        }
+        }*/
+
         // 其次处理Mapper上的注解
         var interfaces = point.getTarget().getClass().getInterfaces(); // 如果是代理类，即其所实现了的所有接口
         for(var i: interfaces){// 如果是Mapper
@@ -45,8 +48,9 @@ public class DataSourceAspect {
                 }
             }
         }
-        // 最后才是类上的注解
-        ds = point.getTarget().getClass().getAnnotation(DbSource.class);
+
+        // 最后才是类上的注解 // 不再支持类上的注解
+        /*ds = point.getTarget().getClass().getAnnotation(DbSource.class);
         if(ds != null){// 类上的注解（包括接口）
             DynamicDataSource.setDataSource(ds.value());
             try {
@@ -54,7 +58,7 @@ public class DataSourceAspect {
             } finally {
                 DynamicDataSource.clearDataSource();
             }
-        }
+        }*/
         return point.proceed();
     }
 }

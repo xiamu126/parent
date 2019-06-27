@@ -1,10 +1,13 @@
-package com.sybd.znld.service.znld;
+package com.sybd.znld.web.service.znld;
 
 import com.sybd.znld.mapper.lamp.LampMapper;
+import com.sybd.znld.mapper.lamp.LampResourceMapper;
 import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
 import com.sybd.znld.model.lamp.LampModel;
+import com.sybd.znld.model.lamp.LampResourceModel;
 import com.sybd.znld.model.lamp.OneNetResourceModel;
 import com.sybd.znld.service.lamp.ILampService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,12 +21,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Slf4j
 public class LampServiceTest {
-    private final Logger log = LoggerFactory.getLogger(LampServiceTest.class);
     @Autowired
     private WebApplicationContext wac;
     private MockMvc mockMvc;
@@ -38,6 +42,8 @@ public class LampServiceTest {
     private LampMapper lampMapper;
     @Autowired
     private OneNetResourceMapper oneNetResourceMapper;
+    @Autowired
+    private LampResourceMapper lampResourceMapper;
 
     @Test
     public void test(){
@@ -88,5 +94,18 @@ public class LampServiceTest {
         var ret2 = this.lampService.addLampToRegion(model2, "62fa3afb56a111e98edc0242ac110007", list);
         Assert.assertNotNull(ret1);
         Assert.assertNotNull(ret2);
+    }
+
+    @Test
+    public void bindLampWithResource(){
+        var lampId = "9ca06b068d7011e9bc910242c0a8b007";
+        var ret = this.oneNetResourceMapper.selectByResourceType(OneNetResourceModel.Type.Value);
+        var list = ret.stream().map(resource -> resource.id).collect(Collectors.toList());
+        list.forEach(resId -> {
+            var model = new LampResourceModel();
+            model.lampId = lampId;
+            model.oneNetResourceId = resId;
+            this.lampResourceMapper.insert(model);
+        });
     }
 }

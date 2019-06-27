@@ -21,10 +21,8 @@ public class OrganizationModel implements IValid, Serializable {
         if(MyString.isEmptyOrNull(name)) return false;
         // 如果是顶级节点，则position必须为0
         if(parentId.equals("") && position != 0) return false;
-        if(!MyString.isUuid(parentId)) return false;
-        return
-                Status.isValid(status) &&
-                !MyString.isEmptyOrNull(oauth2ClientId);
+        if(!MyString.isEmptyOrNull(parentId) && !MyString.isUuid(parentId)) return false;
+        return Status.isValid(status) && !MyString.isEmptyOrNull(oauth2ClientId);
     }
 
     public static class Status{

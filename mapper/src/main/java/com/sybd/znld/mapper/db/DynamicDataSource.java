@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Slf4j
 public class DynamicDataSource extends AbstractRoutingDataSource {
-    private static final ThreadLocal<ArrayDeque<String>> threadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<String> threadLocal = new ThreadLocal<>();
     /**
      * 配置DataSource, defaultTargetDataSource为主数据库
      */
@@ -25,25 +25,14 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
     }
 
     public static void setDataSource(String dataSource) {
-        var stack = threadLocal.get();
-        if(stack == null){
-            stack = new ArrayDeque<>();
-            threadLocal.set(stack);
-        }
-        stack.push(dataSource);
+        threadLocal.set(dataSource);
     }
 
     private static String getDataSource() {
-        var stack = threadLocal.get();
-        if(stack == null) return null;
-        return stack.peek();
+        return threadLocal.get();
     }
 
     public static void clearDataSource() {
-        var stack = threadLocal.get();
-        if(stack != null){
-            if(!stack.isEmpty()) stack.pop();
-            if(stack.isEmpty()) threadLocal.remove();
-        }
+        threadLocal.remove();
     }
 }

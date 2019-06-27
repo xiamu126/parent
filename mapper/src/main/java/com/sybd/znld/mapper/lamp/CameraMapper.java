@@ -9,4 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface CameraMapper {
     CameraModel selectById(String id);
     int updateById(CameraModel model);
+    int insert(CameraModel model);
+    CameraModel selectByRtspUrl(String rtspUrl);
+    int deleteById(String id);
 }

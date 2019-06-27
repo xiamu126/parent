@@ -4,14 +4,27 @@
     <select id="selectById" resultType="com.sybd.znld.model.lamp.CameraModel">
         select * from camera where id = #{_parameter};
     </select>
+    <select id="selectByRtspUrl" resultType="com.sybd.znld.model.lamp.CameraModel">
+        select * from camera where rtsp_url = #{rtspUrl};
+    </select>
     <update id="updateById" parameterType="com.sybd.znld.model.lamp.CameraModel">
         update camera
         <set>
             <if test="rtspUrl != null">rtsp_url=#{rtspUrl},</if>
-            <if test="rtmpUrl != null">rtmp_url=#{rtmpUrl},</if>
+            <if test="rtmp != null">rtmp=#{rtmp},</if>
             <if test="recordAudio != null">record_audio=#{recordAudio},</if>
-            <if test="organizationId != null">organization_id=#{organizationId}</if>
+            <if test="status != null">status=#{status}</if>
         </set>
         where id = #{id};
     </update>
+    <update id="deleteById" parameterType="java.lang.String">
+        update camera set status = 2 where id = #{id};
+    </update>
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.CameraModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert into camera(id, rtsp_url, rtmp, flv_url, record_audio, status)
+        values (#{id}, #{rtspUrl}, #{rtmp}, #{flvUrl}, #{recordAudio}, #{status});
+    </insert>
 </mapper>

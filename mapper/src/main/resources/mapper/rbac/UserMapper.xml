@@ -5,9 +5,18 @@
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>
-        insert user(id,name,password,phone,email,gender,age,contact_address,real_name,id_card_no,last_login_ip,organization_id,status)
+        insert user
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                id,name,password,phone,email,gender,age,contact_address,real_name,id_card_no,
+            <if test=" lastLoginIp != null and lastLoginIp != '' ">last_login_ip,</if>
+            organization_id,status
+            </trim>
         values
-        (#{id},#{name},#{password},#{phone},#{email},#{gender},#{age},#{contactAddress},#{realName},#{idCardNo},#{lastLoginIp},#{organizationId},#{status})
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id},#{name},#{password},#{phone},#{email},#{gender},#{age},#{contactAddress},#{realName},#{idCardNo},
+            <if test=" lastLoginIp != null and lastLoginIp != '' ">#{lastLoginIp},</if>
+               #{organizationId},#{status}
+        </trim>
     </insert>
 
     <update id="updateById" parameterType="com.sybd.znld.model.rbac.UserModel">

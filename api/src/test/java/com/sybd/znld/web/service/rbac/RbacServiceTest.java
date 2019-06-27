@@ -1,10 +1,12 @@
-package com.sybd.znld.service.rbac;
+package com.sybd.znld.web.service.rbac;
 
+import com.sybd.znld.mapper.db.DynamicDataSource;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.rbac.*;
 import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
 import com.sybd.znld.model.rbac.dto.RbacApiInfo;
 import com.sybd.znld.service.rbac.IRbacService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -21,8 +24,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Slf4j
 public class RbacServiceTest {
-    private final Logger log = LoggerFactory.getLogger(RbacServiceTest.class);
     @Autowired
     private WebApplicationContext wac;
     private MockMvc mockMvc;
@@ -36,6 +39,10 @@ public class RbacServiceTest {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
 
     @Test
     public void addOrgan(){
@@ -171,5 +178,22 @@ public class RbacServiceTest {
     public void test(){
         var ret = this.userMapper.selectAuthPackByUserId("a6a96ebc51f111e9804a0242ac110007");
         log.debug(ret.toString());
+    }
+
+    @Test
+    public void addOrganization(){
+        var organ = new OrganizationModel();
+        organ.name = "山东威海";
+        organ.oauth2ClientId = "sybd_znld_test";
+        var model = this.rbacService.addOrganization(organ);
+        Assert.assertNotNull(model);
+    }
+
+    @Test
+    public void testGetUser(){
+        var user = this.userMapper.selectByName("sybd_test_user");
+        //DynamicDataSource.setDataSource("rbac");
+        //var tmp = this.jdbcTemplate.queryForList("select * from user where name ='sybd_test_user' ");
+        Assert.assertNotNull(user.organizationId);
     }
 }

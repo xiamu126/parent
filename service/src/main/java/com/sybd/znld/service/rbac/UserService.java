@@ -115,7 +115,7 @@ public class UserService extends BaseService implements IUserService {
     @Override
     //@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = {Exception.class})
     public UserModel addUser(UserModel model) {
-        if(model == null || !model.isValid()) return null;
+        if(model == null || !model.isValidForInsert()) return null;
         //名字不能重复
         if(this.userMapper.selectByName(model.name) != null) return null;
         //手机号不能重复，如果存在的话
@@ -145,6 +145,7 @@ public class UserService extends BaseService implements IUserService {
                 skip(destination.realName);
                 skip(destination.idCardNo);
                 skip(destination.lastLoginIp);
+                skip(destination.id);
             }
         };
         var modelMapper = new ModelMapper();

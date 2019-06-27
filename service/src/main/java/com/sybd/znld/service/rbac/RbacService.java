@@ -207,13 +207,14 @@ public class RbacService implements IRbacService {
         }
         // 监测position节点，同一个parentId下，不能重复；
         // 一个组织只能由一个顶级节点；也就是组织A''0与组织B''0可以共存
-        if(model.parentId.equals("") && model.position == 0){// 是顶级节点
+        if(model.parentId.equals("") && model.position == 0){// 顶级节点，不做唯一性判断
 
-        }
-        var ret = this.organizationMapper.selectByParentIdAndPosition(model.parentId, model.position);
-        if(ret != null && !ret.isEmpty()) {
-            log.debug("已经存在相同的父节点与位置");
-            return null;
+        }else{ // 非顶级节点，也就是隶属于某个组织的子组织，子组织必须是唯一的，也就是某个父节点下面的每个位置只能有一个子节点
+            var ret = this.organizationMapper.selectByParentIdAndPosition(model.parentId, model.position);
+            if(ret != null && !ret.isEmpty()) {
+                log.debug("已经存在相同的父节点与位置");
+                return null;
+            }
         }
         if(this.organizationMapper.insert(model) > 0) return model;
         return null;

@@ -42,4 +42,8 @@ public class UserModel implements Serializable {
     public boolean isValid(){
         return MyString.isUuid(id) && !MyString.isAnyEmptyOrNull(name, password) && MyString.isUuid(organizationId);
     }
+
+    public boolean isValidForInsert(){
+        return !MyString.isAnyEmptyOrNull(name, password) && MyString.isUuid(organizationId);
+    }
 }

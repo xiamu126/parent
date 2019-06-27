@@ -1,9 +1,10 @@
-package com.sybd.znld.service;
+package com.sybd.znld.web.service;
 
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,8 +21,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Slf4j
 public class UserServiceTest {
-    private final Logger log = LoggerFactory.getLogger(UserServiceTest.class);
     @Autowired
     private WebApplicationContext wac;
 
@@ -92,9 +93,9 @@ public class UserServiceTest {
 
     @Test
     public void register(){
-        var user = this.userService.register(new RegisterInput("qqq","123456", ""));
+        var user = this.userService.register(new RegisterInput("weihai","2019", "099060a6971911e9b0790242c0a8b006"));
         Assert.assertNotNull(user);
-        Assert.assertEquals(user.getName(), "qqq");
+        Assert.assertEquals(user.getName(), "weihai");
     }
 
     @Test

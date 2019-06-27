@@ -1,9 +1,6 @@
 package com.sybd.znld.service.lamp;
 
-import com.sybd.znld.model.lamp.AppModel;
-import com.sybd.znld.model.lamp.LampModel;
-import com.sybd.znld.model.lamp.LampRegionModel;
-import com.sybd.znld.model.lamp.OneNetResourceModel;
+import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.CheckedResource;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.model.lamp.dto.LampAndCamera;
@@ -29,4 +26,6 @@ public interface ILampService {
     String getResourceNameByDataStreamId(String dataStreamId);
     String getDataStreamIdByResourceName(String resourceName);
     AppModel getAppInfoByName(String name);
+    LampCameraModel addCamera(String lampId, CameraModel model);
+    boolean removeCamera(String lampId, String cameraId);
 }

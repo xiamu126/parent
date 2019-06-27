@@ -85,7 +85,9 @@ public class UserController implements IUserController {
         try {
             var user = this.userService.getUserByName(input.user);
             if(user != null){
-                if(!this.encoder.matches(input.password, user.password)) return LoginResult.fail("用户名或密码错误");
+                if(!this.encoder.matches(input.password, user.password)) {
+                    return LoginResult.fail("用户名或密码错误");
+                }
                 this.stringRedisTemplate.delete(getCaptchaKey(input.uuid));
                 long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
                 // 获取rbac权限信息

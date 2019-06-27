@@ -1,6 +1,5 @@
-package com.sybd.znld.web.onenet.dto;
+package com.sybd.znld.model.onenet.dto;
 
-import com.sybd.znld.web.onenet.dto.BaseResult;
 import lombok.Getter;
 import lombok.Setter;
 

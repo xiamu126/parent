@@ -3,8 +3,8 @@ package com.sybd.znld.web.controller.device;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
+import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.web.controller.device.dto.*;
-import com.sybd.znld.web.onenet.dto.OneNetExecuteArgs;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

@@ -5,7 +5,6 @@ import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.service.lamp.ILogService;
 import com.sybd.znld.model.lamp.HttpLogModel;
 import com.sybd.znld.util.MyString;
-import com.sybd.znld.web.onenet.dto.BaseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

@@ -2,8 +2,8 @@ package com.sybd.znld.web.controller.resource;
 
 import com.sybd.znld.model.lamp.dto.CheckedResource;
 import com.sybd.znld.service.lamp.ILampService;
+import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.web.controller.resource.dto.CheckedResourcesResult;
-import com.sybd.znld.web.onenet.IOneNetService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;

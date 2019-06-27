@@ -30,6 +30,7 @@ public class VideoService extends BaseService implements IVideoService {
     private final RedissonClient redissonClient;
     private final CameraMapper cameraMapper;
     private final VideoAsyncTask videoAsyncTask;
+    private final ObjectMapper objectMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -37,11 +38,12 @@ public class VideoService extends BaseService implements IVideoService {
                         CacheManager cacheManager,
                         TaskScheduler taskScheduler, ProjectConfig projectConfig,
                         RedissonClient redissonClient,
-                        VideoAsyncTask videoAsyncTask) {
+                        VideoAsyncTask videoAsyncTask, ObjectMapper objectMapper) {
         super(cacheManager, taskScheduler, projectConfig);
         this.cameraMapper = cameraMapper;
         this.redissonClient = redissonClient;
         this.videoAsyncTask = videoAsyncTask;
+        this.objectMapper = objectMapper;
     }
 
     @PreDestroy
@@ -81,7 +83,6 @@ public class VideoService extends BaseService implements IVideoService {
                 return false;
             }
             var rtspUrl = camera.rtspUrl;
-            var objectMapper = new ObjectMapper();
             var rtmp = objectMapper.readValue(camera.rtmp, CameraModel.Rtmp.class);
             if(rtmp == null) return false;
             var recordAudio = camera.recordAudio;

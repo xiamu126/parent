@@ -2,14 +2,12 @@ package com.sybd.znld.web.controller.device.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sybd.znld.model.BaseApiResult;
-import com.sybd.znld.web.onenet.dto.GetDataStreamByIdResult;
+import com.sybd.znld.model.onenet.dto.GetDataStreamByIdResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
 
 import java.time.LocalDateTime;
 
@@ -36,21 +34,11 @@ public class LastDataResult extends BaseApiResult {
         return new LastDataResult(1, msg);
     }
     public static LastDataResult success(GetDataStreamByIdResult result){
-        PropertyMap<GetDataStreamByIdResult, LastDataResult> propertyMap = new PropertyMap<GetDataStreamByIdResult, LastDataResult>(){
-            @Override
-            protected void configure() {
-                map(source.data.updateAt, destination.updateAt);
-                map(source.data.currentValue, destination.currentValue);
-                skip(destination.code);
-                skip(destination.msg);
-            }
-        };
-        var modelMapper = new ModelMapper();
-        modelMapper.addMappings(propertyMap);
-        modelMapper.validate();
-        var tmp = modelMapper.map(result, LastDataResult.class);
-        tmp.code = 0;
-        tmp.msg = "";
-        return tmp;
+        var lastDataResult = new LastDataResult();
+        lastDataResult.updateAt = result.data.updateAt;
+        lastDataResult.currentValue = result.data.currentValue.toString();
+        lastDataResult.code = 0;
+        lastDataResult.msg = "";
+        return lastDataResult;
     }
 }

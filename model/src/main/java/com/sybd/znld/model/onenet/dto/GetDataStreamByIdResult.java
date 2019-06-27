@@ -1,19 +1,17 @@
-package com.sybd.znld.web.onenet.dto;
+package com.sybd.znld.model.onenet.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sybd.znld.web.onenet.dto.BaseResult;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter @Setter
-public class GetDataStreamsByIdsResult extends BaseResult {
-    public List<Data> data;
+public class GetDataStreamByIdResult extends BaseResult {
+    public Data data;
     public boolean isOk(){
-        return super.errno == 0 && this.data != null && !data.isEmpty();
+        return super.errno == 0;
     }
 
     @Getter @Setter

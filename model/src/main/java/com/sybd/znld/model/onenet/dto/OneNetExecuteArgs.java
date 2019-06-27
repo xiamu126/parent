@@ -1,10 +1,10 @@
-package com.sybd.znld.web.onenet.dto;
+package com.sybd.znld.model.onenet.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.model.IValid;
 import com.sybd.znld.model.ministar.dto.Subtitle;
+import com.sybd.znld.model.onenet.Command;
 import com.sybd.znld.util.MyNumber;
-import com.sybd.znld.web.onenet.OneNetService;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -28,10 +28,10 @@ public class OneNetExecuteArgs implements IValid {
     @Override
      public boolean isValid(){
         if(this.cmd == null) return false;
-        if(this.cmd.equals(OneNetService.ZNLD_QX_UPLOAD_RATE) || this.cmd.equals(OneNetService.ZNLD_LOCATION_UPLOAD_RATE) || this.cmd.equals(OneNetService.ZNLD_STATUS_UPLOAD_RATE)){
+        if(this.cmd.equals(Command.ZNLD_QX_UPLOAD_RATE) || this.cmd.equals(Command.ZNLD_LOCATION_UPLOAD_RATE) || this.cmd.equals(Command.ZNLD_STATUS_UPLOAD_RATE)){
             // 检查具体的速率，必须是[10,100)
             return MyNumber.isBetween(this.json, 10, 99);
-        } else if(this.cmd.equals(OneNetService.ZNLD_DD_EXECUTE)){
+        } else if(this.cmd.equals(Command.ZNLD_DD_EXECUTE)){
             // 如果是灯带的，检查指令是否合法
             if(this.json == null) return false;
             var subtitle = this.getSubtitle();
@@ -42,10 +42,10 @@ public class OneNetExecuteArgs implements IValid {
 
     public String getPackedCmd(){
         if(!this.isValid()) return "";
-        if(this.cmd.equals(OneNetService.ZNLD_QX_UPLOAD_RATE) || this.cmd.equals(OneNetService.ZNLD_LOCATION_UPLOAD_RATE) || this.cmd.equals(OneNetService.ZNLD_STATUS_UPLOAD_RATE)){
+        if(this.cmd.equals(Command.ZNLD_QX_UPLOAD_RATE) || this.cmd.equals(Command.ZNLD_LOCATION_UPLOAD_RATE) || this.cmd.equals(Command.ZNLD_STATUS_UPLOAD_RATE)){
             // 检查具体的速率，必须是[10,100)
             return this.cmd = this.cmd + this.json;
-        } else if(this.cmd.equals(OneNetService.ZNLD_DD_EXECUTE)){
+        } else if(this.cmd.equals(Command.ZNLD_DD_EXECUTE)){
             // 如果是灯带的，检查指令是否合法
             var subtitle = this.getSubtitle();
             if(subtitle == null) return "";

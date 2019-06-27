@@ -1,8 +1,7 @@
-package com.sybd.znld.web.onenet.dto;
+package com.sybd.znld.model.onenet.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sybd.znld.web.onenet.dto.BaseResult;
 import lombok.Getter;
 import lombok.Setter;
 

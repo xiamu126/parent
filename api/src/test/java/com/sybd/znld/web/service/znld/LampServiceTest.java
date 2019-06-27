@@ -108,4 +108,10 @@ public class LampServiceTest {
             this.lampResourceMapper.insert(model);
         });
     }
+
+    @Test
+    public void getLampStatus(){
+        var ret = this.lampService.getLampStatusByDeviceId(528130535);
+        Assert.assertNotNull(ret);
+    }
 }

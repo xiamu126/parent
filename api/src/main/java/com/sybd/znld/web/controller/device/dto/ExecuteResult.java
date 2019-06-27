@@ -1,7 +1,7 @@
 package com.sybd.znld.web.controller.device.dto;
 
 import com.sybd.znld.model.BaseApiResult;
-import com.sybd.znld.web.onenet.dto.OneNetExecuteResult;
+import com.sybd.znld.model.onenet.dto.OneNetExecuteResult;
 import io.swagger.annotations.ApiModel;
 import lombok.NoArgsConstructor;
 

@@ -4,6 +4,7 @@ import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.CheckedResource;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.model.lamp.dto.LampAndCamera;
+import com.sybd.znld.model.lamp.dto.LampStatus;
 import com.sybd.znld.model.onenet.OneNetKey;
 
 import java.util.List;
@@ -28,4 +29,5 @@ public interface ILampService {
     AppModel getAppInfoByName(String name);
     LampCameraModel addCamera(String lampId, CameraModel model);
     boolean removeCamera(String lampId, String cameraId);
+    LampStatus getLampStatusByDeviceId(Integer deviceId);
 }

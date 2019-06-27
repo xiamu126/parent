@@ -1,9 +1,9 @@
 package com.sybd.znld.web.task;
 
+import com.sybd.znld.model.onenet.Command;
+import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.service.lamp.ILampService;
-import com.sybd.znld.web.onenet.IOneNetService;
-import com.sybd.znld.web.onenet.OneNetService;
-import com.sybd.znld.web.onenet.dto.CommandParams;
+import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -47,7 +47,7 @@ public class MyScheduledTask {
             try{
                 locker.lock();
                 //log.debug("成功获取锁并开始执行任务");
-                var model = this.lampService.getResourceByCommandValue(OneNetService.ZNLD_HEART_BEAT);
+                var model = this.lampService.getResourceByCommandValue(Command.ZNLD_HEART_BEAT);
                 if(model == null){
                     //log.error("执行定时任务错误，获取指令为空");
                     return;
@@ -55,7 +55,7 @@ public class MyScheduledTask {
                 var map = this.oneNetService.getDeviceIdAndImei();
                 for(var item: map){
                     var params = new CommandParams();
-                    params.command = OneNetService.ZNLD_HEART_BEAT;
+                    params.command = Command.ZNLD_HEART_BEAT;
                     params.deviceId = item.deviceId;
                     params.imei = item.imei;
                     params.oneNetKey = model.toOneNetKey();

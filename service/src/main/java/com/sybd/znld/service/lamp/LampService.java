@@ -5,7 +5,9 @@ import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.CheckedResource;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName;
 import com.sybd.znld.model.lamp.dto.LampAndCamera;
+import com.sybd.znld.model.lamp.dto.LampStatus;
 import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ public class LampService implements ILampService {
     private final AppMapper appMapper;
     private final CameraMapper cameraMapper;
     private final LampCameraMapper lampCameraMapper;
+    private final IOneNetService oneNetService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -35,7 +38,7 @@ public class LampService implements ILampService {
                        OneNetResourceMapper oneNetResourceMapper,
                        RegionMapper regionMapper,
                        LampRegionMapper lampRegionMapper,
-                       AppMapper appMapper, CameraMapper cameraMapper, LampCameraMapper lampCameraMapper) {
+                       AppMapper appMapper, CameraMapper cameraMapper, LampCameraMapper lampCameraMapper, IOneNetService oneNetService) {
         this.lampMapper = lampMapper;
         this.lampResourceMapper = lampResourceMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
@@ -44,6 +47,7 @@ public class LampService implements ILampService {
         this.appMapper = appMapper;
         this.cameraMapper = cameraMapper;
         this.lampCameraMapper = lampCameraMapper;
+        this.oneNetService = oneNetService;
     }
 
     @Override
@@ -290,5 +294,79 @@ public class LampService implements ILampService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public LampStatus getLampStatusByDeviceId(Integer deviceId) {
+        if(MyNumber.isNegativeOrZero(deviceId)){
+            return null;
+        }
+        var lamp = this.lampMapper.selectByDeviceId(deviceId);
+        if(lamp == null){
+            return null;
+        }
+
+        var tmp = this.oneNetResourceMapper.selectByResourceName("电子屏状态");
+        Integer eScreenStatus = null;
+        OneNetKey oneNetKey = null;
+        String ret = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            eScreenStatus = MyNumber.getInteger(ret);
+        }
+
+        tmp = this.oneNetResourceMapper.selectByResourceName("景观灯状态");
+        Integer miniStarStatus = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            miniStarStatus = MyNumber.getInteger(ret);
+        }
+
+        tmp = this.oneNetResourceMapper.selectByResourceName("互动屏状态");
+        Integer iScreenStatus = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            iScreenStatus = MyNumber.getInteger(ret);
+        }
+
+        tmp = this.oneNetResourceMapper.selectByResourceName("风扇状态");
+        Integer fanStatus = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            fanStatus = MyNumber.getInteger(ret);
+        }
+
+        tmp = this.oneNetResourceMapper.selectByResourceName("一键报警状态");
+        Integer alarmStatus = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            alarmStatus = MyNumber.getInteger(ret);
+        }
+
+        tmp = this.oneNetResourceMapper.selectByResourceName("AP状态");
+        Integer apStatus = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            apStatus = MyNumber.getInteger(ret);
+        }
+
+        var lampStatus = new LampStatus();
+        lampStatus.lampId = lamp.id;
+        lampStatus.lampName = lamp.deviceName;
+        lampStatus.miniStarStatus = miniStarStatus;
+        lampStatus.iScreenStatus = iScreenStatus;
+        lampStatus.eScreenStatus = eScreenStatus;
+        lampStatus.alarmStatus = alarmStatus;
+        lampStatus.apStatus = apStatus;
+        lampStatus.fanStatus = fanStatus;
+        lampStatus.deviceId = deviceId;
+
+        return lampStatus;
     }
 }

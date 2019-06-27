@@ -1,8 +1,8 @@
-package com.sybd.znld.web.onenet;
+package com.sybd.znld.service.onenet;
 
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
-import com.sybd.znld.web.onenet.dto.*;
+import com.sybd.znld.model.onenet.dto.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,4 +21,5 @@ public interface IOneNetService {
     GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId);
     GetDataStreamsByIdsResult getLastDataStreamsByIds(Integer deviceId, String... dataStreamIds);
     double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end);
+    String getStringValue(Integer deviceId, OneNetKey oneNetKey);
 }

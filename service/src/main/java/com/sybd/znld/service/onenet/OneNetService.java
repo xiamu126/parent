@@ -1,14 +1,15 @@
-package com.sybd.znld.web.onenet;
+package com.sybd.znld.service.onenet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
+import com.sybd.znld.model.onenet.dto.*;
 import com.sybd.znld.util.MyString;
-import com.sybd.znld.web.onenet.dto.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @ConfigurationProperties(prefix = "znld.onenet")
 public class OneNetService implements IOneNetService {
-    private final Logger log = LoggerFactory.getLogger(OneNetService.class);
     private final LampMapper lampMapper;
 
     @Getter @Setter public String getHistoryDataStreamUrl;
@@ -62,23 +63,23 @@ public class OneNetService implements IOneNetService {
     }
 
     // spring不支持静态变量注入
-    public static String ZNLD_HEART_BEAT;
-    public static String ZNLD_SCREEN_OPEN;
-    public static String ZNLD_SCREEN_CLOSE;
-    public static String ZNLD_QXZ_OPEN;
-    public static String ZNLD_QXZ_CLOSE;
-    public static String ZNLD_QXZ_DATA_UPLOAD;
-    public static String ZNLD_STATUS_QUERY;
-    public static String ZNLD_LOCATION_QUERY;
-    public static String ZNLD_HANDSHAKE;
-    public static String ZNLD_QX_UPLOAD_RATE;
-    public static String ZNLD_LOCATION_UPLOAD_RATE;
-    public static String ZNLD_STATUS_UPLOAD_RATE;
-    public static String ZNLD_QXZ_START_REPORTING;
-    public static String ZNLD_QXZ_STOP_REPORTING;
-    public static String ZNLD_LOCATION_START_REPORTING;
-    public static String ZNLD_LOCATION_STOP_REPORTING;
-    public static String ZNLD_DD_EXECUTE;
+    private static String ZNLD_HEART_BEAT;
+    private static String ZNLD_SCREEN_OPEN;
+    private static String ZNLD_SCREEN_CLOSE;
+    private static String ZNLD_QXZ_OPEN;
+    private static String ZNLD_QXZ_CLOSE;
+    private static String ZNLD_QXZ_DATA_UPLOAD;
+    private static String ZNLD_STATUS_QUERY;
+    private static String ZNLD_LOCATION_QUERY;
+    private static String ZNLD_HANDSHAKE;
+    private static String ZNLD_QX_UPLOAD_RATE;
+    private static String ZNLD_LOCATION_UPLOAD_RATE;
+    private static String ZNLD_STATUS_UPLOAD_RATE;
+    private static String ZNLD_QXZ_START_REPORTING;
+    private static String ZNLD_QXZ_STOP_REPORTING;
+    private static String ZNLD_LOCATION_START_REPORTING;
+    private static String ZNLD_LOCATION_STOP_REPORTING;
+    private static String ZNLD_DD_EXECUTE;
 
     @PostConstruct
     private void init(){
@@ -218,6 +219,15 @@ public class OneNetService implements IOneNetService {
         var historyData = getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
         var data = historyData.getData().getDataStreams().get(0).getDataPoints();
         return data.stream().collect(Collectors.averagingDouble(d -> Double.parseDouble(d.getValue())));
+    }
+
+    @Override
+    public String getStringValue(Integer deviceId, OneNetKey oneNetKey) {
+        var restTemplate = new RestTemplate();
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var url = this.getDataStreamUrl(deviceId, oneNetKey.toDataStreamId());
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+        return responseEntity.getBody();
     }
 
     @Override

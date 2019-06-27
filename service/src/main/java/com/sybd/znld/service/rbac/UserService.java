@@ -11,8 +11,6 @@ import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
@@ -129,29 +127,12 @@ public class UserService extends BaseService implements IUserService {
     @Override
     public UserModel register(RegisterInput input) {
         if(input == null || !input.isValid()) return null;
-        var propertyMap = new PropertyMap<RegisterInput, UserModel>(){
-            @Override
-            protected void configure() {
-                map(source.name, destination.name);
-                map(source.password, destination.password);
-                map(source.organizationId, destination.organizationId);
-                map(destination.lastLoginTime).setLastLoginTime(LocalDateTime.now());
-                map(destination.status).setStatus((short)0);
-                skip(destination.phone);
-                skip(destination.email);
-                skip(destination.gender);
-                skip(destination.age);
-                skip(destination.contactAddress);
-                skip(destination.realName);
-                skip(destination.idCardNo);
-                skip(destination.lastLoginIp);
-                skip(destination.id);
-            }
-        };
-        var modelMapper = new ModelMapper();
-        modelMapper.addMappings(propertyMap);
-        modelMapper.validate();
-        var user = modelMapper.map(input, UserModel.class);
+        var user = new UserModel();
+        user.name = input.name;
+        user.password = input.password;
+        user.organizationId = input.organizationId;
+        user.lastLoginTime = LocalDateTime.now();
+        user.status = (short)0;
         return addUser(user);
     }
 

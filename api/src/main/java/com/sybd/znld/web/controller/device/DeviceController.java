@@ -4,17 +4,17 @@ import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
+import com.sybd.znld.model.onenet.Command;
+import com.sybd.znld.model.onenet.dto.CommandParams;
+import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.service.lamp.ILampService;
 import com.sybd.znld.service.lamp.IRegionService;
+import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import com.sybd.znld.web.controller.device.dto.*;
-import com.sybd.znld.web.onenet.IOneNetService;
-import com.sybd.znld.web.onenet.OneNetService;
-import com.sybd.znld.web.onenet.dto.CommandParams;
-import com.sybd.znld.web.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.model.onenet.OneNetKey;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -1365,7 +1365,7 @@ public class DeviceController implements IDeviceController {
                 if(region == null) {
                     return ExecuteResult.fail("指定的区域不存在");
                 }
-                var resource = this.lampService.getResourceByCommandValue(OneNetService.ZNLD_DD_EXECUTE);
+                var resource = this.lampService.getResourceByCommandValue(Command.ZNLD_DD_EXECUTE);
                 if(resource == null) {
                     return ExecuteResult.fail("获取命令相关数据失败");
                 }
@@ -1373,7 +1373,7 @@ public class DeviceController implements IDeviceController {
                 if(lamps == null || lamps.isEmpty()) {
                     return ExecuteResult.fail("获取该区域下的路灯为空");
                 }
-                arg.cmd = OneNetService.ZNLD_DD_EXECUTE;
+                arg.cmd = Command.ZNLD_DD_EXECUTE;
                 for (var lamp : lamps) {
                     var ret = this.execute(lamp.deviceId, arg, request);
                     if (!ret.isOk()) {

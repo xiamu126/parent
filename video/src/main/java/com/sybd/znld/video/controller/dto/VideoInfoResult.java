@@ -7,8 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
 
 @ApiModel(value = "获取视频相关数据")
 @NoArgsConstructor
@@ -29,18 +27,11 @@ public class VideoInfoResult extends BaseApiResult {
     }
 
     public static VideoInfoResult success(LampAndCamera data){
-        PropertyMap<LampAndCamera, VideoInfoResult> propertyMap = new PropertyMap<>(){
-            @Override
-            protected void configure() {
-                map(source.cameraId, destination.cameraId);
-                map(source.flvUrl, destination.flvUrl);
-                map(0, destination.code);
-                map("", destination.msg);
-            }
-        };
-        var modelMapper = new ModelMapper();
-        modelMapper.addMappings(propertyMap);
-        modelMapper.validate();
-        return modelMapper.map(data, VideoInfoResult.class);
+        var videoInfoResult = new VideoInfoResult();
+        videoInfoResult.cameraId = data.cameraId;
+        videoInfoResult.flvUrl = data.flvUrl;
+        videoInfoResult.code = 0;
+        videoInfoResult.msg = "";
+        return videoInfoResult;
     }
 }

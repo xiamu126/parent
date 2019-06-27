@@ -1,4 +1,4 @@
-package com.sybd.znld.web.onenet.dto;
+package com.sybd.znld.model.onenet.dto;
 
 import com.sybd.znld.model.onenet.OneNetKey;
 import lombok.Getter;

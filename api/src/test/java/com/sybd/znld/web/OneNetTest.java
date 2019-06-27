@@ -1,9 +1,6 @@
-package com.sybd.znld;
+package com.sybd.znld.web;
 
-import com.sybd.znld.web.onenet.IOneNetService;
-import com.sybd.znld.web.onenet.dto.GetDataStreamByIdResult;
-import com.sybd.znld.web.onenet.dto.GetDataStreamsByIdsResult;
-import com.sybd.znld.web.onenet.dto.GetDeviceResult;
+import com.sybd.znld.service.onenet.IOneNetService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +36,7 @@ public class OneNetTest {
 
     @Test
     public void getDevice(){
-        GetDeviceResult tmp = this.oneNet.getDeviceById(505253765);
+        var tmp = this.oneNet.getDeviceById(505253765);
         log.debug(tmp.toString());
     }
 
@@ -54,13 +51,13 @@ public class OneNetTest {
 
     @Test
     public void getDataStreamById(){
-        GetDataStreamByIdResult tmp = this.oneNet.getLastDataStreamById(505253765, "3336_0_5518");
+        var tmp = this.oneNet.getLastDataStreamById(505253765, "3336_0_5518");
         log.debug(tmp.toString());
     }
 
     @Test
     public void getDataStreamsByIds(){
-        GetDataStreamsByIdsResult tmp = this.oneNet.getLastDataStreamsByIds(505253765, "3336_0_5518", "3336_0_5517");
+        var tmp = this.oneNet.getLastDataStreamsByIds(505253765, "3336_0_5518", "3336_0_5517");
         log.debug(tmp.toString());
     }
 }

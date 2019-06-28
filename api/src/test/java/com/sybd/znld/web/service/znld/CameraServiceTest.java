@@ -43,7 +43,7 @@ public class CameraServiceTest {
     @Test
     public void removeCamera(){
         var lampId = "6aa5d6da868e11e9a1a50242c0a8f002";
-        var cameraId = "7bc9657b987811e9b0790242c0a8b006";
+        var cameraId = "327ee6f2996b11e9b0790242c0a8b006";
         var ret = this.lampService.removeCamera(lampId, cameraId);
         Assert.assertTrue(ret);
     }

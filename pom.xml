@@ -71,11 +71,17 @@
         <znldMapperVersion>0.0.2</znldMapperVersion>
 
         <HikariCPVersion>3.3.1</HikariCPVersion>
+        <apacheCommonsVersion>3.9</apacheCommonsVersion>
 
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${apacheCommonsVersion}</version>
+            </dependency>
             <dependency>
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>

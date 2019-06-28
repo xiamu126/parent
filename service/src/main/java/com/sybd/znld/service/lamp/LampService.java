@@ -256,22 +256,37 @@ public class LampService implements ILampService {
         if(count <= 0) {
             return null; // 添加失败
         }
-        var camera = this.cameraMapper.selectByRtspUrl(model.rtspUrl);
+
+        // 不再检查是否rtsp有重复，因为rtsp在不同的地方，但可以有相同的地址
+       /* var camera = this.cameraMapper.selectByRtspUrl(model.rtspUrl);
         if(camera != null) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return null; // 已经添加过了
-        }
+        }*/
 
-        camera = this.cameraMapper.selectByRtspUrl(model.rtspUrl);
+       if(MyString.isUuid(model.id)){ // 如果已经插入过，则检测其是否存在
+           var tmp = this.cameraMapper.selectById(model.id);
+           if(tmp == null){
+               TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+               return null; // 传入的参数有问题
+           }
+       }else{ // 否则先插入
+           var tmp = this.cameraMapper.insert(model);
+           if(tmp <= 0){
+               TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+               return null; // 插入失败
+           }
+       }
+
         var lamp = this.lampMapper.selectById(lampId);
-        if(lamp == null || camera == null) {
+        if(lamp == null) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return null; // 指定的路灯或摄像头不存在
+            return null; // 指定的路灯不存在
         }
 
         var lampCameraModel = new LampCameraModel();
         lampCameraModel.lampId = lampId;
-        lampCameraModel.cameraId = camera.id;
+        lampCameraModel.cameraId = model.id;
 
         count = this.lampCameraMapper.insert(lampCameraModel);
         if( count <= 0) {

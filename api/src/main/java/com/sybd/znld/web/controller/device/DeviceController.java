@@ -18,6 +18,7 @@ import com.sybd.znld.web.controller.device.dto.*;
 import com.sybd.znld.model.onenet.OneNetKey;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -68,7 +69,7 @@ public class DeviceController implements IDeviceController {
                 log.debug("开始时间等于结束时间");
                 return null;
             }
-            var result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), begin, end, 5000, null, null);//过去24小时内的数据
+            var result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), begin, end, 1000, null, null);//过去24小时内的数据
             var data = (result.getData().getDataStreams().get(0)).getDataPoints();
             var theSet = new HashSet<Integer>();
             var sortedMap = new TreeMap<Integer, String>();
@@ -80,6 +81,9 @@ public class DeviceController implements IDeviceController {
                     theSet.add(hour);
                     sortedMap.put(hour, theData.value);
                 }
+            }
+            for(var i = 0; i < 16; i++){
+                sortedMap.remove(i);
             }
             return sortedMap;
         }catch (Exception ex){

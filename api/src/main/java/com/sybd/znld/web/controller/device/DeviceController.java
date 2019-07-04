@@ -163,7 +163,7 @@ public class DeviceController implements IDeviceController {
 
     @ApiOperation(value = "获取某个区域的某时间段内的多个资源的各自的平均值")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region", value = "区域id或名字", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "regionName", value = "区域id或名字", required = true, dataType = "String", paramType = "path"),
             @ApiImplicitParam(name = "dataStreams", value = "查看的数据流Id集合或具体的资源名称集合", required = true, dataType = "List", paramType = "body"),
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
@@ -338,7 +338,7 @@ public class DeviceController implements IDeviceController {
 
     @ApiOperation(value = "获取某个区域的某个时间段内的某个资源的平均值")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region", value = "区域Id或名字", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "regionName", value = "区域Id或名字", required = true, dataType = "String", paramType = "path"),
             @ApiImplicitParam(name = "dataStream", value = "资源Id或名字", required = true, dataType = "String", paramType = "path"),
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
@@ -591,7 +591,7 @@ public class DeviceController implements IDeviceController {
 
     @ApiOperation(value = "获取某个区域的某个时间段内的某个资源的最大值")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region", value = "区域Id或者名字", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "regionName", value = "区域Id或者名字", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "dataStream", value = "资源Id或名称", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
@@ -844,7 +844,7 @@ public class DeviceController implements IDeviceController {
 
     @ApiOperation(value = "获取某个区域的某个时间段内的某个资源的最小值")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region", value = "区域id或者名称", required = true, dataType = "string", paramType = "path"),
+            @ApiImplicitParam(name = "regionName", value = "区域id或者名称", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "dataStream", value = "资源id或者名称", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")

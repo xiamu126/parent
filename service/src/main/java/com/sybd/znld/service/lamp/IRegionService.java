@@ -2,6 +2,7 @@ package com.sybd.znld.service.lamp;
 
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.RegionIdAndName;
+import com.sybd.znld.model.lamp.dto.RegionTree;
 
 import java.util.List;
 
@@ -14,4 +15,5 @@ public interface IRegionService {
     List<RegionModel> getAllRegion();
     List<RegionModel> getRegion(int count);
     List<RegionIdAndName> getAllRegionWithValidLamp(String organId);
+    List<RegionTree> getRegionTreeByOrganId(String organId);
 }

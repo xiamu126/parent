@@ -1,6 +1,7 @@
 package com.sybd.znld.mapper.lamp;
 
 import com.sybd.znld.mapper.db.DbSource;
+import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.model.lamp.LampModel;
 import org.apache.ibatis.annotations.Mapper;
@@ -32,7 +33,10 @@ public interface LampMapper {
     List<LampAndRegion> selectLampByLampIdAndRegionType(String lampId, Short regionType);
     List<BoundResource> selectBoundResourceByDeviceId(Integer deviceId);
     List<LampModel> selectByRegionId(String regionId);
+    List<LampModel> selectByRegionIdPaged(@Param("regionId") String regionId, @Param("pageIndex") int pageIndex, @Param("pageSize") int pageSize);
+    Integer selectCountOfLampByRegionId(String regionId);
     List<LampModel> selectByOrganId(@Param("organId") String organId, @Param("limit") int limit, @Param("offset") int offset);
     LampAndCamera selectActiveCameraByDeviceId(Integer deviceId);
     LampAndCamera selectActiveCameraByLampId(String lampId);
+    RegionModel selectRegionByLampId(String lampId);
 }

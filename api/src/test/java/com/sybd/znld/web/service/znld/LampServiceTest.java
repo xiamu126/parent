@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
@@ -98,7 +99,7 @@ public class LampServiceTest {
 
     @Test
     public void bindLampWithResource(){
-        var lampId = "9ca06b068d7011e9bc910242c0a8b007";
+        var lampId = "10bb23399d3611e995980242c0a8b008";
         var ret = this.oneNetResourceMapper.selectByResourceType(OneNetResourceModel.Type.Value);
         var list = ret.stream().map(resource -> resource.id).collect(Collectors.toList());
         list.forEach(resId -> {
@@ -113,5 +114,33 @@ public class LampServiceTest {
     public void getLampStatus(){
         var ret = this.lampService.getLampStatusByDeviceId(528130535);
         Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void getLampStatus2(){
+        var ret = this.lampService.getLampStatusByDeviceIds(List.of(528130535, 528792157, 531447984, 533263283));
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void getLampStatus3(){
+        var ret = this.lampService.getLampStatusByRegionId("5aa2ac64883611e9a7fe0242c0a8b002");
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void getLampStatus4(){
+        var ret = this.lampService.getLampStatusByRegionIdPaged("5aa2ac64883611e9a7fe0242c0a8b002",0, 1);
+        Assert.assertNotNull(ret);
+        Assert.assertTrue(ret.hasMore);
+        ret = this.lampService.getLampStatusByRegionIdPaged("5aa2ac64883611e9a7fe0242c0a8b002",3, 1);
+        Assert.assertNotNull(ret);
+        Assert.assertFalse(ret.hasMore);
+    }
+
+    @Test
+    public void getResource(){
+        var tmp = this.oneNetResourceMapper.selectByResourceName("景观灯开关");
+        Assert.assertNotNull(tmp);
     }
 }

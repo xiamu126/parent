@@ -94,4 +94,10 @@ public class RegionServiceTest {
         var ret = this.regionService.getRegion(2);
         Assert.assertEquals(2, ret.size());
     }
+
+    @Test
+    public void getRegionTree(){
+        var ret = this.regionService.getRegionTreeByOrganId("099060a6971911e9b0790242c0a8b006");
+        Assert.assertNotNull(ret);
+    }
 }

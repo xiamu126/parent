@@ -131,7 +131,7 @@ public class DeviceControllerTest {
         var beginTimestamp = LocalDateTime.of(2018,1,1,0,0,1)
                 .toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
         var endTimestamp = LocalDateTime.now().toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
-        var action = MockMvcRequestBuilders.get("/api/v1/device/data/avg/region/{region}/dataStreams/{beginTimestamp}/{endTimestamp}",
+        var action = MockMvcRequestBuilders.get("/api/v1/device/data/avg/regionName/{regionName}/dataStreams/{beginTimestamp}/{endTimestamp}",
                 region, beginTimestamp, endTimestamp).accept(MediaType.APPLICATION_JSON_UTF8);
         var mapper = new ObjectMapper();
         var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -151,7 +151,7 @@ public class DeviceControllerTest {
         var beginTimestamp = LocalDateTime.of(2018,1,1,0,0,1)
                 .toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
         var endTimestamp = LocalDateTime.now().toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
-        var action = MockMvcRequestBuilders.get("/api/v1/device/data/avg/region/{regionId}/dataStreams/{beginTimestamp}/{endTimestamp}",
+        var action = MockMvcRequestBuilders.get("/api/v1/device/data/avg/regionName/{regionId}/dataStreams/{beginTimestamp}/{endTimestamp}",
                 region, beginTimestamp, endTimestamp).accept(MediaType.APPLICATION_JSON_UTF8);
         var mapper = new ObjectMapper();
         var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8)

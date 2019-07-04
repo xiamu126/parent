@@ -2,13 +2,9 @@ package com.sybd.znld.video.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.mapper.ministar.TwinkleBeautyGroupMapper;
-import com.sybd.znld.mapper.oauth.OAuthClientDetailsMapper;
-import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.mapper.lamp.CameraMapper;
 import com.sybd.znld.model.lamp.CameraModel;
-import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
@@ -21,8 +17,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
@@ -120,7 +118,23 @@ public class VideoService extends BaseService implements IVideoService {
 
     @Override
     public BufferedImage pickImage(String channelGuid){
-        return videoAsyncTask.pickImage(channelGuid);
+        if(!MyString.isUuid(channelGuid)) {
+            log.error("channelGuid错误，"+channelGuid);
+            return null;
+        }
+        try {
+            var camera = cameraMapper.selectById(channelGuid);
+            if(camera == null){
+                log.error("获取摄像头配置为空，"+channelGuid);
+                return null;
+            }
+            var rtspUrl = camera.rtspUrl;
+            var ret = this.videoAsyncTask.pickImage(channelGuid, rtspUrl);
+            return ret.get(30, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            log.error(ex.getMessage());
+        }
+        return null;
     }
 
     @Override

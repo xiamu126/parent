@@ -3,7 +3,7 @@ package com.sybd.znld.model.lamp.dto;
 public class LampStatus {
     public String lampId;
     public String lampName;
-    public Integer deviceId;
+    public String regionName;
     public Integer miniStarStatus; // 景观灯状态，0 开启，1 关闭
     public Integer iScreenStatus; // 互动屏状态，0 开启，1 关闭
     public Integer eScreenStatus; // 电子屏状态，0 开启，1 关闭

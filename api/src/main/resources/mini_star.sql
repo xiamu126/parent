@@ -24,7 +24,7 @@ create procedure mini_star_init()
 begin
     declare my_error condition for sqlstate '45000';
     set @user_table = 'RBAC_V2.user';
-    set @region_table = 'ZNLD_V3.region';
+    set @region_table = 'ZNLD_V3.regionName';
     set @r_name = '神宇北斗测试区域1';
     set @r_id = null;
     set @s = concat('select id into @r_id from', @region_table, 'where name=\'', @r_name, '\'');

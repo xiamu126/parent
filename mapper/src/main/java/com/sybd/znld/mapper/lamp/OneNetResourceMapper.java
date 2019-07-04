@@ -4,6 +4,7 @@ import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.OneNetResourceModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,4 +18,5 @@ public interface OneNetResourceMapper {
     OneNetResourceModel selectByCommandValue(String cmd);
     List<OneNetResourceModel> selectByResourceType(short type);
     OneNetResourceModel selectByResourceName(String resourceName);
+    OneNetResourceModel selectByResourceNameAndType(@Param("resourceName") String resourceName, @Param("type") int type);
 }

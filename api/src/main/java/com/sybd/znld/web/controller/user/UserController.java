@@ -1,6 +1,11 @@
 package com.sybd.znld.web.controller.user;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import com.mongodb.client.model.Filters;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.dto.LoginInput;
@@ -17,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,6 +44,9 @@ public class UserController implements IUserController {
     private final StringRedisTemplate stringRedisTemplate;
     private final ProjectConfig projectConfig;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+    private final MongoTemplate mongoTemplate;
+
+    private final MongoClient mongoClient;
 
     @Value("${security.oauth2.client.client-id}")
     private String clientId;
@@ -49,12 +58,14 @@ public class UserController implements IUserController {
                           IUserService userService,
                           RedissonClient redissonClient,
                           StringRedisTemplate stringRedisTemplate,
-                          ProjectConfig projectConfig) {
+                          ProjectConfig projectConfig, MongoTemplate mongoTemplate, MongoClient mongoClient) {
         this.defaultKaptcha = defaultKaptcha;
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.stringRedisTemplate = stringRedisTemplate;
         this.projectConfig = projectConfig;
+        this.mongoTemplate = mongoTemplate;
+        this.mongoClient = mongoClient;
     }
 
     private String getCaptchaKey(String uuid){
@@ -90,8 +101,21 @@ public class UserController implements IUserController {
                 }
                 this.stringRedisTemplate.delete(getCaptchaKey(input.uuid));
                 long seconds = this.projectConfig.getAuth2TokenExpirationTime().getSeconds();
+
+                /*var credential = MongoCredential.createCredential("root","admin", "znld@MON#188188".toCharArray());
+                var mongoClient = new MongoClient(new ServerAddress("192.168.11.101", 27017), credential, MongoClientOptions.builder().build());*/
+
+                var db = mongoClient.getDatabase( "test" );
+                var c1 = db.getCollection("com.sybd.znld.account.profile");
+                var myDoc = c1.find(Filters.eq("id", user.id)).first();
+                var jsonStr = "";
+                if( myDoc != null) {
+                    myDoc.remove("_id");
+                    jsonStr = myDoc.toJson();
+                }
+
                 // 获取rbac权限信息
-                return LoginResult.success(user.id, user.organizationId, clientId, clientSecret, seconds);
+                return LoginResult.success(user.id, user.organizationId, clientId, clientSecret, seconds, jsonStr);
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());

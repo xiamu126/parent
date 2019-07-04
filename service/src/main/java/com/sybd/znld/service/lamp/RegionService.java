@@ -3,6 +3,7 @@ package com.sybd.znld.service.lamp;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.RegionIdAndName;
+import com.sybd.znld.model.lamp.dto.RegionTree;
 import com.sybd.znld.model.lamp.dto.RegionWithLocation;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -115,10 +116,32 @@ public class RegionService implements IRegionService {
             var list = new ArrayList<RegionIdAndName>();
             regionsSupplier.get().forEach(r -> {
                 var locations = streamSupplier.get().filter(t -> t.id.equals(r.id));
-                locations.findFirst().ifPresent(first -> list.add(RegionIdAndName.builder()
-                        .id(first.id).name(first.name).longitude(first.longitude).latitude(first.latitude).build()));
+                locations.findFirst().ifPresent(first -> list.add(
+                                RegionIdAndName.builder()
+                                        .id(first.id)
+                                        .name(first.name)
+                                        .longitude(first.longitude)
+                                        .latitude(first.latitude)
+                                        .build()));
             });
             return list;
+        }
+        return null;
+    }
+
+    @Override
+    public List<RegionTree> getRegionTreeByOrganId(String organId) {
+        var ret = this.regionMapper.selectAllRegionWithValidLamp(organId);
+        if(ret != null){
+            var tmp = new ArrayList<RegionTree>();
+            ret.forEach(d -> {
+                var regionTree = new RegionTree();
+                regionTree.id = d.id;
+                regionTree.name = d.name;
+                regionTree.parentId = null;
+                tmp.add(regionTree);
+            });
+            return tmp.stream().distinct().collect(Collectors.toList());
         }
         return null;
     }

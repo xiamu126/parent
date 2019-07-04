@@ -23,24 +23,27 @@ public class LoginResult extends BaseApiResult {
     public Long auth2TokenExpirationTime;
     @ApiModelProperty(value = "服务端当前时间")
     public LocalDateTime now = LocalDateTime.now();
+    @ApiModelProperty(value = "相关配置信息")
+    public String profile;
 
     public LoginResult(Integer code, String msg){
         super(code, msg);
     }
     public LoginResult(Integer code, String msg,
-                       String userId, String organId, String clientId, String clientSecret, Long auth2TokenExpirationTime){
+                       String userId, String organId, String clientId, String clientSecret, Long auth2TokenExpirationTime, String profile){
         super(code, msg);
         this.userId = userId;
         this.organId = organId;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.auth2TokenExpirationTime = auth2TokenExpirationTime;
+        this.profile = profile;
     }
 
     public static LoginResult fail(String msg){
         return new LoginResult(1, msg);
     }
-    public static LoginResult success(String userId, String organId, String clientId, String clientSecret, Long auth2TokenExpirationTime){
-        return new LoginResult(0, "", userId, organId, clientId, clientSecret, auth2TokenExpirationTime);
+    public static LoginResult success(String userId, String organId, String clientId, String clientSecret, Long auth2TokenExpirationTime, String profile){
+        return new LoginResult(0, "", userId, organId, clientId, clientSecret, auth2TokenExpirationTime, profile);
     }
 }

@@ -2,10 +2,7 @@ package com.sybd.znld.service.lamp;
 
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.model.lamp.*;
-import com.sybd.znld.model.lamp.dto.CheckedResource;
-import com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName;
-import com.sybd.znld.model.lamp.dto.LampAndCamera;
-import com.sybd.znld.model.lamp.dto.LampStatus;
+import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyNumber;
@@ -16,7 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -321,7 +323,7 @@ public class LampService implements ILampService {
             return null;
         }
 
-        var tmp = this.oneNetResourceMapper.selectByResourceName("电子屏状态");
+        var tmp = this.oneNetResourceMapper.selectByResourceName("电子屏开关");
         Integer eScreenStatus = null;
         OneNetKey oneNetKey = null;
         String ret = null;
@@ -331,7 +333,7 @@ public class LampService implements ILampService {
             eScreenStatus = MyNumber.getInteger(ret);
         }
 
-        tmp = this.oneNetResourceMapper.selectByResourceName("景观灯状态");
+        tmp = this.oneNetResourceMapper.selectByResourceName("景观灯开关");
         Integer miniStarStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
@@ -339,7 +341,7 @@ public class LampService implements ILampService {
             miniStarStatus = MyNumber.getInteger(ret);
         }
 
-        tmp = this.oneNetResourceMapper.selectByResourceName("互动屏状态");
+        tmp = this.oneNetResourceMapper.selectByResourceName("互动屏开关");
         Integer iScreenStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
@@ -347,7 +349,7 @@ public class LampService implements ILampService {
             iScreenStatus = MyNumber.getInteger(ret);
         }
 
-        tmp = this.oneNetResourceMapper.selectByResourceName("风扇状态");
+        tmp = this.oneNetResourceMapper.selectByResourceName("风扇开关");
         Integer fanStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
@@ -355,7 +357,7 @@ public class LampService implements ILampService {
             fanStatus = MyNumber.getInteger(ret);
         }
 
-        tmp = this.oneNetResourceMapper.selectByResourceName("一键报警状态");
+        tmp = this.oneNetResourceMapper.selectByResourceName("一键报警开关");
         Integer alarmStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
@@ -363,7 +365,7 @@ public class LampService implements ILampService {
             alarmStatus = MyNumber.getInteger(ret);
         }
 
-        tmp = this.oneNetResourceMapper.selectByResourceName("AP状态");
+        tmp = this.oneNetResourceMapper.selectByResourceName("探针开关");
         Integer apStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
@@ -371,17 +373,75 @@ public class LampService implements ILampService {
             apStatus = MyNumber.getInteger(ret);
         }
 
+        var region = this.lampMapper.selectRegionByLampId(lamp.id);
+        if(region == null){
+            return null;
+        }
+
         var lampStatus = new LampStatus();
         lampStatus.lampId = lamp.id;
         lampStatus.lampName = lamp.deviceName;
+        lampStatus.regionName = region.name;
         lampStatus.miniStarStatus = miniStarStatus;
         lampStatus.iScreenStatus = iScreenStatus;
         lampStatus.eScreenStatus = eScreenStatus;
         lampStatus.alarmStatus = alarmStatus;
         lampStatus.apStatus = apStatus;
         lampStatus.fanStatus = fanStatus;
-        lampStatus.deviceId = deviceId;
 
         return lampStatus;
+    }
+
+    @Override
+    public Map<Integer, LampStatus> getLampStatusByDeviceIds(List<Integer> deviceIds) {
+        var ret = new HashMap<Integer, LampStatus>();
+        deviceIds.forEach(deviceId -> {
+            var tmp = this.getLampStatusByDeviceId(deviceId);
+            ret.put(deviceId, tmp);
+        });
+        return ret;
+    }
+
+    @Override
+    public Map<Integer, LampStatus> getLampStatusByRegionId(String regionId) {
+        if(!MyString.isUuid(regionId)){
+            return null;
+        }
+        var lamps = this.lampMapper.selectByRegionId(regionId);
+        if(lamps == null || lamps.size() <= 0){
+            return null;
+        }
+        var ids = lamps.stream().map(l -> l.deviceId).collect(Collectors.toList());
+        return this.getLampStatusByDeviceIds(ids);
+    }
+
+    @Override
+    public LampStatusResultPaged getLampStatusByRegionIdPaged(String regionId, int pageIndex, int pageSize) {
+        if(!MyString.isUuid(regionId)){
+            return null;
+        }
+        var count = this.lampMapper.selectCountOfLampByRegionId(regionId);
+        if(count == null || count <= 0){
+            return null;
+        }
+        var lamps = this.lampMapper.selectByRegionIdPaged(regionId, pageIndex, pageSize);
+        if(lamps == null || lamps.size() <= 0){
+            return null;
+        }
+        var ids = lamps.stream().map(l -> l.deviceId).collect(Collectors.toList());
+        var status = this.getLampStatusByDeviceIds(ids);
+
+        var ret = new LampStatusResultPaged();
+        ret.status = status;
+        ret.hasMore = (pageIndex * pageSize + pageSize) < count;
+        return ret;
+    }
+
+    @Override
+    public Integer getCountOfLampByRegionId(String regionId) {
+        if(!MyString.isUuid(regionId)){
+            return null;
+        }
+        return this.lampMapper.selectCountOfLampByRegionId(regionId);
     }
 }

@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Slf4j
 @Component
@@ -24,7 +23,6 @@ public class VideoAsyncTask {
     private final RedissonClient redissonClient;
     private final RLock locker;
     private static final int RECURSIVE_DEPTH = 50;
-    private static ConcurrentHashMap<String ,BufferedImage> images = new ConcurrentHashMap<>(1024);
 
     public enum HeartbeatResult{
         SUCCESS, FAILED,TERMINATED
@@ -104,12 +102,39 @@ public class VideoAsyncTask {
         return true;
     }
 
-    public void saveImage(String channelGuid, BufferedImage image){
-        images.put(channelGuid, image);
-    }
-
-    public BufferedImage pickImage(String channelGuid){
-        return images.get(channelGuid);
+    @Async
+    public Future<BufferedImage> pickImage(String channelGuid, String rtspPath){
+        int width = 1920,height = 1080;
+        FFmpegFrameGrabber grabber = null;
+        try {
+            // 设置日志级别
+            avutil.av_log_set_level(avutil.AV_LOG_PANIC);
+            grabber = FFmpegFrameGrabber.createDefault(rtspPath);
+            grabber.setOption("rtsp_transport", "tcp"); //使用tcp的方式，不然会丢包很严重
+            //一直报错的原因！！！就是因为是 2560 * 1440的太大了。。
+            grabber.setImageWidth(width);
+            grabber.setImageHeight(height);
+            grabber.setAudioStream(0);//海康威视的回放视频，回答带出一个stream 1的Audio输入，但为none
+            grabber.start();
+            var converter = new Java2DFrameConverter();
+            var frame = grabber.grabImage();
+            var image = converter.convert(frame);
+            return CompletableFuture.completedFuture(image);
+        } catch (FrameGrabber.Exception ex) {
+            log.error(ex.getMessage());
+            Arrays.stream(ex.getStackTrace()).forEach(t -> log.error(t.toString()));
+            globalUnregister(channelGuid);
+        } finally {
+            try {
+                if (grabber != null) {
+                    grabber.stop();
+                    grabber.release();
+                }
+            } catch (FrameGrabber.Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+        return null;
     }
 
     @Async
@@ -153,12 +178,9 @@ public class VideoAsyncTask {
             recorder.setPixelFormat(avutil.AV_PICTURE_TYPE_NONE);
             log.debug("recorder start");
             recorder.start();
-            var converter = new Java2DFrameConverter();
             while (isChannelInUsing(channelGuid)) {
                 //每个运行中的线程必然关联一个全局标记，因此若全局标记失效则立即结束线程
                 var frame = grabber.grabImage();
-                var bufferedImage = converter.convert(frame); // 保存一份图片
-                saveImage(channelGuid, bufferedImage);
                 recorder.record(frame);
             }
             log.debug("视频推流结束");

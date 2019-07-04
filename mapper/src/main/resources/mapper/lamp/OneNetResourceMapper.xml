@@ -19,7 +19,11 @@
     </select>
 
     <select id="selectByResourceName" resultType="com.sybd.znld.model.lamp.OneNetResourceModel">
-        select * from onenet_resource where description like #{_parameter};
+        select * from onenet_resource where description = #{_parameter};
+    </select>
+
+    <select id="selectByResourceNameAndType" resultType="com.sybd.znld.model.lamp.OneNetResourceModel">
+        select * from onenet_resource where description = #{resourceName} and type = #{type};
     </select>
 
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.OneNetResourceModel">

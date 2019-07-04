@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "znld.onenet")
 public class OneNetService implements IOneNetService {
     private final LampMapper lampMapper;
+    private final ObjectMapper objectMapper;
 
     @Getter @Setter public String getHistoryDataStreamUrl;
     @Getter @Setter public String postExecuteUrl;
@@ -40,6 +41,8 @@ public class OneNetService implements IOneNetService {
     @Getter @Setter public String getDataStreamByIdUrl;
     @Getter @Setter public String getDataStreamsByIdsUrl;
     @Getter @Setter public Command command;
+    @Getter @Setter public String writeValueUrl;
+    @Getter @Setter public String readValueUrl;
 
     @Getter @Setter
     public static class Command{
@@ -104,8 +107,9 @@ public class OneNetService implements IOneNetService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public OneNetService(LampMapper lampMapper) {
+    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper) {
         this.lampMapper = lampMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -228,6 +232,30 @@ public class OneNetService implements IOneNetService {
         var url = this.getDataStreamUrl(deviceId, oneNetKey.toDataStreamId());
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
         return responseEntity.getBody();
+    }
+
+    @Override
+    public BaseResult setStringValue(Integer deviceId, OneNetKey oneNetKey, String value) {
+        var lamp = this.lampMapper.selectByDeviceId(deviceId);
+        if(lamp == null) return null;
+
+        var restTemplate = new RestTemplate();
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var url = writeValueUrl + "?ime="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId + "&mode=1";
+        try {
+            var param = new OneNetWriteParams();
+
+            var jsonBody = this.objectMapper.writeValueAsString(null);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        var param = new CommandParams();
+        param.deviceId = deviceId;
+        param.imei = lamp.imei;
+        param.oneNetKey = oneNetKey;
+        param.command = value;
+        return execute(param);
     }
 
     @Override

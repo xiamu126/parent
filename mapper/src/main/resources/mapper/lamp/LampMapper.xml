@@ -49,10 +49,10 @@
         <result column="deviceId" jdbcType="INTEGER" property="device_id"/>
         <result column="deviceName" jdbcType="VARCHAR" property="device_name"/>
     </resultMap>
-    <select id="selectDeviceIdAndDeviceNames" resultMap="DeviceIdAndDeviceNames">
+    <select id="selectDeviceIdAndDeviceNames" resultType="com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName">
         with regionIds as (select id from region where organization_id = #{organId}),
              lampIds as (select lamp_id from lamp_region where region_id in (select * from regionIds))
-        select distinct device_id, device_name from lamp where id in (select * from lampIds) and status != 2;
+        select distinct device_id, device_name, longitude, latitude from lamp where id in (select * from lampIds) and status != 2;
     </select>
 
     <select id="selectCheckedResourceByDeviceId" resultType="com.sybd.znld.model.lamp.dto.CheckedResource">
@@ -114,6 +114,16 @@
         where a.region_id = #{regionId};
     </select>
 
+    <select id="selectByRegionIdPaged" resultType="com.sybd.znld.model.lamp.LampModel">
+        select b.* from lamp_region as a
+                            left join lamp as b on a.lamp_id = b.id
+        where a.region_id = #{regionId} limit #{pageIndex}, #{pageSize};
+    </select>
+
+    <select id="selectCountOfLampByRegionId" resultType="java.lang.Integer">
+        select count(id) from lamp_region where region_id = #{regionId};
+    </select>
+
     <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.LampModel">
         select a.* from
         lamp as a
@@ -137,5 +147,11 @@
         left join lamp_camera as b on b.lamp_id = a.id
         left join camera as c on c.id = b.camera_id
         where a.id = #{lampId} and a.status != 2 and c.status != 1;
+    </select>
+
+    <select id="selectRegionByLampId" resultType="com.sybd.znld.model.lamp.RegionModel">
+        select b.* from lamp_region as a
+        left join region as b on b.id = a.region_id
+        where a.lamp_id = #{lampId};
     </select>
 </mapper>

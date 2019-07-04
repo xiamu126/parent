@@ -1,6 +1,8 @@
 db-server: znld-mysql:3306
 redis-server: znld-redis
 redis-server-port: 6379
+mongodb-server: znld-mongodb
+mongodb-server-port: 27017
 auth-server: http://znld-oauth2:8081 # 认证服务器地址
 
 security:
@@ -48,6 +50,13 @@ spring:
     sentinel:
       master:
       nodes:
+  data:
+    mongodb:
+      host: ${mongodb-server}
+      port: ${mongodb-server-port}
+      username: root
+      password: znld@MON#188188
+      authentication-database: admin
 #rabbitmq:
   #host: localhost
   #port: 5672

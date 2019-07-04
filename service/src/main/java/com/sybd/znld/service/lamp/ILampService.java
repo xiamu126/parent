@@ -1,13 +1,11 @@
 package com.sybd.znld.service.lamp;
 
 import com.sybd.znld.model.lamp.*;
-import com.sybd.znld.model.lamp.dto.CheckedResource;
-import com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName;
-import com.sybd.znld.model.lamp.dto.LampAndCamera;
-import com.sybd.znld.model.lamp.dto.LampStatus;
+import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.model.onenet.OneNetKey;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ILampService {
     boolean isDataStreamIdEnabled(Integer deviceId, OneNetKey key);
@@ -30,4 +28,8 @@ public interface ILampService {
     LampCameraModel addCamera(String lampId, CameraModel model);
     boolean removeCamera(String lampId, String cameraId);
     LampStatus getLampStatusByDeviceId(Integer deviceId);
+    Map<Integer, LampStatus> getLampStatusByDeviceIds(List<Integer> deviceIds);
+    Map<Integer, LampStatus> getLampStatusByRegionId(String regionId);
+    LampStatusResultPaged getLampStatusByRegionIdPaged(String regionId, int pageIndex, int pageSize);
+    Integer getCountOfLampByRegionId(String regionId);
 }

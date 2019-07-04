@@ -4,6 +4,7 @@ import com.sybd.znld.service.lamp.IRegionService;
 import com.sybd.znld.service.rbac.IRbacService;
 import com.sybd.znld.util.MyString;
 import com.sybd.znld.web.controller.region.dto.RegionResult;
+import com.sybd.znld.web.controller.region.dto.RegionTreeResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -45,5 +46,18 @@ public class RegionController implements IRegionController {
         }
         var ret = this.regionService.getAllRegionWithValidLamp(organId);
         return RegionResult.success(ret);
+    }
+
+    @Override
+    public RegionTreeResult getRegionTreeByOrganId(String organId) {
+        if(!MyString.isUuid(organId)){
+            return RegionTreeResult.fail("非法的参数");
+        }
+        var organ = this.rbacService.getOrganizationById(organId);
+        if(organ == null){
+            return RegionTreeResult.fail("指定的组织不存在");
+        }
+
+        return null;
     }
 }

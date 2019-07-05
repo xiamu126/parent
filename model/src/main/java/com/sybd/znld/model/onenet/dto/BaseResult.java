@@ -9,4 +9,8 @@ import lombok.Setter;
 public class BaseResult{
     public Integer errno;
     public String error;
+
+    public boolean isOk(){
+        return this.errno != null && this.errno == 0;
+    }
 }

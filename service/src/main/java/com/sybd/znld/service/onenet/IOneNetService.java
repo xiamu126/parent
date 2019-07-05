@@ -13,7 +13,7 @@ public interface IOneNetService {
     String getDataStreamId(OneNetKey oneNetKey);
     String getImeiByDeviceId(Integer deviceId);
     String getApiKeyByDeviceId(Integer deviceId);
-    OneNetExecuteResult execute(CommandParams params);
+    BaseResult execute(CommandParams params);
     Map<String, String> getResourceMapByDeviceId(Integer deviceId);
     GetDeviceResult getDeviceById(Integer deviceId);
     GetLastDataStreamsResult getLastDataStream(Integer deviceId);
@@ -21,6 +21,6 @@ public interface IOneNetService {
     GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId);
     GetDataStreamsByIdsResult getLastDataStreamsByIds(Integer deviceId, String... dataStreamIds);
     double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end);
-    String getStringValue(Integer deviceId, OneNetKey oneNetKey);
-    BaseResult setStringValue(Integer deviceId, OneNetKey oneNetKey, String value);
+    OneNetExecuteResult getValue(Integer deviceId, OneNetKey oneNetKey);
+    BaseResult setValue(Integer deviceId, OneNetKey oneNetKey, Object value);
 }

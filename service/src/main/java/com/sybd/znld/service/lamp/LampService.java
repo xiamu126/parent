@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import java.text.Collator;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,10 +324,10 @@ public class LampService implements ILampService {
         var tmp = this.oneNetResourceMapper.selectByResourceName("电子屏开关");
         Integer eScreenStatus = null;
         OneNetKey oneNetKey = null;
-        String ret = null;
+        Object ret = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
-            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            ret = this.oneNetService.getValue(deviceId, oneNetKey);
             eScreenStatus = MyNumber.getInteger(ret);
         }
 
@@ -337,7 +335,7 @@ public class LampService implements ILampService {
         Integer miniStarStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
-            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            ret = this.oneNetService.getValue(deviceId, oneNetKey);
             miniStarStatus = MyNumber.getInteger(ret);
         }
 
@@ -345,7 +343,7 @@ public class LampService implements ILampService {
         Integer iScreenStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
-            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            ret = this.oneNetService.getValue(deviceId, oneNetKey);
             iScreenStatus = MyNumber.getInteger(ret);
         }
 
@@ -353,7 +351,7 @@ public class LampService implements ILampService {
         Integer fanStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
-            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            ret = this.oneNetService.getValue(deviceId, oneNetKey);
             fanStatus = MyNumber.getInteger(ret);
         }
 
@@ -361,7 +359,7 @@ public class LampService implements ILampService {
         Integer alarmStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
-            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            ret = this.oneNetService.getValue(deviceId, oneNetKey);
             alarmStatus = MyNumber.getInteger(ret);
         }
 
@@ -369,7 +367,7 @@ public class LampService implements ILampService {
         Integer apStatus = null;
         if(tmp != null){
             oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
-            ret = this.oneNetService.getStringValue(deviceId, oneNetKey);
+            ret = this.oneNetService.getValue(deviceId, oneNetKey);
             apStatus = MyNumber.getInteger(ret);
         }
 

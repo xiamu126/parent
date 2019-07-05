@@ -10,8 +10,6 @@ import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.*;
@@ -226,40 +224,41 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
-    public String getStringValue(Integer deviceId, OneNetKey oneNetKey) {
-        var restTemplate = new RestTemplate();
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
-        var url = this.getDataStreamUrl(deviceId, oneNetKey.toDataStreamId());
-        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
-        return responseEntity.getBody();
-    }
-
-    @Override
-    public BaseResult setStringValue(Integer deviceId, OneNetKey oneNetKey, String value) {
+    public OneNetExecuteResult getValue(Integer deviceId, OneNetKey oneNetKey) {
         var lamp = this.lampMapper.selectByDeviceId(deviceId);
         if(lamp == null) return null;
-
-        var restTemplate = new RestTemplate();
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
-        var url = writeValueUrl + "?ime="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId + "&mode=1";
-        try {
-            var param = new OneNetWriteParams();
-
-            var jsonBody = this.objectMapper.writeValueAsString(null);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        try{
+            var restTemplate = new RestTemplate();
+            var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+            var url = readValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId+"&res_id"+oneNetKey.resId;
+            var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, OneNetExecuteResult.class);
+            return responseEntity.getBody();
+        }catch (Exception ex){
+            log.error(ex.getMessage());
         }
-
-        var param = new CommandParams();
-        param.deviceId = deviceId;
-        param.imei = lamp.imei;
-        param.oneNetKey = oneNetKey;
-        param.command = value;
-        return execute(param);
+        return null;
     }
 
     @Override
-    public OneNetExecuteResult execute(CommandParams params){
+    public BaseResult setValue(Integer deviceId, OneNetKey oneNetKey, Object value) {
+        var lamp = this.lampMapper.selectByDeviceId(deviceId);
+        if(lamp == null) return null;
+        try {
+            var restTemplate = new RestTemplate();
+            var url = writeValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId + "&mode=1";
+            var param = new OneNetWriteParams(oneNetKey.resId, 1, value);
+            var jsonBody = this.objectMapper.writeValueAsString(param);
+            var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, BaseResult.class);
+            return responseEntity.getBody();
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public BaseResult execute(CommandParams params){
         try {
             var restTemplate = new RestTemplate();
             var objectMapper = new ObjectMapper();
@@ -269,7 +268,7 @@ public class OneNetService implements IOneNetService {
             var httpEntity = getHttpEntity(params.getDeviceId(), MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var url = this.postExecuteUrl;
             url = url + params.toUrlString();
-            var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, OneNetExecuteResult.class);
+            var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, BaseResult.class);
             return responseEntity.getBody();
         } catch (JsonProcessingException ex) {
             log.error(ex.getMessage());

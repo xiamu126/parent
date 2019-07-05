@@ -1,6 +1,7 @@
 package com.sybd.znld.web.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
@@ -18,7 +19,6 @@ import com.sybd.znld.web.controller.device.dto.*;
 import com.sybd.znld.model.onenet.OneNetKey;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -1313,7 +1313,7 @@ public class DeviceController implements IDeviceController {
             var ret = oneNet.execute(params);
 
             if(ret.isOk()) {
-                return ExecuteResult.success(ret);
+                return ExecuteResult.success();
             }
             else {
                 log.debug(ret.error);
@@ -1392,6 +1392,60 @@ public class DeviceController implements IDeviceController {
         }
         return ExecuteResult.success("上传效果成功");
     }
+
+    @Override
+    @PutMapping(value = "{deviceId:^[1-9]\\d*$}/{dataStream}/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public BaseApiResult push(@PathVariable("deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream, @PathVariable(name = "value") Object value) {
+        var ret = new BaseApiResult();
+        if(MyNumber.isNegativeOrZero(deviceId)){
+            ret.code = 1;
+            ret.msg = "参数错误";
+            return ret;
+        }
+        if(!OneNetKey.isDataStreamId(dataStream)){
+            ret.code = 1;
+            ret.msg = "参数错误";
+            return ret;
+        }
+
+        var tmp = this.oneNet.setValue(deviceId, OneNetKey.from(dataStream), value);
+
+        ret.code = tmp.errno;
+        ret.msg = tmp.error;
+        return ret;
+    }
+
+    @Override
+    @GetMapping(value = "{deviceId:^[1-9]\\d*$}/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public ApiResult pull(@PathVariable("deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream) {
+        var ret = new ApiResult();
+        if(MyNumber.isNegativeOrZero(deviceId)){
+            ret.code = 1;
+            ret.msg = "参数错误";
+            return ret;
+        }
+        if(!OneNetKey.isDataStreamId(dataStream)){
+            ret.code = 1;
+            ret.msg = "参数错误";
+            return ret;
+        }
+        var tmp = this.oneNet.getValue(deviceId, OneNetKey.from(dataStream));
+        if(!tmp.isOk()){
+            ret.code = tmp.errno;
+            ret.msg = tmp.error;
+            return ret;
+        }
+        try{
+            if(!tmp.isEmpty()){
+                ret.json = tmp.data.get(0).res.get(0).val;
+            }
+            return ret;
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+        }
+        return ApiResult.fail();
+    }
+
     public void getWeightedData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp){
         var begin = MyDateTime.toLocalDateTime(beginTimestamp);
         var end = MyDateTime.toLocalDateTime(endTimestamp);

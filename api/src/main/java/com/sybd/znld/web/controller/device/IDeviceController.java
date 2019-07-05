@@ -1,8 +1,11 @@
 package com.sybd.znld.web.controller.device;
 
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
+import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.web.controller.device.dto.*;
 
@@ -53,5 +56,6 @@ public interface IDeviceController {
     DeviceIdAndNameResult getDeviceIdAndName(String userId, HttpServletRequest request);
     ExecuteResult newMiniStar(List<OneNetExecuteArgs> data, HttpServletRequest request);
 
-
+    BaseApiResult push(Integer deviceId, String dataStream, Object value);
+    ApiResult pull(Integer deviceId, String dataStream);
 }

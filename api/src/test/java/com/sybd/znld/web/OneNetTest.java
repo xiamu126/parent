@@ -1,5 +1,6 @@
 package com.sybd.znld.web;
 
+import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.service.onenet.IOneNetService;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,6 +59,18 @@ public class OneNetTest {
     @Test
     public void getDataStreamsByIds(){
         var tmp = this.oneNet.getLastDataStreamsByIds(505253765, "3336_0_5518", "3336_0_5517");
+        log.debug(tmp.toString());
+    }
+
+    @Test
+    public void getValue(){
+        var tmp = this.oneNet.getValue(528130535, OneNetKey.from("3342_1_5700"));
+        log.debug(tmp.toString());
+    }
+
+    @Test
+    public void setValue(){
+        var tmp = this.oneNet.setValue(528130535, OneNetKey.from("3342_1_5700"), 1);
         log.debug(tmp.toString());
     }
 }

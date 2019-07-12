@@ -72,11 +72,17 @@
 
         <HikariCPVersion>3.3.1</HikariCPVersion>
         <apacheCommonsVersion>3.9</apacheCommonsVersion>
+        <apacheHttpClient>4.5.9</apacheHttpClient>
 
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apacheHttpClient}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>

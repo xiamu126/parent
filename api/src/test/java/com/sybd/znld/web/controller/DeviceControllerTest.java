@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
+import com.sybd.znld.model.ministar.dto.DeviceSubtitle;
+import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.web.App;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -43,10 +46,10 @@ public class DeviceControllerTest {
 
     //获取设备的某个资源历史数据，指定开始时间、结束时间
     @Test
-    public void test() throws Exception {
-        var deviceId = 522756040;
+    public void getPrettyHistoryData() throws Exception {
+        var deviceId = 528130535;
         var dataStreamId = "3303_0_5700";
-        var beginTimestamp = LocalDateTime.of(2018,1,1,0,0,1)
+        var beginTimestamp = LocalDateTime.of(2019,7,11,0,0,1)
                 .toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
         var endTimestamp = LocalDateTime.now().toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
         var action = MockMvcRequestBuilders.get("/api/v1/device/data/history/pretty/{deviceId}/{dataStreamId}/{beginTimestamp}/{endTimestamp}",
@@ -62,10 +65,10 @@ public class DeviceControllerTest {
 
     //获取设备的某个资源历史数据，仅指定开始时间，结束时间为默认当前时间
     @Test
-    public void test2() throws Exception {
-        var deviceId = 522756040;
+    public void getPrettyHistoryDataWithoutEndTimestamp() throws Exception {
+        var deviceId = 528130535;
         var dataStreamId = "3303_0_5700";
-        var beginTimestamp = LocalDateTime.of(2018,1,1,0,0,1)
+        var beginTimestamp = LocalDateTime.of(2019,7,10,0,0,1)
                 .toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
         var action = MockMvcRequestBuilders.get("/api/v1/device/data/history/pretty/{deviceId}/{dataStreamId}/{beginTimestamp}",
                 deviceId, dataStreamId, beginTimestamp).accept(MediaType.APPLICATION_JSON_UTF8);
@@ -304,6 +307,168 @@ public class DeviceControllerTest {
         var mapper = new ObjectMapper();
         var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(mapper.writeValueAsString(deviceIdsAndDataStreams)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pushByDeviceIdOfDataStream() throws Exception {
+        var deviceId = 528130535;
+        var dataStream = "探针开关";
+        var value = 1;
+        var action = MockMvcRequestBuilders.put("/api/v1/device/status/deviceId/{deviceId}/dataStream/{dataStream}/value/{value}",
+                deviceId, dataStream, value).accept(MediaType.APPLICATION_JSON_UTF8);
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pullByDeviceIdOfDataStream() throws Exception {
+        var deviceId = 528130535;
+        var dataStream = "3342_6_5700";
+        var action = MockMvcRequestBuilders.get("/api/v1/device/status/deviceId/{deviceId}/dataStream/{dataStream}",
+                deviceId, dataStream).accept(MediaType.APPLICATION_JSON_UTF8);
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pushByDeviceIdOfDataStreams() throws Exception {
+        var deviceId = 528130535;
+        var dataStreams = List.of("探针开关", "3342_5_5700");
+        var value = 1;
+        var action = MockMvcRequestBuilders.put("/api/v1/device/status/deviceId/{deviceId}/dataStreams/value/{value}",
+                deviceId, value).accept(MediaType.APPLICATION_JSON_UTF8);
+        var mapper = new ObjectMapper();
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8).content(mapper.writeValueAsString(dataStreams)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pullByDeviceIdOfDataStreams() throws Exception {
+        var deviceId = 528130535;
+        var dataStreams = List.of("3342_6_5700", "3342_5_5700");
+        var action = MockMvcRequestBuilders.get("/api/v1/device/status/deviceId/{deviceId}/dataStreams",
+                deviceId).accept(MediaType.APPLICATION_JSON_UTF8);
+        var mapper = new ObjectMapper();
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8).content(mapper.writeValueAsString(dataStreams)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pushByRegionOfDataStream() throws Exception {
+        var region = "威海智慧大厦";
+        var dataStream = "3342_6_5700";
+        var value = 1;
+        var action = MockMvcRequestBuilders.put("/api/v1/device/status/region/{region}/dataStream/{dataStream}/value/{value}",
+                region, dataStream, value).accept(MediaType.APPLICATION_JSON_UTF8);
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pullByRegionOfDataStream() throws Exception {
+        var region = "威海智慧大厦";
+        var dataStream = "3342_6_5700";
+        var action = MockMvcRequestBuilders.get("/api/v1/device/status/region/{region}/dataStream/{dataStream}",
+                region, dataStream).accept(MediaType.APPLICATION_JSON_UTF8);
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pushByRegionOfDataStreams() throws Exception {
+        var region = "威海智慧大厦";
+        var dataStreams = List.of("3342_6_5700", "3342_5_5700");
+        var value = 1;
+        var action = MockMvcRequestBuilders.put("/api/v1/device/status/region/{region}/dataStreams/value/{value}",
+                region, value).accept(MediaType.APPLICATION_JSON_UTF8);
+        var mapper = new ObjectMapper();
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8).content(mapper.writeValueAsString(dataStreams)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void pullByRegionOfDataStreams() throws Exception {
+        var region = "威海智慧大厦";
+        var dataStreams = List.of("3342_6_5700", "3342_5_5700");
+        var action = MockMvcRequestBuilders.get("/api/v1/device/status/region/{region}/dataStreams",
+                region).accept(MediaType.APPLICATION_JSON_UTF8);
+        var mapper = new ObjectMapper();
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8).content(mapper.writeValueAsString(dataStreams)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void newDeviceMiniStar() throws Exception {
+        var deviceId = 528130535;
+        var deviceSubtitle = new DeviceSubtitle();
+        deviceSubtitle.action = DeviceSubtitle.Action.SAVE;
+        deviceSubtitle.beginTimestamp = MyDateTime.toTimestamp("2019-07-12 11:41:01", MyDateTime.format1);
+        deviceSubtitle.endTimestamp = MyDateTime.toTimestamp("2019-07-12 13:41:01", MyDateTime.format1);
+        deviceSubtitle.deviceId = deviceId;
+        var effect = new DeviceSubtitle.Effect();
+        effect.type = DeviceSubtitle.Effect.Type.HX;
+        var rgb1 = new DeviceSubtitle.Effect.Rgb((short)255, (short)254, (short)253);
+        var rgb2 = new DeviceSubtitle.Effect.Rgb((short)245, (short)244, (short)243);
+        var rgb3 = new DeviceSubtitle.Effect.Rgb((short)235, (short)234, (short)233);
+        var rgbs = new ArrayList<DeviceSubtitle.Effect.Rgb>();
+        rgbs.add(rgb1);
+        rgbs.add(rgb2);
+        rgbs.add(rgb3);
+        effect.colors = rgbs;
+        deviceSubtitle.effect = effect;
+        deviceSubtitle.speed = 90;
+        deviceSubtitle.title = "test";
+        deviceSubtitle.userId = "c9a45d5d972011e9b0790242c0a8b006";
+        var action = MockMvcRequestBuilders.post("/api/v1/device/ministar/deviceId/{deviceId}",
+                deviceId).accept(MediaType.APPLICATION_JSON_UTF8);
+        var mapper = new ObjectMapper();
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8).content(mapper.writeValueAsString(deviceSubtitle)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))

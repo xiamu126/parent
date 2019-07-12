@@ -1,5 +1,6 @@
 package com.sybd.znld.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -49,9 +50,18 @@ public class ApiResult {
     }
 
     public ApiResult(){}
+    public ApiResult(int code, String msg) {
+        this.code = code;
+        this.msg = msg;
+        this.json = null;
+    }
     public ApiResult(int code, String msg, Object json) {
         this.code = code;
         this.msg = msg;
         this.json = json;
+    }
+    @JsonIgnore
+    public boolean isOk(){
+        return code == 0;
     }
 }

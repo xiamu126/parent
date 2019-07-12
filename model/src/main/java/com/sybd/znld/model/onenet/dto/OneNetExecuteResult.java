@@ -33,4 +33,10 @@ public class OneNetExecuteResult extends BaseResult {
         }
         return true;
     }
+
+    public OneNetExecuteResult(){}
+    public OneNetExecuteResult(int code, String msg){
+        this.errno = code;
+        this.error = msg;
+    }
 }

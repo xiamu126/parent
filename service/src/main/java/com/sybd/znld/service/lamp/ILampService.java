@@ -21,6 +21,7 @@ public interface ILampService {
     LampRegionModel addLampToRegion(String lampId, String regionId);
     LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds);
     List<LampModel> getLampsByRegionId(String regionId);
+    LampModel getLampByDeviceId(Integer deviceId);
     LampAndCamera getActiveCameraByDeviceId(Integer deviceId);
     String getResourceNameByDataStreamId(String dataStreamId);
     String getDataStreamIdByResourceName(String resourceName);

@@ -1,17 +1,36 @@
 package com.sybd.znld.web.config;
 
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.convert.ApplicationConversionService;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.BufferedImageHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.util.ResourceUtils;
+import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.*;
 import javax.servlet.ServletContextListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
 
 @Configuration
 public class SpringConfig {
@@ -45,5 +64,58 @@ public class SpringConfig {
         var srb = new ServletListenerRegistrationBean<ServletContextListener>();
         srb.setListener(new MyServletContextListener());
         return srb;
+    }
+
+    @Bean("restTemplate")
+    public RestTemplate restTemplate(){
+        int timeout = 30*1000;
+        var config = RequestConfig.custom()
+                .setConnectTimeout(timeout)
+                .setConnectionRequestTimeout(timeout)
+                .setSocketTimeout(timeout)
+                .build();
+        var client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+        var httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
+        return new RestTemplate(httpComponentsClientHttpRequestFactory);
+    }
+
+    @Bean("sslRestTemplate")
+    public RestTemplate sslRestTemplate() throws Exception {
+        // 1 Import your own certificate
+        var selfCert = KeyStore.getInstance("pkcs12");
+        var selfCertFile = new ClassPathResource("cert/outgoing.CertwithKey.pkcs12");
+        var selfCertPwd = "IoM@1234";
+        selfCert.load(selfCertFile.getInputStream(), selfCertPwd.toCharArray());
+        var kmf = KeyManagerFactory.getInstance("sunx509");
+        kmf.init(selfCert, selfCertPwd.toCharArray());
+
+        // 2 Import the CA certificate of the server,
+        var caCert = KeyStore.getInstance("jks");
+        var caCertFile = new ClassPathResource("cert/ca.jks");
+        var caCertPwd = "Huawei@123";
+        caCert.load(caCertFile.getInputStream(), caCertPwd.toCharArray());
+        var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(caCert);
+
+        var sc = SSLContext.getInstance("TLS");
+        sc.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        // 3 Set the domain name to not verify
+        // (Non-commercial IoT platform, no use domain name access generally.)
+        var sslConnectionSocketFactory = new SSLConnectionSocketFactory(sc, (hostname, session) -> {
+            return true; // 不校验hostname
+        });
+        int timeout = 30*1000;
+        var config = RequestConfig.custom()
+                .setConnectTimeout(timeout)
+                .setConnectionRequestTimeout(timeout)
+                .setSocketTimeout(timeout).build();
+
+        var client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(config)
+                .setSSLSocketFactory(sslConnectionSocketFactory).build();
+
+        var httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
+        return new RestTemplate(httpComponentsClientHttpRequestFactory);
     }
 }

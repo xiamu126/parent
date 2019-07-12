@@ -4,10 +4,13 @@ import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
+import com.sybd.znld.model.ministar.dto.DeviceSubtitle;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.web.controller.device.dto.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -54,8 +57,32 @@ public interface IDeviceController {
 
     ExecuteResult execute(Integer deviceId, OneNetExecuteArgs command, HttpServletRequest request);
     DeviceIdAndNameResult getDeviceIdAndName(String userId, HttpServletRequest request);
-    ExecuteResult newMiniStar(List<OneNetExecuteArgs> data, HttpServletRequest request);
+    MiniStarResult newMiniStar(List<OneNetExecuteArgs> data, HttpServletRequest request);
 
-    BaseApiResult push(Integer deviceId, String dataStream, Object value);
-    ApiResult pull(Integer deviceId, String dataStream);
+    @PostMapping(value = "ministar/deviceId/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    MiniStarResult newDeviceMiniStar(@PathVariable(name = "deviceId") Integer deviceId, @RequestBody DeviceSubtitle data, HttpServletRequest request);
+
+    @PutMapping(value = "status/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}/value/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PushResult pushByDeviceIdOfDataStream(@PathVariable("deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream, @PathVariable(name = "value") Object value);
+
+    @GetMapping(value = "status/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PullResult pullByDeviceIdOfDataStream(@PathVariable("deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream);
+
+    @PutMapping(value = "status/deviceId/{deviceId:^[1-9]\\d*$}/dataStreams/value/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PushResult pushByDeviceIdOfDataStreams(@PathVariable("deviceId") Integer deviceId, @RequestBody List<String> dataStreams, @PathVariable(name = "value") Object value);
+
+    @PostMapping(value = "status/deviceId/{deviceId:^[1-9]\\d*$}/dataStreams", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PullResult pullByDeviceIdOfDataStreams(@PathVariable("deviceId") Integer deviceId, @RequestBody List<String> dataStreams);
+
+    @PutMapping(value = "status/region/{region}/dataStream/{dataStream}/value/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PushRegionResult pushByRegionOfDataStream(@PathVariable(name = "region") String region, @PathVariable(name = "dataStream") String dataStream, @PathVariable(name = "value") Object value);
+
+    @GetMapping(value = "status/region/{region}/dataStream/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PullRegionResult pullByRegionOfDataStream(@PathVariable(name = "region") String region, @PathVariable(name = "dataStream") String dataStream);
+
+    @PutMapping(value = "status/region/{region}/dataStreams/value/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PushRegionResult pushByRegionOfDataStreams(@PathVariable(name = "region") String region, @RequestBody List<String> dataStreams, @PathVariable(name = "value") Object value);
+
+    @PostMapping(value = "status/region/{region}/dataStreams", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PullRegionResult pullByRegionOfDataStreams(@PathVariable(name = "region") String region, @RequestBody List<String> dataStreams);
 }

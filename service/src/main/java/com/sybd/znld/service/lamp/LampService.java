@@ -218,6 +218,11 @@ public class LampService implements ILampService {
     }
 
     @Override
+    public LampModel getLampByDeviceId(Integer deviceId) {
+        return this.lampMapper.selectByDeviceId(deviceId);
+    }
+
+    @Override
     public LampAndCamera getActiveCameraByDeviceId(Integer deviceId) {
         if(!MyNumber.isPositive(deviceId)) return null;
         return this.lampMapper.selectActiveCameraByDeviceId(deviceId);

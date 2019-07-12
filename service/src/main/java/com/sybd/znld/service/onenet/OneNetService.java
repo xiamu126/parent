@@ -12,7 +12,10 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 public class OneNetService implements IOneNetService {
     private final LampMapper lampMapper;
     private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
 
     @Getter @Setter public String getHistoryDataStreamUrl;
     @Getter @Setter public String postExecuteUrl;
@@ -105,9 +109,10 @@ public class OneNetService implements IOneNetService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper) {
+    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper, RestTemplate restTemplate) {
         this.lampMapper = lampMapper;
         this.objectMapper = objectMapper;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -168,7 +173,6 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetLastDataStreamsResult getLastDataStream(Integer deviceId){
-        var restTemplate = new RestTemplate();
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getLastDataStreamUrl(deviceId);
         log.debug(url);
@@ -180,7 +184,6 @@ public class OneNetService implements IOneNetService {
     public GetHistoryDataStreamResult
     getHistoryDataStream(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end, Integer limit, String sort, String cursor) {
         if(end != null && start.isAfter(end)) return null;
-        var restTemplate = new RestTemplate();
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getHistoryDataStreamUrl(deviceId);
 
@@ -200,7 +203,6 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId) {
-        var restTemplate = new RestTemplate();
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getDataStreamUrl(deviceId, dataStreamId);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamByIdResult.class);
@@ -209,7 +211,6 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetDataStreamsByIdsResult getLastDataStreamsByIds(Integer deviceId, String... dataStreamIds) {
-        var restTemplate = new RestTemplate();
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getDataStreamsByIdsUrl(deviceId, dataStreamIds);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamsByIdsResult.class);
@@ -228,15 +229,14 @@ public class OneNetService implements IOneNetService {
         var lamp = this.lampMapper.selectByDeviceId(deviceId);
         if(lamp == null) return null;
         try{
-            var restTemplate = new RestTemplate();
             var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
             var url = readValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId+"&res_id"+oneNetKey.resId;
             var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, OneNetExecuteResult.class);
             return responseEntity.getBody();
         }catch (Exception ex){
             log.error(ex.getMessage());
+            return new OneNetExecuteResult(1, ex.getMessage());
         }
-        return null;
     }
 
     @Override
@@ -244,7 +244,6 @@ public class OneNetService implements IOneNetService {
         var lamp = this.lampMapper.selectByDeviceId(deviceId);
         if(lamp == null) return null;
         try {
-            var restTemplate = new RestTemplate();
             var url = writeValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId + "&mode=1";
             var param = new OneNetWriteParams(oneNetKey.resId, 1, value);
             var jsonBody = this.objectMapper.writeValueAsString(param);
@@ -253,32 +252,30 @@ public class OneNetService implements IOneNetService {
             return responseEntity.getBody();
         } catch (Exception ex) {
             log.error(ex.getMessage());
+            return new BaseResult(1, ex.getMessage());
         }
-        return null;
     }
 
     @Override
     public BaseResult execute(CommandParams params){
         try {
-            var restTemplate = new RestTemplate();
-            var objectMapper = new ObjectMapper();
             var executeEntity = new OneNetExecuteParams();
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
-            var httpEntity = getHttpEntity(params.getDeviceId(), MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var httpEntity = getHttpEntity(params.deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var url = this.postExecuteUrl;
             url = url + params.toUrlString();
+            log.debug(url);
             var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, BaseResult.class);
             return responseEntity.getBody();
-        } catch (JsonProcessingException ex) {
+        } catch (Exception ex) {
             log.error(ex.getMessage());
+            return new BaseResult(1, ex.getMessage());
         }
-        return null;
     }
 
     @Override
     public GetDeviceResult getDeviceById(Integer deviceId) {
-        var restTemplate = new RestTemplate();
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
         var url = this.getDeviceUrl(deviceId);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDeviceResult.class);

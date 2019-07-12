@@ -5,6 +5,7 @@ import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
+import com.sybd.znld.model.ministar.dto.DeviceSubtitle;
 import com.sybd.znld.model.onenet.Command;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -41,6 +43,7 @@ public class DeviceController implements IDeviceController {
     private final ProjectConfig projectConfig;
     private final IUserService userService;
     private final IRegionService regionService;
+
     @Autowired
     public DeviceController(RedissonClient redissonClient,
                             IOneNetService oneNet,
@@ -56,36 +59,43 @@ public class DeviceController implements IDeviceController {
         this.regionService = regionService;
     }
 
-    private Map<Integer, String> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin) {
-        var end = MyDateTime.maxOfDay(begin);
-        log.debug(begin.toString());
-        log.debug(end.toString());
-        return getResourceByHour(deviceId, oneNetKey, begin, end);
-    }
-
-    private Map<Integer, String> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin, LocalDateTime end){
+    private Map<LocalDateTime, Double> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin, LocalDateTime end){
         try{
             if(begin.isEqual(end)){
                 log.debug("开始时间等于结束时间");
                 return null;
             }
-            var result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), begin, end, 1000, null, null);//过去24小时内的数据
+            var result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), begin, end, null, null, null);//过去24小时内的数据
+            if(result == null || result.data == null || result.data.count == null || result.data.count <= 0){
+                return null;
+            }
             var data = (result.getData().getDataStreams().get(0)).getDataPoints();
             var theSet = new HashSet<Integer>();
             var sortedMap = new TreeMap<Integer, String>();
+
+            var tmp = data.stream().collect(Collectors.groupingBy( d -> {
+                var time = LocalDateTime.parse(d.at, DateTimeFormatter.ofPattern(MyDateTime.format2));
+                return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), time.getHour(), 0, 0);
+            }));
+
+            var ret = new TreeMap<LocalDateTime, Double>();
+            for(var e : tmp.entrySet()){
+                var key = e.getKey();
+                var value = e.getValue();
+                var avg = value.stream().mapToDouble(t -> Double.parseDouble(t.value)).average().orElse(0);
+                ret.put(key, avg);
+            }
+
             for(var theData : data){
-                var str = theData.getAt();
-                var theDate = LocalDateTime.parse(str, DateTimeFormatter.ofPattern(MyDateTime.format2));
+                var theDate = LocalDateTime.parse(theData.at, DateTimeFormatter.ofPattern(MyDateTime.format2));
                 var hour = theDate.getHour();
                 if (!theSet.contains(hour)) {
                     theSet.add(hour);
                     sortedMap.put(hour, theData.value);
                 }
             }
-            for(var i = 0; i < 16; i++){
-                sortedMap.remove(i);
-            }
-            return sortedMap;
+
+            return ret;
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -1289,7 +1299,6 @@ public class DeviceController implements IDeviceController {
     public ExecuteResult execute(@PathVariable("deviceId") Integer deviceId,
                                  @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgs data,
                                  HttpServletRequest request){
-        var msg = "";
         try{
             if(!MyNumber.isPositive(deviceId) || !data.isValid()){
                 return ExecuteResult.fail("非法的参数");
@@ -1311,7 +1320,6 @@ public class DeviceController implements IDeviceController {
             params.timeout = resource.timeout;
             params.command = cmd;
             var ret = oneNet.execute(params);
-
             if(ret.isOk()) {
                 return ExecuteResult.success();
             }
@@ -1322,8 +1330,27 @@ public class DeviceController implements IDeviceController {
 
         }catch (Exception ex){
             log.error(ex.getMessage());
+            return ExecuteResult.fail("执行命令发生错误," + ex.getMessage());
         }
-        return ExecuteResult.fail("执行命令发生错误");
+    }
+
+    private ExecuteResult execute(Integer deviceId, String imei, OneNetKey resource, short timeout, String cmd){
+        try{
+            var params = new CommandParams();
+            params.deviceId = deviceId;
+            params.imei = imei;
+            params.oneNetKey = resource;
+            params.timeout = timeout;
+            params.command = cmd;
+            var ret = oneNet.execute(params);
+            if(ret.isOk()) {
+                return ExecuteResult.success();
+            }
+            return ExecuteResult.fail("执行命令发生错误，" + ret.error);
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+            return ExecuteResult.fail("执行命令发生错误，" + ex.getMessage());
+        }
     }
 
     @ApiOperation(value = "获取所有的设备Id和名字")
@@ -1353,97 +1380,337 @@ public class DeviceController implements IDeviceController {
     @ApiOperation(value = "新建灯带效果")
     @PostMapping(value = "ministar", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ExecuteResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody List<OneNetExecuteArgs> data, HttpServletRequest request) {
+    public MiniStarResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody List<OneNetExecuteArgs> data, HttpServletRequest request) {
+        var result = new MiniStarResult();
+        var map = new HashMap<Integer, BaseApiResult>();
         try{
-            if(data == null || data.isEmpty()) return ExecuteResult.fail("非法的参数");
+            if(data == null || data.isEmpty()) {
+                result.code = 1;
+                result.msg = "非法的参数";
+                return result;
+            }
             for(var arg : data){
                 if(!arg.isValid()) {
-                    return ExecuteResult.fail("非法的参数");
+                    result.code = 1;
+                    result.msg = "非法的参数";
+                    return result;
                 }
                 var subtitle = arg.getSubtitle();
                 var user = this.userService.getUserById(subtitle.userId);
                 if(user == null) {
-                    return ExecuteResult.fail("指定的用户不存在");
+                    result.code = 1;
+                    result.msg = "指定的用户不存在";
+                    return result;
                 }
                 var region = this.regionService.getRegionById(subtitle.regionId);
                 if(region == null) {
-                    return ExecuteResult.fail("指定的区域不存在");
+                    result.code = 1;
+                    result.msg = "指定的区域不存在";
+                    return result;
                 }
                 var resource = this.lampService.getResourceByCommandValue(Command.ZNLD_DD_EXECUTE);
                 if(resource == null) {
-                    return ExecuteResult.fail("获取命令相关数据失败");
+                    result.code = 1;
+                    result.msg = "获取命令相关数据失败";
+                    return result;
                 }
                 var lamps = this.lampService.getLampsByRegionId(subtitle.regionId);
                 if(lamps == null || lamps.isEmpty()) {
-                    return ExecuteResult.fail("获取该区域下的路灯为空");
+                    result.code = 1;
+                    result.msg = "获取该区域下的路灯为空";
+                    return result;
                 }
                 arg.cmd = Command.ZNLD_DD_EXECUTE;
                 for (var lamp : lamps) {
                     var ret = this.execute(lamp.deviceId, arg, request);
-                    if (!ret.isOk()) {
-                        log.debug(ret.msg);
-                        return ExecuteResult.fail("上传效果失败，"+ret.msg);
-                    }
+                    map.put(lamp.deviceId, new BaseApiResult(ret.code, ret.msg));
                 }
             }
         }catch (Exception ex){
             log.error(ex.getMessage());
-            return ExecuteResult.fail("上传效果失败");
+            result.code = 1;
+            result.msg = ex.getMessage();
+            return result;
         }
-        return ExecuteResult.success("上传效果成功");
+        result.code = 0;
+        result.msg = "";
+        result.values = map;
+        return result;
     }
 
     @Override
-    @PutMapping(value = "{deviceId:^[1-9]\\d*$}/{dataStream}/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public BaseApiResult push(@PathVariable("deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream, @PathVariable(name = "value") Object value) {
-        var ret = new BaseApiResult();
+    public MiniStarResult newDeviceMiniStar(Integer deviceId, DeviceSubtitle subtitle, HttpServletRequest request) {
+        var result = new MiniStarResult();
+        var map = new HashMap<Integer, BaseApiResult>();
+        try{
+            if(!subtitle.isValid()){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+            var lamp = this.lampService.getLampByDeviceId(deviceId);
+            var resource = this.lampService.getResourceByCommandValue(Command.ZNLD_DD_EXECUTE);
+            if(lamp == null || resource == null){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+            var ret = this.execute(deviceId, lamp.imei, resource.toOneNetKey(), resource.timeout, subtitle.toString());
+            map.put(lamp.deviceId, new BaseApiResult(ret.code, ret.msg));
+            result.code = 0;
+            result.msg = "";
+            result.values = map;
+            return result;
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+            result.code = 1;
+            result.msg = "发生错误";
+            result.values = null;
+            return result;
+        }
+    }
+
+    @Override
+    public PushResult pushByDeviceIdOfDataStream(Integer deviceId, String dataStream, Object value) {
+        var ret = new PushResult();
         if(MyNumber.isNegativeOrZero(deviceId)){
             ret.code = 1;
             ret.msg = "参数错误";
             return ret;
         }
-        if(!OneNetKey.isDataStreamId(dataStream)){
-            ret.code = 1;
-            ret.msg = "参数错误";
-            return ret;
+        var map = new HashMap<String ,BaseApiResult>();
+        var dataStreamId = dataStream;
+        if(!OneNetKey.isDataStreamId(dataStream)){ // 可能是资源名称
+            dataStreamId = this.lampService.getDataStreamIdByResourceName(dataStream);
+            if(MyString.isEmptyOrNull(dataStreamId)){
+                ret.code = 1;
+                ret.msg = "参数错误";
+                return ret;
+            }
         }
-
-        var tmp = this.oneNet.setValue(deviceId, OneNetKey.from(dataStream), value);
-
-        ret.code = tmp.errno;
-        ret.msg = tmp.error;
+        var tmp = this.oneNet.setValue(deviceId, OneNetKey.from(dataStreamId), value);
+        map.put(dataStream, new BaseApiResult(tmp.errno, tmp.error));
+        ret.values = map;
+        ret.code = 0;
+        ret.msg = "";
         return ret;
     }
 
     @Override
-    @GetMapping(value = "{deviceId:^[1-9]\\d*$}/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public ApiResult pull(@PathVariable("deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream) {
-        var ret = new ApiResult();
+    public PullResult pullByDeviceIdOfDataStream(Integer deviceId, String dataStream) {
+        var ret = new PullResult();
         if(MyNumber.isNegativeOrZero(deviceId)){
             ret.code = 1;
             ret.msg = "参数错误";
             return ret;
         }
-        if(!OneNetKey.isDataStreamId(dataStream)){
-            ret.code = 1;
-            ret.msg = "参数错误";
-            return ret;
+        var dataStreamId = dataStream;
+        if(!OneNetKey.isDataStreamId(dataStream)){ // 可能是资源名称
+            dataStreamId = this.lampService.getDataStreamIdByResourceName(dataStream);
+            if(MyString.isEmptyOrNull(dataStream)){
+                ret.code = 1;
+                ret.msg = "参数错误";
+                return ret;
+            }
         }
-        var tmp = this.oneNet.getValue(deviceId, OneNetKey.from(dataStream));
+        var map = new HashMap<String, ApiResult>();
+        var tmp = this.oneNet.getValue(deviceId, OneNetKey.from(dataStreamId));
         if(!tmp.isOk()){
-            ret.code = tmp.errno;
-            ret.msg = tmp.error;
+            map.put(dataStream, new ApiResult(tmp.errno, tmp.error));
+            ret.code = 0;
+            ret.msg = "";
+            ret.values = map;
             return ret;
         }
         try{
             if(!tmp.isEmpty()){
-                ret.json = tmp.data.get(0).res.get(0).val;
+                map.put(dataStream, new ApiResult(tmp.errno, tmp.error, tmp.data.get(0).res.get(0).val));
+                ret.values = map;
+                ret.code = 0;
+                ret.msg = "";
+                return ret;
             }
-            return ret;
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
-        return ApiResult.fail();
+        ret.code = 1;
+        ret.msg = "发生错误";
+        return ret;
+    }
+
+    @Override
+    public PushResult pushByDeviceIdOfDataStreams(Integer deviceId, List<String> dataStreams, Object value) {
+        var map = new HashMap<String ,BaseApiResult>();
+        for(var ds : dataStreams){
+            var ret = this.pushByDeviceIdOfDataStream(deviceId, ds, value);
+            if(!ret.isOk()){
+                map.put(ds, new BaseApiResult(ret.code, ret.msg));
+            }else{
+                map.put(ds, ret.values.get(ds));
+            }
+
+        }
+        var result = new PushResult();
+        result.code = 0;
+        result.msg = "";
+        result.values = map;
+        return result;
+    }
+
+    @Override
+    public PullResult pullByDeviceIdOfDataStreams(Integer deviceId, List<String> dataStreams) {
+        var map = new HashMap<String, ApiResult>();
+        for(var ds : dataStreams){
+            var ret = this.pullByDeviceIdOfDataStream(deviceId, ds);
+            if(!ret.isOk()){
+                map.put(ds, new ApiResult(ret.code, ret.msg));
+            }else{
+                map.put(ds, ret.values.get(ds));
+            }
+        }
+        var result = new PullResult();
+        result.code = 0;
+        result.msg = "";
+        result.values = map;
+        return result;
+    }
+
+    @Override
+    public PushRegionResult pushByRegionOfDataStream(String region, String dataStream, Object value) {
+        var result = new PushRegionResult();
+        if(MyString.isEmptyOrNull(region)){
+            result.code = 1;
+            result.msg = "错误的参数";
+            return result;
+        }
+        String regionId = null;
+        if(MyString.isUuid(region)){ // 为区域id
+            regionId = region;
+        }else { // 可能是区域名字
+            var regionModel = this.regionService.getRegionByName(region);
+            if(regionModel != null) regionId = regionModel.id;
+        }
+        if(MyString.isEmptyOrNull(region)){
+            result.code = 1;
+            result.msg = "错误的参数";
+            return result;
+        }
+        var lampMap = new HashMap<Integer ,Map<String, BaseApiResult>>();
+        var lamps = this.lampService.getLampsByRegionId(regionId);
+        for(var lamp : lamps){
+            var ret = this.pushByDeviceIdOfDataStream(lamp.deviceId, dataStream, value);
+            if(!ret.isOk()){
+                var dsMap = new HashMap<String, BaseApiResult>();
+                dsMap.put(dataStream, new BaseApiResult(ret.code, ret.msg));
+                lampMap.put(lamp.deviceId, dsMap);
+            }else{
+                var dsMap = new HashMap<String, BaseApiResult>();
+                var tmp = ret.values.get(dataStream);
+                dsMap.put(dataStream, tmp);
+                lampMap.put(lamp.deviceId, dsMap);
+            }
+        }
+        result.code = 0;
+        result.msg = "";
+        result.values = lampMap;
+        return result;
+    }
+
+    @Override
+    public PullRegionResult pullByRegionOfDataStream(String region, String dataStream) {
+        var result = new PullRegionResult();
+        if(MyString.isEmptyOrNull(region)){
+            result.code = 1;
+            result.msg = "错误的参数";
+            return result;
+        }
+        String regionId = null;
+        if(MyString.isUuid(region)){ // 为区域id
+            regionId = region;
+        }else { // 可能是区域名字
+            var regionModel = this.regionService.getRegionByName(region);
+            if(regionModel != null) regionId = regionModel.id;
+        }
+        var lampMap = new HashMap<Integer, Map<String, ApiResult>>();
+        var lamps = this.lampService.getLampsByRegionId(regionId);
+        for(var lamp : lamps){
+            var ret = this.pullByDeviceIdOfDataStream(lamp.deviceId, dataStream);
+            if(!ret.isOk()){
+                var dsMap = new HashMap<String, ApiResult>();
+                dsMap.put(dataStream, new ApiResult(ret.code, ret.msg));
+                lampMap.put(lamp.deviceId, dsMap);
+            }else {
+                var dsMap = new HashMap<String, ApiResult>();
+                var tmp = ret.values.get(dataStream);
+                dsMap.put(dataStream, tmp);
+                lampMap.put(lamp.deviceId, dsMap);
+            }
+        }
+        result.code = 0;
+        result.msg = "";
+        result.values = lampMap;
+        return result;
+    }
+
+    @Override
+    public PushRegionResult pushByRegionOfDataStreams(String region, List<String> dataStreams, Object value) {
+        var result = new PushRegionResult();
+        if(dataStreams == null || dataStreams.isEmpty()){
+            result.code = 1;
+            result.msg = "错误的参数";
+            return result;
+        }
+        var lampMap = new HashMap<Integer ,Map<String, BaseApiResult>>();
+        for(var ds : dataStreams){
+            var ret = this.pushByRegionOfDataStream(region, ds, value);
+            for(var l : ret.values.entrySet()){
+                var key = l.getKey();
+                var val = l.getValue();
+                if(lampMap.containsKey(key)){
+                    var tmp = lampMap.get(key);
+                    val.forEach(tmp::put);
+                }else{
+                    lampMap.put(key, val);
+                }
+            }
+        }
+        result.code = 0;
+        result.msg = "";
+        result.values = lampMap;
+        return result;
+    }
+
+    @Override
+    public PullRegionResult pullByRegionOfDataStreams(String region, List<String> dataStreams) {
+        var result = new PullRegionResult();
+        if(MyString.isEmptyOrNull(region)){
+            result.code = 1;
+            result.msg = "错误的参数";
+            return result;
+        }
+        if(dataStreams == null || dataStreams.isEmpty()){
+            result.code = 1;
+            result.msg = "错误的参数";
+            return result;
+        }
+        var lampMap = new HashMap<Integer ,Map<String, ApiResult>>();
+        for(var ds : dataStreams){
+            var ret = this.pullByRegionOfDataStream(region, ds);
+            for(var l : ret.values.entrySet()){
+                var key = l.getKey();
+                var val = l.getValue();
+                if(lampMap.containsKey(key)){
+                    var tmp = lampMap.get(key);
+                    val.forEach(tmp::put);
+                }else{
+                    lampMap.put(key, val);
+                }
+            }
+        }
+        result.code = 0;
+        result.msg = "";
+        result.values = lampMap;
+        return result;
     }
 
     public void getWeightedData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp){

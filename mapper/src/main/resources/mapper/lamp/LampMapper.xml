@@ -30,7 +30,7 @@
     </select>
 
     <select id="selectAllDeviceIds" resultType="java.lang.Integer">
-        select distinct device_id from lamp;
+        select distinct device_id from lamp where status != 2;
     </select>
 
     <select id="selectApiKeyByDeviceId" resultType="java.lang.String">
@@ -42,7 +42,7 @@
     </select>
 
     <select id="selectAllDeviceIdAndImei" resultType="com.sybd.znld.model.lamp.dto.DeviceIdAndImei">
-        select distinct device_id, imei from lamp;
+        select distinct device_id, imei from lamp where status != 2;
     </select>
 
     <resultMap id="DeviceIdAndDeviceNames" type="com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName">

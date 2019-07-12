@@ -16,6 +16,8 @@ public class LampModel implements Serializable {
     public String longitude = "";
     public String latitude = "";
     public Short status = Status.OK;
+    public Float xAngle;
+    public Float yAngle;
 
     public boolean isValidBeforeInsert(){
         // 经纬度要么同时为未设置状态，要么都设置了，不能设置了一个而另一个没设置

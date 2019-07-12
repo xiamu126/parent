@@ -4,6 +4,7 @@ public class LampStatus {
     public String lampId;
     public String lampName;
     public String regionName;
+    public String xyAngle;
     public Integer miniStarStatus; // 景观灯状态，0 开启，1 关闭
     public Integer iScreenStatus; // 互动屏状态，0 开启，1 关闭
     public Integer eScreenStatus; // 电子屏状态，0 开启，1 关闭

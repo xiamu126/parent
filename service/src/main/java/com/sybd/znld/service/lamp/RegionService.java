@@ -135,10 +135,7 @@ public class RegionService implements IRegionService {
         if(ret != null){
             var tmp = new ArrayList<RegionTree>();
             ret.forEach(d -> {
-                var regionTree = new RegionTree();
-                regionTree.id = d.id;
-                regionTree.name = d.name;
-                regionTree.parentId = null;
+                var regionTree = new RegionTree(d.id, d.name, null); // 目前暂时不支持子区域
                 tmp.add(regionTree);
             });
             return tmp.stream().distinct().collect(Collectors.toList());

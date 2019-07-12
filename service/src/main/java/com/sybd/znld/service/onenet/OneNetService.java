@@ -181,6 +181,11 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
+    public GetHistoryDataStreamResult getHistoryDataStream(Integer deviceId, OneNetKey oneNetKey, LocalDateTime start) {
+        return this.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), start, null, null, null, null);
+    }
+
+    @Override
     public GetHistoryDataStreamResult
     getHistoryDataStream(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end, Integer limit, String sort, String cursor) {
         if(end != null && start.isAfter(end)) return null;

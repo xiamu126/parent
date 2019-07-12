@@ -13,9 +13,9 @@ public final class MyDateTime {
         return LocalDateTime.now();
     }
 
-    /*public static LocalDateTime toLocalDateTime(String value){
+    public static LocalDateTime toLocalDateTime(String value){
         return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(format1));
-    }*/
+    }
     public static LocalDateTime toLocalDateTime(String value, String format){
         return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(format));
     }

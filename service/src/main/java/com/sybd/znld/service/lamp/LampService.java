@@ -5,6 +5,7 @@ import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.service.onenet.IOneNetService;
+import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -376,6 +378,41 @@ public class LampService implements ILampService {
             apStatus = MyNumber.getInteger(ret);
         }
 
+        tmp = this.oneNetResourceMapper.selectByResourceName("X-angle");
+        Float xAngle = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            var x = this.oneNetService.getLastDataStreamById(deviceId, oneNetKey.toDataStreamId());
+            if(x != null && x.isOk()){
+                xAngle = Float.parseFloat(x.data.currentValue.toString());
+            }
+        }
+
+        tmp = this.oneNetResourceMapper.selectByResourceName("Y-angle");
+        Float yAngle = null;
+        if(tmp != null){
+            oneNetKey = OneNetKey.from(tmp.objId, tmp.objInstId, tmp.resId);
+            var y = this.oneNetService.getLastDataStreamById(deviceId, oneNetKey.toDataStreamId());
+            if(y != null && y.isOk()){
+                yAngle = Float.parseFloat(y.data.currentValue.toString());
+            }
+        }
+
+        String xyStatus = null;
+        if(xAngle == null || yAngle == null){
+            xyStatus = "未知";
+        }else {
+            var xVal = Math.abs(xAngle - lamp.xAngle);
+            var yVal = Math.abs(yAngle - lamp.yAngle);
+            if(xVal <= 20 && yVal <= 20){
+                xyStatus = "良好";
+            }else if((xVal > 20 && xVal <= 100) || (yVal > 20 && yVal <= 100)) {
+                xyStatus = "警告";
+            }else{
+                xyStatus = "危险";
+            }
+        }
+
         var region = this.lampMapper.selectRegionByLampId(lamp.id);
         if(region == null){
             return null;
@@ -391,6 +428,7 @@ public class LampService implements ILampService {
         lampStatus.alarmStatus = alarmStatus;
         lampStatus.apStatus = apStatus;
         lampStatus.fanStatus = fanStatus;
+        lampStatus.xyAngle = xyStatus;
 
         return lampStatus;
     }

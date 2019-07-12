@@ -1,16 +1,22 @@
 package com.sybd.znld.web.task;
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.model.Filters;
 import com.sybd.znld.model.onenet.Command;
+import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.service.lamp.ILampService;
 import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Slf4j
@@ -21,6 +27,8 @@ public class MyScheduledTask {
     private final IOneNetService oneNetService;
     private static Map<String, RLock> lockers;
     private static final String heartBeat = "oneNetHeartBeat";
+    private static final String rebootChip = "oneNetRebootChip";
+    private final MongoClient mongoClient;
 
     @PreDestroy
     public void preDestroy(){
@@ -32,12 +40,13 @@ public class MyScheduledTask {
     }
 
     @Autowired
-    public MyScheduledTask(ILampService lampService, RedissonClient redissonClient, IOneNetService oneNetService) {
+    public MyScheduledTask(ILampService lampService, RedissonClient redissonClient, IOneNetService oneNetService, MongoClient mongoClient) {
         this.lampService = lampService;
         this.redissonClient = redissonClient;
         this.oneNetService = oneNetService;
+        this.mongoClient = mongoClient;
 
-        lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat));
+        lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat), rebootChip, this.redissonClient.getLock(rebootChip));
     }
 
     //@Scheduled(initialDelay = 2000, fixedDelay = 1000*5)
@@ -65,6 +74,45 @@ public class MyScheduledTask {
             }finally {
                 locker.forceUnlock();
                 //log.debug("执行任务完毕，并释放锁");
+            }
+        }else{
+            log.debug("获取锁失败");
+        }
+    }
+
+    @Scheduled(initialDelay = 2000, fixedDelay = 1000 * 60 * 60 * 3)
+    public void rebootChip(){ // 定时重启中控，每3小时执行一次
+        var locker = lockers.get(rebootChip);
+        if(locker != null && locker.tryLock()){
+            try{
+                locker.lock();
+                var resource = this.lampService.getResourceByCommandValue(Command.ZNLD_REBOOT_CHIP);
+                if(resource == null){
+                    log.error("执行定时任务错误，获取重启中控指令为空");
+                    return;
+                }
+                var devices = this.oneNetService.getDeviceIdAndImei();
+                for(var device : devices){
+                    var params = new CommandParams();
+                    params.command = resource.value;
+                    params.deviceId = device.deviceId;
+                    params.imei = device.imei;
+                    params.oneNetKey = resource.toOneNetKey();
+                    params.timeout = resource.timeout;
+                    var ret = oneNetService.execute(params);
+                    var db = mongoClient.getDatabase( "test" );
+                    var c1 = db.getCollection("com.sybd.znld.task");
+                    var document = new Document("name", "reboot_chip")
+                            .append("deviceId", device.deviceId)
+                            .append("execute_time", LocalDateTime.now())
+                            .append("execute_result", new Document().append("code", ret.errno).append("msg", ret.error));
+                    c1.insertOne(document);
+                }
+                log.debug("定时重启中控任务执行完毕");
+            }catch (Exception ex){
+                log.error("执行定时重启中控任务发生错误：" + ex.getMessage());
+            }finally {
+                locker.forceUnlock();
             }
         }else{
             log.debug("获取锁失败");

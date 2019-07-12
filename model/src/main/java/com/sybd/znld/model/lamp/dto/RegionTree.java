@@ -19,4 +19,11 @@ public class RegionTree {
     public int hashCode() {
         return Objects.hash(id, name, parentId);
     }
+
+    public RegionTree(){}
+    public RegionTree(String id, String name, String parentId){
+        this.id = id;
+        this.name = name;
+        this.parentId = parentId;
+    }
 }

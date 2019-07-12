@@ -18,4 +18,5 @@ public class Command {
     public static final String ZNLD_LOCATION_START_REPORTING = "202"; // 位置信息开始上传
     public static final String ZNLD_LOCATION_STOP_REPORTING = "203"; // 位置信息停止上传
     public static final String ZNLD_DD_EXECUTE = "204"; // 上传景观灯执行内容
+    public static final String ZNLD_REBOOT_CHIP = "205"; // 上重启中控
 }

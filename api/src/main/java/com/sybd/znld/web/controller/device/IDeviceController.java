@@ -80,9 +80,18 @@ public interface IDeviceController {
     @GetMapping(value = "status/region/{region}/dataStream/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     PullRegionResult pullByRegionOfDataStream(@PathVariable(name = "region") String region, @PathVariable(name = "dataStream") String dataStream);
 
+    @GetMapping(value = "status/region/{region}/dataStream/{dataStream}/angle", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    PullRegionResult pullByRegionOfDataStreamWithAngle(@PathVariable(name = "region") String region, @PathVariable(name = "dataStream") String dataStream);
+
     @PutMapping(value = "status/region/{region}/dataStreams/value/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     PushRegionResult pushByRegionOfDataStreams(@PathVariable(name = "region") String region, @RequestBody List<String> dataStreams, @PathVariable(name = "value") Object value);
 
     @PostMapping(value = "status/region/{region}/dataStreams", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     PullRegionResult pullByRegionOfDataStreams(@PathVariable(name = "region") String region, @RequestBody List<String> dataStreams);
+
+    @GetMapping(value = "status/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/angle", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    AngleResult getAngleStatus(@PathVariable("deviceId") Integer deviceId);
+
+    @GetMapping(value = "status/region/{region}/dataStream/angle", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    AngleRegionResult getRegionAngleStatus(@PathVariable("region") String region);
 }

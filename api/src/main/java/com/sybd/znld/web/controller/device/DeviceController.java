@@ -1513,19 +1513,39 @@ public class DeviceController implements IDeviceController {
                 return ret;
             }
         }
-        var map = new HashMap<String, ApiResult>();
+        var lamp = this.lampService.getLampByDeviceId(deviceId);
+        if(lamp == null){
+            ret.code = 1;
+            ret.msg = "参数错误";
+            return ret;
+        }
+        var item = new PullResult.Item();
+        item.deviceId = deviceId;
+        item.deviceName = lamp.deviceName;
+
         var tmp = this.oneNet.getValue(deviceId, OneNetKey.from(dataStreamId));
         if(!tmp.isOk()){
-            map.put(dataStream, new ApiResult(tmp.errno, tmp.error));
+            var status = new PullResult.Item.ResourceStatus();
+            status.name = dataStream;
+            status.code = tmp.errno;
+            status.msg = tmp.error;
+            item.status.add(status);
+
             ret.code = 0;
             ret.msg = "";
-            ret.values = map;
+            ret.values = item;
             return ret;
         }
         try{
             if(!tmp.isEmpty()){
-                map.put(dataStream, new ApiResult(tmp.errno, tmp.error, tmp.data.get(0).res.get(0).val));
-                ret.values = map;
+                var status = new PullResult.Item.ResourceStatus();
+                status.name = dataStream;
+                status.code = tmp.errno;
+                status.msg = tmp.error;
+                status.value = tmp.data.get(0).res.get(0).val;
+                item.status.add(status);
+
+                ret.values = item;
                 ret.code = 0;
                 ret.msg = "";
                 return ret;
@@ -1559,19 +1579,13 @@ public class DeviceController implements IDeviceController {
 
     @Override
     public PullResult pullByDeviceIdOfDataStreams(Integer deviceId, List<String> dataStreams) {
-        var map = new HashMap<String, ApiResult>();
+        var result = new PullResult();
         for(var ds : dataStreams){
             var ret = this.pullByDeviceIdOfDataStream(deviceId, ds);
-            if(!ret.isOk()){
-                map.put(ds, new ApiResult(ret.code, ret.msg));
-            }else{
-                map.put(ds, ret.values.get(ds));
-            }
+            result.values.status.addAll(ret.values.status);
         }
-        var result = new PullResult();
         result.code = 0;
         result.msg = "";
-        result.values = map;
         return result;
     }
 
@@ -1631,25 +1645,48 @@ public class DeviceController implements IDeviceController {
             var regionModel = this.regionService.getRegionByName(region);
             if(regionModel != null) regionId = regionModel.id;
         }
-        var lampMap = new HashMap<Integer, Map<String, ApiResult>>();
+        var values = new ArrayList<PullRegionResult.Item>();
         var lamps = this.lampService.getLampsByRegionId(regionId);
         for(var lamp : lamps){
             var ret = this.pullByDeviceIdOfDataStream(lamp.deviceId, dataStream);
-            if(!ret.isOk()){
-                var dsMap = new HashMap<String, ApiResult>();
-                dsMap.put(dataStream, new ApiResult(ret.code, ret.msg));
-                lampMap.put(lamp.deviceId, dsMap);
-            }else {
-                var dsMap = new HashMap<String, ApiResult>();
-                var tmp = ret.values.get(dataStream);
-                dsMap.put(dataStream, tmp);
-                lampMap.put(lamp.deviceId, dsMap);
-            }
+
+            var item = new PullRegionResult.Item();
+            item.deviceId = lamp.deviceId;
+            item.deviceName = lamp.deviceName;
+
+            var rs = new PullRegionResult.Item.ResourceStatus();
+            var tmp = ret.values.status.get(0);
+            rs.name = dataStream;
+            rs.code = tmp.code;
+            rs.msg = tmp.msg;
+            rs.value = tmp.value;
+            item.status.add(rs);
+            values.add(item);
         }
         result.code = 0;
         result.msg = "";
-        result.values = lampMap;
+        result.values = values;
         return result;
+    }
+
+    @Override
+    public PullRegionResult pullByRegionOfDataStreamWithAngle(String region, String dataStream) {
+        var ret = this.pullByRegionOfDataStream(region, dataStream);
+        var angles = this.getRegionAngleStatus(region);
+
+        angles.values.forEach(a -> {
+            for(var it : ret.values){
+                if(a.deviceId.equals(it.deviceId)){
+                    var rs = new PullRegionResult.Item.ResourceStatus();
+                    rs.name = "倾斜状态";
+                    rs.value = a.value;
+                    rs.code = a.code;
+                    rs.msg = a.msg;
+                    it.status.add(rs);
+                }
+            }
+        });
+        return ret;
     }
 
     @Override
@@ -1693,23 +1730,69 @@ public class DeviceController implements IDeviceController {
             result.msg = "错误的参数";
             return result;
         }
-        var lampMap = new HashMap<Integer ,Map<String, ApiResult>>();
+        List<PullRegionResult.Item> values = new ArrayList<>();
         for(var ds : dataStreams){
             var ret = this.pullByRegionOfDataStream(region, ds);
-            for(var l : ret.values.entrySet()){
-                var key = l.getKey();
-                var val = l.getValue();
-                if(lampMap.containsKey(key)){
-                    var tmp = lampMap.get(key);
-                    val.forEach(tmp::put);
-                }else{
-                    lampMap.put(key, val);
+            if(values.stream().noneMatch(it -> ret.values.stream().anyMatch(it2 -> it2.deviceId.equals(it.deviceId)))){
+                values.addAll(ret.values);
+            }else{
+                for(var item : values){
+                    for(var it : ret.values){
+                        if(it.deviceId.equals(item.deviceId)){
+                            item.status.addAll(it.status);
+                        }
+                    }
                 }
             }
         }
         result.code = 0;
         result.msg = "";
-        result.values = lampMap;
+        result.values = values;
+        return result;
+    }
+
+    @Override
+    public AngleResult getAngleStatus(Integer deviceId) {
+        var tmp = this.lampService.getLampAngleStatusByDeviceId(deviceId);
+        var ret = new AngleResult();
+        ret.code = 0;
+        ret.msg = "";
+        ret.deviceId = tmp.deviceId;
+        ret.deviceName = tmp.deviceName;
+        ret.value = tmp.value.toString();
+        ret.code = tmp.code;
+        ret.msg = tmp.msg;
+        return ret;
+    }
+
+    @Override
+    public AngleRegionResult getRegionAngleStatus(String region) {
+        var result = new AngleRegionResult();
+        if(MyString.isEmptyOrNull(region)){
+            result.code = 1;
+            result.msg = "错误的参数";
+            return result;
+        }
+        String regionId = null;
+        if(MyString.isUuid(region)){ // 为区域id
+            regionId = region;
+        }else { // 可能是区域名字
+            var regionModel = this.regionService.getRegionByName(region);
+            if(regionModel != null) regionId = regionModel.id;
+        }
+        var lamps = this.lampService.getLampsByRegionId(regionId);
+        for(var lamp : lamps){
+            var ret = this.getAngleStatus(lamp.deviceId);
+            var item = new AngleRegionResult.Item();
+            item.deviceId = ret.deviceId;
+            item.deviceName = ret.deviceName;
+            item.value = ret.value;
+            item.code = ret.code;
+            item.msg = ret.msg;
+            result.values.add(item);
+        }
+        result.code = 0;
+        result.msg = "";
         return result;
     }
 

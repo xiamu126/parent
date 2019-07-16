@@ -115,6 +115,12 @@ public class LampServiceTest {
         var ret = this.lampMapper.selectByDeviceId(528130535);
         Assert.assertNotNull(ret);
     }
+    @Test
+    public void getLampByRegionId(){
+        var ret = this.lampMapper.selectByRegionId("5aa2ac64883611e9a7fe0242c0a8b002");
+        Assert.assertNotNull(ret);
+    }
+
 
     @Test
     public void getLampStatus(){

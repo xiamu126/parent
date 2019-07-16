@@ -57,7 +57,7 @@ public class RegionController implements IRegionController {
         if(organ == null){
             return RegionTreeResult.fail("指定的组织不存在");
         }
-
-        return null;
+        var ret = this.regionService.getRegionTreeByOrganId(organId);
+        return RegionTreeResult.success(ret);
     }
 }

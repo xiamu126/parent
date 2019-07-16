@@ -29,6 +29,7 @@ public interface ILampService {
     LampCameraModel addCamera(String lampId, CameraModel model);
     boolean removeCamera(String lampId, String cameraId);
     LampStatus getLampStatusByDeviceId(Integer deviceId);
+    DeviceStatus getLampAngleStatusByDeviceId(Integer deviceId);
     Map<Integer, LampStatus> getLampStatusByDeviceIds(List<Integer> deviceIds);
     Map<Integer, LampStatus> getLampStatusByRegionId(String regionId);
     LampStatusResultPaged getLampStatusByRegionIdPaged(String regionId, int pageIndex, int pageSize);

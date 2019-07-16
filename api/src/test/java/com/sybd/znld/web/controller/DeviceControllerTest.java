@@ -411,6 +411,21 @@ public class DeviceControllerTest {
     }
 
     @Test
+    public void pullByRegionOfDataStreamWithAngle() throws Exception {
+        var region = "威海智慧大厦";
+        var dataStream = "3342_6_5700";
+        var action = MockMvcRequestBuilders.get("/api/v1/device/status/region/{region}/dataStream/{dataStream}/angle",
+                region, dataStream).accept(MediaType.APPLICATION_JSON_UTF8);
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
     public void pushByRegionOfDataStreams() throws Exception {
         var region = "威海智慧大厦";
         var dataStreams = List.of("3342_6_5700", "3342_5_5700");
@@ -431,7 +446,7 @@ public class DeviceControllerTest {
     public void pullByRegionOfDataStreams() throws Exception {
         var region = "威海智慧大厦";
         var dataStreams = List.of("3342_6_5700", "3342_5_5700");
-        var action = MockMvcRequestBuilders.get("/api/v1/device/status/region/{region}/dataStreams",
+        var action = MockMvcRequestBuilders.post("/api/v1/device/status/region/{region}/dataStreams",
                 region).accept(MediaType.APPLICATION_JSON_UTF8);
         var mapper = new ObjectMapper();
         var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8).content(mapper.writeValueAsString(dataStreams)))
@@ -469,6 +484,19 @@ public class DeviceControllerTest {
                 deviceId).accept(MediaType.APPLICATION_JSON_UTF8);
         var mapper = new ObjectMapper();
         var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8).content(mapper.writeValueAsString(deviceSubtitle)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                //.andExpect(MockMvcResultMatchers.jsonPath("$.json.id").value(4))
+                .andReturn().getResponse().getContentAsString();
+        log.debug(result);
+    }
+
+    @Test
+    public void getRegionTree() throws Exception{
+        var organId = "099060a6971911e9b0790242c0a8b006";
+        var action = MockMvcRequestBuilders.get("/api/v1/region/tree/{organId}", organId).accept(MediaType.APPLICATION_JSON_UTF8);
+        var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 //.andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))

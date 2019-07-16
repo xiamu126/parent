@@ -2,7 +2,8 @@ package com.sybd.znld.model.lamp.dto;
 
 public class LampStatus {
     public String lampId;
-    public String lampName;
+    public Integer deviceId;
+    public String deviceName;
     public String regionName;
     public String xyAngle;
     public Integer miniStarStatus; // 景观灯状态，0 开启，1 关闭

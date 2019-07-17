@@ -1,9 +1,12 @@
 package com.sybd.znld.web.service;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.model.lamp.LampModel;
+import com.sybd.znld.model.rbac.dto.InitAccountInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.service.rbac.IUserService;
+import com.sybd.znld.util.MD5;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Assert;
@@ -14,10 +17,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -114,5 +121,44 @@ public class UserServiceTest {
         entity.setAge((short)18);
         var ret = this.userService.modifyUserById(entity);
         log.debug(ret.toString());
+    }
+
+    // 新建账号
+    @Test
+    public void initAccount() throws NoSuchAlgorithmException {
+        var user = new UserModel();
+        user.name = "zhengzhou";
+        user.password = MD5.encrypt(MD5.encrypt("2019").toLowerCase()).toLowerCase();
+        var data = new InitAccountInput();
+        data.user = user;
+        data.oauth2ClientId = "sybd_znld_test";
+        data.organizationName = "河南郑州";
+        data.regionName = "郑州汉江路";
+        var lamp1 = new LampModel();
+        lamp1.apiKey = "fN8PGSJ3VoIOSoznGWuGeC25PGY=";
+        lamp1.deviceId = 522756075;
+        lamp1.imei = "868194030006128";
+        lamp1.deviceName = "郑州汉江1";
+        lamp1.longitude = "113.6492192021";
+        lamp1.latitude = "34.7217506896";
+        var lamp2 = new LampModel();
+        lamp2.apiKey = "fN8PGSJ3VoIOSoznGWuGeC25PGY=";
+        lamp2.deviceId = 522756040;
+        lamp2.imei = "868194030003265";
+        lamp2.deviceName = "郑州汉江2";
+        lamp2.longitude = "113.6492192021";
+        lamp2.latitude = "34.7217506896";
+        data.lamps = List.of(lamp1, lamp2);
+
+        this.userService.initAccount(data);
+    }
+
+    @Test
+    public void test() throws NoSuchAlgorithmException {
+        var encoder = new BCryptPasswordEncoder(10);
+        var password = MD5.encrypt(MD5.encrypt("2019").toLowerCase()).toLowerCase();
+        log.debug(encoder.encode(password));
+        log.debug(encoder.encode(password));
+        log.debug(encoder.encode(password));
     }
 }

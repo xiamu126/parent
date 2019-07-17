@@ -3,6 +3,7 @@ package com.sybd.znld.service.rbac;
 import com.sybd.znld.model.rbac.AuthorityModel;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.model.rbac.dto.LoginInput;
+import com.sybd.znld.model.rbac.dto.InitAccountInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 
 import java.util.List;
@@ -21,4 +22,5 @@ public interface IUserService {
     UserModel verify(LoginInput input);
     UserModel register(RegisterInput input);
     List<AuthorityModel> getAuthoritiesById(String userId);
+    void initAccount(InitAccountInput input);
 }

@@ -33,7 +33,7 @@ public class MD5 {
 
     public static void main(String[] args){
         try {
-            System.out.println(MD5.encrypt(MD5.encrypt(MD5.encrypt("2018").toLowerCase()).toLowerCase(), 2));
+            System.out.println(encrypt(encrypt("2019").toLowerCase()).toLowerCase());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

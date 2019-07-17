@@ -3,6 +3,7 @@ package com.sybd.znld.mapper.lamp;
 import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.lamp.LampResourceModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -10,6 +11,6 @@ import java.util.List;
 @DbSource("znld")
 public interface LampResourceMapper {
     int insert(LampResourceModel model);
-    LampResourceModel selectByLampIdAndResourceId(String lampId, String resourceId);
+    LampResourceModel selectByLampIdAndResourceId(@Param("lampId") String lampId, @Param("resourceId") String resourceId);
     List<LampResourceModel> selectByLampId(String lampId);
 }

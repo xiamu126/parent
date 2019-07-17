@@ -1,12 +1,19 @@
 package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.mapper.rbac.UserRoleMapper;
+import com.sybd.znld.model.lamp.LampRegionModel;
+import com.sybd.znld.model.lamp.LampResourceModel;
+import com.sybd.znld.model.lamp.OneNetResourceModel;
+import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.rbac.AuthorityModel;
+import com.sybd.znld.model.rbac.OrganizationModel;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.model.rbac.dto.LoginInput;
+import com.sybd.znld.model.rbac.dto.InitAccountInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.util.MyString;
@@ -16,6 +23,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,17 +34,27 @@ import java.util.List;
 public class UserService extends BaseService implements IUserService {
     private final UserRoleMapper userRoleMapper;
     private final UserMapper userMapper;
+    private final RegionMapper regionMapper;
+    private final LampMapper lampMapper;
+    private final LampResourceMapper lampResourceMapper;
+    private final OneNetResourceMapper oneNetResourceMapper;
     private final OrganizationMapper organizationMapper;
+    private final LampRegionMapper lampRegionMapper;
     private final BCryptPasswordEncoder encoder;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public UserService(UserMapper userMapper,
-                       CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, UserRoleMapper userRoleMapper, OrganizationMapper organizationMapper) {
+                       CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, UserRoleMapper userRoleMapper, RegionMapper regionMapper, LampMapper lampMapper, LampResourceMapper lampResourceMapper, OneNetResourceMapper oneNetResourceMapper, OrganizationMapper organizationMapper, LampRegionMapper lampRegionMapper) {
         super(cacheManager, taskScheduler, projectConfig);
         this.userMapper = userMapper;
         this.userRoleMapper = userRoleMapper;
+        this.regionMapper = regionMapper;
+        this.lampMapper = lampMapper;
+        this.lampResourceMapper = lampResourceMapper;
+        this.oneNetResourceMapper = oneNetResourceMapper;
         this.organizationMapper = organizationMapper;
+        this.lampRegionMapper = lampRegionMapper;
         this.encoder = new BCryptPasswordEncoder(10);
     }
 
@@ -121,6 +139,7 @@ public class UserService extends BaseService implements IUserService {
         //邮箱不能重复，如果存在的话
         //所属组织必须存在
         if(this.organizationMapper.selectById(model.organizationId) == null) return null;
+        model.password = this.encoder.encode(model.password); // 密码加密后存储，统一在这里做，其它地方可以免去
         if(this.userMapper.insert(model) > 0) return model; else return null;
     }
 
@@ -139,5 +158,61 @@ public class UserService extends BaseService implements IUserService {
     @Override
     public List<AuthorityModel> getAuthoritiesById(String userId) {
         return null;
+    }
+
+    @Override
+    public void initAccount(InitAccountInput input) {
+
+        // 新建组织
+        // 关联此账号所属组织
+        // 关联此组织所对应的oauth2信息
+        var organ = this.organizationMapper.selectByName(input.organizationName);
+        if(organ == null){
+            organ = new OrganizationModel();
+            organ.oauth2ClientId = input.oauth2ClientId;
+            organ.name= input.organizationName;
+            this.organizationMapper.insert(organ);
+        }
+
+        var user = this.userMapper.selectByName(input.user.name);
+        if(user == null){
+            input.user.organizationId = organ.id;
+            this.addUser(input.user);
+        }
+
+        // 新建区域
+        var region = this.regionMapper.selectByName(input.regionName);
+        if(region == null){
+            region = new RegionModel();
+            region.name = input.regionName;
+            region.organizationId = organ.id;
+            this.regionMapper.insert(region);
+        }
+
+        // 新建路灯，并关联资源，关联区域和路灯
+        var resources = this.oneNetResourceMapper.selectByResourceType(OneNetResourceModel.Type.Value);
+        for(var l : input.lamps){
+            var lamp = this.lampMapper.selectByDeviceId(l.deviceId);
+            if(lamp == null){
+                this.lampMapper.insert(l);
+                lamp = l;
+            }
+            var lampRegion = this.lampRegionMapper.selectByLampIdAndRegionId(lamp.id, region.id);
+            if(lampRegion == null){
+                var lampRegionModel = new LampRegionModel();
+                lampRegionModel.lampId = lamp.id;
+                lampRegionModel.regionId = region.id;
+                this.lampRegionMapper.insert(lampRegionModel);
+            }
+            for(var r : resources){
+                var lr = this.lampResourceMapper.selectByLampIdAndResourceId(lamp.id, r.id);
+                if(lr == null){
+                    var tmp = new LampResourceModel();
+                    tmp.oneNetResourceId = r.id;
+                    tmp.lampId = l.id;
+                    this.lampResourceMapper.insert(tmp);
+                }
+            }
+        }
     }
 }

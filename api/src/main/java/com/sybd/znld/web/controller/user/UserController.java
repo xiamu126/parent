@@ -152,7 +152,7 @@ public class UserController implements IUserController {
     @Override
     public ApiResult register(@RequestBody @Valid RegisterInput input, HttpServletRequest request, BindingResult bindingResult){
         try {
-            input.password = this.encoder.encode(input.password);
+            //input.password = this.encoder.encode(input.password);
             if(userService.register(input) != null){
                 return ApiResult.success();
             }

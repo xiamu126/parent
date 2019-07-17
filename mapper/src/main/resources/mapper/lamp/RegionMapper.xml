@@ -5,7 +5,7 @@
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
         </selectKey>
-        insert region(id, name, status) VALUES (#{id}, #{name}, #{status});
+        insert region(id, name, status, organization_id) VALUES (#{id}, #{name}, #{status}, #{organizationId});
     </insert>
 
     <select id="selectById" resultType="com.sybd.znld.model.lamp.RegionModel">

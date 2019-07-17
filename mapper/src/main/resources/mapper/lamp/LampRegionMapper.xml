@@ -11,4 +11,8 @@
     <select id="selectById" resultType="com.sybd.znld.model.lamp.LampRegionModel">
         select * from lamp_region where id = #{id};
     </select>
+
+    <select id="selectByLampIdAndRegionId" resultType="com.sybd.znld.model.lamp.LampRegionModel">
+        select * from lamp_region where lamp_id = #{lampId} and region_id = #{regionId};
+    </select>
 </mapper>

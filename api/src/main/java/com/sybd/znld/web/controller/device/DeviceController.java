@@ -59,19 +59,17 @@ public class DeviceController implements IDeviceController {
         this.regionService = regionService;
     }
 
-    private Map<LocalDateTime, Double> getResourceByHour(Integer deviceId, OneNetKey oneNetKey, LocalDateTime begin, LocalDateTime end){
+    private Map<LocalDateTime, Double> getResourceByHour(Integer deviceId, String dataStreamId, LocalDateTime begin, LocalDateTime end){
         try{
             if(begin.isEqual(end)){
                 log.debug("开始时间等于结束时间");
                 return null;
             }
-            var result = this.oneNet.getHistoryDataStream(deviceId, oneNetKey.toDataStreamId(), begin, end, null, null, null);//过去24小时内的数据
+            var result = this.oneNet.getHistoryDataStream(deviceId, dataStreamId, begin, end, null, null, null);//过去24小时内的数据
             if(result == null || result.data == null || result.data.count == null || result.data.count <= 0){
                 return null;
             }
             var data = (result.getData().getDataStreams().get(0)).getDataPoints();
-            var theSet = new HashSet<Integer>();
-            var sortedMap = new TreeMap<Integer, String>();
 
             var tmp = data.stream().collect(Collectors.groupingBy( d -> {
                 var time = LocalDateTime.parse(d.at, DateTimeFormatter.ofPattern(MyDateTime.format2));
@@ -84,15 +82,6 @@ public class DeviceController implements IDeviceController {
                 var value = e.getValue();
                 var avg = value.stream().mapToDouble(t -> Double.parseDouble(t.value)).average().orElse(0);
                 ret.put(key, avg);
-            }
-
-            for(var theData : data){
-                var theDate = LocalDateTime.parse(theData.at, DateTimeFormatter.ofPattern(MyDateTime.format2));
-                var hour = theDate.getHour();
-                if (!theSet.contains(hour)) {
-                    theSet.add(hour);
-                    sortedMap.put(hour, theData.value);
-                }
             }
 
             return ret;
@@ -109,13 +98,22 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path"),
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
-    @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
+    @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
-                                                        @PathVariable(name = "dataStreamId") String dataStreamId,
+                                                        @PathVariable(name = "dataStream") String dataStream,
                                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp,
                                                         @PathVariable(name = "endTimestamp") Long endTimestamp){
-        var result = getResourceByHour(deviceId, OneNetKey.from(dataStreamId), MyDateTime.toLocalDateTime(beginTimestamp), MyDateTime.toLocalDateTime(endTimestamp));
+        String dataStreamId = null;
+        if(OneNetKey.isDataStreamId(dataStream)){ // 为资源id
+            dataStreamId = dataStream;
+        }else { // 可能为资源名称
+            var tmp = this.lampService.getDataStreamIdByResourceName(dataStream);
+            if(!MyString.isEmptyOrNull(tmp)){
+                dataStreamId = tmp;
+            }
+        }
+        var result = getResourceByHour(deviceId, dataStreamId, MyDateTime.toLocalDateTime(beginTimestamp), MyDateTime.toLocalDateTime(endTimestamp));
         if(result == null) return PrettyHistoryDataResult.fail("获取数据为空");
         return PrettyHistoryDataResult.success(result);
     }
@@ -126,12 +124,21 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "dataStreamId", value = "查看的数据流Id", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
-    @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStreamId:^\\d+_\\d+_\\d+$}/{beginTimestamp:^\\d+$}",
+    @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStream}/{beginTimestamp:^\\d+$}",
             produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
-                                                        @PathVariable(name = "dataStreamId") String dataStreamId,
+                                                        @PathVariable(name = "dataStream") String dataStream,
                                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp){
-        var result = getResourceByHour(deviceId, OneNetKey.from(dataStreamId), MyDateTime.toLocalDateTime(beginTimestamp), LocalDateTime.now());
+        String dataStreamId = null;
+        if(OneNetKey.isDataStreamId(dataStream)){ // 为资源id
+            dataStreamId = dataStream;
+        }else { // 可能为资源名称
+            var tmp = this.lampService.getDataStreamIdByResourceName(dataStream);
+            if(!MyString.isEmptyOrNull(tmp)){
+                dataStreamId = tmp;
+            }
+        }
+        var result = getResourceByHour(deviceId, dataStreamId, MyDateTime.toLocalDateTime(beginTimestamp), LocalDateTime.now());
         if(result == null) return PrettyHistoryDataResult.fail("获取数据为空");
         return PrettyHistoryDataResult.success(result);
     }
@@ -1383,6 +1390,7 @@ public class DeviceController implements IDeviceController {
     public MiniStarResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody List<OneNetExecuteArgs> data, HttpServletRequest request) {
         var result = new MiniStarResult();
         var map = new HashMap<Integer, BaseApiResult>();
+        var errCount = 0;
         try{
             if(data == null || data.isEmpty()) {
                 result.code = 1;
@@ -1420,10 +1428,12 @@ public class DeviceController implements IDeviceController {
                     result.msg = "获取该区域下的路灯为空";
                     return result;
                 }
-                arg.cmd = Command.ZNLD_DD_EXECUTE;
                 for (var lamp : lamps) {
                     var ret = this.execute(lamp.deviceId, arg, request);
                     map.put(lamp.deviceId, new BaseApiResult(ret.code, ret.msg));
+                    if(!ret.isOk()){
+                        errCount++;
+                    }
                 }
             }
         }catch (Exception ex){
@@ -1433,7 +1443,7 @@ public class DeviceController implements IDeviceController {
             return result;
         }
         result.code = 0;
-        result.msg = "";
+        result.msg = "下发成功，其中有"+errCount+"盏返回失败代码";
         result.values = map;
         return result;
     }

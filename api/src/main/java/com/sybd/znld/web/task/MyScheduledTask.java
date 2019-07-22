@@ -1,5 +1,7 @@
 package com.sybd.znld.web.task;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.model.onenet.Command;
@@ -16,7 +18,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Map;
 
 @Slf4j
@@ -46,7 +48,8 @@ public class MyScheduledTask {
         this.oneNetService = oneNetService;
         this.mongoClient = mongoClient;
 
-        lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat), rebootChip, this.redissonClient.getLock(rebootChip));
+        lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat));
+        lockers.put(rebootChip, this.redissonClient.getLock(rebootChip));
     }
 
     //@Scheduled(initialDelay = 2000, fixedDelay = 1000*5)
@@ -93,6 +96,15 @@ public class MyScheduledTask {
                 }
                 var devices = this.oneNetService.getDeviceIdAndImei();
                 for(var device : devices){
+                    var db = mongoClient.getDatabase( "test" );
+                    var c1 = db.getCollection("com.sybd.znld.task");
+                    var filter = new BasicDBObject();
+                    var begin = LocalDateTime.now(ZoneOffset.UTC).minusHours(3).minusMinutes(10);
+                    filter.put("execute_time", BasicDBObjectBuilder.start("$gt", begin).get());
+                    if(c1.find(filter).first() != null){ // 如果在过去的3小时10分种内，有执行过任务，则跳过，防止短时间内多次重启
+                        log.debug("距离上一次重启，小于3小时，不执行");
+                        break;
+                    }
                     var params = new CommandParams();
                     params.command = resource.value;
                     params.deviceId = device.deviceId;
@@ -100,11 +112,9 @@ public class MyScheduledTask {
                     params.oneNetKey = resource.toOneNetKey();
                     params.timeout = resource.timeout;
                     var ret = oneNetService.execute(params);
-                    var db = mongoClient.getDatabase( "test" );
-                    var c1 = db.getCollection("com.sybd.znld.task");
                     var document = new Document("name", "reboot_chip")
                             .append("deviceId", device.deviceId)
-                            .append("execute_time", LocalDateTime.now())
+                            .append("execute_time", LocalDateTime.now(ZoneOffset.UTC))
                             .append("execute_result", new Document().append("code", ret.errno).append("msg", ret.error));
                     c1.insertOne(document);
                 }

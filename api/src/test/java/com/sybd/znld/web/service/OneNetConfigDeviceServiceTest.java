@@ -1,4 +1,4 @@
-package com.sybd.znld.service;
+package com.sybd.znld.web.service;
 
 import com.sybd.znld.service.lamp.ILampService;
 import org.junit.Before;

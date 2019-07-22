@@ -45,6 +45,21 @@ public class Subtitle implements Serializable {
             public boolean isValid(){
                 return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255;
             }
+
+            @Override
+            public String toString() {
+                return r+","+g+","+b;
+            }
+        }
+
+        public String getColor() {
+            var tmp = new StringBuilder();
+            for(var c : colors){
+                tmp.append(c.toString());
+                tmp.append(";");
+            }
+            tmp.deleteCharAt(tmp.length() - 1);
+            return tmp.toString();
         }
 
         public static class Type{

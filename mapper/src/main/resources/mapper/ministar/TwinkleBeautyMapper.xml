@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.ministar.TwinkleBeautyMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.ministar.TwinkleBeautyModel">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
+        </selectKey>
+        insert into twinkle_beauty(id, color, type, rate, user_id, twinkle_beauty_group_id)
+        values (#{id}, #{color}, #{type}, #{rate}, #{userId}, #{twinkleBeautyGroupId});
+    </insert>
+
+    <select id="selectById" resultType="com.sybd.znld.model.ministar.TwinkleBeautyModel">
+        select * from twinkle_beauty where id = #{_parameter};
+    </select>
+
+    <select id="selectByGroupId" resultType="com.sybd.znld.model.ministar.TwinkleBeautyModel">
+        select * from twinkle_beauty where twinkle_beauty_group_id = #{_parameter};
+    </select>
+</mapper>

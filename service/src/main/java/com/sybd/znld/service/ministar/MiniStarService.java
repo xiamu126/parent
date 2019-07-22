@@ -1,27 +1,56 @@
 package com.sybd.znld.service.ministar;
 
+import com.sybd.znld.mapper.lamp.LampMapper;
+import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.mapper.ministar.TwinkleBeautyGroupMapper;
+import com.sybd.znld.mapper.ministar.TwinkleBeautyMapper;
+import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.ministar.TwinkleBeautyGroupModel;
+import com.sybd.znld.model.ministar.TwinkleBeautyModel;
+import com.sybd.znld.model.onenet.Command;
+import com.sybd.znld.model.onenet.dto.CommandParams;
+import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
+import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class MiniStarService implements IMiniStarService {
     private final TwinkleBeautyGroupMapper twinkleBeautyGroupMapper;
+    private final TwinkleBeautyMapper twinkleBeautyMapper;
     private final RegionMapper regionMapper;
+    private final UserMapper userMapper;
+    private final LampMapper lampMapper;
+    private final OneNetResourceMapper oneNetResourceMapper;
+    private final IOneNetService oneNetService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public MiniStarService(TwinkleBeautyGroupMapper twinkleBeautyGroupMapper, RegionMapper regionMapper) {
+    public MiniStarService(TwinkleBeautyGroupMapper twinkleBeautyGroupMapper,
+                           TwinkleBeautyMapper twinkleBeautyMapper,
+                           RegionMapper regionMapper,
+                           UserMapper userMapper,
+                           LampMapper lampMapper,
+                           OneNetResourceMapper oneNetResourceMapper,
+                           IOneNetService oneNetService) {
         this.twinkleBeautyGroupMapper = twinkleBeautyGroupMapper;
+        this.twinkleBeautyMapper = twinkleBeautyMapper;
         this.regionMapper = regionMapper;
+        this.userMapper = userMapper;
+        this.lampMapper = lampMapper;
+        this.oneNetResourceMapper = oneNetResourceMapper;
+        this.oneNetService = oneNetService;
     }
 
     @Override
@@ -57,5 +86,60 @@ public class MiniStarService implements IMiniStarService {
         }
         if(this.twinkleBeautyGroupMapper.insert(model) > 0) return model;
         return null;
+    }
+
+    @Override
+    public Map<Integer, BaseApiResult> newMiniStar(List<OneNetExecuteArgs> data) {
+        var map = new HashMap<Integer, BaseApiResult>();
+        if(data == null || data.isEmpty()) {
+            return null;
+        }
+        for(var arg : data){
+            if(!arg.isValid()) {
+                return null;
+            }
+            var subtitle = arg.getSubtitle();
+            var user = this.userMapper.selectById(subtitle.userId);
+            if(user == null) {
+                return null;
+            }
+            var region = this.regionMapper.selectById(subtitle.regionId);
+            if(region == null) {
+                return null;
+            }
+            var resource = this.oneNetResourceMapper.selectByCommandValue(Command.ZNLD_DD_EXECUTE);
+            if(resource == null) {
+                return null;
+            }
+            var lamps = this.lampMapper.selectByRegionId(subtitle.regionId);
+            if(lamps == null || lamps.isEmpty()) {
+                return null;
+            }
+            for (var lamp : lamps) {
+                var params = new CommandParams();
+                params.deviceId = lamp.deviceId;
+                params.imei = lamp.imei;
+                params.oneNetKey = resource.toOneNetKey();
+                params.timeout = resource.timeout;
+                params.command = arg.getPackedCmd();
+                var ret = oneNetService.execute(params);
+                map.put(lamp.deviceId, new BaseApiResult(ret.errno, ret.error));
+            }
+            // 增加历史记录
+            var tmp = new TwinkleBeautyGroupModel();
+            tmp.beginTime = MyDateTime.toLocalDateTime(subtitle.beginTimestamp);
+            tmp.endTime = MyDateTime.toLocalDateTime(subtitle.endTimestamp);
+            tmp.regionId = subtitle.regionId;
+            this.twinkleBeautyGroupMapper.insert(tmp);
+
+            var tmp2 = new TwinkleBeautyModel();
+            tmp2.userId = subtitle.userId;
+            tmp2.color = subtitle.effect.getColor();
+            tmp2.rate = subtitle.speed;
+            tmp2.type = subtitle.effect.type;
+            this.twinkleBeautyMapper.insert(tmp2);
+
+        }
+        return map;
     }
 }

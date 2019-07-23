@@ -4,3 +4,6 @@ db.getCollection('com.sybd.znld.task').find({
 
 // 删除所有
 db.getCollection('com.sybd.znld.task').remove({})
+
+// 查询所有
+db.getCollection('com.sybd.znld.task').find({})

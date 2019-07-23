@@ -34,7 +34,7 @@ spring:
     cache: false
   profiles:
     include: onenet
-    active: dev
+    active: prod
   cache:
     type: redis
   redis:

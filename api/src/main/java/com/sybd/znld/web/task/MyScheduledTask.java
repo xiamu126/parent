@@ -48,8 +48,7 @@ public class MyScheduledTask {
         this.oneNetService = oneNetService;
         this.mongoClient = mongoClient;
 
-        lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat));
-        lockers.put(rebootChip, this.redissonClient.getLock(rebootChip));
+        lockers = Map.of(heartBeat, this.redissonClient.getLock(heartBeat),rebootChip, this.redissonClient.getLock(rebootChip));
     }
 
     //@Scheduled(initialDelay = 2000, fixedDelay = 1000*5)

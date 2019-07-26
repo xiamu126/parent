@@ -16,7 +16,7 @@ import java.util.List;
 public class Subtitle implements Serializable {
     public String title;
     public String userId;
-    public String regionId;
+    public String region;
     public Short action; // 0为停止，1为开始，2为存储指令
     public Effect effect; // 具体的效果
     public Short speed; // 效果速度
@@ -24,6 +24,7 @@ public class Subtitle implements Serializable {
     public Long endTimestamp;
     public Short effectTotalCount;
     public Short effectCurrentIndex;
+    public String historyId; // 只有当停止灯带效果时，才需要这个id
 
     public static class Effect{
         public Short type; // 0为呼吸灯，1为跑马灯，2为全彩
@@ -90,10 +91,14 @@ public class Subtitle implements Serializable {
     }
 
     public boolean isValid(){
+        if(this.isBasicValid()){
+            if(action == Action.STOP && MyString.isUuid(this.historyId)) {
+                return true; // 如果是停止指令则不需要再检查其它参数
+            }
+        }else{ // 如果基础参数都不合法也就不用再检查其它参数了
+            return false;
+        }
         if(MyString.isEmptyOrNull(title)) return false;
-        if(!MyString.isUuid(userId)) return false;
-        if(!MyString.isUuid(regionId)) return false;
-        if(!Action.isValid(action)) return false;
         if(!effect.isValid()) return false;
         if(!MyNumber.isPositive(speed)) return false;
         if(beginTimestamp == null || MyDateTime.isPast(beginTimestamp, ZoneOffset.UTC)) return false;
@@ -101,6 +106,12 @@ public class Subtitle implements Serializable {
         if(!MyNumber.isPositive(effectTotalCount)) return false;
         if(!MyNumber.isPositiveOrZero(effectCurrentIndex)) return false;
         return effectCurrentIndex < effectTotalCount;
+    }
+
+    public boolean isBasicValid(){
+        if(!MyString.isUuid(userId)) return false;
+        if(MyString.isEmptyOrNull(region)) return false;
+        return Action.isValid(action);
     }
 
     @Override

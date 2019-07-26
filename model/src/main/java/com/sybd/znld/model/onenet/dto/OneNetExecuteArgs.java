@@ -63,4 +63,14 @@ public class OneNetExecuteArgs implements IValid {
         }
         return null;
     }
+
+    public boolean isNewMiniStar(){
+        var subtitle = this.getSubtitle();
+        return subtitle != null && subtitle.action == Subtitle.Action.SAVE;
+    }
+
+    public boolean isStopMiniStar(){
+        var subtitle = this.getSubtitle();
+        return subtitle != null && subtitle.action == Subtitle.Action.STOP;
+    }
 }

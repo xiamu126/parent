@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class TwinkleBeautyModel implements Serializable {
     public String id;
+    public String title;
     public String color;
     public Short type;
     public Short rate;

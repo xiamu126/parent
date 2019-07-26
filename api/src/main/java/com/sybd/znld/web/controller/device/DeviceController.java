@@ -1,7 +1,6 @@
 package com.sybd.znld.web.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
-import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
@@ -11,6 +10,7 @@ import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.service.lamp.ILampService;
 import com.sybd.znld.service.lamp.IRegionService;
+import com.sybd.znld.service.ministar.IMiniStarService;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.util.MyDateTime;
@@ -43,6 +43,7 @@ public class DeviceController implements IDeviceController {
     private final ProjectConfig projectConfig;
     private final IUserService userService;
     private final IRegionService regionService;
+    private final IMiniStarService miniStarService;
 
     @Autowired
     public DeviceController(RedissonClient redissonClient,
@@ -50,13 +51,14 @@ public class DeviceController implements IDeviceController {
                             ILampService lampService,
                             ProjectConfig projectConfig,
                             IUserService userService,
-                            IRegionService regionService) {
+                            IRegionService regionService, IMiniStarService miniStarService) {
         this.redissonClient = redissonClient;
         this.oneNet = oneNet;
         this.lampService = lampService;
         this.projectConfig = projectConfig;
         this.userService = userService;
         this.regionService = regionService;
+        this.miniStarService = miniStarService;
     }
 
     private Map<LocalDateTime, Double> getResourceByHour(Integer deviceId, String dataStreamId, LocalDateTime begin, LocalDateTime end){
@@ -1389,62 +1391,36 @@ public class DeviceController implements IDeviceController {
     @Override
     public MiniStarResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody List<OneNetExecuteArgs> data, HttpServletRequest request) {
         var result = new MiniStarResult();
-        var map = new HashMap<Integer, BaseApiResult>();
+        Map<Integer, BaseApiResult> map = null;
         var errCount = 0;
         try{
-            if(data == null || data.isEmpty()) {
-                result.code = 1;
-                result.msg = "非法的参数";
-                return result;
-            }
-            for(var arg : data){
-                if(!arg.isValid()) {
-                    result.code = 1;
-                    result.msg = "非法的参数";
-                    return result;
-                }
-                var subtitle = arg.getSubtitle();
-                var user = this.userService.getUserById(subtitle.userId);
-                if(user == null) {
-                    result.code = 1;
-                    result.msg = "指定的用户不存在";
-                    return result;
-                }
-                var region = this.regionService.getRegionById(subtitle.regionId);
-                if(region == null) {
-                    result.code = 1;
-                    result.msg = "指定的区域不存在";
-                    return result;
-                }
-                var resource = this.lampService.getResourceByCommandValue(Command.ZNLD_DD_EXECUTE);
-                if(resource == null) {
-                    result.code = 1;
-                    result.msg = "获取命令相关数据失败";
-                    return result;
-                }
-                var lamps = this.lampService.getLampsByRegionId(subtitle.regionId);
-                if(lamps == null || lamps.isEmpty()) {
-                    result.code = 1;
-                    result.msg = "获取该区域下的路灯为空";
-                    return result;
-                }
-                for (var lamp : lamps) {
-                    var ret = this.execute(lamp.deviceId, arg, request);
-                    map.put(lamp.deviceId, new BaseApiResult(ret.code, ret.msg));
-                    if(!ret.isOk()){
-                        errCount++;
-                    }
-                }
+            map = this.miniStarService.miniStar(data);
+            for(var r : map.entrySet()){
+                if(!r.getValue().isOk()) errCount++;
             }
         }catch (Exception ex){
             log.error(ex.getMessage());
             result.code = 1;
-            result.msg = ex.getMessage();
+            result.msg = "发生错误";
             return result;
         }
         result.code = 0;
         result.msg = "下发成功，其中有"+errCount+"盏返回失败代码";
         result.values = map;
+        return result;
+    }
+
+    @Override
+    public MiniStarHistoryResult getMiniStarHistory(String userId, Integer count) {
+        var result = new MiniStarHistoryResult();
+        if(count != null && count > 0) {
+            result.values = this.miniStarService.history(userId, count);
+            result.code = 0;
+            result.msg = "";
+            return result;
+        }
+        result.code = 1;
+        result.msg = "获取失败";
         return result;
     }
 

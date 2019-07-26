@@ -9,6 +9,7 @@ public class TwinkleBeautyGroupModel implements Serializable {
     public LocalDateTime endTime;
     public Short status = Status.UPLOADED;
     public String regionId;
+    public LocalDateTime triggerTime;
 
     public static class Status{
         public static final short UPLOADED = 0;
@@ -29,6 +30,9 @@ public class TwinkleBeautyGroupModel implements Serializable {
                 default:
                     return false;
             }
+        }
+        public static boolean isStopped(Integer status){
+            return status == Status.STOPPED_MANUALLY || status == Status.STOPPED;
         }
     }
 }

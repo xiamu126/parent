@@ -59,6 +59,9 @@ public interface IDeviceController {
     DeviceIdAndNameResult getDeviceIdAndName(String userId, HttpServletRequest request);
     MiniStarResult newMiniStar(List<OneNetExecuteArgs> data, HttpServletRequest request);
 
+    @GetMapping(value = "ministar/history/{count}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    MiniStarHistoryResult getMiniStarHistory(@RequestHeader("userId") String userId, @PathVariable(name = "count") Integer count);
+
     @PostMapping(value = "ministar/deviceId/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     MiniStarResult newDeviceMiniStar(@PathVariable(name = "deviceId") Integer deviceId, @RequestBody DeviceSubtitle data, HttpServletRequest request);
 

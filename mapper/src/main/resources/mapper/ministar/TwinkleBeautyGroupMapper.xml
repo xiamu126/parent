@@ -22,4 +22,17 @@
         select * from twinkle_beauty_group
         where region_id = #{regionId} and status in (0,1) and (#{beginTime} >= begin_time or #{endTime} <![CDATA[ <= ]]> end_time);
     </select>
+    <select id="selectMany" resultType="com.sybd.znld.model.ministar.dto.TwinkleHistory">
+        select a.id, a.begin_time, a.end_time, a.region_id, c.name, b.color, b.type, b.rate, b.user_id, d.name, a.trigger_time, b.title, a.status
+        from MINI_STAR.twinkle_beauty_group as a
+                 left join MINI_STAR.twinkle_beauty as b on b.twinkle_beauty_group_id = a.id
+                 left join ZNLD_V4.region as c on c.id = a.region_id
+                 left join RBAC_V2.user as d on d.id = b.user_id
+        where user_id = #{userId}
+        order by trigger_time desc limit 0,#{count};
+    </select>
+
+    <update id="updateStatusById">
+        update twinkle_beauty_group set status = #{status} where id = #{id}
+    </update>
 </mapper>

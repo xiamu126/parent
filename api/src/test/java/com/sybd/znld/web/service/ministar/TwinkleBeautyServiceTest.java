@@ -1,8 +1,12 @@
-package com.sybd.znld.service.ministar;
+package com.sybd.znld.web.service.ministar;
 
+import com.sybd.znld.mapper.ministar.TwinkleBeautyGroupMapper;
 import com.sybd.znld.service.ministar.IMiniStarService;
 import com.sybd.znld.service.ministar.MiniStarService;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +17,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TwinkleBeautyServiceTest {
-    private final Logger log = LoggerFactory.getLogger(TwinkleBeautyServiceTest.class);
-
     @Autowired
     private WebApplicationContext wac;
     private MockMvc mockMvc;
@@ -27,5 +30,20 @@ public class TwinkleBeautyServiceTest {
     }
 
     @Autowired
-    private IMiniStarService twinkleBeautyService;
+    private IMiniStarService miniStarService;
+
+    @Autowired
+    private TwinkleBeautyGroupMapper twinkleBeautyGroupMapper;
+
+    @Test
+    public void test(){
+        var tmp = this.twinkleBeautyGroupMapper.selectMany("c9a45d5d972011e9b0790242c0a8b006", 10);
+        Assert.assertNotNull(tmp);
+    }
+
+    @Test
+    public void history(){
+        var tmp = this.miniStarService.history("c9a45d5d972011e9b0790242c0a8b006", 10);
+        Assert.assertNotNull(tmp);
+    }
 }

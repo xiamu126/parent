@@ -7,11 +7,13 @@ create table twinkle_beauty_group(
   begin_time           timestamp not null  comment '开始时间',
   end_time             timestamp not null  comment '结束时间',
   status               tinyint unsigned not null  comment '已经上传=0，正在运行=1，自动停止=2，人为终止=3，网络错误=4，未知错误=5',
-  region_id            varchar(32) not null  comment '所属区域'
+  region_id            varchar(32) not null  comment '所属区域',
+  trigger_time         timestamp not null default CURRENT_TIMESTAMP comment '提交时间'
 );
 
 create table twinkle_beauty(
   id                       varchar(32) not null primary key comment '编号',
+  title                    varchar(32) not null  comment '标题',
   color                    varchar(256) not null comment '颜色组，采用rgb方式，格式：255 255 255; 255 255 255; 123 123 123;',
   type                     tinyint unsigned not null comment '呼吸灯=0，跑马灯=1，五彩灯=2',
   rate                     tinyint unsigned not null  comment '速率，就是间隔',

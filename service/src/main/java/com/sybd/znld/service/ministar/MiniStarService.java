@@ -144,6 +144,7 @@ public class MiniStarService implements IMiniStarService {
                 tmp.beginTime = MyDateTime.toLocalDateTime(subtitle.beginTimestamp);
                 tmp.endTime = MyDateTime.toLocalDateTime(subtitle.endTimestamp);
                 tmp.regionId = regionId;
+                tmp.status = TwinkleBeautyGroupModel.Status.RUNNING;
                 this.twinkleBeautyGroupMapper.insert(tmp);
 
                 var tmp2 = new TwinkleBeautyModel();
@@ -156,7 +157,7 @@ public class MiniStarService implements IMiniStarService {
                 this.twinkleBeautyMapper.insert(tmp2);
             }
             if(arg.isStopMiniStar()){ //如果是关闭则需要设置相关的状态按钮
-                this.twinkleBeautyGroupMapper.updateStatusById(subtitle.historyId, 2);
+                this.twinkleBeautyGroupMapper.updateStatusById(subtitle.historyId, (int)TwinkleBeautyGroupModel.Status.STOPPED);
             }
         }
         return map;

@@ -3,6 +3,7 @@ znld:
   onenet:
     getHistoryDataStreamUrl: ${onenet-server}/devices/{deviceId}/datapoints
     postExecuteUrl: ${onenet-server}/nbiot/execute
+    offlineExecuteUrl: ${onenet-server}/nbiot/execute/offline
     getLastDataStreamUrl: ${onenet-server}/devices/datapoints?devIds={devIds}
     getDeviceUrl: ${onenet-server}/devices/{deviceId}
     getDataStreamByIdUrl: ${onenet-server}/devices/{deviceId}/datastreams/{datastreamId}

@@ -38,6 +38,7 @@ public class OneNetService implements IOneNetService {
 
     @Getter @Setter public String getHistoryDataStreamUrl;
     @Getter @Setter public String postExecuteUrl;
+    @Getter @Setter public String offlineExecuteUrl;
     @Getter @Setter public String getLastDataStreamUrl;
     @Getter @Setter public String getDeviceUrl;
     @Getter @Setter public String getDataStreamByIdUrl;
@@ -275,8 +276,26 @@ public class OneNetService implements IOneNetService {
             return responseEntity.getBody();
         } catch (Exception ex) {
             log.error(ex.getMessage());
-            return new BaseResult(1, ex.getMessage());
         }
+        return new BaseResult(1, "执行命令发生异常");
+    }
+
+    @Override
+    public OfflineExecuteResult offlineExecute(CommandParams params) {
+        try {
+            var executeEntity = new OneNetExecuteParams();
+            executeEntity.args = params.command;
+            var jsonBody = objectMapper.writeValueAsString(executeEntity);
+            var httpEntity = getHttpEntity(params.deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var url = this.offlineExecuteUrl;
+            url = url + params.toOfflineUrlString();
+            log.debug(url);
+            var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, OfflineExecuteResult.class);
+            return responseEntity.getBody();
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+        }
+        return new OfflineExecuteResult(1, "执行离线命令发生异常");
     }
 
     @Override

@@ -128,4 +128,26 @@ public class ZnldApplicationTests {
         }
         log.debug(Integer.toString(count));
     }
+
+    @Test
+    public void test6(){
+        var expiredTime = LocalDateTime.of(2019, 7, 29, 14,12,0);
+        var format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        log.debug(expiredTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+    }
+
+    @Test
+    public void test7(){
+        var deviceId = 528130535;
+        var db = mongoClient.getDatabase( "test" );
+        var c1 = db.getCollection("com.sybd.znld.task");
+        var filter = new BasicDBObject();
+        var begin = LocalDateTime.now(ZoneOffset.UTC).minusHours(1).minusMinutes(10);
+        filter.put("execute_time", BasicDBObjectBuilder.start("$gt", begin).get());
+        filter.put("deviceId", deviceId);
+        if(c1.find(filter).first() != null){ // 如果在过去的3小时10分种内，有执行过任务，则跳过，防止短时间内多次重启
+            var doc = c1.find(filter).first();
+            log.debug(doc.getDate("execute_time").toString());
+        }
+    }
 }

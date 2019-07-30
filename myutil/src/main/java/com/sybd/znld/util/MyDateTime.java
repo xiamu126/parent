@@ -8,6 +8,7 @@ public final class MyDateTime {
     public static final String format = "yyyy-MM-ddTHH:mm:ss";
     public static final String format1 = "yyyy-MM-dd HH:mm:ss";
     public static final String format2 = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ISO8601 = "yyyy-MM-dd'T'HH:mm:ss";
 
     public static LocalDateTime now(){
         return LocalDateTime.now();
@@ -18,6 +19,10 @@ public final class MyDateTime {
     }
     public static LocalDateTime toLocalDateTime(String value, String format){
         return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(format));
+    }
+
+    public static String format(LocalDateTime dateTime, String formatString){
+        return dateTime.format(DateTimeFormatter.ofPattern(formatString));
     }
 
     // 检测时间戳有效性
@@ -58,6 +63,14 @@ public final class MyDateTime {
     public static Long toTimestamp(String value, String format, ZoneOffset zoneOffset){
         var tmp = toLocalDateTime(value, format);
         return tmp.toInstant(zoneOffset).toEpochMilli();
+    }
+    public static Long toTimestamp(LocalDateTime dateTime){
+        var zoneId = ZoneId.systemDefault();
+        var zoneOffset = Instant.now().atZone(zoneId).getOffset();
+        return dateTime.toInstant(zoneOffset).toEpochMilli();
+    }
+    public static Long toTimestamp(LocalDateTime dateTime, ZoneOffset zoneOffset){
+        return dateTime.toInstant(zoneOffset).toEpochMilli();
     }
 
     // 时间戳转换为本地时间

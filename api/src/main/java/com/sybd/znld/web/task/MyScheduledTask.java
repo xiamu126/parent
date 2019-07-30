@@ -82,7 +82,7 @@ public class MyScheduledTask {
         }
     }
 
-    @Scheduled(initialDelay = 2000, fixedDelay = 1000 * 60 * 60 * 3)
+    @Scheduled(initialDelay = 2000, fixedDelay = 1000 * 60)
     public void rebootChip(){ // 定时重启中控，每3小时执行一次
         var locker = lockers.get(rebootChip);
         if(locker != null && locker.tryLock()){
@@ -98,11 +98,14 @@ public class MyScheduledTask {
                     var db = mongoClient.getDatabase( "test" );
                     var c1 = db.getCollection("com.sybd.znld.task");
                     var filter = new BasicDBObject();
-                    var begin = LocalDateTime.now(ZoneOffset.UTC).minusHours(3).minusMinutes(10);
+                    var begin = LocalDateTime.now(ZoneOffset.UTC).minusHours(1).minusMinutes(10);
                     filter.put("execute_time", BasicDBObjectBuilder.start("$gt", begin).get());
+                    filter.put("deviceId", device.deviceId);
                     if(c1.find(filter).first() != null){ // 如果在过去的3小时10分种内，有执行过任务，则跳过，防止短时间内多次重启
-                        log.debug("距离上一次重启，小于3小时，不执行");
-                        break;
+                        log.debug("距离上一次重启，小于1小时，不执行");
+                        continue;
+                    }else{
+                        log.debug("执行重启任务，id为"+device.deviceId);
                     }
                     var params = new CommandParams();
                     params.command = resource.value;
@@ -110,7 +113,7 @@ public class MyScheduledTask {
                     params.imei = device.imei;
                     params.oneNetKey = resource.toOneNetKey();
                     params.timeout = resource.timeout;
-                    var ret = oneNetService.execute(params);
+                    var ret = oneNetService.offlineExecute(params);
                     var document = new Document("name", "reboot_chip")
                             .append("deviceId", device.deviceId)
                             .append("execute_time", LocalDateTime.now(ZoneOffset.UTC))

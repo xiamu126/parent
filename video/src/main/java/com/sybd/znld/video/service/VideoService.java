@@ -37,7 +37,7 @@ public class VideoService extends BaseService implements IVideoService {
                         TaskScheduler taskScheduler, ProjectConfig projectConfig,
                         RedissonClient redissonClient,
                         VideoAsyncTask videoAsyncTask, ObjectMapper objectMapper) {
-        super(cacheManager, taskScheduler, projectConfig);
+        super(cacheManager, taskScheduler, projectConfig, redissonClient, objectMapper);
         this.cameraMapper = cameraMapper;
         this.redissonClient = redissonClient;
         this.videoAsyncTask = videoAsyncTask;

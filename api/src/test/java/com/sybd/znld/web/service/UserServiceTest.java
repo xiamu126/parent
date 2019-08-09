@@ -1,6 +1,7 @@
 package com.sybd.znld.web.service;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.rbac.dto.InitAccountInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
@@ -36,6 +37,9 @@ public class UserServiceTest {
     @Autowired
     private ProjectConfig projectConfig;
 
+    @Autowired
+    private UserMapper userMapper;
+
     private MockMvc mockMvc;
 
     @Before
@@ -51,11 +55,15 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUserById(){
-        var user = this.userService.getUserById("0b494009f37711e88347000c294eb278");
+    public void getUserByIdByMapper(){
+        var user = this.userMapper.selectById("a6a96ebc51f111e9804a0242ac110007");
         Assert.assertNotNull(user);
-        Assert.assertEquals(user.getName(), "yyy");
-        Assert.assertEquals(17, (short) user.getAge());
+    }
+
+    @Test
+    public void getUserById(){
+        var user = this.userService.getUserById("a6a96ebc51f111e9804a0242ac110007");
+        Assert.assertNotNull(user);
     }
     @Test
     public void getUserByIdNull(){
@@ -65,21 +73,24 @@ public class UserServiceTest {
     }
 
     @Test
+    public void getUserByOrganId(){
+        var list = this.userService.getUserByOrganizationId("a69ce5bf51f111e9804a0242ac110007");
+        Assert.assertNotNull(list);
+    }
+
+    @Test
     public void getUserByName(){
-        var user = this.userService.getUserByName("yyy");
+        var user = this.userService.getUserByName("sybd_test_user");
         Assert.assertNotNull(user);
-        Assert.assertEquals(17, (short) user.getAge());
     }
 
     @Test
     public void updateById(){
         var user = new UserModel();
-        user.setId("0b494009f37711e88347000c294eb278");
-        user.setName("yyy");
-        user.setAge((short)17);
-        var ret = this.userService.modifyUserById(user);
-        Assert.assertNotNull(ret);
-        Assert.assertEquals(17, (short) ret.getAge());
+        user.id = "a6b354d551f111e9804a0242ac110007";
+        user.realName = "yyy";
+        var tmp = this.userService.modifyUserById(user);
+        log.debug(tmp.toString());
     }
 
     @Test

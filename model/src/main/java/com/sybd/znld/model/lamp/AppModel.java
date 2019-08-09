@@ -12,5 +12,6 @@ public class AppModel implements Serializable {
     public String name;
     public Integer versionCode;
     public String url;
+    public String apiUrl;
     public String description;
 }

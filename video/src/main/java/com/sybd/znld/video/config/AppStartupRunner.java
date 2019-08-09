@@ -19,7 +19,7 @@ public class AppStartupRunner implements ApplicationRunner {
 
     @Autowired
     public AppStartupRunner(CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, IVideoService videoService) {
-        this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig);
+        this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig, redissonClient, objectMapper);
         this.videoService = videoService;
     }
 

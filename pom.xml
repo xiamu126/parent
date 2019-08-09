@@ -48,15 +48,15 @@
         <kaptchaVersion>2.3.2</kaptchaVersion>
         <javacvVersion>1.5</javacvVersion>
         <javacvFfmpegVersion>4.1.3-1.5</javacvFfmpegVersion>
-        <redissonVersion>3.11.0</redissonVersion>
+        <redissonVersion>3.11.1</redissonVersion>
         <swaggerVersion>2.9.2</swaggerVersion>
-        <mybatisVersion>2.0.1</mybatisVersion>
-        <guavaVersion>27.1-jre</guavaVersion>
+        <mybatisVersion>2.1.0</mybatisVersion>
+        <guavaVersion>28.0-jre</guavaVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
-        <springVersion>2.1.5.RELEASE</springVersion>
+        <springVersion>2.1.6.RELEASE</springVersion>
         <springSecurityVersion>5.1.5.RELEASE</springSecurityVersion>
 
-        <nettyVersion>4.1.36.Final</nettyVersion>
+        <nettyVersion>4.1.38.Final</nettyVersion>
         <jacksonVersion>2.9.9</jacksonVersion>
         <mongodbVersion>3.10.2</mongodbVersion>
         <javatuplesVersion>1.2</javatuplesVersion>
@@ -72,16 +72,34 @@
 
         <HikariCPVersion>3.3.1</HikariCPVersion>
         <apacheCommonsVersion>3.9</apacheCommonsVersion>
-        <apacheHttpClient>4.5.9</apacheHttpClient>
+        <apacheHttpClientVersion>4.5.9</apacheHttpClientVersion>
+        <httpmimeVersion>4.5.9</httpmimeVersion>
+        <httpcoreVersion>4.4.11</httpcoreVersion>
 
+        <jsonPathVersion>2.4.0</jsonPathVersion>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${jsonPathVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${httpmimeVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcoreVersion}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>${apacheHttpClient}</version>
+                <version>${apacheHttpClientVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -272,7 +290,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>

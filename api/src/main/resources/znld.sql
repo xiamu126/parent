@@ -8,7 +8,8 @@ create table app(
   version_code     int not null comment '版本检测主要看这个',
   version_name     varchar(32) not null comment '这个版本号是给用户看的，版本检测不依赖于此',
   url              varchar(100) not null  comment '下载地址',
-  description      varchar(100) not null  comment '此app的描述'
+  description      varchar(100) not null  comment '此app的描述',
+  api_url          varchar(100) not null comment '这个app的默认api接口地址'
 );
 create table onenet_resource(
   id                   varchar(32) not null primary key,

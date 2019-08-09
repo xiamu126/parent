@@ -82,7 +82,7 @@ public class MyScheduledTask {
         }
     }
 
-    @Scheduled(initialDelay = 2000, fixedDelay = 1000 * 60)
+    //@Scheduled(initialDelay = 2000, fixedDelay = 1000 * 60)
     public void rebootChip(){ // 定时重启中控，每3小时执行一次
         var locker = lockers.get(rebootChip);
         if(locker != null && locker.tryLock()){

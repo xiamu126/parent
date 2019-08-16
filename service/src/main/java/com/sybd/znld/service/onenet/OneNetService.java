@@ -2,6 +2,8 @@ package com.sybd.znld.service.onenet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoClient;
+import com.mongodb.client.model.Filters;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
@@ -174,6 +176,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetLastDataStreamsResult getLastDataStream(Integer deviceId){
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getLastDataStreamUrl(deviceId);
         log.debug(url);
@@ -190,6 +196,12 @@ public class OneNetService implements IOneNetService {
     public GetHistoryDataStreamResult
     getHistoryDataStream(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end, Integer limit, String sort, String cursor) {
         if(end != null && start.isAfter(end)) return null;
+
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
+
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getHistoryDataStreamUrl(deviceId);
 
@@ -209,6 +221,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId) {
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getDataStreamUrl(deviceId, dataStreamId);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamByIdResult.class);
@@ -217,6 +233,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetDataStreamsByIdsResult getLastDataStreamsByIds(Integer deviceId, String... dataStreamIds) {
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getDataStreamsByIdsUrl(deviceId, dataStreamIds);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamsByIdsResult.class);
@@ -225,6 +245,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end) {
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
         var historyData = getHistoryDataStream(deviceId, dataStreamId, start, end, null, null, null);
         var data = historyData.getData().getDataStreams().get(0).getDataPoints();
         return data.stream().collect(Collectors.averagingDouble(d -> Double.parseDouble(d.getValue())));
@@ -232,6 +256,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public OneNetExecuteResult getValue(Integer deviceId, OneNetKey oneNetKey) {
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
         var lamp = this.lampMapper.selectByDeviceId(deviceId);
         if(lamp == null) return null;
         try{
@@ -247,6 +275,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public BaseResult setValue(Integer deviceId, OneNetKey oneNetKey, Object value) {
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
         var lamp = this.lampMapper.selectByDeviceId(deviceId);
         if(lamp == null) return null;
         try {
@@ -265,6 +297,10 @@ public class OneNetService implements IOneNetService {
     @Override
     public BaseResult execute(CommandParams params){
         try {
+            var model = this.lampMapper.selectByDeviceId(params.deviceId);
+            if(model != null && model.linkTo > 0){
+                params.deviceId = model.linkTo;
+            }
             var executeEntity = new OneNetExecuteParams();
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
@@ -283,6 +319,10 @@ public class OneNetService implements IOneNetService {
     @Override
     public OfflineExecuteResult offlineExecute(CommandParams params) {
         try {
+            var model = this.lampMapper.selectByDeviceId(params.deviceId);
+            if(model != null && model.linkTo > 0){
+                params.deviceId = model.linkTo;
+            }
             var executeEntity = new OneNetExecuteParams();
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
@@ -300,6 +340,10 @@ public class OneNetService implements IOneNetService {
 
     @Override
     public GetDeviceResult getDeviceById(Integer deviceId) {
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model != null && model.linkTo > 0){
+            deviceId = model.linkTo;
+        }
         var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
         var url = this.getDeviceUrl(deviceId);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDeviceResult.class);

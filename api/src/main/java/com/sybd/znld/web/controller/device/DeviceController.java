@@ -73,7 +73,7 @@ public class DeviceController implements IDeviceController {
             }
             var data = (result.getData().getDataStreams().get(0)).getDataPoints();
 
-            var tmp = data.stream().collect(Collectors.groupingBy( d -> {
+            var tmp = data.stream().collect(Collectors.groupingBy(d -> {
                 var time = LocalDateTime.parse(d.at, DateTimeFormatter.ofPattern(MyDateTime.format2));
                 return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), time.getHour(), 0, 0);
             }));
@@ -1042,10 +1042,8 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "dataStreams", value = "资源Id或名称集合", required = true, dataType = "List", paramType = "body")
     })
-    @PostMapping(value = "data/last/deviceId/{deviceId:^[1-9]\\d*$}/dataStreams", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public LastDataResults getLastDataWithDeviceIdAndDataStreams(@PathVariable(name = "deviceId") Integer deviceId,
-                                                                 @RequestBody List<String> dataStreams, HttpServletRequest request) {
+    public LastDataResults getLastDataWithDeviceIdAndDataStreams(Integer deviceId, List<String> dataStreams, HttpServletRequest request) {
         try{
             if(!MyNumber.isPositive(deviceId) || dataStreams == null || dataStreams.isEmpty()){
                 return LastDataResults.fail("错误的参数");
@@ -1075,10 +1073,9 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "dataStream", value = "资源Id或名称", required = true, dataType = "string", paramType = "path")
     })
-    @GetMapping(value = "data/last/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+
     @Override
-    public BaseApiResult getLastDataWithDeviceIdAndDataStream(@PathVariable(name = "deviceId") Integer deviceId,
-                                                              @PathVariable(name = "dataStream") String dataStream, HttpServletRequest request) {
+    public BaseApiResult getLastDataWithDeviceIdAndDataStream(Integer deviceId, String dataStream, HttpServletRequest request) {
         try {
             if(!MyNumber.isPositive(deviceId) || MyString.isEmptyOrNull(dataStream)){
                 return LastDataResult.fail("错误的参数");

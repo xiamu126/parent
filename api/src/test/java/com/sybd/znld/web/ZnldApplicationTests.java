@@ -164,4 +164,12 @@ public class ZnldApplicationTests {
             log.debug(JsonPath.read(tmp, "$.hd.api_url"));
         }
     }
+
+    @Test
+    public void test9(){
+        var db = mongoClient.getDatabase( "test" );
+        var c1 = db.getCollection("com.sybd.znld.account.profile");
+        var myDoc = c1.find(Filters.eq("id","da9ca89ca83411e9a18a0242c0a8b004")).first();
+        log.debug(myDoc.get("device").toString());
+    }
 }

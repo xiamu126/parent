@@ -18,6 +18,7 @@ public class LampModel implements Serializable {
     public Short status = Status.OK;
     public Float xAngle = 0.0f;
     public Float yAngle = 0.0f;
+    public Integer linkTo = 0;
 
     public boolean isValidBeforeInsert(){
         // 经纬度要么同时为未设置状态，要么都设置了，不能设置了一个而另一个没设置

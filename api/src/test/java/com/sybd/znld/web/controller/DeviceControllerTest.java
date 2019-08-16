@@ -259,7 +259,7 @@ public class DeviceControllerTest {
         var beginTimestamp = LocalDateTime.of(2018,1,1,0,0,1)
                 .toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
         var endTimestamp = LocalDateTime.now().toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
-        var action = MockMvcRequestBuilders.get("/api/v1/device/data/last/deviceId/{deviceId}/dataStreams",
+        var action = MockMvcRequestBuilders.post("/api/v1/device/data/last/deviceId/{deviceId}/dataStreams",
                 deviceId, beginTimestamp, endTimestamp).accept(MediaType.APPLICATION_JSON_UTF8);
         var mapper = new ObjectMapper();
         var result = this.mockMvc.perform(action.contentType(MediaType.APPLICATION_JSON_UTF8)

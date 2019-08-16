@@ -47,8 +47,12 @@ public interface IDeviceController {
 
     LastDataResultsMap getLastDataWithDeviceIdsAndDataStreams(DeviceIdsAndDataStreams deviceIdsAndDataStreams, HttpServletRequest request);
     LastDataResults getLastDataWithDeviceIdAndDataStreams(List<Integer> deviceIds, String dataStream, HttpServletRequest request);
-    LastDataResults getLastDataWithDeviceIdAndDataStreams(Integer deviceId, List<String> dataStreams, HttpServletRequest request);
-    BaseApiResult getLastDataWithDeviceIdAndDataStream(Integer deviceId, String dataStream, HttpServletRequest request);
+
+    @PostMapping(value = "data/last/deviceId/{deviceId:^[1-9]\\d*$}/dataStreams", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    LastDataResults getLastDataWithDeviceIdAndDataStreams(@PathVariable(name = "deviceId") Integer deviceId, @RequestBody List<String> dataStreams, HttpServletRequest request);
+
+    @GetMapping(value = "data/last/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    BaseApiResult getLastDataWithDeviceIdAndDataStream(@PathVariable(name = "deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream, HttpServletRequest request);
 
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, HttpServletRequest request);
     HistoryDataResult getHistoryData(Integer deviceId, String dataStreamId, Long beginTimestamp, Long endTimestamp, Integer limit, HttpServletRequest request);

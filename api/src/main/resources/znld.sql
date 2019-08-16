@@ -38,7 +38,9 @@ create table lamp(
   latitude             varchar(20) not null default '' comment '纬度',
   status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废',
   x_angle              float not null default 0 comment '倾斜状态',
-  y_angle              float not null default 0 comment '倾斜状态'
+  y_angle              float not null default 0 comment '倾斜状态',
+  link_to              int not null default 0 comment '',
+  weight               int not null default 0 comment ''
 );
 create table lamp_region(
   id         varchar(32) not null primary key,

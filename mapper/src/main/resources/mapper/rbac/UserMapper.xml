@@ -28,11 +28,11 @@
             <if test=" email != null and email != '' ">email = #{email},</if>
             <if test=" gender != null and (gender gte 0 and gender lt 3) ">gender = #{gender},</if>
             <if test=" age != null and (age gte 18 and age lt 100) ">age = #{age},</if>
-            <if test=" contactAddress != null and contactAddress != '' ">contactAddress = #{contactAddress},</if>
-            <if test=" realName != null and realName != '' ">realName = #{realName},</if>
-            <if test=" idCardNo != null and idCardNo != '' ">idCardNo = #{idCardNo},</if>
-            <if test=" lastLoginIp != null and lastLoginIp != '' ">lastLoginIp = #{lastLoginIp},</if>
-            <if test=" organizationId != null and organizationId != '' ">organizationId = #{organizationId},</if>
+            <if test=" contactAddress != null and contactAddress != '' ">contact_address = #{contactAddress},</if>
+            <if test=" realName != null and realName != '' ">real_name = #{realName},</if>
+            <if test=" idCardNo != null and idCardNo != '' ">id_card_no = #{idCardNo},</if>
+            <if test=" lastLoginIp != null and lastLoginIp != '' ">last_login_ip = #{lastLoginIp},</if>
+            <if test=" organizationId != null and organizationId != '' ">organization_id = #{organizationId},</if>
             <if test=" status != null and status gte 0 ">status = #{status},</if>
         </set>
         where id = #{id}
@@ -52,11 +52,11 @@
             <if test=" email != null and email != '' ">email = #{email},</if>
             <if test=" gender != null and (gender gte 0 and gender lt 3) ">gender = #{gender},</if>
             <if test=" age != null and (age gte 18 and age lt 100) ">age = #{age},</if>
-            <if test=" contactAddress != null and contactAddress != '' ">contactAddress = #{contactAddress},</if>
-            <if test=" realName != null and realName != '' ">realName = #{realName},</if>
-            <if test=" idCardNo != null and idCardNo != '' ">idCardNo = #{idCardNo},</if>
-            <if test=" lastLoginIp != null and lastLoginIp != '' ">lastLoginIp = #{lastLoginIp},</if>
-            <if test=" organizationId != null and organizationId != '' ">organizationId = #{organizationId},</if>
+            <if test=" contactAddress != null and contactAddress != '' ">contact_address = #{contactAddress},</if>
+            <if test=" realName != null and realName != '' ">real_name = #{realName},</if>
+            <if test=" idCardNo != null and idCardNo != '' ">id_card_no = #{idCardNo},</if>
+            <if test=" lastLoginIp != null and lastLoginIp != '' ">last_login_ip = #{lastLoginIp},</if>
+            <if test=" organizationId != null and organizationId != '' ">organization_id = #{organizationId},</if>
             <if test=" status != null and status gte 0 ">status = #{status},</if>
         </set>
         where name = #{name};

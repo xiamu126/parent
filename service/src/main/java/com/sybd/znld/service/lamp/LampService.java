@@ -55,7 +55,7 @@ public class LampService implements ILampService {
         if(!key.isValid()) return false;
         var resources = this.lampMapper.selectCheckedResourceByDeviceId(deviceId);
         if(resources == null || resources.isEmpty()) return false;
-        return resources.stream().anyMatch( r -> r.dataStreamId.equals(key.toDataStreamId()));
+        return resources.stream().anyMatch(r -> r.dataStreamId.equals(key.toDataStreamId()));
     }
 
     @Override
@@ -66,7 +66,11 @@ public class LampService implements ILampService {
 
     @Override
     public List<DeviceIdAndDeviceName> getDeviceIdAndDeviceNames(String organId) {
-        return this.lampMapper.selectDeviceIdAndDeviceNames(organId);
+        var tmp = this.lampMapper.selectDeviceIdAndDeviceNames(organId);
+        for(var d : tmp){
+
+        }
+        return tmp;
     }
 
     @Override

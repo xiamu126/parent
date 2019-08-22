@@ -8,7 +8,8 @@ create table app(
   version_code     int not null comment '版本检测主要看这个',
   version_name     varchar(32) not null comment '这个版本号是给用户看的，版本检测不依赖于此',
   url              varchar(100) not null  comment '下载地址',
-  description      varchar(100) not null  comment '此app的描述'
+  description      varchar(100) not null  comment '此app的描述',
+  api_url          varchar(100) not null comment '这个app的默认api接口地址'
 );
 create table onenet_resource(
   id                   varchar(32) not null primary key,
@@ -37,7 +38,9 @@ create table lamp(
   latitude             varchar(20) not null default '' comment '纬度',
   status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废',
   x_angle              float not null default 0 comment '倾斜状态',
-  y_angle              float not null default 0 comment '倾斜状态'
+  y_angle              float not null default 0 comment '倾斜状态',
+  link_to              int not null default 0 comment '',
+  weight               int not null default 0 comment ''
 );
 create table lamp_region(
   id         varchar(32) not null primary key,

@@ -1,5 +1,6 @@
 package com.sybd.znld.web;
 
+import com.jayway.jsonpath.JsonPath;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCursor;
@@ -149,5 +150,26 @@ public class ZnldApplicationTests {
             var doc = c1.find(filter).first();
             log.debug(doc.getDate("execute_time").toString());
         }
+    }
+
+    @Test
+    public void test8(){
+        var db = mongoClient.getDatabase( "test" );
+        var c1 = db.getCollection("com.sybd.znld.account.profile");
+        var filter = new BasicDBObject();
+        filter.put("id", "da9ca89ca83411e9a18a0242c0a8b004");
+        var doc = c1.find(filter).first();
+        if(doc != null){
+            var tmp = doc.get("app");
+            log.debug(JsonPath.read(tmp, "$.hd.api_url"));
+        }
+    }
+
+    @Test
+    public void test9(){
+        var db = mongoClient.getDatabase( "test" );
+        var c1 = db.getCollection("com.sybd.znld.account.profile");
+        var myDoc = c1.find(Filters.eq("id","da9ca89ca83411e9a18a0242c0a8b004")).first();
+        log.debug(myDoc.get("device").toString());
     }
 }

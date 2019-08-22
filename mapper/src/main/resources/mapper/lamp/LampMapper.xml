@@ -52,7 +52,9 @@
     <select id="selectDeviceIdAndDeviceNames" resultType="com.sybd.znld.model.lamp.dto.DeviceIdAndDeviceName">
         with regionIds as (select id from region where organization_id = #{organId}),
              lampIds as (select lamp_id from lamp_region where region_id in (select * from regionIds))
-        select distinct device_id, device_name, longitude, latitude from lamp where id in (select * from lampIds) and status != 2;
+        select distinct device_id, device_name, longitude, latitude, weight from lamp
+        where id in (select * from lampIds) and status != 2
+        order by weight;
     </select>
 
     <select id="selectCheckedResourceByDeviceId" resultType="com.sybd.znld.model.lamp.dto.CheckedResource">

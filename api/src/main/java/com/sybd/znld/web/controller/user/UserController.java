@@ -44,8 +44,6 @@ public class UserController implements IUserController {
     private final StringRedisTemplate stringRedisTemplate;
     private final ProjectConfig projectConfig;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
-    private final MongoTemplate mongoTemplate;
-
     private final MongoClient mongoClient;
 
     @Value("${security.oauth2.client.client-id}")
@@ -58,13 +56,12 @@ public class UserController implements IUserController {
                           IUserService userService,
                           RedissonClient redissonClient,
                           StringRedisTemplate stringRedisTemplate,
-                          ProjectConfig projectConfig, MongoTemplate mongoTemplate, MongoClient mongoClient) {
+                          ProjectConfig projectConfig, MongoClient mongoClient) {
         this.defaultKaptcha = defaultKaptcha;
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.stringRedisTemplate = stringRedisTemplate;
         this.projectConfig = projectConfig;
-        this.mongoTemplate = mongoTemplate;
         this.mongoClient = mongoClient;
     }
 
@@ -128,7 +125,7 @@ public class UserController implements IUserController {
     public ApiResult verifyCaptcha(@PathVariable(name = "captcha") String captcha, HttpServletRequest request) {
         if(MyString.isEmptyOrNull(captcha) || captcha.length() < 4) return ApiResult.fail("验证码错误");
 
-        String rightCaptcha = request.getSession().getAttribute("captcha").toString();
+        var rightCaptcha = request.getSession().getAttribute("captcha").toString();
         if(captcha.equalsIgnoreCase(rightCaptcha)){
             request.getSession().removeAttribute("captcha");
             return ApiResult.success();

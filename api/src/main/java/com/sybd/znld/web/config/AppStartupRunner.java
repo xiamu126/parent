@@ -1,17 +1,16 @@
 package com.sybd.znld.web.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.service.BaseService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
-
-import java.io.FileNotFoundException;
 
 @Slf4j
 @Component
@@ -19,8 +18,12 @@ public class AppStartupRunner implements ApplicationRunner {
     private final BaseService baseService;
 
     @Autowired
-    public AppStartupRunner(CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig) {
-        this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig);
+    public AppStartupRunner(CacheManager cacheManager,
+                            TaskScheduler taskScheduler,
+                            ProjectConfig projectConfig,
+                            RedissonClient redissonClient,
+                            ObjectMapper objectMapper) {
+        this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig, redissonClient, objectMapper);
     }
 
     @Override

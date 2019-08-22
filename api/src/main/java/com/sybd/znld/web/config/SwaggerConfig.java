@@ -52,7 +52,7 @@ public class SwaggerConfig {
     }
 
     private SecurityScheme securityScheme() {
-        ResourceOwnerPasswordCredentialsGrant grantType = new ResourceOwnerPasswordCredentialsGrant(authServer+ "/com/sybd/model/znld/oauth/token");
+        var grantType = new ResourceOwnerPasswordCredentialsGrant(authServer+ "/com/sybd/model/znld/oauth/token");
         return new OAuthBuilder().name("spring_oauth").grantTypes(Collections.singletonList(grantType)).scopes(Arrays.asList(scopes())).build();
     }
 

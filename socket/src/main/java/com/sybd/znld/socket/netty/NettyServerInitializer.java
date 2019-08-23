@@ -4,6 +4,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
@@ -16,6 +17,7 @@ public class NettyServerInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(new LengthFieldPrepender(4));
         pipeline.addLast(new StringDecoder(CharsetUtil.UTF_8));
         pipeline.addLast(new StringEncoder(CharsetUtil.UTF_8));
+        pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
         pipeline.addLast(new NettyServerHandler());
     }
 }

@@ -1,5 +1,7 @@
 package com.sybd.znld.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
@@ -8,6 +10,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.znld.model.onenet.dto.OneNetWriteParams;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.junit.Assert;
@@ -52,6 +55,9 @@ public class ZnldApplicationTests {
 
     @Autowired
     private MongoClient mongoClient;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     public void test1() {
@@ -171,5 +177,12 @@ public class ZnldApplicationTests {
         var c1 = db.getCollection("com.sybd.znld.account.profile");
         var myDoc = c1.find(Filters.eq("id","da9ca89ca83411e9a18a0242c0a8b004")).first();
         log.debug(myDoc.get("device").toString());
+    }
+
+    @Test
+    public void test10() throws JsonProcessingException {
+        var param = new OneNetWriteParams(5700, null, "on");
+        var jsonBody = this.objectMapper.writeValueAsString(param);
+        log.debug(jsonBody);
     }
 }

@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.websocket;
+package com.sybd.znld.socket.websocket;
 
 public class Greeting {
 

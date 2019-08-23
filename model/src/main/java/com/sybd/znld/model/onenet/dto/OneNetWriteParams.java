@@ -1,5 +1,6 @@
 package com.sybd.znld.model.onenet.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,7 @@ public class OneNetWriteParams implements Serializable {
     @Getter @Setter
     public static class Data{
         public Integer res_id;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         public Integer type;
         public Object val;
     }

@@ -269,8 +269,8 @@ public class OneNetService implements IOneNetService {
             return responseEntity.getBody();
         }catch (Exception ex){
             log.error(ex.getMessage());
-            return new OneNetExecuteResult(1, ex.getMessage());
         }
+        return new OneNetExecuteResult(1, "读取数据发生异常");
     }
 
     @Override
@@ -283,15 +283,15 @@ public class OneNetService implements IOneNetService {
         if(lamp == null) return null;
         try {
             var url = writeValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId + "&mode=1";
-            var param = new OneNetWriteParams(oneNetKey.resId, 1, value);
+            var param = new OneNetWriteParams(oneNetKey.resId, null, value);
             var jsonBody = this.objectMapper.writeValueAsString(param);
             var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, BaseResult.class);
             return responseEntity.getBody();
         } catch (Exception ex) {
             log.error(ex.getMessage());
-            return new BaseResult(1, ex.getMessage());
         }
+        return new BaseResult(1, "写入数据发生异常");
     }
 
     @Override

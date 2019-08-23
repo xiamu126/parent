@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.websocket.security;
+package com.sybd.znld.socket.websocket.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;

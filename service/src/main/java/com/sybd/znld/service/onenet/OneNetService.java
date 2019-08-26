@@ -301,6 +301,10 @@ public class OneNetService implements IOneNetService {
             if(model != null && model.linkTo > 0){
                 params.deviceId = model.linkTo;
             }
+            if(MyString.isEmptyOrNull(params.imei)){
+                var tmp = this.lampMapper.selectByDeviceId(params.deviceId);
+                params.imei = tmp.imei;
+            }
             var executeEntity = new OneNetExecuteParams();
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);

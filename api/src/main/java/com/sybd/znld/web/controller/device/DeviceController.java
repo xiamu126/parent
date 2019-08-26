@@ -1471,7 +1471,11 @@ public class DeviceController implements IDeviceController {
                 return ret;
             }
         }
-        var tmp = this.oneNet.setValue(deviceId, OneNetKey.from(dataStreamId), value);
+        var cmd = new CommandParams();
+        cmd.deviceId = deviceId;
+        cmd.oneNetKey = OneNetKey.from(dataStreamId);
+        cmd.command = value.toString();
+        var tmp = this.oneNet.execute(cmd);
         map.put(dataStream, new BaseApiResult(tmp.errno, tmp.error));
         ret.values = map;
         ret.code = 0;
@@ -1506,7 +1510,7 @@ public class DeviceController implements IDeviceController {
         item.deviceId = deviceId;
         item.deviceName = lamp.deviceName;
 
-        var tmp = this.oneNet.getValue(deviceId, OneNetKey.from(dataStreamId));
+        var tmp = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
         if(!tmp.isOk()){
             var status = new PullResult.Item.ResourceStatus();
             status.name = dataStream;
@@ -1520,19 +1524,17 @@ public class DeviceController implements IDeviceController {
             return ret;
         }
         try{
-            if(!tmp.isEmpty()){
-                var status = new PullResult.Item.ResourceStatus();
-                status.name = dataStream;
-                status.code = tmp.errno;
-                status.msg = tmp.error;
-                status.value = tmp.data.get(0).res.get(0).val;
-                item.status.add(status);
+            var status = new PullResult.Item.ResourceStatus();
+            status.name = dataStream;
+            status.code = tmp.errno;
+            status.msg = tmp.error;
+            status.value = tmp.data.currentValue;
+            item.status.add(status);
 
-                ret.values = item;
-                ret.code = 0;
-                ret.msg = "";
-                return ret;
-            }
+            ret.values = item;
+            ret.code = 0;
+            ret.msg = "";
+            return ret;
         }catch (Exception ex){
             log.error(ex.getMessage());
         }

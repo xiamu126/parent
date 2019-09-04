@@ -1,5 +1,6 @@
 package com.sybd.znld.model.onenet.dto;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.model.IValid;
 import com.sybd.znld.model.ministar.dto.Subtitle;
@@ -54,11 +55,11 @@ public class OneNetExecuteArgs implements IValid {
         return cmd;
     }
 
-    public Subtitle getSubtitle(){
+    public Subtitle getSubtitle() {
         var objectMapper = new ObjectMapper();
         try {
             return objectMapper.readValue(this.json, Subtitle.class);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             log.error(ex.getMessage());
         }
         return null;

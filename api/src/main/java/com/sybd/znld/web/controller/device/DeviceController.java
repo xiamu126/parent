@@ -5,6 +5,7 @@ import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.model.ministar.dto.DeviceSubtitle;
+import com.sybd.znld.model.ministar.dto.Subtitle;
 import com.sybd.znld.model.onenet.Command;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
@@ -1073,7 +1074,6 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "dataStream", value = "资源Id或名称", required = true, dataType = "string", paramType = "path")
     })
-
     @Override
     public BaseApiResult getLastDataWithDeviceIdAndDataStream(Integer deviceId, String dataStream, HttpServletRequest request) {
         try {
@@ -1422,7 +1422,7 @@ public class DeviceController implements IDeviceController {
     }
 
     @Override
-    public MiniStarResult newDeviceMiniStar(Integer deviceId, DeviceSubtitle subtitle, HttpServletRequest request) {
+    public MiniStarResult newDeviceMiniStar(Integer deviceId, Subtitle subtitle, HttpServletRequest request) {
         var result = new MiniStarResult();
         var map = new HashMap<Integer, BaseApiResult>();
         try{
@@ -1553,7 +1553,6 @@ public class DeviceController implements IDeviceController {
             }else{
                 map.put(ds, ret.values.get(ds));
             }
-
         }
         var result = new PushResult();
         result.code = 0;

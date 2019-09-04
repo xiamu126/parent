@@ -133,7 +133,7 @@ public class MiniStarService implements IMiniStarService {
                 params.imei = lamp.imei;
                 params.oneNetKey = resource.toOneNetKey();
                 params.timeout = resource.timeout;
-                params.command = arg.getPackedCmd();
+                params.command = arg.getPackedCmd(); // "args":"1567003994,1567004001,1,50,2,FF00FF0000FF"
                 var ret = oneNetService.execute(params);
                 map.put(lamp.deviceId, new BaseApiResult(ret.errno, ret.error));
             }

@@ -9,6 +9,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
+import com.sybd.znld.model.ministar.dto.Subtitle;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.OneNetWriteParams;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.io.FileNotFoundException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -184,5 +186,20 @@ public class ZnldApplicationTests {
         var param = new OneNetWriteParams(5700, null, "on");
         var jsonBody = this.objectMapper.writeValueAsString(param);
         log.debug(jsonBody);
+    }
+
+    @Test
+    public void test11() throws NoSuchAlgorithmException {
+        Integer maxKeySize = javax.crypto.Cipher.getMaxAllowedKeyLength("AES");
+        log.debug(maxKeySize.toString());
+    }
+
+    @Test
+    public void test12(){
+        var rgb = new Subtitle.Effect.Rgb();
+        rgb.r = 0;
+        rgb.g = 0;
+        rgb.b = 0;
+        log.debug(rgb.toString().toUpperCase());
     }
 }

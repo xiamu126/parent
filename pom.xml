@@ -363,7 +363,7 @@
         <module>api</module>
         <module>socket</module>
         <module>oauth2-server</module>
-        <module>oauth2-resource</module>
+        <!--<module>oauth2-resource</module>-->
         <module>model</module>
         <module>myutil</module>
         <!--<module>video</module>-->
@@ -371,8 +371,8 @@
         <module>service</module>
         <module>config</module>
         <module>mapper</module>
-        <module>hadoop</module>
-        <module>datapush</module>
+        <!--<module>hadoop</module>-->
+        <module>onenet</module>
     </modules>
 
 </project>

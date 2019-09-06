@@ -2,6 +2,7 @@ package com.sybd.znld.web;
 
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.service.onenet.IOneNetService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,5 +73,11 @@ public class OneNetTest {
     public void setValue(){
         var tmp = this.oneNet.setValue(528130535, OneNetKey.from("3342_1_5700"), 1);
         log.debug(tmp.toString());
+    }
+
+    @Test
+    public void isDeviceOnline(){
+        var ret = this.oneNet.isDeviceOnline(528792157);
+        Assert.assertTrue(ret);
     }
 }

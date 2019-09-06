@@ -3,9 +3,13 @@ package com.sybd.znld.account;
 import com.mongodb.*;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication(scanBasePackages = {"com.sybd.znld"})
 public class App {
     public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
         var credential = MongoCredential.createCredential("root","admin", "znld@MON#188188".toCharArray());
         var mongoClient = new MongoClient(new ServerAddress("192.168.11.101", 27017), credential, MongoClientOptions.builder().build());
         var db = mongoClient.getDatabase( "test" );

@@ -1440,9 +1440,15 @@ public class DeviceController implements IDeviceController {
             }
             var ret = this.execute(deviceId, lamp.imei, resource.toOneNetKey(), resource.timeout, subtitle.toString());
             map.put(lamp.deviceId, new BaseApiResult(ret.code, ret.msg));
-            result.code = 0;
-            result.msg = "";
-            result.values = map;
+            if(ret.isOk()){
+                result.code = 0;
+                result.msg = "";
+                result.values = map;
+            }else{
+                result.code = 1;
+                result.msg = "下发失败";
+                result.values = map;
+            }
             return result;
         }catch (Exception ex){
             log.error(ex.getMessage());

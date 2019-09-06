@@ -1,8 +1,5 @@
 server:
-  servlet:
-    session:
-      timeout: 30m
-  port: 8082
+  port: 8085
 spring:
   output:
     ansi:
@@ -26,12 +23,6 @@ spring:
     throw-exception-if-no-handler-found: true
   main:
     banner-mode: "off"
-  session:
-    store-type: redis
-  thymeleaf:
-    prefix: classpath:/templates/
-    suffix: .html
-    cache: false
   profiles:
     include: onenet
     active: prod

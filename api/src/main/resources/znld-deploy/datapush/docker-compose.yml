@@ -2,7 +2,7 @@ version: '3.7'
 services:
   api:
     container_name: znld-datapush
-    image: openjdk:11.0.3-jdk
+    image: openjdk:11.0.4-jdk
     restart: on-failure
     working_dir: /datapush
     ports:

@@ -1,6 +1,7 @@
 package com.sybd.znld.service.onenet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.mapper.lamp.LampMapper;
@@ -294,6 +295,15 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
+    public boolean isDeviceOnline(Integer deviceId) {
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
+        var url = this.getDeviceUrl(deviceId);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Object.class);
+        var obj = responseEntity.getBody();
+        return JsonPath.parse(obj).read("$.data.online", Boolean.class);
+    }
+
+    @Override
     public BaseResult execute(CommandParams params){
         try {
             var model = this.lampMapper.selectByDeviceId(params.deviceId);
@@ -305,6 +315,9 @@ public class OneNetService implements IOneNetService {
                 params.imei = tmp.imei;
             }
             var executeEntity = new OneNetExecuteParams();
+            if(MyString.isEmptyOrNull(params.command)){
+                return new BaseResult(1, "执行命令为空");
+            }
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
             var httpEntity = getHttpEntity(params.deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);

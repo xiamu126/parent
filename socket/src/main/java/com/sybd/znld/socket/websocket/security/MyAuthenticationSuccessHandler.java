@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.websocket.security;
+package com.sybd.znld.socket.websocket.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;

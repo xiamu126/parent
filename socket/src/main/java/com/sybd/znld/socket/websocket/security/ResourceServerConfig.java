@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.websocket.security;
+package com.sybd.znld.socket.websocket.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;

@@ -43,6 +43,7 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.sybd.znld</groupId>
             <artifactId>model</artifactId>
@@ -150,9 +151,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
+                <!--<configuration>
                     <forceJavacCompilerUse>true</forceJavacCompilerUse>
-                </configuration>
+                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -163,10 +164,10 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
-                    <manifest>
-                        <mainClass>com.sybd.znld.web.App</mainClass>
-                    </manifest>
-                </archive>
+                        <manifest>
+                            <mainClass>com.sybd.znld.web.App</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

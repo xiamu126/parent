@@ -1,7 +1,7 @@
 package com.sybd.znld.service.onenet;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.mapper.lamp.LampMapper;
@@ -269,8 +269,8 @@ public class OneNetService implements IOneNetService {
             return responseEntity.getBody();
         }catch (Exception ex){
             log.error(ex.getMessage());
-            return new OneNetExecuteResult(1, ex.getMessage());
         }
+        return new OneNetExecuteResult(1, "读取数据发生异常");
     }
 
     @Override
@@ -283,15 +283,24 @@ public class OneNetService implements IOneNetService {
         if(lamp == null) return null;
         try {
             var url = writeValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId + "&mode=1";
-            var param = new OneNetWriteParams(oneNetKey.resId, 1, value);
+            var param = new OneNetWriteParams(oneNetKey.resId, null, value);
             var jsonBody = this.objectMapper.writeValueAsString(param);
             var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, BaseResult.class);
             return responseEntity.getBody();
         } catch (Exception ex) {
             log.error(ex.getMessage());
-            return new BaseResult(1, ex.getMessage());
         }
+        return new BaseResult(1, "写入数据发生异常");
+    }
+
+    @Override
+    public boolean isDeviceOnline(Integer deviceId) {
+        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
+        var url = this.getDeviceUrl(deviceId);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Object.class);
+        var obj = responseEntity.getBody();
+        return JsonPath.parse(obj).read("$.data.online", Boolean.class);
     }
 
     @Override
@@ -301,7 +310,14 @@ public class OneNetService implements IOneNetService {
             if(model != null && model.linkTo > 0){
                 params.deviceId = model.linkTo;
             }
+            if(MyString.isEmptyOrNull(params.imei)){
+                var tmp = this.lampMapper.selectByDeviceId(params.deviceId);
+                params.imei = tmp.imei;
+            }
             var executeEntity = new OneNetExecuteParams();
+            if(MyString.isEmptyOrNull(params.command)){
+                return new BaseResult(1, "执行命令为空");
+            }
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
             var httpEntity = getHttpEntity(params.deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);

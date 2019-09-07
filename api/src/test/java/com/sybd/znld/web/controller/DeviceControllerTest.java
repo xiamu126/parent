@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.model.ministar.dto.DeviceSubtitle;
+import com.sybd.znld.model.ministar.dto.Subtitle;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.web.App;
 import lombok.extern.slf4j.Slf4j;
@@ -461,17 +462,17 @@ public class DeviceControllerTest {
     @Test
     public void newDeviceMiniStar() throws Exception {
         var deviceId = 528130535;
-        var deviceSubtitle = new DeviceSubtitle();
-        deviceSubtitle.action = DeviceSubtitle.Action.SAVE;
+        var deviceSubtitle = new Subtitle();
+        deviceSubtitle.action = Subtitle.Action.SAVE;
         deviceSubtitle.beginTimestamp = MyDateTime.toTimestamp("2019-07-12 11:41:01", MyDateTime.format1);
         deviceSubtitle.endTimestamp = MyDateTime.toTimestamp("2019-07-12 13:41:01", MyDateTime.format1);
         deviceSubtitle.deviceId = deviceId;
-        var effect = new DeviceSubtitle.Effect();
-        effect.type = DeviceSubtitle.Effect.Type.HX;
-        var rgb1 = new DeviceSubtitle.Effect.Rgb((short)255, (short)254, (short)253);
-        var rgb2 = new DeviceSubtitle.Effect.Rgb((short)245, (short)244, (short)243);
-        var rgb3 = new DeviceSubtitle.Effect.Rgb((short)235, (short)234, (short)233);
-        var rgbs = new ArrayList<DeviceSubtitle.Effect.Rgb>();
+        var effect = new Subtitle.Effect();
+        effect.type = Subtitle.Effect.Type.HX;
+        var rgb1 = new Subtitle.Effect.Rgb((short)255, (short)254, (short)253);
+        var rgb2 = new Subtitle.Effect.Rgb((short)245, (short)244, (short)243);
+        var rgb3 = new Subtitle.Effect.Rgb((short)235, (short)234, (short)233);
+        var rgbs = new ArrayList<Subtitle.Effect.Rgb>();
         rgbs.add(rgb1);
         rgbs.add(rgb2);
         rgbs.add(rgb3);

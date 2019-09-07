@@ -28,7 +28,7 @@ public class ScheduledTaskConfig {
 
     @Bean
     public TaskScheduler taskScheduler() {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(taskSchedulingProperties.getPool().getSize(), new ThreadPoolExecutor.CallerRunsPolicy());
+        var executor = new ScheduledThreadPoolExecutor(taskSchedulingProperties.getPool().getSize(), new ThreadPoolExecutor.CallerRunsPolicy());
         //new ConcurrentTaskScheduler(Executors.newScheduledThreadPool(5))
         return new ConcurrentTaskScheduler(executor);
     }

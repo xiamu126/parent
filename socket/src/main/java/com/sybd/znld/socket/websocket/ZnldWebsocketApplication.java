@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.websocket;
+package com.sybd.znld.socket.websocket;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -10,8 +10,8 @@ import java.io.Serializable;
 
 @ApiModel(value = "用户登入传入参数")
 public class LoginInput implements Serializable {
-    @ApiModelProperty(value = "会话Id")
-    @Uuid(message = "UUID不能为空")
+    @ApiModelProperty(value = "会话Id，已经弃用")
+    //@Uuid(message = "UUID不能为空")
     public String uuid;
     @ApiModelProperty(value = "用户名")
     @NotEmpty(message = "用户名为空")

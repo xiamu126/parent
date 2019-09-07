@@ -5,6 +5,7 @@ import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.model.ministar.dto.DeviceSubtitle;
+import com.sybd.znld.model.ministar.dto.Subtitle;
 import com.sybd.znld.model.onenet.Command;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
@@ -1073,7 +1074,6 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path"),
             @ApiImplicitParam(name = "dataStream", value = "资源Id或名称", required = true, dataType = "string", paramType = "path")
     })
-
     @Override
     public BaseApiResult getLastDataWithDeviceIdAndDataStream(Integer deviceId, String dataStream, HttpServletRequest request) {
         try {
@@ -1422,7 +1422,7 @@ public class DeviceController implements IDeviceController {
     }
 
     @Override
-    public MiniStarResult newDeviceMiniStar(Integer deviceId, DeviceSubtitle subtitle, HttpServletRequest request) {
+    public MiniStarResult newDeviceMiniStar(Integer deviceId, Subtitle subtitle, HttpServletRequest request) {
         var result = new MiniStarResult();
         var map = new HashMap<Integer, BaseApiResult>();
         try{
@@ -1440,9 +1440,15 @@ public class DeviceController implements IDeviceController {
             }
             var ret = this.execute(deviceId, lamp.imei, resource.toOneNetKey(), resource.timeout, subtitle.toString());
             map.put(lamp.deviceId, new BaseApiResult(ret.code, ret.msg));
-            result.code = 0;
-            result.msg = "";
-            result.values = map;
+            if(ret.isOk()){
+                result.code = 0;
+                result.msg = "";
+                result.values = map;
+            }else{
+                result.code = 1;
+                result.msg = "下发失败";
+                result.values = map;
+            }
             return result;
         }catch (Exception ex){
             log.error(ex.getMessage());
@@ -1471,7 +1477,11 @@ public class DeviceController implements IDeviceController {
                 return ret;
             }
         }
-        var tmp = this.oneNet.setValue(deviceId, OneNetKey.from(dataStreamId), value);
+        var cmd = new CommandParams();
+        cmd.deviceId = deviceId;
+        cmd.oneNetKey = OneNetKey.from(dataStreamId);
+        cmd.command = value.toString();
+        var tmp = this.oneNet.execute(cmd);
         map.put(dataStream, new BaseApiResult(tmp.errno, tmp.error));
         ret.values = map;
         ret.code = 0;
@@ -1506,7 +1516,7 @@ public class DeviceController implements IDeviceController {
         item.deviceId = deviceId;
         item.deviceName = lamp.deviceName;
 
-        var tmp = this.oneNet.getValue(deviceId, OneNetKey.from(dataStreamId));
+        var tmp = this.oneNet.getLastDataStreamById(deviceId, dataStreamId);
         if(!tmp.isOk()){
             var status = new PullResult.Item.ResourceStatus();
             status.name = dataStream;
@@ -1520,19 +1530,17 @@ public class DeviceController implements IDeviceController {
             return ret;
         }
         try{
-            if(!tmp.isEmpty()){
-                var status = new PullResult.Item.ResourceStatus();
-                status.name = dataStream;
-                status.code = tmp.errno;
-                status.msg = tmp.error;
-                status.value = tmp.data.get(0).res.get(0).val;
-                item.status.add(status);
+            var status = new PullResult.Item.ResourceStatus();
+            status.name = dataStream;
+            status.code = tmp.errno;
+            status.msg = tmp.error;
+            status.value = tmp.data.currentValue;
+            item.status.add(status);
 
-                ret.values = item;
-                ret.code = 0;
-                ret.msg = "";
-                return ret;
-            }
+            ret.values = item;
+            ret.code = 0;
+            ret.msg = "";
+            return ret;
         }catch (Exception ex){
             log.error(ex.getMessage());
         }
@@ -1551,7 +1559,6 @@ public class DeviceController implements IDeviceController {
             }else{
                 map.put(ds, ret.values.get(ds));
             }
-
         }
         var result = new PushResult();
         result.code = 0;

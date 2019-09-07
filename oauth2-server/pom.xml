@@ -101,7 +101,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sybd.znld.security.oauth2.server.App</mainClass>
+                            <mainClass>com.sybd.znld.security.oauth2.server.com.sybd.znld.web.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

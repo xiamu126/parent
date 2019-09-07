@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.websocket;
+package com.sybd.znld.socket.websocket;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.sybd.znld.znld.websocket.security;
+package com.sybd.znld.socket.websocket.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

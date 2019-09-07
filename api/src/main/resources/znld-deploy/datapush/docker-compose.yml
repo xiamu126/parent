@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+  api:
+    container_name: znld-datapush
+    image: openjdk:11.0.4-jdk
+    restart: on-failure
+    working_dir: /datapush
+    ports:
+      - target: 8084
+        published: 8084
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./
+        target: /datapush
+    command: java -Duser.timezone=Asia/Shanghai -Xlog:gc*:./logs/gc.log -Xms2048m -Xmx4096m -jar app.jar
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

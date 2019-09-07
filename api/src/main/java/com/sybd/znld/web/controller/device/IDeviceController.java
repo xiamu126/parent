@@ -5,6 +5,7 @@ import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.model.ministar.dto.DeviceSubtitle;
+import com.sybd.znld.model.ministar.dto.Subtitle;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
@@ -67,7 +68,7 @@ public interface IDeviceController {
     MiniStarHistoryResult getMiniStarHistory(@RequestHeader("userId") String userId, @PathVariable(name = "count") Integer count);
 
     @PostMapping(value = "ministar/deviceId/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    MiniStarResult newDeviceMiniStar(@PathVariable(name = "deviceId") Integer deviceId, @RequestBody DeviceSubtitle data, HttpServletRequest request);
+    MiniStarResult newDeviceMiniStar(@PathVariable(name = "deviceId") Integer deviceId, @RequestBody Subtitle data, HttpServletRequest request);
 
     @PutMapping(value = "status/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}/value/{value}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     PushResult pushByDeviceIdOfDataStream(@PathVariable("deviceId") Integer deviceId, @PathVariable(name = "dataStream") String dataStream, @PathVariable(name = "value") Object value);

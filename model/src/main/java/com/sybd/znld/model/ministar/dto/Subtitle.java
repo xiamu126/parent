@@ -17,6 +17,7 @@ public class Subtitle implements Serializable {
     public String title;
     public String userId;
     public String region;
+    public Integer deviceId; // 针对单个设备的效果，如果region为一个合法的区域值，则这个值无效，区域设定优先
     public Short action; // 0为停止，1为开始，2为存储指令
     public Effect effect; // 具体的效果
     public Short speed; // 效果速度
@@ -27,7 +28,7 @@ public class Subtitle implements Serializable {
     public String historyId; // 只有当停止灯带效果时，才需要这个id
 
     public static class Effect{
-        public Short type; // 0为呼吸灯，1为跑马灯，2为全彩
+        public Short type; // 0为呼吸灯，1为跑马灯，2为全彩 // 硬件设定 1=呼吸灯 2=闪烁灯 3=跑马灯
         public List<Rgb> colors = new ArrayList<>(); // 颜色集合
 
         public boolean isValid(){
@@ -43,13 +44,21 @@ public class Subtitle implements Serializable {
             public Short r;
             public Short g;
             public Short b;
+
+            public Rgb() {}
+            public Rgb(short r, short g, short b){
+                this.r = r;
+                this.g = g;
+                this.b = b;
+            }
+
             public boolean isValid(){
                 return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255;
             }
 
             @Override
             public String toString() {
-                return r+","+g+","+b;
+                return String.format("%02X", r) + String.format("%02X", g) + String.format("%02X", b);
             }
         }
 
@@ -64,9 +73,9 @@ public class Subtitle implements Serializable {
         }
 
         public static class Type{
-            public static final short HX = 0;
-            public static final short PM = 1;
-            public static final short QC = 2;
+            public static final short HX = 1; // 呼吸灯
+            public static final short PM = 2; // 跑马灯
+            public static final short QC = 3; // 全彩灯
 
             public static boolean isValid(short v){
                 switch (v){
@@ -103,20 +112,38 @@ public class Subtitle implements Serializable {
         if(!MyNumber.isPositive(speed)) return false;
         if(beginTimestamp == null || MyDateTime.isPast(beginTimestamp, ZoneOffset.UTC)) return false;
         if(endTimestamp == null || MyDateTime.isBeforeOrEqual(endTimestamp, beginTimestamp, ZoneOffset.UTC)) return false;
-        if(!MyNumber.isPositive(effectTotalCount)) return false;
-        if(!MyNumber.isPositiveOrZero(effectCurrentIndex)) return false;
-        return effectCurrentIndex < effectTotalCount;
+        if(!MyString.isEmptyOrNull(region) && !MyNumber.isPositive(effectTotalCount)) return false; // 如果是针对区域的，针对单个设备的没有这个值
+        if(!MyString.isEmptyOrNull(region) && !MyNumber.isPositiveOrZero(effectCurrentIndex)) return false; // 如果是针对区域的，针对单个设备的没有这个值
+        if(!MyString.isEmptyOrNull(region)) return effectCurrentIndex < effectTotalCount; // 如果是针对区域的，针对单个设备的没有这个比较
+        return true;
     }
 
     public boolean isBasicValid(){
         if(!MyString.isUuid(userId)) return false;
-        if(MyString.isEmptyOrNull(region)) return false;
+        if(MyString.isEmptyOrNull(region) && !MyNumber.isPositive(deviceId)) return false;
         return Action.isValid(action);
     }
 
     @Override
     public String toString() {
-        try{
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.beginTimestamp / 1000); // 毫秒时间戳转换为秒时间戳
+        builder.append(",");
+        builder.append(this.endTimestamp / 1000); // 毫秒时间戳转换为秒时间戳
+        builder.append(",");
+        builder.append(this.effect.type); // 硬件设定 1=呼吸灯 2=闪烁灯 3=跑马灯
+        builder.append(",");
+        builder.append(this.speed);
+        builder.append(",");
+        builder.append(this.effect.colors.size());
+        builder.append(",");
+        StringBuilder colors = new StringBuilder();
+        for(var c : this.effect.colors){
+            colors.append(c.toString());
+        }
+        builder.append(colors.toString());
+        return builder.toString();
+        /*try{
             if(!this.isValid()) return "";
             var stringBuilder = new StringBuilder();
             stringBuilder.append("DG");
@@ -171,6 +198,6 @@ public class Subtitle implements Serializable {
             return stringBuilder.toString();
         }catch (Exception ex){
             return "";
-        }
+        }*/
     }
 }

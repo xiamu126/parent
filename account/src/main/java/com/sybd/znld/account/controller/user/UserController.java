@@ -1,14 +1,19 @@
 package com.sybd.znld.account.controller.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
+import com.sybd.znld.account.config.ProjectConfig;
+import com.sybd.znld.account.controller.user.dto.AccessToken;
 import com.sybd.znld.account.controller.user.dto.LoginResult;
-import com.sybd.znld.account.controller.user.dto.LogoutResult;
 import com.sybd.znld.account.model.LoginInput;
 import com.sybd.znld.account.service.IUserService;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
+import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyIp;
 import com.sybd.znld.util.MyString;
 import com.wf.captcha.SpecCaptcha;
 import io.swagger.annotations.*;
@@ -16,13 +21,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -34,55 +47,80 @@ public class UserController implements IUserController {
     private final RedissonClient redissonClient;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
     private final MongoClient mongoClient;
-    private final int CAPTCHA_EXPIRATION_TIME = 30;
-    private final int AUTH2_TOKEN_EXPIRATION_TIME = 7*24*60*60;
+    private final ProjectConfig projectConfig;
 
     @Value("${security.oauth2.client.client-id}")
     private String clientId;
     @Value("${security.oauth2.client.client-secret}")
     private String clientSecret;
+    @Value("${security.oauth2.client.access-token-uri}")
+    private String accessTokenUri;
+
+    @Autowired
+    private RestTemplate restTemplate;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Value("${project.captcha.expiration-time}")
+    private Duration captchaExpirationTime;
+    @Value("${project.captcha.width}")
+    private Integer width;
+    @Value("${project.captcha.height}")
+    private Integer height;
+    @Value("${project.captcha.length}")
+    private Integer length;
 
     @Autowired
     public UserController(IUserService userService,
-                          RedissonClient redissonClient, MongoClient mongoClient) {
+                          RedissonClient redissonClient, MongoClient mongoClient, ProjectConfig projectConfig) {
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.mongoClient = mongoClient;
+        this.projectConfig = projectConfig;
     }
 
-    private String getCaptchaKey(String uuid){
-        return "captcha::"+ uuid;
-    }
-
-    @ApiOperation(value = "获取验证码图片")
+    @ApiOperation(value = "获取验证码")
     @GetMapping(value = "login/captcha", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public String getCaptcha(HttpServletRequest request){
-        var specCaptcha = new SpecCaptcha(130, 48, 5);
+        var specCaptcha = new SpecCaptcha(this.width, this.height, this.length);
         var verCode = specCaptcha.text().toLowerCase();
         while(redissonClient.getBucket(verCode).isExists()){
             verCode = specCaptcha.text().toLowerCase();
         }
-        // 这个uuid是页面传来的，主要是为了方便用作缓存的索引
-        redissonClient.getBucket(verCode).set("", CAPTCHA_EXPIRATION_TIME, TimeUnit.SECONDS);
+        redissonClient.getBucket(verCode).set("", this.captchaExpirationTime.toSeconds(), TimeUnit.SECONDS);
         return specCaptcha.toBase64();
     }
 
     @ApiOperation(value = "登入")
     @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public LoginResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
+    public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
                              HttpServletRequest request, BindingResult bindingResult){
-        if(!redissonClient.getBucket(input.captcha).isExists()){
-            return LoginResult.fail("验证码错误或已失效");
-        }
         try {
+            if(!this.redissonClient.getBucket(input.captcha).isExists()){
+                return ApiResult.fail("验证码错误或已失效");
+            }
+            this.redissonClient.getBucket(input.captcha).delete(); // 验证通过，删除验证码
             var user = this.userService.getUserByName(input.user);
             if(user != null){
                 if(!this.encoder.matches(input.password, user.password)) {
-                    return LoginResult.fail("用户名或密码错误");
+                    var userIp = MyIp.getIpAddr(request);
+                    var count = (Integer) this.redissonClient.getBucket(userIp).get();
+                    log.debug("用户ip为："+userIp+";累计："+count);
+                    if(count != null){
+                        count = count + 1;
+                        if(count >= 3){
+                            var loginResult = new LoginResult();
+                            loginResult.needCaptcha = true;
+                            return ApiResult.fail("用户名或密码错误", loginResult);
+                        }
+                        this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.MINUTES);
+                    }else{
+                        this.redissonClient.getBucket(userIp).set(1, 1, TimeUnit.MINUTES);
+                    }
+                    return ApiResult.fail("用户名或密码错误");
                 }
-                redissonClient.getBucket(input.captcha).delete();
                 var db = mongoClient.getDatabase( "test" );
                 var c1 = db.getCollection("com.sybd.znld.account.profile");
                 var myDoc = c1.find(Filters.eq("id", user.id)).first();
@@ -92,44 +130,51 @@ public class UserController implements IUserController {
                     jsonStr = myDoc.toJson();
                 }
                 // 获取rbac权限信息
-                return LoginResult.success(user.id, user.organizationId, clientId, clientSecret, (long) AUTH2_TOKEN_EXPIRATION_TIME, jsonStr);
+                var headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                var map= new LinkedMultiValueMap<String, String>();
+                map.add("grant_type", "password");
+                map.add("client_id", this.clientId);
+                map.add("client_secret", this.clientSecret);
+                map.add("username", input.user);
+                map.add("password", input.password);
+                var httpEntity = new HttpEntity<>(map, headers);
+                var token = this.restTemplate.exchange(this.accessTokenUri, HttpMethod.POST, httpEntity, AccessToken.class);
+                var body = token.getBody();
+                if(body == null){
+                    return ApiResult.fail("此账号无权限");
+                }
+                var data = new LoginResult();
+                data.token = body.access_token;
+                data.tokenExpire = MyDateTime.toTimestamp(LocalDateTime.now(), body.expires_in);
+                data.userId = user.id;
+                data.organId = user.organizationId;
+                data.menu = jsonStr;
+
+                return ApiResult.success(data);
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());
         }
-        return LoginResult.fail("用户名或密码错误");
-    }
-
-    @PostMapping(value = "login/captcha/{captcha:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    @Override
-    public ApiResult verifyCaptcha(@PathVariable(name = "captcha") String captcha, HttpServletRequest request) {
-        if(MyString.isEmptyOrNull(captcha) || captcha.length() < 4) return ApiResult.fail("验证码错误");
-
-        var rightCaptcha = request.getSession().getAttribute("captcha").toString();
-        if(captcha.equalsIgnoreCase(rightCaptcha)){
-            request.getSession().removeAttribute("captcha");
-            return ApiResult.success();
-        }
-        return ApiResult.fail("验证码错误");
+        return ApiResult.fail("用户名或密码错误");
     }
 
     @ApiOperation(value = "登出")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "userId", value = "用户Id", required = true, dataType = "string", paramType = "path")
     })
-    @GetMapping(value = "logout/{userId}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "logout", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public LogoutResult logout(@PathVariable(name = "userId") String id, HttpServletRequest request){
-        if(MyString.isEmptyOrNull(id)) return LogoutResult.fail("登出失败");
-        request.getSession().removeAttribute("user");
-        return LogoutResult.success();
+    public ApiResult logout(@RequestBody String jsonStr, HttpServletRequest request){
+        if(MyString.isEmptyOrNull(jsonStr)) return ApiResult.fail("错误的用户信息");
+        String id = JsonPath.read(jsonStr,"$.id");
+        return ApiResult.success();
     }
 
     @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
     public ApiResult register(@RequestBody @Valid RegisterInput input, HttpServletRequest request, BindingResult bindingResult){
         try {
-            //input.password = this.encoder.encode(input.password);
             if(userService.register(input) != null){
                 return ApiResult.success();
             }

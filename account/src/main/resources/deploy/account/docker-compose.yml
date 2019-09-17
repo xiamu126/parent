@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+  account:
+    container_name: znld-account-test
+    image: openjdk:11.0.4-jdk
+    restart: on-failure
+    working_dir: /account
+    ports:
+      - target: 8085
+        published: 8095
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./
+        target: /account
+    command: java -Duser.timezone=Asia/Shanghai -jar app.jar
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

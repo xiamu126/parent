@@ -1,9 +1,7 @@
 db-server: znld-mysql:3306
-redis-server: znld-redis
-redis-server-port: 6379
 mongodb-server: znld-mongodb
 mongodb-server-port: 27017
-auth-server: http://znld-oauth2:8081 # 认证服务器地址
+auth-server: http://znld-oauth2-test:8081 # 认证服务器地址
 
 security:
   oauth2:
@@ -39,17 +37,6 @@ spring:
       jdbc-url: jdbc:mysql://${db-server}/MINI_STAR?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
       username: root
       password: znld@DB#188188
-  redis:
-    host: ${redis-server}
-    port: ${redis-server-port}
-    password: 94f76e0864c411e980f50242ac110005
-    ssl: false
-    timeout: 2s
-    cluster:
-      nodes:
-    sentinel:
-      master:
-      nodes:
   data:
     mongodb:
       host: ${mongodb-server}

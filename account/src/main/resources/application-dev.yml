@@ -1,10 +1,5 @@
-#db-server: 192.168.68.128:3306
-#redis-server: 192.168.68.128
-#redis-server-port: 8000
 db-server: 192.168.11.101:8307
-redis-server: 192.168.11.101
-redis-server-port: 8380
-auth-server: http://192.168.11.101:8081 # 认证服务器地址
+auth-server: http://192.168.11.101:8091 # 认证服务器地址
 
 security:
   oauth2:
@@ -40,17 +35,6 @@ spring:
       jdbc-url: jdbc:mysql://${db-server}/MINI_STAR?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
       username: root
       password: znld@DB#188188
-  redis:
-    host: ${redis-server}
-    port: ${redis-server-port}
-    password: 94f76e0864c411e980f50242ac110005
-    ssl: false
-    timeout: 2s
-    cluster:
-      nodes:
-    sentinel:
-      master:
-      nodes:
   data:
     mongodb:
       host: 192.168.11.101

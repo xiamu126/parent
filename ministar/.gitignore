@@ -1,0 +1,30 @@
+/target/
+/logs
+!.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+*.log
+
+### NetBeans ###
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+src/main/java/com/sybd/rbac/dto/
+src/main/java/com/sybd/znld/service/mapper/v2/UserModelMapper.java
+src/main/java/com/sybd/znld/service/v2/znld/

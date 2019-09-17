@@ -1,0 +1,32 @@
+db-server: znld-mysql:3306
+redis-server: znld-redis-oauth2
+redis-server-port: 6379
+
+spring:
+  redis:
+    host: ${redis-server}
+    port: ${redis-server-port}
+    password: a2e168aea1bc4515ad186b5cfbcf0ce5
+  datasource:
+    oauth:
+      pool-name: HikariPool-oauth
+      #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
+      jdbc-url: jdbc:mysql://${db-server}/oauth?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188
+    znld:
+      pool-name: HikariPool-znld
+      #useAffectedRows的作用，当使用 UPDATE 查询，MySQL 不会将原值和新值一样的列更新，改成true，即返回更改的行数，而非匹配的行数
+      jdbc-url: jdbc:mysql://${db-server}/ZNLD_V4?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188
+    rbac:
+      pool-name: HikariPool-rbac
+      jdbc-url: jdbc:mysql://${db-server}/RBAC_V2?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188
+    ministar:
+      pool-name: HikariPool-ministar
+      jdbc-url: jdbc:mysql://${db-server}/MINI_STAR?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
+      username: root
+      password: znld@DB#188188

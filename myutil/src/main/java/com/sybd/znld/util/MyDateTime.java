@@ -335,6 +335,10 @@ public final class MyDateTime {
     public static String toString(LocalDateTime dateTime, String format){
         return DateTimeFormatter.ofPattern(format).format(dateTime);
     }
+    public static String toString(Long timestamp, String format){
+        var dateTime = toLocalDateTime(timestamp);
+        return toString(dateTime, format);
+    }
 
     public static LocalDateTime maxOfDay(LocalDateTime date){
         var localDate = LocalDate.of(date.getYear(), date.getMonth(), date.getDayOfMonth());

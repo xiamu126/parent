@@ -16,7 +16,6 @@ public class LoginInput implements Serializable {
     @NotEmpty(message = "密码为空")
     public String password;
     @ApiModelProperty(value = "验证码")
-    @NotEmpty(message = "验证码为空")
     public String captcha;
 
     public boolean isValid(){

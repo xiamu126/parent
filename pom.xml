@@ -350,7 +350,7 @@
                             <manifest>
                                 <addClasspath>true</addClasspath>
                                 <classpathPrefix>libs/</classpathPrefix>
-                                <mainClass>com.sybd.znld.com.sybd.znld.web.App</mainClass>
+                                <mainClass>com.sybd.znld.onenet.App</mainClass>
                             </manifest>
                         </archive>
                     </configuration>

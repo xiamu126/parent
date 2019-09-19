@@ -9,9 +9,17 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>datapush</artifactId>
+    <artifactId>onenet</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-activemq</artifactId>
@@ -37,6 +45,11 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sybd.znld</groupId>
+            <artifactId>mapper</artifactId>
+            <version>0.0.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -55,7 +68,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sybd.znld.web.App</mainClass>
+                            <mainClass>com.sybd.znld.onenet.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

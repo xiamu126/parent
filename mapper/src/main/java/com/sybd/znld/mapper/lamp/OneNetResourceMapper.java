@@ -19,4 +19,5 @@ public interface OneNetResourceMapper {
     List<OneNetResourceModel> selectByResourceType(short type);
     OneNetResourceModel selectByResourceName(String resourceName);
     OneNetResourceModel selectByResourceNameAndType(@Param("resourceName") String resourceName, @Param("type") int type);
+    String selectNameByDataStreamId(@Param("objId")String objId, @Param("objInstId")String objInstId, @Param("resId")String resId);
 }

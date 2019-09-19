@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+  api:
+    container_name: znld-onenet
+    image: openjdk:11.0.4-jdk
+    restart: on-failure
+    working_dir: /onenet
+    ports:
+      - target: 8084
+        published: 8084
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./
+        target: /onenet
+    command: java -Duser.timezone=Asia/Shanghai -Xlog:gc*:./logs/gc.log -Xms512m -Xmx2048m -jar app.jar
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

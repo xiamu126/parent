@@ -7,6 +7,7 @@ import com.mongodb.client.model.Filters;
 import com.sybd.znld.account.config.ProjectConfig;
 import com.sybd.znld.account.controller.user.dto.AccessToken;
 import com.sybd.znld.account.controller.user.dto.LoginResult;
+import com.sybd.znld.account.controller.user.dto.NeedCaptchaResult;
 import com.sybd.znld.account.model.LoginInput;
 import com.sybd.znld.account.service.IUserService;
 import com.sybd.znld.model.ApiResult;
@@ -98,28 +99,34 @@ public class UserController implements IUserController {
     public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
                              HttpServletRequest request, BindingResult bindingResult){
         try {
-            if(!this.redissonClient.getBucket(input.captcha).isExists()){
-                return ApiResult.fail("验证码错误或已失效");
+            var userIp = MyIp.getIpAddr(request);
+            var count = (Integer) this.redissonClient.getBucket(userIp).get();
+            if(count != null && count >= 3){ // 这个ip被登记过，且已经达到错误上线，必须验证验证码
+                if(input.captcha == null || !this.redissonClient.getBucket(input.captcha).isExists()){
+                    var loginResult = new NeedCaptchaResult();
+                    loginResult.needCaptcha = true;
+                    return ApiResult.fail("验证码错误或已失效", loginResult);
+                }else{
+                    this.redissonClient.getBucket(input.captcha).delete(); // 验证通过，删除验证码
+                }
             }
-            this.redissonClient.getBucket(input.captcha).delete(); // 验证通过，删除验证码
             var user = this.userService.getUserByName(input.user);
             if(user != null){
                 if(!this.encoder.matches(input.password, user.password)) {
-                    var userIp = MyIp.getIpAddr(request);
-                    var count = (Integer) this.redissonClient.getBucket(userIp).get();
-                    log.debug("用户ip为："+userIp+";累计："+count);
-                    if(count != null){
-                        count = count + 1;
-                        if(count >= 3){
-                            var loginResult = new LoginResult();
-                            loginResult.needCaptcha = true;
-                            return ApiResult.fail("用户名或密码错误", loginResult);
-                        }
-                        this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.MINUTES);
+                    if(count == null){
+                        count = 1;
                     }else{
-                        this.redissonClient.getBucket(userIp).set(1, 1, TimeUnit.MINUTES);
+                        count = count + 1;
                     }
-                    return ApiResult.fail("用户名或密码错误");
+                    log.debug("用户ip为："+userIp+";累计："+count);
+                    this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.MINUTES);
+                    if(count >= 3){
+                        var loginResult = new NeedCaptchaResult();
+                        loginResult.needCaptcha = true;
+                        return ApiResult.fail("用户名或密码错误", loginResult);
+                    }else{
+                        return ApiResult.fail("用户名或密码错误");
+                    }
                 }
                 var db = mongoClient.getDatabase( "test" );
                 var c1 = db.getCollection("com.sybd.znld.account.profile");

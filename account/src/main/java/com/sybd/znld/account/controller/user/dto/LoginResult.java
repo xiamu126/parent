@@ -25,6 +25,4 @@ public class LoginResult {
     public Long now = MyDateTime.toTimestamp(LocalDateTime.now());
     @ApiModelProperty(value = "目录数据")
     public Object menu;
-    @ApiModelProperty(value = "是否需要启用验证码")
-    public Boolean needCaptcha;
 }

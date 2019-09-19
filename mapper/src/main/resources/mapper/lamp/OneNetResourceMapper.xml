@@ -26,6 +26,10 @@
         select * from onenet_resource where description = #{resourceName} and type = #{type};
     </select>
 
+    <select id="selectNameByDataStreamId" resultType="string">
+        select description from onenet_resource where obj_id = #{objId} and obj_inst_id = #{objInstId} and res_id = #{resId};
+    </select>
+
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.OneNetResourceModel">
         <selectKey keyProperty="id" resultType="string" order="BEFORE">
             select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->

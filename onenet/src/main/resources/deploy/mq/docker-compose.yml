@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  account:
+    container_name: znld-activemq
+    image: rmohr/activemq:latest
+    restart: on-failure
+    ports:
+      - target: 61616
+        published: 61616
+        protocol: tcp
+        mode: host
+      - target: 8161
+        published: 8161
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

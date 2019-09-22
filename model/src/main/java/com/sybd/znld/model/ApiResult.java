@@ -20,45 +20,41 @@ public class ApiResult {
     @ApiModelProperty(value = "相关描述")
     public String msg;
     @ApiModelProperty(value = "具体的数据")
-    public Object json;
+    public Object data;
 
     public static ApiResult success(){
-        return new ApiResult(0,"","");
+        return new ApiResult(0,"",null);
     }
     public static ApiResult success(String msg){
-        return new ApiResult(0, msg, "");
+        return new ApiResult(0, msg, null);
     }
-    public static ApiResult success(Object json){
-        return new ApiResult(0, "", json);
+    public static ApiResult success(Object data){
+        return new ApiResult(0, "", data);
     }
-    public static ApiResult success(String msg, Object json){
-        return new ApiResult(0, msg, json);
+    public static ApiResult success(String msg, Object data){
+        return new ApiResult(0, msg, data);
     }
 
     public static ApiResult fail(){
-        return new ApiResult(1,"","");
+        return new ApiResult(1,"",null);
     }
     public static ApiResult fail(String msg){
-        return new ApiResult(1, msg,"");
+        return new ApiResult(1, msg,null);
     }
-    public static ApiResult fail(BindingResult bindingResult){
-        List<ObjectError> errorList = bindingResult.getAllErrors();
-        for(ObjectError error : errorList){
-            log.debug(error.getDefaultMessage());
-        }
-        return ApiResult.fail("非法的参数");
+    public static ApiResult fail(String msg, Object data){
+        return new ApiResult(1, msg, data);
     }
 
     public ApiResult(){}
     public ApiResult(int code, String msg) {
         this.code = code;
         this.msg = msg;
-        this.json = null;
+        this.data = null;
     }
-    public ApiResult(int code, String msg, Object json) {
+    public ApiResult(int code, String msg, Object data) {
         this.code = code;
         this.msg = msg;
-        this.json = json;
+        this.data = data;
     }
     @JsonIgnore
     public boolean isOk(){

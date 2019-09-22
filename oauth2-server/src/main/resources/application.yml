@@ -11,9 +11,8 @@ spring:
     cache: true
   profiles:
     include:
-    active: prod
+    active: prod-test
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
-  type-aliases-package: com.sybd.security.oauth2.server.model
   configuration:
     map-underscore-to-camel-case: true

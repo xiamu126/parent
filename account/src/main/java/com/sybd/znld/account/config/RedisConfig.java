@@ -13,12 +13,6 @@ import java.io.IOException;
 @EnableCaching(proxyTargetClass = true)
 @Configuration
 public class RedisConfig {
-    @Value("${spring.redis.host}")
-    private String host;
-    @Value("${spring.redis.port}")
-    private Integer port;
-    @Value("${spring.redis.password}")
-    private String password;
     @Value("${spring.profiles.active}")
     private String environment;
 

@@ -73,6 +73,13 @@ public final class MyDateTime {
         return dateTime.toInstant(zoneOffset).toEpochMilli();
     }
 
+    public static Long toTimestamp(LocalDateTime dateTime, int seconds){
+        var tmp = dateTime.plusSeconds(seconds);
+        var zoneId = ZoneId.systemDefault();
+        var zoneOffset = Instant.now().atZone(zoneId).getOffset();
+        return tmp.toInstant(zoneOffset).toEpochMilli();
+    }
+
     // 时间戳转换为本地时间
     public static LocalDateTime toLocalDateTime(Long timestamp){
         var instant = Instant.ofEpochMilli(timestamp);
@@ -327,6 +334,10 @@ public final class MyDateTime {
     // 格式化
     public static String toString(LocalDateTime dateTime, String format){
         return DateTimeFormatter.ofPattern(format).format(dateTime);
+    }
+    public static String toString(Long timestamp, String format){
+        var dateTime = toLocalDateTime(timestamp);
+        return toString(dateTime, format);
     }
 
     public static LocalDateTime maxOfDay(LocalDateTime date){

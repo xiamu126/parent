@@ -1,0 +1,36 @@
+version: '3.7'
+services:
+  mysql:
+    container_name: znld-mysql-oauth2
+    image: mysql:8.0.17
+    ports:
+      - target: 3306
+        published: 8308
+        protocol: tcp
+        mode: host
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "mysqladmin", "--user=root", "--password=znld-oauth2@DB#188188", "--silent", "ping"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./data
+        target: /var/lib/mysql
+      - type: bind
+        source: ./my.cnf
+        target: /etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: znld-oauth2@DB#188188
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

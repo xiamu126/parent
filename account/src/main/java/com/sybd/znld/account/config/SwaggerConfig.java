@@ -22,11 +22,11 @@ import java.util.Collections;
 @EnableSwagger2
 @Configuration
 public class SwaggerConfig {
-    @Value("${auth-server}")
+    //@Value("${auth-server}")
     private String authServer;
-    @Value("${security.oauth2.client.client-id}")
+    //@Value("${security.oauth2.client.client-id}")
     private String clientId;
-    @Value("${security.oauth2.client.client-secret}")
+    //@Value("${security.oauth2.client.client-secret}")
     private String clientSecret;
 
     @Bean

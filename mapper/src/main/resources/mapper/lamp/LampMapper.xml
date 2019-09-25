@@ -29,6 +29,14 @@
         select * from lamp where longitude = #{_parameter};
     </select>
 
+    <select id="selectLocationByDeviceId" resultType="com.sybd.znld.model.lamp.dto.Location">
+        select MAX(IF(name = '北斗经度', value, 0)) AS 'longitude',
+               MAX(IF(name = '北斗纬度', value, 0)) AS 'latitude'
+        from data_location
+        where device_id = #{deviceId}
+        group by device_id;
+    </select>
+
     <select id="selectAllDeviceIds" resultType="java.lang.Integer">
         select distinct device_id from lamp where status != 2;
     </select>

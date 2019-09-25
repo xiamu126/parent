@@ -39,4 +39,10 @@ public class MapperTest {
         var ret = this.regionMapper.selectLampsByRegionId("5aa2ac64883611e9a7fe0242c0a8b002");
         Assert.assertTrue(ret != null && !ret.isEmpty());
     }
+
+    @Test
+    public void test3(){
+        var ret = this.regionMapper.selectLampsWithLocationByRegionId("5aa2ac64883611e9a7fe0242c0a8b002");
+        Assert.assertTrue(ret != null && !ret.isEmpty());
+    }
 }

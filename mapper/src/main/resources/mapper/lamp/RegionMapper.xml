@@ -50,6 +50,18 @@
         where c.status = 0 and a.status = 0 and a.id = #{regionId};
     </select>
 
+    <select id="selectLampsWithLocationByRegionId" resultType="com.sybd.znld.model.lamp.dto.LampWithLocation">
+        select c.device_id as deviceId, c.device_name as deviceName,
+               MAX(IF(d.name = '北斗经度', value, 0)) AS 'longitude',
+               MAX(IF(d.name = '北斗纬度', value, 0)) AS 'latitude'
+        from region as a
+                 left join lamp_region as b on b.region_id = a.id
+                 left join lamp as c on c.id = b.lamp_id
+                 left join data_location as d on d.device_id = c.device_id
+        where c.status = 0 and a.status = 0 and a.id = #{regionId}
+        group by c.device_id, c.device_name;
+    </select>
+
     <select id="selectLampsOfEnvironment" resultType="com.sybd.znld.model.lamp.dto.Lamp">
         select c.device_id, c.device_name
         from region as a

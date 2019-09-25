@@ -19,6 +19,7 @@ public interface LampMapper {
     LampModel selectByDeviceName(String deviceName);
     LampModel selectByLatitude(String latitude);
     LampModel selectByLongitude(String longitude);
+    Location selectLocationByDeviceId(Integer deviceId);
     List<Integer> selectAllDeviceIds();
     String selectApiKeyByDeviceId(Integer deviceId);
     HashMap<String, String> selectResourceMapByDeviceId(Integer deviceId);

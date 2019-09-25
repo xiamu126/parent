@@ -23,6 +23,7 @@ public interface RegionMapper {
     List<RegionWithLocation> selectAllRegionWithValidLamp(String organId);
     List<Region> selectByOrganId(String organId);
     List<Lamp> selectLampsByRegionId(String regionId);
+    List<LampWithLocation> selectLampsWithLocationByRegionId(String regionId);
     List<Lamp> selectLampsOfEnvironment(String organId);
     List<ElementAvgResult> selectAvgOfEnvironmentElementByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     List<ElementAvgResult> selectAvgOfEnvironmentElementLastDayByDeviceId(Integer deviceId);

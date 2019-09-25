@@ -5,6 +5,7 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.model.Filters;
+import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.ministar.model.Subtitle;
@@ -41,14 +42,16 @@ public class MiniStarController {
     private final RedissonClient redissonClient;
     private final OrganizationMapper organizationMapper;
     private final RegionMapper regionMapper;
+    private final LampMapper lampMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public MiniStarController(MongoClient mongoClient, RedissonClient redissonClient, OrganizationMapper organizationMapper, RegionMapper regionMapper) {
+    public MiniStarController(MongoClient mongoClient, RedissonClient redissonClient, OrganizationMapper organizationMapper, RegionMapper regionMapper, LampMapper lampMapper) {
         this.mongoClient = mongoClient;
         this.redissonClient = redissonClient;
         this.organizationMapper = organizationMapper;
         this.regionMapper = regionMapper;
+        this.lampMapper = lampMapper;
     }
 
 
@@ -105,7 +108,7 @@ public class MiniStarController {
         }
         var result = new ArrayList<RegionWithLamps>();
         regions.forEach(r -> {
-            var lamps = this.regionMapper.selectLampsByRegionId(r.regionId);
+            var lamps = this.regionMapper.selectLampsWithLocationByRegionId(r.regionId);
             if(lamps != null && !lamps.isEmpty()){
                 var tmp = new RegionWithLamps();
                 tmp.regionId = r.regionId;

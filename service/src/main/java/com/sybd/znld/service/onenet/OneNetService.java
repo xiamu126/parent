@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
+import com.sybd.znld.mapper.lamp.DataDeviceOnOffMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
@@ -37,6 +38,7 @@ public class OneNetService implements IOneNetService {
     private final LampMapper lampMapper;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+    private final DataDeviceOnOffMapper dataDeviceOnOffMapper;
 
     @Getter @Setter public String getHistoryDataStreamUrl;
     @Getter @Setter public String postExecuteUrl;
@@ -112,10 +114,11 @@ public class OneNetService implements IOneNetService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper, RestTemplate restTemplate) {
+    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper, RestTemplate restTemplate, DataDeviceOnOffMapper dataDeviceOnOffMapper) {
         this.lampMapper = lampMapper;
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
+        this.dataDeviceOnOffMapper = dataDeviceOnOffMapper;
     }
 
     @Override

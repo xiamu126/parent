@@ -99,6 +99,10 @@ public class UserController implements IUserController {
     public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
                              HttpServletRequest request, BindingResult bindingResult){
         try {
+            // 如果客户端传来了验证码，不管是否存在错误记录都会验证
+            if(input.captcha != null && !this.redissonClient.getBucket(input.captcha).isExists()){
+                return ApiResult.fail("验证码错误或已失效");
+            }
             var userIp = MyIp.getIpAddr(request);
             var count = (Integer) this.redissonClient.getBucket(userIp).get();
             if(count != null && count >= 3){ // 这个ip被登记过，且已经达到错误上线，必须验证验证码
@@ -119,7 +123,7 @@ public class UserController implements IUserController {
                         count = count + 1;
                     }
                     log.debug("用户ip为："+userIp+";累计："+count);
-                    this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.MINUTES);
+                    this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS); // 延长错误记录的时间
                     if(count >= 3){
                         var loginResult = new NeedCaptchaResult();
                         loginResult.needCaptcha = true;

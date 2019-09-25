@@ -3,28 +3,51 @@ package com.sybd.znld.onenet.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.sybd.znld.mapper.lamp.DataDeviceOnOffMapper;
+import com.sybd.znld.mapper.lamp.DataEnvironmentMapper;
 import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
+import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
 import com.sybd.znld.onenet.config.MyWebSocketHandler;
 import com.sybd.znld.onenet.controller.dto.News;
+import com.sybd.znld.onenet.service.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Controller
 public class DataPushController {
-    @Autowired
-    private JmsTemplate jmsTemplate;
-    @Autowired
-    public OneNetResourceMapper oneNetResourceMapper;
+    private final JmsTemplate jmsTemplate;
+    private final OneNetResourceMapper oneNetResourceMapper;
+    private final DataEnvironmentMapper dataEnvironmentMapper;
+    private final DataDeviceOnOffMapper dataDeviceOnOffMapper;
+    private final IOneNetService oneNetService;
 
     private static String token ="abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
     private static String aeskey ="whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    public DataPushController(JmsTemplate jmsTemplate,
+                              OneNetResourceMapper oneNetResourceMapper,
+                              DataEnvironmentMapper dataEnvironmentMapper,
+                              DataDeviceOnOffMapper dataDeviceOnOffMapper,
+                              IOneNetService oneNetService) {
+        this.jmsTemplate = jmsTemplate;
+        this.oneNetResourceMapper = oneNetResourceMapper;
+        this.dataEnvironmentMapper = dataEnvironmentMapper;
+        this.dataDeviceOnOffMapper = dataDeviceOnOffMapper;
+        this.oneNetService = oneNetService;
+    }
+
     /**
      * 功能描述：第三方平台数据接收。<p>
      *           <ul>注:
@@ -51,7 +74,9 @@ public class DataPushController {
             if (dataRight){
                 String ds = null;
                 Object value = null;
-                Long at = null;
+                LocalDateTime at = null;
+                Integer deviceId = null;
+                String imei = null;
                 try{
                     ds = JsonPath.read(body,"$.msg.ds_id");
                 }catch (Exception ex){
@@ -63,7 +88,19 @@ public class DataPushController {
                     log.debug(ex.getMessage());
                 }
                 try{
-                    at = JsonPath.read(body,"$.msg.at");
+                    Long tmp = JsonPath.read(body,"$.msg.at");
+                    var zoneId = ZoneId.of("Asia/Shanghai");
+                    at = MyDateTime.toLocalDateTime(tmp, zoneId);
+                }catch (Exception ex){
+                    log.debug(ex.getMessage());
+                }
+                try{
+                    deviceId = JsonPath.read(body,"$.msg.dev_id");
+                }catch (Exception ex){
+                    log.debug(ex.getMessage());
+                }
+                try{
+                    imei = JsonPath.read(body,"$.msg.imei");
                 }catch (Exception ex){
                     log.debug(ex.getMessage());
                 }
@@ -79,15 +116,43 @@ public class DataPushController {
                                 }else{
                                     log.debug("更新时间为空");
                                 }
-                                var news = new News();
-                                news.name = name;
-                                news.value = value;
-                                news.at = at;
-                                var objectMapper = new ObjectMapper();
-                                try {
-                                    MyWebSocketHandler.sendAll(objectMapper.writeValueAsString(news));
-                                } catch (JsonProcessingException ex) {
-                                    log.error(ex.getMessage());
+                                if(deviceId != null){
+                                    var news = new News();
+                                    news.deviceId = deviceId;
+                                    news.name = name;
+                                    news.value = value;
+                                    news.at = at == null ? MyDateTime.toTimestamp(LocalDateTime.now()) : MyDateTime.toTimestamp(at);
+                                    var objectMapper = new ObjectMapper();
+                                    try {
+                                        MyWebSocketHandler.sendAll(objectMapper.writeValueAsString(news));
+                                        var data = new DataPushModel();
+                                        data.deviceId = deviceId;
+                                        data.imei = imei;
+                                        data.datastreamId = ds;
+                                        data.name = name;
+                                        data.value = value;
+                                        data.at = at;
+                                        if(name.contains("开关")){
+                                            this.oneNetService.addOrModifyDeviceOnOff(data);
+                                        } else if(name.contains("经度") || name.contains("纬度")) {
+                                            var tmp = MyNumber.getDouble(value.toString());
+                                            if(tmp != null && tmp != 0.0){
+                                                this.oneNetService.addOrModifyDeviceLocation(data);
+                                            }else{
+                                                log.debug("经纬度不合法，为" + value);
+                                            }
+                                        } else if(name.contains("angle")){
+                                            this.oneNetService.addOrModifyDeviceAngle(data);
+                                        } else if(name.contains("时间戳") ){
+                                            log.debug("跳过时间戳");
+                                        } else{
+                                            this.dataEnvironmentMapper.insert(data);
+                                        }
+                                    } catch (JsonProcessingException ex) {
+                                        log.error(ex.getMessage());
+                                    }
+                                }else{
+                                    log.debug("获取设备id为空");
                                 }
                             }else {
                                 log.debug("获取到的资源值为空");

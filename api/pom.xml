@@ -165,7 +165,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sybd.znld.onenet.App</mainClass>
+                            <mainClass>com.sybd.znld.web.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

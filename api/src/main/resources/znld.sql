@@ -2,6 +2,43 @@ drop database if exists ZNLD_V4;
 create database ZNLD_V4 default character set utf8mb4 collate utf8mb4_unicode_ci;
 use ZNLD_V4;
 
+create table data_environment(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value varchar(20) not null,
+    at timestamp not null
+);
+create table data_device_onoff(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value boolean not null,
+    at timestamp not null
+);
+create table data_location(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value varchar(20) not null,
+    at timestamp not null
+);
+create table data_angle(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value varchar(20) not null,
+    at timestamp not null
+);
+
 create table app(
   id               varchar(32) not null primary key,
   name             varchar(32) not null comment '此app的名字',
@@ -40,7 +77,8 @@ create table lamp(
   x_angle              float not null default 0 comment '倾斜状态',
   y_angle              float not null default 0 comment '倾斜状态',
   link_to              int not null default 0 comment '',
-  weight               int not null default 0 comment ''
+  weight               int not null default 0 comment '',
+  environment          boolean not null default false comment '是否包含环境监测功能，默认为不包含'
 );
 create table lamp_region(
   id         varchar(32) not null primary key,

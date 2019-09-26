@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.DataDeviceOnOffMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.onenet.DataPushModel">
+        insert into data_device_onoff(id, device_id, imei, datastream_id, name, value, at)
+        values (#{id},#{deviceId},#{imei},#{datastreamId},#{name},#{value},#{at})
+    </insert>
+    <select id="selectByDeviceIdAndResourceName" resultType="com.sybd.znld.model.onenet.DataPushModel">
+        select * from data_device_onoff where name=#{name} and device_id=#{deviceId} limit 1
+    </select>
+    <update id="updateByDeviceIdAndResourceName" parameterType="com.sybd.znld.model.onenet.DataPushModel">
+        update data_device_onoff
+        <set>
+            <if test="value != null">value=#{value},</if>
+            <if test="at != null">at=#{at}</if>
+        </set>
+        where device_id=#{deviceId} and name=#{name};
+    </update>
+</mapper>

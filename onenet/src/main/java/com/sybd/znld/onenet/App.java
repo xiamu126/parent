@@ -14,18 +14,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = {"com.sybd.znld"})
 public class App {
-    @Autowired
-    public OneNetResourceMapper oneNetResourceMapper;
-
     public static void main(String[] args){
         SpringApplication.run(App.class, args);
 
-    }
-
-    //@Scheduled(fixedRate = 1000 * 5) //每隔30秒向客户端发送一次数据
-    public void sendMessage() {
-        //this.oneNetResourceMapper.selectNameByDataStreamId("3305","0","5577");
-        MyWebSocketHandler.sendAll("test");
-        //log.debug("发送消息完毕");
     }
 }

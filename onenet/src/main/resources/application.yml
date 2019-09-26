@@ -2,5 +2,5 @@ server:
   port: 8084
 spring:
   profiles:
-    include:
+    include: onenet
     active: prod

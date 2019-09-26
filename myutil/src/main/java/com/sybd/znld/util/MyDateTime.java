@@ -90,6 +90,10 @@ public final class MyDateTime {
         var instant = Instant.ofEpochMilli(timestamp);
         return LocalDateTime.ofInstant(instant, zoneOffset);
     }
+    public static LocalDateTime toLocalDateTime(Long timestamp, ZoneId zoneId){
+        var instant = Instant.ofEpochMilli(timestamp);
+        return LocalDateTime.ofInstant(instant, zoneId);
+    }
 
     public static Date toDate(LocalDateTime localDateTime){
         var zoneId = ZoneId.systemDefault();

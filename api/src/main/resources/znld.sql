@@ -2,6 +2,63 @@ drop database if exists ZNLD_V4;
 create database ZNLD_V4 default character set utf8mb4 collate utf8mb4_unicode_ci;
 use ZNLD_V4;
 
+create table ministar_effect(
+    id int primary key auto_increment,
+    name varchar(50) not null,
+    type varchar(50) not null,
+    colors varchar(100) not null,
+    speed int not null,
+    brightness int not null,
+    organizationId varchar(32) not null
+);
+
+create table ministar_task(
+    id int primary key auto_increment,
+    area_id varchar(32) not null,
+    user_id varchar(32) not null,
+    area_type int not null comment '0表示针对街道区域的，1表示针对单个路灯的',
+    begin_time timestamp not null,
+    end_time timestamp not null,
+    status int not null comment '0表示等待中，1表示已经结束'
+);
+
+create table data_environment(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value varchar(20) not null,
+    at timestamp not null
+);
+create table data_device_onoff(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value boolean not null,
+    at timestamp not null
+);
+create table data_location(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value varchar(20) not null,
+    at timestamp not null
+);
+create table data_angle(
+    id varchar(32) not null primary key,
+    device_id int not null,
+    imei varchar(20) not null,
+    datastream_id varchar(20) not null,
+    name varchar(20) not null,
+    value varchar(20) not null,
+    at timestamp not null
+);
+
 create table app(
   id               varchar(32) not null primary key,
   name             varchar(32) not null comment '此app的名字',
@@ -40,7 +97,8 @@ create table lamp(
   x_angle              float not null default 0 comment '倾斜状态',
   y_angle              float not null default 0 comment '倾斜状态',
   link_to              int not null default 0 comment '',
-  weight               int not null default 0 comment ''
+  weight               int not null default 0 comment '',
+  environment          boolean not null default false comment '是否包含环境监测功能，默认为不包含'
 );
 create table lamp_region(
   id         varchar(32) not null primary key,

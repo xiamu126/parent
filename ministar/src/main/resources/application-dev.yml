@@ -4,7 +4,7 @@
 db-server: 192.168.11.101:8307
 redis-server: 192.168.11.101
 redis-server-port: 8380
-auth-server: http://192.168.11.101:8081 # 认证服务器地址
+auth-server: http://192.168.11.101:8091 # 认证服务器地址
 
 security:
   oauth2:

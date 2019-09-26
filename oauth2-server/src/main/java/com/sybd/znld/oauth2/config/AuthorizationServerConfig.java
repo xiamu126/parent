@@ -55,8 +55,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints.tokenStore(tokenStore())
-                .userDetailsService(this.userDetailsService)//没这个，refresh_token会报错
-                .authenticationManager(authenticationManager);//支持 password grant type
+                .userDetailsService(this.userDetailsService) // 没这个，refresh_token会报错
+                .authenticationManager(authenticationManager); // 支持 password grant type
     }
 
 /*    @Bean

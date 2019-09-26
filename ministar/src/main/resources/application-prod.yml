@@ -3,7 +3,7 @@ redis-server: znld-redis
 redis-server-port: 6379
 mongodb-server: znld-mongodb
 mongodb-server-port: 27017
-auth-server: http://znld-oauth2:8081 # 认证服务器地址
+auth-server: http://znld-oauth2-test:8081 # 认证服务器地址
 
 security:
   oauth2:

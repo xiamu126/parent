@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.MiniStarEffectMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.MiniStarEffectModel">
+        insert into ministar_effect(name, type, colors, speed, brightness, organization_id)
+        values (#{name}, #{type}, #{colors}, #{speed}, #{brightness}, #{organizationId});
+    </insert>
+    <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.MiniStarEffectModel">
+        select * from ministar_effect where organization_id = #{organId}
+    </select>
+</mapper>

@@ -2,6 +2,26 @@ drop database if exists ZNLD_V4;
 create database ZNLD_V4 default character set utf8mb4 collate utf8mb4_unicode_ci;
 use ZNLD_V4;
 
+create table ministar_effect(
+    id int primary key auto_increment,
+    name varchar(50) not null,
+    type varchar(50) not null,
+    colors varchar(100) not null,
+    speed int not null,
+    brightness int not null,
+    organizationId varchar(32) not null
+);
+
+create table ministar_task(
+    id int primary key auto_increment,
+    area_id varchar(32) not null,
+    user_id varchar(32) not null,
+    area_type int not null comment '0表示针对街道区域的，1表示针对单个路灯的',
+    begin_time timestamp not null,
+    end_time timestamp not null,
+    status int not null comment '0表示等待中，1表示已经结束'
+);
+
 create table data_environment(
     id varchar(32) not null primary key,
     device_id int not null,

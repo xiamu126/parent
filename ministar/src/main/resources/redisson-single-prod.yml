@@ -5,10 +5,10 @@ singleServerConfig:
   timeout: 3000
   retryAttempts: 3
   retryInterval: 1500
-  password: 94f76e0864c411e980f50242ac110005
+  password: 03416eea7e484325bf9055206a4356df
   subscriptionsPerConnection: 5
   clientName: null
-  address: 'redis://znld-redis:6379'
+  address: 'redis://znld-redis-ministar:6379'
   subscriptionConnectionMinimumIdleSize: 1
   subscriptionConnectionPoolSize: 50
   connectionMinimumIdleSize: 32

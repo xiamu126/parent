@@ -8,4 +8,26 @@
     <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.MiniStarEffectModel">
         select * from ministar_effect where organization_id = #{organId}
     </select>
+    <delete id="deleteByIds" parameterType="java.util.List">
+        delete from ministar_effect where organization_id = #{organId} and id in
+        <foreach item="theId" index="index" collection="ids" open="(" separator="," close=")">
+            #{theId}
+        </foreach>
+    </delete>
+    <delete id="deleteById">
+        delete from ministar_effect where organization_id = #{organId} and id = #{id}
+    </delete>
+
+    <update id="update" parameterType="com.sybd.znld.model.lamp.MiniStarEffectModel">
+        update ministar_effect
+        <set>
+            <if test=" name != null and name != '' ">name = #{name},</if>
+            <if test=" type != null and type != '' ">type = #{type},</if>
+            <if test=" colors != null and colors != '' ">colors = #{colors},</if>
+            <if test=" speed != null and speed gt 0">speed = #{speed},</if>
+            <if test=" brightness != null and (brightness gte 0 and brightness lte 100) ">brightness = #{brightness},</if>
+            <if test=" organizationId != null and organizationId != '' ">organization_id = #{organizationId},</if>
+        </set>
+        where id = #{id};
+    </update>
 </mapper>

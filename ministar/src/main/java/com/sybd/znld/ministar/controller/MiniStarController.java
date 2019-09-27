@@ -1,25 +1,30 @@
 package com.sybd.znld.ministar.controller;
 
 import com.mongodb.client.MongoClient;
-import com.sybd.znld.mapper.lamp.LampMapper;
-import com.sybd.znld.mapper.lamp.MiniStarEffectMapper;
-import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
-import com.sybd.znld.mapper.lamp.RegionMapper;
+import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.ministar.Service.IMiniStarService;
 import com.sybd.znld.ministar.Service.IOneNetService;
+import com.sybd.znld.ministar.model.Subtitle;
 import com.sybd.znld.ministar.model.SubtitleForRegion;
+import com.sybd.znld.ministar.model.SubtitleForRegionPrepare;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.MiniStarEffectModel;
+import com.sybd.znld.model.lamp.MiniStarTaskModel;
 import com.sybd.znld.model.lamp.dto.MiniStarEffect;
+import com.sybd.znld.model.lamp.dto.MiniStarEffectForSave;
 import com.sybd.znld.model.lamp.dto.RegionWithLamps;
 import com.sybd.znld.model.onenet.Command;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
+import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.bson.Document;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +45,7 @@ import java.util.Map;
 @Api(tags = "灯带接口")
 @RestController
 @RequestMapping("/api/v1/ministar")
-public class MiniStarController {
+public class MiniStarController implements IMiniStarController{
     private final MongoClient mongoClient;
     private final RedissonClient redissonClient;
     private final OrganizationMapper organizationMapper;
@@ -50,6 +55,8 @@ public class MiniStarController {
     private final UserMapper userMapper;
     private final OneNetResourceMapper oneNetResourceMapper;
     private final IOneNetService oneNetService;
+    private final MiniStarTaskMapper miniStarTaskMapper;
+    private final IMiniStarService miniStarService;
 
     private static final List<String> TYPES = List.of("呼吸灯", "跑马灯", "闪烁灯");
 
@@ -63,7 +70,7 @@ public class MiniStarController {
                               MiniStarEffectMapper miniStarEffectMapper,
                               UserMapper userMapper,
                               OneNetResourceMapper oneNetResourceMapper,
-                              IOneNetService oneNetService) {
+                              IOneNetService oneNetService, MiniStarTaskMapper miniStarTaskMapper, IMiniStarService miniStarService) {
         this.mongoClient = mongoClient;
         this.redissonClient = redissonClient;
         this.organizationMapper = organizationMapper;
@@ -73,6 +80,8 @@ public class MiniStarController {
         this.userMapper = userMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.oneNetService = oneNetService;
+        this.miniStarTaskMapper = miniStarTaskMapper;
+        this.miniStarService = miniStarService;
     }
 
     @ApiOperation(value = "获取全部的灯带下发历史")
@@ -86,59 +95,64 @@ public class MiniStarController {
         }
     }
 
-    @ApiOperation(value = "新建灯带效果，针对区域街道的")
-    @PostMapping(value = "region", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public BaseApiResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody SubtitleForRegion subtitle, HttpServletRequest request) {
-        var result = new BaseApiResult();
-        if(subtitle == null || !subtitle.isValid()){
+    @Override
+    public ApiResult storeTask(String organId, SubtitleForRegionPrepare subtitles, HttpServletRequest request) {
+        var result = new ApiResult();
+        if(!MyString.isUuid(organId) || subtitles == null || !subtitles.isValid()){
             result.code = 1;
             result.msg = "参数错误";
             return result;
         }
-        var user = this.userMapper.selectById(subtitle.userId);
-        if(user == null) {
+        var tmp = this.regionMapper.selectByRegionIdAndOrganId(subtitles.regionId, organId);
+        if(tmp == null){
             result.code = 1;
             result.msg = "参数错误";
             return result;
         }
-        var region = this.regionMapper.selectById(subtitle.regionId);
-        if(region == null) {
+        var user = this.userMapper.selectById(subtitles.userId);
+        if(user == null){
             result.code = 1;
             result.msg = "参数错误";
             return result;
         }
-        var resource = this.oneNetResourceMapper.selectByCommandValue(Command.ZNLD_DD_EXECUTE);
-        if(resource == null) {
-            log.error("获取景观灯下发资源发生错误");
-            result.code = 1;
-            result.msg = "参数错误";
-            return result;
-        }
-        var lamps = this.lampMapper.selectByRegionId(subtitle.regionId);
-        if(lamps == null || lamps.isEmpty()) {
-            log.error("指定区域下未包含任何路灯");
-            result.code = 1;
-            result.msg = "参数错误";
-            return result;
-        }
-        var map = new HashMap<Integer, BaseApiResult>();
-        for (var lamp : lamps) {
-            var params = new CommandParams();
-            params.deviceId = lamp.deviceId;
-            params.imei = lamp.imei;
-            params.oneNetKey = resource.toOneNetKey();
-            params.timeout = resource.timeout;
-            params.command = subtitle.toString(); // "args":"1567003994,1567004001,1,50,2,FF00FF0000FF"
-            var ret = oneNetService.execute(params);
-            map.put(lamp.deviceId, new BaseApiResult(ret.errno, ret.error));
-        }
-        var errCount = 0;
-        for(var r : map.entrySet()){
-            if(!r.getValue().isOk()) errCount++;
+        for(var time : subtitles.times){
+            var model = new MiniStarTaskModel();
+            model.areaId = subtitles.regionId;
+            model.areaType = MiniStarTaskModel.AreaType.REGION;
+            model.userId = subtitles.userId;
+            model.organizationId = organId;
+            model.status = MiniStarTaskModel.TaskStatus.WAITING;
+            model.beginTime = MyDateTime.toLocalDateTime(time.beginTimestamp);
+            model.endTime = MyDateTime.toLocalDateTime(time.endTimestamp);
+            model.effectType = subtitles.getTypeName();
+            model.colors = subtitles.getColorsString();
+            model.speed = subtitles.speed;
+            model.brightness = subtitles.brightness;
+            model.title = subtitles.title;
+
+            var tmp2 = new SubtitleForRegion();
+            tmp2.title = subtitles.title;
+            tmp2.userId = subtitles.userId;
+            tmp2.regionId = subtitles.regionId;
+            tmp2.type = subtitles.type;
+            tmp2.speed = subtitles.speed;
+            tmp2.brightness = subtitles.brightness;
+            tmp2.colors = subtitles.colors;
+            tmp2.beginTimestamp = time.beginTimestamp;
+            tmp2.endTimestamp = time.endTimestamp;
+
+            model.cmd = tmp2.toString();
+            this.miniStarTaskMapper.insert(model);
         }
         result.code = 0;
-        result.msg = "下发成功，其中有"+errCount+"盏返回失败代码";
+        result.msg = "";
+        result.data = subtitles.times.size();
         return result;
+    }
+
+    @Override
+    public BaseApiResult newMiniStar(SubtitleForRegion subtitle, HttpServletRequest request) {
+        return this.miniStarService.newMiniStar(subtitle);
     }
 
     @ApiOperation(value = "新增（下发）灯带效果")
@@ -161,12 +175,8 @@ public class MiniStarController {
         c1.insertOne(subtitle);*/
     }
 
-    @ApiOperation(value = "获取所有有效区域")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "organId", value = "组织Id", required = true, dataType = "string", paramType = "path")
-    })
-    @GetMapping(value="tree/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public List<RegionWithLamps> getAllRegionWithValidLamp(@PathVariable(name = "organId")String organId, HttpServletRequest request) {
+    @Override
+    public List<RegionWithLamps> getAllRegionWithValidLamp(String organId, HttpServletRequest request) {
         if(!MyString.isUuid(organId)){
             log.debug("非法的组织id");
             return null;
@@ -195,15 +205,8 @@ public class MiniStarController {
         return result;
     }
 
-    @ApiOperation(value = "保存效果")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "organId", value = "组织Id", required = true, dataType = "string", paramType = "path"),
-            @ApiImplicitParam(name = "effects", value = "新建效果集", required = true, dataType = "list", paramType = "body")
-    })
-    @PostMapping(value="effect/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public BaseApiResult saveEffect(@PathVariable(name = "organId")String organId,
-                                    @RequestBody List<MiniStarEffect> effects, HttpServletRequest request){
-        var result = new BaseApiResult();
+    public ApiResult saveEffects(String organId, List<MiniStarEffectForSave> effects, HttpServletRequest request){
+        var result = new ApiResult();
         if(!MyString.isUuid(organId) || effects == null || effects.isEmpty()){
             result.code = 1;
             result.msg = "参数错误";
@@ -248,15 +251,81 @@ public class MiniStarController {
         }
         result.code = 0;
         result.msg = "";
+        result.data = effects.size();
         return result;
     }
 
-    @ApiOperation(value = "获取效果列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "organId", value = "组织Id", required = true, dataType = "string", paramType = "path")
-    })
-    @GetMapping(value="effect/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public ApiResult getEffects(@PathVariable(name = "organId")String organId){
+    @Override
+    public ApiResult modifyEffects(String organId, List<MiniStarEffect> effects, HttpServletRequest request) {
+        var result = new ApiResult();
+        if(!MyString.isUuid(organId) || effects == null || effects.isEmpty()){
+            result.code = 1;
+            result.msg = "参数错误";
+            return result;
+        }
+        for(var e : effects){
+            if(!MyNumber.isPositive(e.id)){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+            if(e.speed != null && e.speed <= 0){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+            if(e.brightness != null && e.brightness < 0){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+            if(e.type != null && !Subtitle.Type.isValid(e.type)){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+            if(e.colors != null){
+                if(!Subtitle.Rgb.isValid(e.colors)){
+                    result.code = 1;
+                    result.msg = "参数错误";
+                    return result;
+                }
+            }
+            if(e.name != null && e.name.equals("")){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+            if(e.name == null && e.brightness == null && e.speed == null && e.colors == null && e.type == null){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+        }
+        var organ = this.organizationMapper.selectById(organId);
+        if(organ == null){
+            result.code = 1;
+            result.msg = "参数错误";
+            return result;
+        }
+        for(var e : effects){
+            var model = new MiniStarEffectModel();
+            model.id = e.id;
+            model.name = e.name;
+            model.type = e.type;
+            model.colors = e.colors;
+            model.speed = e.speed;
+            model.brightness = e.brightness;
+            model.organizationId = organId;
+            this.miniStarEffectMapper.update(model);
+        }
+        result.code = 0;
+        result.msg = "";
+        result.data = effects.size();
+        return result;
+    }
+
+    public ApiResult getEffects(String organId){
         var result = new ApiResult();
         if(!MyString.isUuid(organId)){
             result.code = 1;
@@ -266,6 +335,7 @@ public class MiniStarController {
         var list = this.miniStarEffectMapper.selectByOrganId(organId);
         var data = list.stream().map(l -> {
             var tmp = new MiniStarEffect();
+            tmp.id = l.id;
             tmp.name = l.name;
             tmp.type = l.type;
             tmp.colors = l.colors;
@@ -276,6 +346,29 @@ public class MiniStarController {
         result.code = 0;
         result.msg = "";
         result.data = data;
+        return result;
+    }
+
+    @Override
+    public ApiResult removeEffects(String organId, Map<String, List<Integer>> data, HttpServletRequest request) {
+        var result = new ApiResult();
+        var effectIds = data.get("effectIds");
+        if(!MyString.isUuid(organId) || effectIds == null || effectIds.isEmpty()){
+            result.code = 1;
+            result.msg = "参数错误";
+            return result;
+        }
+        for(var id : effectIds){
+            if(!MyNumber.isPositive(id)){
+                result.code = 1;
+                result.msg = "参数错误";
+                return result;
+            }
+        }
+        var ret = this.miniStarEffectMapper.deleteByIds(organId, effectIds);
+        result.code = 0;
+        result.msg = "";
+        result.data = ret;
         return result;
     }
 }

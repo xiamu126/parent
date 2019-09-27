@@ -164,6 +164,22 @@ public class UserController implements IUserController {
 
                 return ApiResult.success(data);
             }
+            else{ // 这是用户名错误，也算累计
+                if(count == null){
+                    count = 1;
+                }else{
+                    count = count + 1;
+                }
+                log.debug("用户ip为："+userIp+";累计："+count);
+                this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS); // 延长错误记录的时间
+                if(count >= 3){
+                    var loginResult = new NeedCaptchaResult();
+                    loginResult.needCaptcha = true;
+                    return ApiResult.fail("用户名或密码错误", loginResult);
+                }else{
+                    return ApiResult.fail("用户名或密码错误");
+                }
+            }
         } catch (Exception ex) {
             log.error(ex.getMessage());
         }

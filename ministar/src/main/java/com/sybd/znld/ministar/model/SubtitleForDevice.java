@@ -17,7 +17,6 @@ public class SubtitleForDevice {
     public Integer brightness;
     public LocalDateTime beginTime;
     public LocalDateTime endTime;
-    public LocalDateTime triggerTime = LocalDateTime.now();
 
     public boolean isValid(){
         if(MyString.isEmptyOrNull(title)) return false;

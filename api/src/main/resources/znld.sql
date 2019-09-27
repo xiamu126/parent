@@ -9,7 +9,7 @@ create table ministar_effect(
     colors varchar(100) not null,
     speed int not null,
     brightness int not null,
-    organizationId varchar(32) not null
+    organization_id varchar(32) not null
 );
 
 create table ministar_task(
@@ -19,7 +19,14 @@ create table ministar_task(
     area_type int not null comment '0表示针对街道区域的，1表示针对单个路灯的',
     begin_time timestamp not null,
     end_time timestamp not null,
-    status int not null comment '0表示等待中，1表示已经结束'
+    status int not null comment '0表示等待中，1表示已经结束',
+    organization_id varchar(32) not null,
+    effect_type varchar(50) not null,
+    colors varchar(100) not null,
+    speed int not null,
+    brightness int not null,
+    title varchar(50) not null,
+    cmd varchar(1024) not null comment '具体的发送给硬件的指令'
 );
 
 create table data_environment(

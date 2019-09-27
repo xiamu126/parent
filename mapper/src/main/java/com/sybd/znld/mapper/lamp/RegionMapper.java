@@ -16,6 +16,7 @@ public interface RegionMapper {
     int insert(RegionModel model);
     RegionModel selectById(String id);
     RegionModel selectByName(String name);
+    RegionModel selectByRegionIdAndOrganId(@Param("regionId") String regionId, @Param("organId") String organId);
     List<RegionModel> selectAll();
     RegionModel selectOne();
     List<RegionModel> select(int count);

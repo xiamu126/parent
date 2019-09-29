@@ -74,7 +74,7 @@ public class DeviceController implements IDeviceController {
             var data = (result.getData().getDataStreams().get(0)).getDataPoints();
 
             var tmp = data.stream().collect(Collectors.groupingBy(d -> {
-                var time = LocalDateTime.parse(d.at, DateTimeFormatter.ofPattern(MyDateTime.format2));
+                var time = LocalDateTime.parse(d.at, DateTimeFormatter.ofPattern(MyDateTime.FORMAT2));
                 return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), time.getHour(), 0, 0);
             }));
 

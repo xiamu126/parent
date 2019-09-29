@@ -1,18 +1,14 @@
 package com.sybd.znld.ministar.task;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.MongoClient;
 import com.sybd.znld.mapper.lamp.MiniStarTaskMapper;
 import com.sybd.znld.ministar.Service.IMiniStarService;
 import com.sybd.znld.ministar.model.Subtitle;
+import com.sybd.znld.ministar.model.SubtitleForDevice;
 import com.sybd.znld.ministar.model.SubtitleForRegion;
 import com.sybd.znld.model.lamp.MiniStarTaskModel;
-import com.sybd.znld.model.onenet.Command;
-import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.Document;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +18,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Map;
 
 @Slf4j
@@ -65,19 +60,36 @@ public class MyScheduledTask {
                         var tmp = Duration.between(LocalDateTime.now(), task.beginTime);
                         if (tmp.toMinutes() < 3 && task.status.equals(MiniStarTaskModel.TaskStatus.WAITING)) {
                             log.debug("发现可执行的灯带任务");
-                            var model = new SubtitleForRegion();
-                            model.title = task.title;
-                            model.type = Subtitle.getTypeCode(task.effectType);
-                            model.userId = task.userId;
-                            model.regionId = task.areaId;
-                            model.speed = task.speed;
-                            model.brightness = task.brightness;
-                            model.colors = Subtitle.Rgb.getRgbs(task.colors);
-                            model.beginTimestamp = MyDateTime.toTimestamp(task.beginTime);
-                            model.endTimestamp = MyDateTime.toTimestamp(task.endTime);
-                            this.miniStarService.newMiniStar(model);
-                            task.status = MiniStarTaskModel.TaskStatus.FINISHED;
-                            this.miniStarTaskMapper.updateStatus(task);
+                            if(task.targetType.equals(MiniStarTaskModel.TargetType.REGION)){
+                                var model = new SubtitleForRegion();
+                                model.title = task.title;
+                                model.type = Subtitle.getTypeCode(task.effectType);
+                                model.userId = task.userId;
+                                model.regionId = task.targetId;
+                                model.speed = task.speed;
+                                model.brightness = task.brightness;
+                                model.colors = Subtitle.Rgb.getRgbs(task.colors);
+                                model.beginTimestamp = MyDateTime.toTimestamp(task.beginTime);
+                                model.endTimestamp = MyDateTime.toTimestamp(task.endTime);
+                                this.miniStarService.newMiniStar(model);
+                                task.status = MiniStarTaskModel.TaskStatus.FINISHED;
+                                this.miniStarTaskMapper.updateStatus(task);
+                            }
+                            if(task.targetType.equals(MiniStarTaskModel.TargetType.DEVICE)){
+                                var model = new SubtitleForDevice();
+                                model.title = task.title;
+                                model.type = Subtitle.getTypeCode(task.effectType);
+                                model.userId = task.userId;
+                                model.deviceId = MyNumber.getInteger(task.targetId);
+                                model.speed = task.speed;
+                                model.brightness = task.brightness;
+                                model.colors = Subtitle.Rgb.getRgbs(task.colors);
+                                model.beginTimestamp = MyDateTime.toTimestamp(task.beginTime);
+                                model.endTimestamp = MyDateTime.toTimestamp(task.endTime);
+                                this.miniStarService.newMiniStar(model);
+                                task.status = MiniStarTaskModel.TaskStatus.FINISHED;
+                                this.miniStarTaskMapper.updateStatus(task);
+                            }
                         }
                     }
                 }

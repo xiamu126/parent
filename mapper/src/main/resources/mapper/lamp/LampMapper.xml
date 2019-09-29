@@ -9,6 +9,25 @@
         values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status});
     </insert>
 
+    <select id="selectLampSummary" resultType="com.sybd.znld.model.lamp.dto.LampSummary">
+        select d.id as organId, d.name as organName, count(*) as lampCount
+        from lamp as a
+        left join lamp_region as b on b.lamp_id = a.id
+        left join region as c on c.id = b.region_id
+        left join RBAC_V2.organization as d on d.id = c.organization_id
+        where a.status = 0
+        group by d.id, d.name order by lampCount desc;
+    </select>
+
+    <select id="selectEnvironmentLampByOrganId" resultType="com.sybd.znld.model.lamp.LampModel">
+        select a.*
+        from lamp as a
+        left join lamp_region as b on b.lamp_id = a.id
+        left join region as c on c.id = b.region_id
+        left join RBAC_V2.organization as d on d.id = c.organization_id
+        where a.status = 0 and a.environment = true and d.id = #{organId};
+    </select>
+
     <select id="selectByDeviceId" resultType="com.sybd.znld.model.lamp.LampModel">
         select * from lamp where device_id=#{_parameter}
     </select>

@@ -132,8 +132,8 @@ public class MapperTest {
     @Test
     public void test10(){
         var model = new MiniStarTaskModel();
-        model.areaId = "5aa2ac64883611e9a7fe0242c0a8b002";
-        model.areaType = 0;
+        model.targetId = "5aa2ac64883611e9a7fe0242c0a8b002";
+        model.targetType = 0;
         model.userId = "c9a45d5d972011e9b0790242c0a8b006";
         model.beginTime = LocalDateTime.now().plusMinutes(30);
         model.endTime = LocalDateTime.now().plusMinutes(60);
@@ -163,5 +163,11 @@ public class MapperTest {
         model.type = "呼吸灯";
         var tmp = this.miniStarEffectMapper.update(model);
         Assert.assertTrue(tmp > 0);
+    }
+
+    @Test
+    public void test14(){
+        var ret = this.miniStarEffectMapper.selectByOrganIdAndName("099060a6971911e9b0790242c0a8b006", "测试景观灯效果9");
+        Assert.assertNotNull(ret);
     }
 }

@@ -15,6 +15,10 @@ public interface IRegionController {
     // 获取某个组织的可能的环境监测点
     @GetMapping(value="{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     List<LampWithLocation> getRegionOfEnvironmentList(@PathVariable(name = "organId") String organId);
+
+    // 获取某个分平台的AQI（时报）
+    @GetMapping(value="report/aqi/organ/{organId}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    AQIResult getAQILastHourOfOrgan(@PathVariable(name = "organId") String organId);
     // 获取某个监测点的AQI（时报）
     @GetMapping(value="report/aqi/{deviceId}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     AQIResult getAQILastHourOfDevice(@PathVariable(name = "deviceId") Integer deviceId);

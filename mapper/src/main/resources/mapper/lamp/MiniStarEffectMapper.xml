@@ -5,9 +5,15 @@
         insert into ministar_effect(name, type, colors, speed, brightness, organization_id)
         values (#{name}, #{type}, #{colors}, #{speed}, #{brightness}, #{organizationId});
     </insert>
+
     <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.MiniStarEffectModel">
-        select * from ministar_effect where organization_id = #{organId}
+        select * from ministar_effect where organization_id = #{organId} order by id desc
     </select>
+
+    <select id="selectByOrganIdAndName" resultType="com.sybd.znld.model.lamp.MiniStarEffectModel">
+        select * from ministar_effect where organization_id =  #{organId} and name = #{name}
+    </select>
+
     <delete id="deleteByIds" parameterType="java.util.List">
         delete from ministar_effect where organization_id = #{organId} and id in
         <foreach item="theId" index="index" collection="ids" open="(" separator="," close=")">

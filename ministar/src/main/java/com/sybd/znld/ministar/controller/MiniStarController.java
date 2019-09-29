@@ -6,9 +6,7 @@ import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.ministar.Service.IMiniStarService;
 import com.sybd.znld.ministar.Service.IOneNetService;
-import com.sybd.znld.ministar.model.Subtitle;
-import com.sybd.znld.ministar.model.SubtitleForRegion;
-import com.sybd.znld.ministar.model.SubtitleForRegionPrepare;
+import com.sybd.znld.ministar.model.*;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.MiniStarEffectModel;
@@ -16,16 +14,11 @@ import com.sybd.znld.model.lamp.MiniStarTaskModel;
 import com.sybd.znld.model.lamp.dto.MiniStarEffect;
 import com.sybd.znld.model.lamp.dto.MiniStarEffectForSave;
 import com.sybd.znld.model.lamp.dto.RegionWithLamps;
-import com.sybd.znld.model.onenet.Command;
-import com.sybd.znld.model.onenet.dto.CommandParams;
-import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
-import org.bson.Document;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -35,9 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Validation;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,8 +108,8 @@ public class MiniStarController implements IMiniStarController{
         }
         for(var time : subtitles.times){
             var model = new MiniStarTaskModel();
-            model.areaId = subtitles.regionId;
-            model.areaType = MiniStarTaskModel.AreaType.REGION;
+            model.targetId = subtitles.regionId;
+            model.targetType = MiniStarTaskModel.TargetType.REGION;
             model.userId = subtitles.userId;
             model.organizationId = organId;
             model.status = MiniStarTaskModel.TaskStatus.WAITING;
@@ -151,28 +142,63 @@ public class MiniStarController implements IMiniStarController{
     }
 
     @Override
-    public BaseApiResult newMiniStar(SubtitleForRegion subtitle, HttpServletRequest request) {
-        return this.miniStarService.newMiniStar(subtitle);
+    public ApiResult storeTaskForDevice(String organId, SubtitleForDevicePrepare subtitles, HttpServletRequest request) {
+        var result = new ApiResult();
+        if(!MyString.isUuid(organId) || subtitles == null || !subtitles.isValid()){
+            result.code = 1;
+            result.msg = "参数错误";
+            return result;
+        }
+        var device = this.lampMapper.selectByDeviceId(subtitles.deviceId);
+        if(device == null) {
+            result.code = 1;
+            result.msg = "参数错误";
+            return result;
+        }
+        var user = this.userMapper.selectById(subtitles.userId);
+        if(user == null){
+            result.code = 1;
+            result.msg = "参数错误";
+            return result;
+        }
+        for(var time : subtitles.times){
+            var model = new MiniStarTaskModel();
+            model.targetId = subtitles.deviceId.toString();
+            model.targetType = MiniStarTaskModel.TargetType.DEVICE;
+            model.userId = subtitles.userId;
+            model.organizationId = organId;
+            model.status = MiniStarTaskModel.TaskStatus.WAITING;
+            model.beginTime = MyDateTime.toLocalDateTime(time.beginTimestamp);
+            model.endTime = MyDateTime.toLocalDateTime(time.endTimestamp);
+            model.effectType = subtitles.getTypeName();
+            model.colors = subtitles.getColorsString();
+            model.speed = subtitles.speed;
+            model.brightness = subtitles.brightness;
+            model.title = subtitles.title;
+
+            var tmp2 = new SubtitleForDevice();
+            tmp2.title = subtitles.title;
+            tmp2.userId = subtitles.userId;
+            tmp2.deviceId = subtitles.deviceId;
+            tmp2.type = subtitles.type;
+            tmp2.speed = subtitles.speed;
+            tmp2.brightness = subtitles.brightness;
+            tmp2.colors = subtitles.colors;
+            tmp2.beginTimestamp = time.beginTimestamp;
+            tmp2.endTimestamp = time.endTimestamp;
+
+            model.cmd = tmp2.toString();
+            this.miniStarTaskMapper.insert(model);
+        }
+        result.code = 0;
+        result.msg = "";
+        result.data = subtitles.times.size();
+        return result;
     }
 
-    @ApiOperation(value = "新增（下发）灯带效果")
-    @PostMapping(produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    public void newMiniStar(){
-       /* var subtitle = new SubtitleForRegion();
-        subtitle.beginTime = LocalDateTime.now().plusMinutes(10);
-        subtitle.endTime = LocalDateTime.now().plusMinutes(30);
-        subtitle.regionId = "5aa2ac64883611e9a7fe0242c0a8b002";
-        subtitle.colors = List.of(new SubtitleForRegion.Rgb(123,123,123),new SubtitleForRegion.Rgb(123,123,123),new SubtitleForRegion.Rgb(123,123,123));
-        subtitle.speed = 10;
-        subtitle.brightness = 20;
-        subtitle.creatorId = "c9a45d5d972011e9b0790242c0a8b006";
-        subtitle.type = SubtitleForRegion.Type.HX;
-
-        var db = mongoClient.getDatabase( "test" );
-        var c1 = db.getCollection("com.sybd.znld.ministar", SubtitleForRegion.class);
-        var d1 = new Document();
-        d1.append("twinkle_beauty", subtitle);
-        c1.insertOne(subtitle);*/
+    @Override
+    public BaseApiResult newMiniStar(SubtitleForRegion subtitle, HttpServletRequest request) {
+        return this.miniStarService.newMiniStar(subtitle);
     }
 
     @Override
@@ -239,7 +265,13 @@ public class MiniStarController implements IMiniStarController{
             result.msg = "参数错误";
             return result;
         }
+        var errCount = 0;
         for(var e : effects){
+            var tmp = this.miniStarEffectMapper.selectByOrganIdAndName(organId, e.name);
+            if(tmp != null){
+                errCount++;
+                continue;
+            }
             var model = new MiniStarEffectModel();
             model.name = e.name;
             model.type = e.type;
@@ -251,7 +283,7 @@ public class MiniStarController implements IMiniStarController{
         }
         result.code = 0;
         result.msg = "";
-        result.data = effects.size();
+        result.data = effects.size() - errCount;
         return result;
     }
 
@@ -308,7 +340,13 @@ public class MiniStarController implements IMiniStarController{
             result.msg = "参数错误";
             return result;
         }
+        var errCount = 0;
         for(var e : effects){
+            var tmp = this.miniStarEffectMapper.selectByOrganIdAndName(organId, e.name);
+            if(tmp != null){
+                errCount++;
+                continue;
+            }
             var model = new MiniStarEffectModel();
             model.id = e.id;
             model.name = e.name;
@@ -321,7 +359,7 @@ public class MiniStarController implements IMiniStarController{
         }
         result.code = 0;
         result.msg = "";
-        result.data = effects.size();
+        result.data = effects.size() - errCount;
         return result;
     }
 

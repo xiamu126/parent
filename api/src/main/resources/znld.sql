@@ -100,7 +100,7 @@ create table lamp(
   device_name          varchar(50) not null  comment '路灯名字',
   longitude            varchar(20) not null default '' comment '经度',
   latitude             varchar(20) not null default '' comment '纬度',
-  status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废',
+  status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废, 3：为虚拟路灯',
   x_angle              float not null default 0 comment '倾斜状态',
   y_angle              float not null default 0 comment '倾斜状态',
   link_to              int not null default 0 comment '',

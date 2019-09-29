@@ -11,10 +11,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class SubtitleForRegion extends Subtitle implements Serializable {
+    public String regionId;
     public Long beginTimestamp;
     public Long endTimestamp;
 
     public boolean isValid(){
+        if(!MyString.isUuid(regionId)) return false;
         if(!MyDateTime.isAllFutureAndStrict(beginTimestamp, endTimestamp)) return false;
         return super.isValid();
     }

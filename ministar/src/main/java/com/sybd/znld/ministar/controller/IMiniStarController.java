@@ -1,5 +1,6 @@
 package com.sybd.znld.ministar.controller;
 
+import com.sybd.znld.ministar.model.SubtitleForDevicePrepare;
 import com.sybd.znld.ministar.model.SubtitleForRegion;
 import com.sybd.znld.ministar.model.SubtitleForRegionPrepare;
 import com.sybd.znld.model.ApiResult;
@@ -24,6 +25,11 @@ public interface IMiniStarController {
     @PostMapping(value="region/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     ApiResult storeTask(@PathVariable(name = "organId")String organId,
                         @ApiParam(value = "具体的指令集", required = true) @RequestBody SubtitleForRegionPrepare subtitles, HttpServletRequest request);
+
+    @ApiOperation(value = "预存灯带节目，针对单个路灯")
+    @PostMapping(value="region/{organId:^[0-9a-f]{32}$}/device", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    ApiResult storeTaskForDevice(@PathVariable(name = "organId")String organId,
+                                 @ApiParam(value = "具体的指令集", required = true) @RequestBody SubtitleForDevicePrepare subtitles, HttpServletRequest request);
 
     @ApiOperation(value = "新建灯带效果，针对区域街道的")
     @PostMapping(value = "region", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})

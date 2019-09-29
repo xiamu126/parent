@@ -15,7 +15,7 @@ import java.util.List;
 public class Subtitle implements Serializable {
     public String title;
     public String userId;
-    public String regionId;
+    //public String regionId;
     public Integer type;
     public List<Rgb> colors;
     public Integer speed;
@@ -49,7 +49,7 @@ public class Subtitle implements Serializable {
     public boolean isValid(){
         if(MyString.isEmptyOrNull(title)) return false;
         else if(!MyString.isUuid(userId)) return false;
-        else if(!MyString.isUuid(regionId)) return false;
+        //else if(!MyString.isUuid(regionId)) return false;
         else if(!Subtitle.Type.isValid(type)) return false;
         else if(!MyNumber.isPositive(speed)) return false;
         else if(brightness < 0 || brightness > 100) return false;

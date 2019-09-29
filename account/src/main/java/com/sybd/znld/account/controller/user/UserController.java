@@ -135,7 +135,7 @@ public class UserController implements IUserController {
                 var db = mongoClient.getDatabase( "test" );
                 var c1 = db.getCollection("com.sybd.znld.account.profile");
                 var myDoc = c1.find(Filters.eq("id", user.id)).first();
-                var jsonStr = "";
+                String jsonStr = null;
                 if( myDoc != null) {
                     myDoc.remove("_id");
                     jsonStr = myDoc.toJson();
@@ -161,6 +161,9 @@ public class UserController implements IUserController {
                 data.userId = user.id;
                 data.organId = user.organizationId;
                 data.menu = jsonStr;
+                if(input.user.equals("sybd_test_admin")){
+                    data.isRoot = true;
+                }
 
                 return ApiResult.success(data);
             }

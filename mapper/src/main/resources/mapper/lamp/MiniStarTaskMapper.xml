@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.MiniStarTaskMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.MiniStarTaskModel">
-        insert into ministar_task(area_id, user_id, area_type, begin_time, end_time, status, organization_id, cmd, effect_type, colors, speed, brightness, title)
-        values (#{areaId}, #{userId}, #{areaType}, #{beginTime}, #{endTime}, #{status}, #{organizationId}, #{cmd}, #{effectType}, #{colors}, #{speed}, #{brightness}, #{title});
+        insert into ministar_task(target_id, user_id, target_type, begin_time, end_time, status, organization_id, cmd, effect_type, colors, speed, brightness, title)
+        values (#{targetId}, #{userId}, #{targetType}, #{beginTime}, #{endTime}, #{status}, #{organizationId}, #{cmd}, #{effectType}, #{colors}, #{speed}, #{brightness}, #{title});
     </insert>
     <select id="selectByStatusWaitingAndOrganId" resultType="com.sybd.znld.model.lamp.MiniStarTaskModel">
         select * from ministar_task where organization_id = #{organId} and status = 0;

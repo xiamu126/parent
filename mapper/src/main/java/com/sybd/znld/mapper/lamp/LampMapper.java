@@ -14,6 +14,8 @@ import java.util.List;
 @DbSource("znld")
 public interface LampMapper {
     int insert(LampModel model);
+    List<LampSummary> selectLampSummary();
+    List<LampModel> selectEnvironmentLampByOrganId(String organId);
     LampModel selectById(String lampId);
     LampModel selectByDeviceId(Integer deviceId);
     LampModel selectByDeviceName(String deviceName);

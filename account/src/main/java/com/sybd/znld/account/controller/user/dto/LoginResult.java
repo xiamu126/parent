@@ -25,4 +25,5 @@ public class LoginResult {
     public Long now = MyDateTime.toTimestamp(LocalDateTime.now());
     @ApiModelProperty(value = "目录数据")
     public Object menu;
+    public Boolean isRoot = false;
 }

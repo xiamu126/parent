@@ -1,5 +1,6 @@
 package com.sybd.znld.environment;
 
+import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -30,6 +31,9 @@ public class MapperTest {
     @Autowired
     private RegionMapper regionMapper;
 
+    @Autowired
+    private LampMapper lampMapper;
+
     @Test
     public void test1(){
         var map = this.regionMapper.selectAvgOfEnvironmentElementLastDayByDeviceId(533263283);
@@ -49,5 +53,17 @@ public class MapperTest {
         var begin = end.minusHours(1);
         var list = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(533263283, begin, end);
         Assert.notNull(list);
+    }
+
+    @Test
+    public void test4(){
+        var tmp = this.lampMapper.selectEnvironmentLampByOrganId("099060a6971911e9b0790242c0a8b006");
+        Assert.notNull(tmp);
+    }
+
+    @Test
+    public void test5(){
+        var tmp = this.lampMapper.selectLampSummary();
+        Assert.notNull(tmp);
     }
 }

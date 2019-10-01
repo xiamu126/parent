@@ -4,34 +4,29 @@ import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class SubtitleForDevice {
-    public String title;
-    public String userId;
-    public String deviceId;
-    public Integer type;
-    public List<SubtitleForRegion.Rgb> colors;
-    public Integer speed;
-    public Integer brightness;
-    public LocalDateTime beginTime;
-    public LocalDateTime endTime;
-    public LocalDateTime triggerTime = LocalDateTime.now();
+public class SubtitleForDevice extends Subtitle implements Serializable {
+    public Integer deviceId;
+    public Long beginTimestamp;
+    public Long endTimestamp;
 
     public boolean isValid(){
-        if(MyString.isEmptyOrNull(title)) return false;
-        else if(!MyString.isUuid(userId)) return false;
-        else if(!MyNumber.isPositive(deviceId)) return false;
-        else if(!SubtitleForRegion.Type.isValid(type)) return false;
-        else if(MyNumber.isPositive(speed)) return false;
-        else if(brightness < 0 || brightness > 100) return false;
-        else if(!MyDateTime.isAllFutureAndStrict(beginTime, endTime)) return false;
-        else {
-            for(var c : colors){
-                if(!c.isValid()) return false;
-            }
-        }
-        return true;
+        if(!MyNumber.isPositive(deviceId)) return false;
+        if(!MyDateTime.isAllFutureAndStrict(beginTimestamp, endTimestamp)) return false;
+        return super.isValid();
+    }
+
+    @Override
+    public String toString() { // 1567138545,1567673548,1,10,3,5500000000EE00EE00
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.beginTimestamp / 1000); // 毫秒时间戳转换为秒时间戳
+        builder.append(",");
+        builder.append(this.endTimestamp / 1000); // 毫秒时间戳转换为秒时间戳
+        builder.append(",");
+        builder.append(super.toString());
+        return builder.toString();
     }
 }

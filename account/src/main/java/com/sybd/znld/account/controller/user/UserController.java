@@ -135,7 +135,7 @@ public class UserController implements IUserController {
                 var db = mongoClient.getDatabase( "test" );
                 var c1 = db.getCollection("com.sybd.znld.account.profile");
                 var myDoc = c1.find(Filters.eq("id", user.id)).first();
-                var jsonStr = "";
+                String jsonStr = null;
                 if( myDoc != null) {
                     myDoc.remove("_id");
                     jsonStr = myDoc.toJson();
@@ -161,8 +161,27 @@ public class UserController implements IUserController {
                 data.userId = user.id;
                 data.organId = user.organizationId;
                 data.menu = jsonStr;
+                if(input.user.equals("sybd_test_admin")){
+                    data.isRoot = true;
+                }
 
                 return ApiResult.success(data);
+            }
+            else{ // 这是用户名错误，也算累计
+                if(count == null){
+                    count = 1;
+                }else{
+                    count = count + 1;
+                }
+                log.debug("用户ip为："+userIp+";累计："+count);
+                this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS); // 延长错误记录的时间
+                if(count >= 3){
+                    var loginResult = new NeedCaptchaResult();
+                    loginResult.needCaptcha = true;
+                    return ApiResult.fail("用户名或密码错误", loginResult);
+                }else{
+                    return ApiResult.fail("用户名或密码错误");
+                }
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());

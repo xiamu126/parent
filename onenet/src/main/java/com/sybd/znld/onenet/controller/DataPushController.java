@@ -112,7 +112,7 @@ public class DataPushController {
                             if(value != null){
                                 log.debug("当前获取的资源为："+name+";数值为"+value);
                                 if(at != null){
-                                    log.debug("更新时间为"+ MyDateTime.toString(at, MyDateTime.format1));
+                                    log.debug("更新时间为"+ MyDateTime.toString(at, MyDateTime.FORMAT1));
                                 }else{
                                     log.debug("更新时间为空");
                                 }

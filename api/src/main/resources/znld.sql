@@ -9,7 +9,7 @@ create table ministar_effect(
     colors varchar(100) not null,
     speed int not null,
     brightness int not null,
-    organizationId varchar(32) not null
+    organization_id varchar(32) not null
 );
 
 create table ministar_task(
@@ -19,7 +19,14 @@ create table ministar_task(
     area_type int not null comment '0表示针对街道区域的，1表示针对单个路灯的',
     begin_time timestamp not null,
     end_time timestamp not null,
-    status int not null comment '0表示等待中，1表示已经结束'
+    status int not null comment '0表示等待中，1表示已经结束',
+    organization_id varchar(32) not null,
+    effect_type varchar(50) not null,
+    colors varchar(100) not null,
+    speed int not null,
+    brightness int not null,
+    title varchar(50) not null,
+    cmd varchar(1024) not null comment '具体的发送给硬件的指令'
 );
 
 create table data_environment(
@@ -93,7 +100,7 @@ create table lamp(
   device_name          varchar(50) not null  comment '路灯名字',
   longitude            varchar(20) not null default '' comment '经度',
   latitude             varchar(20) not null default '' comment '纬度',
-  status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废',
+  status               tinyint not null default 0  comment '0：路灯正常运行中，1：路灯处于故障状态，2：路灯报废, 3：为虚拟路灯',
   x_angle              float not null default 0 comment '倾斜状态',
   y_angle              float not null default 0 comment '倾斜状态',
   link_to              int not null default 0 comment '',

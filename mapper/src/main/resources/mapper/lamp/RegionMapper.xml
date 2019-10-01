@@ -14,6 +14,9 @@
     <select id="selectByName" resultType="com.sybd.znld.model.lamp.RegionModel">
         select * from region where name = #{_parameter};
     </select>
+    <select id="selectByRegionIdAndOrganId" resultType="com.sybd.znld.model.lamp.RegionModel">
+        select * from region where id = #{regionId} and organization_id = #{organId}
+    </select>
     <select id="selectAll" resultType="com.sybd.znld.model.lamp.RegionModel">
         select * from region;
     </select>

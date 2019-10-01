@@ -458,8 +458,8 @@ public class DeviceControllerTest {
         var deviceId = 528130535;
         var deviceSubtitle = new Subtitle();
         deviceSubtitle.action = Subtitle.Action.SAVE;
-        deviceSubtitle.beginTimestamp = MyDateTime.toTimestamp("2019-07-12 11:41:01", MyDateTime.format1);
-        deviceSubtitle.endTimestamp = MyDateTime.toTimestamp("2019-07-12 13:41:01", MyDateTime.format1);
+        deviceSubtitle.beginTimestamp = MyDateTime.toTimestamp("2019-07-12 11:41:01", MyDateTime.FORMAT1);
+        deviceSubtitle.endTimestamp = MyDateTime.toTimestamp("2019-07-12 13:41:01", MyDateTime.FORMAT1);
         deviceSubtitle.deviceId = deviceId;
         var effect = new Subtitle.Effect();
         effect.type = Subtitle.Effect.Type.HX;

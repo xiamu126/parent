@@ -2,10 +2,7 @@ package com.sybd.znld.model.lamp.dto;
 
 import javax.validation.constraints.*;
 
-public class MiniStarEffect {
-    @Positive
-    @NotNull
-    public Integer id;
+public class MiniStarEffectForSave {
     @NotEmpty
     public String name;
     @NotEmpty

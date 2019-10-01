@@ -4,10 +4,12 @@ import com.sybd.znld.environment.service.AQI;
 import com.sybd.znld.environment.service.dto.AQIResult;
 import com.sybd.znld.environment.service.dto.AVGResult;
 import com.sybd.znld.mapper.lamp.DataLocationMapper;
+import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.lamp.dto.ElementAvgResult;
 import com.sybd.znld.model.lamp.dto.LampWithLocation;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyString;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +32,15 @@ import java.util.Map;
 public class RegionController implements IRegionController {
     private final RegionMapper regionMapper;
     private final DataLocationMapper dataLocationMapper;
+    private final LampMapper lampMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public RegionController(RegionMapper regionMapper,
-                            DataLocationMapper dataLocationMapper) {
+                            DataLocationMapper dataLocationMapper, LampMapper lampMapper) {
         this.regionMapper = regionMapper;
         this.dataLocationMapper = dataLocationMapper;
+        this.lampMapper = lampMapper;
     }
 
     @Override
@@ -54,6 +58,30 @@ public class RegionController implements IRegionController {
 
             result.add(lampWithLocation);
         }
+        return result;
+    }
+
+    @Override
+    public AQIResult getAQILastHourOfOrgan(String organId) {
+        if(!MyString.isUuid(organId)) return null;
+        var lamps = this.lampMapper.selectEnvironmentLampByOrganId(organId);
+        if(lamps == null || lamps.isEmpty()) return null;
+        List<AQIResult> values = new ArrayList<>();
+        for(var l : lamps){
+            var ret = this.getAQILastHourOfDevice(l.deviceId);
+            if(ret != null){
+                values.add(ret);
+            }
+        }
+        if(values.isEmpty()) return null;
+        var value = values.stream().mapToDouble(v -> v.value).average().orElse(0);
+        var result = new AQIResult();
+        var nf = NumberFormat.getNumberInstance();
+        nf.setMaximumFractionDigits(2);
+        result.value = Float.parseFloat(nf.format(value));
+        result.describe = null;
+        result.primary = null;
+        result.at = values.get(0).at;
         return result;
     }
 

@@ -7,7 +7,7 @@ public class MiniStarEffectModel implements Serializable {
     public String name;
     public String type;
     public String colors;
-    public Integer speed;
-    public Integer brightness;
+    public Integer speed = null;
+    public Integer brightness = null;
     public String organizationId;
 }

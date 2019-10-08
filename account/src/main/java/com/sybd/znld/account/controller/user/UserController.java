@@ -161,7 +161,7 @@ public class UserController implements IUserController {
                 data.userId = user.id;
                 data.organId = user.organizationId;
                 data.menu = jsonStr;
-                if(input.user.equals("sybd_test_admin")){
+                if(input.user.equals("sybd_test_admin") || input.user.equals("sybd_test_user")){
                     data.isRoot = true;
                 }
 

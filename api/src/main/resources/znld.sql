@@ -26,7 +26,8 @@ create table ministar_task(
     speed int not null,
     brightness int not null,
     title varchar(50) not null,
-    cmd varchar(1024) not null comment '具体的发送给硬件的指令'
+    cmd varchar(1024) not null comment '具体的发送给硬件的指令',
+    trigger_time timestamp not null default CURRENT_TIMESTAMP comment '发生时间'
 );
 
 create table data_environment(

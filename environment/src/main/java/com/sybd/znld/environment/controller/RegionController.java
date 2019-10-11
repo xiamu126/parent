@@ -8,14 +8,20 @@ import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.lamp.dto.ElementAvgResult;
 import com.sybd.znld.model.lamp.dto.LampWithLocation;
+import com.sybd.znld.service.ISigService;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MySignature;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.Reference;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -33,18 +39,26 @@ public class RegionController implements IRegionController {
     private final RegionMapper regionMapper;
     private final DataLocationMapper dataLocationMapper;
     private final LampMapper lampMapper;
+    private final RedissonClient accountRedis;
+
+    @Reference(url = "dubbo://localhost:18085")
+    private ISigService sigService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public RegionController(RegionMapper regionMapper,
-                            DataLocationMapper dataLocationMapper, LampMapper lampMapper) {
+                            DataLocationMapper dataLocationMapper, LampMapper lampMapper,
+                            @Qualifier("account-redis") RedissonClient accountRedis) {
         this.regionMapper = regionMapper;
         this.dataLocationMapper = dataLocationMapper;
         this.lampMapper = lampMapper;
+        this.accountRedis = accountRedis;
     }
 
     @Override
-    public List<LampWithLocation> getRegionOfEnvironmentList(String organId) {
+    public List<LampWithLocation> getRegionOfEnvironmentList(String organId, HttpServletRequest request) {
+        var ret = this.sigService.checkSig(null,null,null,null,null);
+        log.debug(ret.toString());
         var lamps = this.regionMapper.selectLampsOfEnvironment(organId);
         var result = new ArrayList<LampWithLocation>();
         var lampWithLocation = new LampWithLocation();
@@ -59,6 +73,23 @@ public class RegionController implements IRegionController {
             result.add(lampWithLocation);
         }
         return result;
+    }
+
+    @GetMapping(value="{organId:^[0-9a-f]{32}$}/2", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public List<LampWithLocation> getRegionOfEnvironmentList2(@PathVariable(name = "organId") String organId,
+                                                              @RequestHeader("now") Long now,
+                                                              @RequestHeader("nonce") String nonce,
+                                                              @RequestHeader("sig") String sig,
+                                                              @RequestHeader("key") String secretKey) {
+        try{
+            var data = new HashMap<String, String>();
+            data.put("organId", organId);
+            MySignature.generate(data, "secretKey");
+        }catch (Exception ex){
+        }
+        finally {
+        }
+        return null;
     }
 
     @Override

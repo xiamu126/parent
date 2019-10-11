@@ -13,9 +13,8 @@ import com.sybd.znld.account.service.IUserService;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
-import com.sybd.znld.util.MyDateTime;
-import com.sybd.znld.util.MyIp;
-import com.sybd.znld.util.MyString;
+import com.sybd.znld.service.ISigService;
+import com.sybd.znld.util.*;
 import com.wf.captcha.SpecCaptcha;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -49,6 +47,7 @@ public class UserController implements IUserController {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
     private final MongoClient mongoClient;
     private final ProjectConfig projectConfig;
+    private final ISigService sigService;
 
     @Value("${security.oauth2.client.client-id}")
     private String clientId;
@@ -71,13 +70,15 @@ public class UserController implements IUserController {
     @Value("${project.captcha.length}")
     private Integer length;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public UserController(IUserService userService,
-                          RedissonClient redissonClient, MongoClient mongoClient, ProjectConfig projectConfig) {
+                          RedissonClient redissonClient, MongoClient mongoClient, ProjectConfig projectConfig, ISigService sigService) {
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.mongoClient = mongoClient;
         this.projectConfig = projectConfig;
+        this.sigService = sigService;
     }
 
     @ApiOperation(value = "获取验证码")
@@ -89,16 +90,69 @@ public class UserController implements IUserController {
         while(redissonClient.getBucket(verCode).isExists()){
             verCode = specCaptcha.text().toLowerCase();
         }
-        redissonClient.getBucket(verCode).set("", this.captchaExpirationTime.toSeconds(), TimeUnit.SECONDS);
+        var tmp = redissonClient.getBucket(verCode);
+        var captchaExpirationTime = this.captchaExpirationTime.toSeconds();
+        tmp.set("", captchaExpirationTime, TimeUnit.SECONDS);
         return specCaptcha.toBase64();
     }
 
     @ApiOperation(value = "登入")
-    @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    @Override
-    public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
-                             HttpServletRequest request, BindingResult bindingResult){
+    @PostMapping(value = "login2", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public ApiResult login2(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
+                           @RequestHeader("now") Long now,
+                           @RequestHeader("nonce") String nonce,
+                           @RequestHeader("sig") String sig,
+                           @RequestHeader("key") String secretKey,
+                           HttpServletRequest request, BindingResult bindingResult){
         try {
+            /*if(input == null || MyString.isEmptyOrNull(nonce) || MyString.isEmptyOrNull(sig)){
+                log.debug("传入的参数错误");
+                return ApiResult.fail("参数错误");
+            }
+            var theNow = MyDateTime.toLocalDateTime(now);
+            if(theNow == null){
+                log.debug("传入的时间戳错误");
+                return ApiResult.fail("参数错误");
+            }
+            var d = Duration.between(LocalDateTime.now(), theNow);
+            if(Math.abs(d.toSeconds()) >= 30){ // 超过30秒
+                log.debug("时差超过指定值");
+                return ApiResult.fail("参数错误");
+            }
+            if(!this.redissonClient.getBucket(secretKey).isExists()){
+                log.debug("secretKey不存在");
+                return ApiResult.fail("非法key");
+            }
+            if(this.redissonClient.getBucket(nonce).isExists()){
+                log.debug("nonce存在，重复的请求");
+                return ApiResult.fail("重复请求");
+            }else {
+                this.redissonClient.getBucket(nonce).set("", 3, TimeUnit.MINUTES);
+            }
+            var theSig = MySignature.generate(input.toMap(), secretKey);
+            log.debug(theSig);
+            if(!theSig.equals(sig)){
+                log.debug("签名错误");
+                return ApiResult.fail("签名错误");
+            }*/
+            var ret = this.sigService.checkSig(input.toMap(), secretKey, now,nonce,sig);
+            if(ret.isOk()) return login(input, request, bindingResult);
+            return ret;
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+        }
+        return ApiResult.fail("用户名或密码错误");
+    }
+
+    @ApiOperation(value = "登入")
+    @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
+                           HttpServletRequest request, BindingResult bindingResult){
+        try {
+            if(input == null){
+                log.debug("传入的参数错误");
+                return ApiResult.fail("用户名或密码错误");
+            }
             // 如果客户端传来了验证码，不管是否存在错误记录都会验证
             if(input.captcha != null && !this.redissonClient.getBucket(input.captcha).isExists()){
                 return ApiResult.fail("验证码错误或已失效");

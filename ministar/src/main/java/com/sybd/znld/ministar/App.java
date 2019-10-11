@@ -1,10 +1,25 @@
 package com.sybd.znld.ministar;
 
+import com.sybd.znld.service.IDubboService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.Reference;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
+@Slf4j
 @SpringBootApplication(scanBasePackages = {"com.sybd.znld"})
 public class App {
+    @Reference(version = "1.0.0", url = "dubbo://localhost:12345?version=1.0.0")
+    private IDubboService dubboService;
+
+    @Bean
+    public ApplicationRunner runner() {
+        return args -> {
+            log.debug(dubboService.sayHello("mercyblitz"));
+        };
+    }
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
 

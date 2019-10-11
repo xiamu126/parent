@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 @ApiModel(value = "用户登入传入参数")
 public class LoginInput implements Serializable {
@@ -20,5 +22,14 @@ public class LoginInput implements Serializable {
 
     public boolean isValid(){
         return !MyString.isAnyEmptyOrNull(user, password, captcha);
+    }
+    public Map<String, String> toMap(){
+        var map = new HashMap<String, String>();
+        map.put("user", user);
+        map.put("password", password);
+        if(captcha != null){
+            map.put("captcha", captcha);
+        }
+        return map;
     }
 }

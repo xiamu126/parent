@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>com.sybd.znld</groupId>
-            <artifactId>myutil</artifactId>
+            <artifactId>util</artifactId>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>

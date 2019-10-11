@@ -25,7 +25,7 @@ import java.util.Map;
 public class MyScheduledTask {
     private final RedissonClient redissonClient;
     private static Map<String, RLock> lockers;
-    private static final String CHECK_TASK = "CHECK_TASK";
+    private static final String CHECK_TASK = "com.sybd.znld.ministar.task.MyScheduledTask.CHECK_TASK";
     private final MiniStarTaskMapper miniStarTaskMapper;
     private final IMiniStarService miniStarService;
 

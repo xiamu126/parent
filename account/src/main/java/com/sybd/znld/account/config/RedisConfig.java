@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import java.io.IOException;
 
-@EnableCaching(proxyTargetClass = true)
 @Configuration
 public class RedisConfig {
     @Value("${spring.profiles.active}")

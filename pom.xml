@@ -469,6 +469,8 @@
         <module>environment</module>
         <module>rpc-service</module>
         <module>rpc-service-provider</module>
+        <module>positioning</module>
+        <module>positioning-socket</module>
     </modules>
 
 </project>

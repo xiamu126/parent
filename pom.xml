@@ -366,7 +366,7 @@
         <module>oauth2-resource</module>
         <module>model</module>
         <module>myutil</module>
-        <!--<module>video</module>-->
+        <module>video</module>
         <module>account</module>
         <module>service</module>
         <module>config</module>

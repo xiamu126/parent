@@ -42,6 +42,13 @@ public class MiniStarService implements IMiniStarService {
             result.msg = "参数错误";
             return result;
         }
+        var obj = this.regionMapper.selectByRegionIdAndUserId(subtitle.regionId, subtitle.userId);
+        if(obj == null){
+            log.debug("指定的区域和账号无关");
+            result.code = 1;
+            result.msg = "参数错误";
+            return result;
+        }
         var user = this.userMapper.selectById(subtitle.userId);
         if(user == null) {
             result.code = 1;

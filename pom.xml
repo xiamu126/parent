@@ -87,10 +87,16 @@
         <zooKeeperVersion>3.4.14</zooKeeperVersion>
 
         <fstVersion>2.57</fstVersion>
+        <rabbitmqVersion>5.7.3</rabbitmqVersion>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>${rabbitmqVersion}</version>
+            </dependency>
             <dependency>
                 <groupId>de.ruedigermoeller</groupId>
                 <artifactId>fst</artifactId>

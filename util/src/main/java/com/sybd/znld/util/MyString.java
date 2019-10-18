@@ -1,6 +1,12 @@
 package com.sybd.znld.util;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -135,13 +141,24 @@ public final class MyString {
         return ip.matches("((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\.)){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)");
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         var str = "$GPGGA,041310.00,3118.7368108,N,12051.3208195,E,1,07,1.6,8.3933,M,8.752,M,99,0000*6A";
         var tmp = str.split(",");
         /*for(var t : tmp){
             System.out.println(t);
         }*/
-        System.out.println(tmp[2]+", "+tmp[4]);
+        System.out.println(tmp.length+","+tmp[2]+", "+tmp[4]);
+        /*var fileName = "./file_"+ MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3)+".log";
+        var path = new File("./history/"+MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT4));
+        if(!path.exists()){
+            path.mkdirs();
+        }
+        System.out.println(path);
+        var file = new File(path+"/"+fileName);
+        var out = new FileOutputStream(file,true);
+        out.write("test123".getBytes());// 写入一个换行
+        out.flush();
+        out.close();*/
     }
 }
 

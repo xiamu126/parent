@@ -1,6 +1,6 @@
 package com.sybd.znld.account.controller.user.dto;
 
-import com.sybd.znld.model.BaseApiResult;
+import com.sybd.znld.model.rbac.dto.CityAndCode;
 import com.sybd.znld.util.MyDateTime;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Setter @NoArgsConstructor
 @ApiModel(value = "登入返回数据")
@@ -26,4 +27,5 @@ public class LoginResult {
     @ApiModelProperty(value = "目录数据")
     public Object menu;
     public Boolean isRoot = false;
+    public List<CityAndCode> cities;
 }

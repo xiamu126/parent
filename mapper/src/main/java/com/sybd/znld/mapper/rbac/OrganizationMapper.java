@@ -3,6 +3,7 @@ package com.sybd.znld.mapper.rbac;
 import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.rbac.OrganizationModel;
 import com.sybd.znld.model.rbac.dto.AuthPackByGroup;
+import com.sybd.znld.model.rbac.dto.CityAndCode;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,4 +21,5 @@ public interface OrganizationMapper {
     List<OrganizationModel> selectByParentId(String parentId);
     List<AuthPackByGroup> selectAuthPackByGroupId(String authGroupId);
     AuthPackByGroup selectAuthPackByGroupIdAuthValueAndName(String authGroupId, String authValue, String authName);
+    List<CityAndCode> selectAllCityAndCode();
 }

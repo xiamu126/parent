@@ -6,6 +6,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.account.config.ProjectConfig;
 import com.sybd.znld.account.controller.user.dto.AccessToken;
+import com.sybd.znld.mapper.rbac.OrganizationMapper;
+import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.model.rbac.dto.CityAndCode;
 import com.sybd.znld.account.controller.user.dto.LoginResult;
 import com.sybd.znld.account.controller.user.dto.NeedCaptchaResult;
 import com.sybd.znld.account.model.LoginInput;
@@ -34,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -59,6 +63,11 @@ public class UserController implements IUserController {
     private RestTemplate restTemplate;
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private OrganizationMapper organizationMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     @Value("${project.captcha.expiration-time}")
     private Duration captchaExpirationTime;
@@ -217,8 +226,28 @@ public class UserController implements IUserController {
                 data.userId = user.id;
                 data.organId = user.organizationId;
                 data.menu = jsonStr;
-                if (input.user.equals("sybd_test_admin") || input.user.equals("sybd_test_user")) {
+                if (input.user.equals("sybd_test_admin")) {
                     data.isRoot = true;
+                    data.menu = null;
+                    data.cities = this.organizationMapper.selectAllCityAndCode();
+                    if(data.cities != null && !data.cities.isEmpty()){
+                        for(var c : data.cities){
+                            var users = this.userMapper.selectByOrganizationId(c.code);
+                            if(users != null && !users.isEmpty()){
+                                db = mongoClient.getDatabase("test");
+                                c1 = db.getCollection("com.sybd.znld.account.profile");
+                                myDoc = c1.find(Filters.eq("id", users.get(0).id)).first();
+                                if (myDoc != null) {
+                                    myDoc.remove("_id");
+                                    myDoc.remove("app");
+                                    myDoc.remove("device");
+                                    jsonStr = myDoc.toJson();
+                                }
+                            }
+                            c.menu = jsonStr;
+                            jsonStr = null;
+                        }
+                    }
                 }
 
                 return ApiResult.success(data);
@@ -242,6 +271,26 @@ public class UserController implements IUserController {
             log.error(ex.getMessage());
         }
         return ApiResult.fail("用户名或密码错误");
+    }
+
+    @GetMapping(value = "menu/{code:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public String getMenu(@PathVariable(name = "code") String code, @RequestHeader("root") String rootId, HttpServletRequest request){
+        var user = this.userMapper.selectById(rootId);
+        if(user == null){
+            return null;
+        }
+        var users = this.userMapper.selectByOrganizationId(code);
+        String jsonStr = null;
+        if(users != null && !users.isEmpty()){
+            var db = mongoClient.getDatabase("test");
+            var c1 = db.getCollection("com.sybd.znld.account.profile");
+            var myDoc = c1.find(Filters.eq("id", users.get(0).id)).first();
+            if (myDoc != null) {
+                myDoc.remove("_id");
+                jsonStr = myDoc.toJson();
+            }
+        }
+        return jsonStr;
     }
 
     @ApiOperation(value = "登出")

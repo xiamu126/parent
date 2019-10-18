@@ -48,7 +48,7 @@ public class MyScheduledTask {
         lockers = Map.of(CHECK_TASK, this.redissonClient.getLock(CHECK_TASK));
     }
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 3)
+    //@Scheduled(initialDelay = 1000, fixedDelay = 1000 * 3)
     public void checkMiniStarTask() {
         var locker = lockers.get(CHECK_TASK);
         if (locker != null && locker.tryLock()) {

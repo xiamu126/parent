@@ -9,6 +9,7 @@ public final class MyDateTime {
     public static final String FORMAT1 = "yyyy-MM-dd HH:mm:ss";
     public static final String FORMAT2 = "yyyy-MM-dd HH:mm:ss.SSS";
     public static final String FORMAT3 = "yyyyMMddHHmmss_SSS";
+    public static final String FORMAT4 = "yyyy-MM-dd";
     public static final String ISO8601 = "yyyy-MM-dd'T'HH:mm:ss";
 
     public static LocalDateTime now(){
@@ -356,9 +357,6 @@ public final class MyDateTime {
     }
 
     public static void main(String[] args){
-        var now = LocalDateTime.now();
-        var theNow = LocalDateTime.now().minusMinutes(1);
-        var d = Duration.between(now, theNow);
-        System.out.println(d.toMinutes());
+        System.out.println(MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT4));
     }
 }

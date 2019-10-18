@@ -1,41 +1,54 @@
 package com.sybd.znld.position.socket;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.ConnectionFactory;
 import com.sybd.znld.util.MyDateTime;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 @Slf4j
 public class Handler extends ChannelInboundHandlerAdapter {
     private String fileName = null;
     private File file = null;
+    private ConnectionFactory factory = new ConnectionFactory();
+
+    public Handler(){
+        factory.setHost("znld-rabbitmq");
+        factory.setPort(5672);
+        factory.setUsername("admin");
+        factory.setPassword("admin123");
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         var out = new FileOutputStream(file,true);
 
-        //var writer = new BufferedWriter(new FileWriter(file));
+        var result = (String) msg;
+        log.debug("收到的消息为：" + result);
 
-        var result = (ByteBuf) msg;
-        var bytes = new byte[result.readableBytes()];
-        result.readBytes(bytes);
-        log.debug("收到的消息为：" + new String(bytes));
-
-        out.write(bytes);
+        out.write(result.getBytes(StandardCharsets.UTF_8));
+        out.write("\r\n".getBytes());// 写入一个换行
         out.flush();
         out.close();
 
-        System.out.println(fileName);
-        result.release();
+        log.debug(fileName);
 
-        //writer.append(new String(bytes));
-        //writer.flush();
-        //writer.close();
+        try (var connection = factory.newConnection(); var channel = connection.createChannel()) {
+            channel.exchangeDeclare("POSITIONING", BuiltinExchangeType.DIRECT);
+            var builder = new AMQP.BasicProperties.Builder();
+            var map = new HashMap<String, Object>();
+            map.put("filename", fileName);
+            channel.basicPublish("POSITIONING", "GPGGA", builder.headers(map).build(), result.getBytes(StandardCharsets.UTF_8));
+            log.debug(" [x] Sent '" + "GPGGA" + "':'" + result + "'");
+        }
     }
 
     @Override
@@ -46,10 +59,13 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-
         fileName = "./file_"+ MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3)+".log";
-        file = new File(fileName);
-        System.out.println("channelActive in server");
+        var path = new File("./history/"+MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT4));
+        if(!path.exists()){
+            path.mkdirs();
+        }
+        file = new File(path+"/"+fileName);
+        log.debug("channelActive in server");
     }
 
     @Override

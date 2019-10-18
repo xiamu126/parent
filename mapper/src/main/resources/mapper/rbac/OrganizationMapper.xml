@@ -64,4 +64,8 @@
         left join authority as c on c.authority_group_id = b.id
         where b.id = #{authGroupId} and c.uri = #{authValue} and c.name = #{authName};
     </select>
+
+    <select id="selectAllCityAndCode" resultType="com.sybd.znld.model.rbac.dto.CityAndCode">
+        select name as city, id as code from organization;
+    </select>
 </mapper>

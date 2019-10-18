@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.GpggaMapper">
+    <insert id="insert">
+        insert gpgga(id, content, filename) value (#{id}, #{content}, #{filename});
+    </insert>
+    <update id="append">
+        update gpgga set content = concat(content, #{content}) where id = #{id};
+    </update>
+    <update id="appendByFilename">
+        update gpgga set content = concat(content, #{content}) where filename = #{filename};
+    </update>
+    <select id="selectBetween" resultType="com.sybd.znld.model.lamp.GpggaModel">
+        select * from gpgga where #{endTime} <![CDATA[ >= ]]> end_time and begin_time <![CDATA[ >= ]]> #{beginTime};
+    </select>
+    <select id="selectByFilename" resultType="com.sybd.znld.model.lamp.GpggaModel">
+        select * from gpgga where filename = #{filename};
+    </select>
+</mapper>

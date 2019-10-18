@@ -197,7 +197,12 @@ public class MiniStarController implements IMiniStarController{
     }
 
     @Override
-    public BaseApiResult newMiniStar(SubtitleForRegion subtitle, HttpServletRequest request) {
+    public BaseApiResult newMiniStarForRegion(SubtitleForRegion subtitle, HttpServletRequest request) {
+        return this.miniStarService.newMiniStar(subtitle);
+    }
+
+    @Override
+    public BaseApiResult newMiniStarForDevice(SubtitleForDevice subtitle, HttpServletRequest request) {
         return this.miniStarService.newMiniStar(subtitle);
     }
 

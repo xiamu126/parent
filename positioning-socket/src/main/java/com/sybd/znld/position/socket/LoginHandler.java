@@ -9,6 +9,5 @@ public class LoginHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg){
         log.debug("收到的消息为：" + msg.toString());
-
     }
 }

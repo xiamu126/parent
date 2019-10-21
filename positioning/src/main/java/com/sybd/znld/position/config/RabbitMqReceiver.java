@@ -17,7 +17,7 @@ public class RabbitMqReceiver {
     @Autowired
     private GpggaMapper gpggaMapper;
 
-    //@RabbitListener(queues="#{anonymousQueue.name}")
+    @RabbitListener(queues="#{anonymousQueue.name}")
     public void receive(Message msg){
         var lineTxt = new String(msg.getBody());
         try{

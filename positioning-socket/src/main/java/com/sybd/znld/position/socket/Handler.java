@@ -34,6 +34,11 @@ public class Handler extends ChannelInboundHandlerAdapter {
         var result = (String) msg;
         log.debug("收到的消息为：" + result);
 
+        // $GPGGA,074751.00,3108.8731146,N,12039.0113910,E,1,10,1.4,-21.0724,M,8.073,M,99,0000*7D
+        if(!result.matches("^\\$GPGGA,.*,.*,.*,.*,.*,.*,.*,.*,.*,.*,.*,.*,.*,.*")){
+            return;
+        }
+
         out.write(result.getBytes(StandardCharsets.UTF_8));
         out.write("\r\n".getBytes());// 写入一个换行
         out.flush();
@@ -59,7 +64,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        fileName = "./file_"+ MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3)+".log";
+        fileName = "file_"+ MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3)+".log";
         var path = new File("./history/"+MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT4));
         if(!path.exists()){
             path.mkdirs();
@@ -71,5 +76,6 @@ public class Handler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
+        log.debug("连接断开："+fileName);
     }
 }

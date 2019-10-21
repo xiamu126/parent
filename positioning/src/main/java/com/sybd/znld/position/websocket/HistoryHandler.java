@@ -1,6 +1,7 @@
 package com.sybd.znld.position.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sybd.znld.model.lamp.GpggaModel;
 import com.sybd.znld.position.App;
 import com.sybd.znld.position.model.Point;
 import com.sybd.znld.util.MyString;
@@ -23,16 +24,64 @@ public class HistoryHandler implements WebSocketHandler {
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message){
-        var gpggaMapper = App.ctx.getBean(GpggaMapper.class);
-        var ret = gpggaMapper.selectByFilename(message.getPayload().toString());
+        var mapper = new ObjectMapper();
         List<Point> points = new ArrayList<>();
+        GpggaModel ret = null;
+        var gpggaMapper = App.ctx.getBean(GpggaMapper.class);
+        var msg = message.getPayload().toString();
+        if(msg.equals("list")){
+            var list = new ArrayList<String>();
+            list.add("file_20191021114115_244.log");
+            list.add("filename123");
+            try {
+                session.sendMessage(new TextMessage(mapper.writeValueAsString(list)));
+            } catch (IOException ex) {
+                log.error(ex.getMessage());
+                ex.printStackTrace();
+            }
+        }else if(msg.matches("^draw,.+")){
+            var bag = msg.split(",");
+            ret = gpggaMapper.selectByFilename(bag[1]);
+            if(ret != null){
+                var lines = ret.content.split("\r\n");
+                var lng = 0.0;
+                var lat = 0.0;
+                for(var line : lines){
+                    var tmp = line.split(",");
+                    try{
+                        if(MyString.isEmptyOrNull(tmp[2]) || MyString.isEmptyOrNull(tmp[4])) continue;
+                        var a = tmp[2].substring(0, 2);// 3109.5152754
+                        var b = tmp[2].substring(2);
+                        lat = Double.parseDouble(a) + (Double.parseDouble(b) / 60);
+                        a = tmp[4].substring(0, 3);// 12038.8791150
+                        b = tmp[4].substring(3);
+                        lng = Double.parseDouble(a) + (Double.parseDouble(b) / 60);
+                    }catch (NumberFormatException | IndexOutOfBoundsException ex){
+                        continue;
+                    }
+                    var point = new Point();
+                    point.lng = lng;
+                    point.lat = lat;
+                    points.add(point);
+                    log.debug(lng+","+lat);
+                }
+                try {
+                    session.sendMessage(new TextMessage(mapper.writeValueAsString(points)));
+                } catch (IOException ex) {
+                    log.error(ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+            return;
+        }
+
+        ret = gpggaMapper.selectByFilename(message.getPayload().toString());
         var maxCount = 10;
         var count = 0;
         if(ret != null){
             var lines = ret.content.split("\r\n");
             var lng = 0.0;
             var lat = 0.0;
-            var mapper = new ObjectMapper();
             for(var line : lines){
                 var tmp = line.split(",");
                 try{
@@ -70,6 +119,23 @@ public class HistoryHandler implements WebSocketHandler {
                         }
                     }
                     count = 0;
+                }
+            }
+            if(!points.isEmpty()){
+                try{
+                    var result = mapper.writeValueAsString(points);
+                    log.debug(result);
+                    points.clear();
+                    session.sendMessage(new TextMessage(result));
+                }catch (Exception ex){
+                    log.error(ex.getMessage());
+                    ex.printStackTrace();
+                    try {
+                        session.close(CloseStatus.SERVER_ERROR);
+                    } catch (IOException ex2) {
+                        log.error(ex2.getMessage());
+                        ex2.printStackTrace();
+                    }
                 }
             }
         }

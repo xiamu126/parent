@@ -16,4 +16,7 @@
     <select id="selectByFilename" resultType="com.sybd.znld.model.lamp.GpggaModel">
         select * from gpgga where filename = #{filename};
     </select>
+    <select id="listFiles" resultType="java.lang.String">
+        select filename from gpgga order by end_time desc limit 7;
+    </select>
 </mapper>

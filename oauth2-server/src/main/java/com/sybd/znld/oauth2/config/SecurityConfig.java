@@ -19,18 +19,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final MyAuthenticationSuccessHandler authenticationSucessHandler;
-    private final MyAuthenticationFailureHandler authenticationFailureHandler;
-    private final MyLogoutSuccessHandler myLogoutSuccessHandler;
+    //private final MyAuthenticationSuccessHandler authenticationSucessHandler;
+    //private final MyAuthenticationFailureHandler authenticationFailureHandler;
+    //private final MyLogoutSuccessHandler myLogoutSuccessHandler;
     private final MyUserDetailsService userDetailsService;
 
     @Autowired
-    public SecurityConfig(MyAuthenticationSuccessHandler authenticationSucessHandler,
-                          MyAuthenticationFailureHandler authenticationFailureHandler,
-                          MyLogoutSuccessHandler myLogoutSuccessHandler, MyUserDetailsService userDetailsService) {
-        this.authenticationSucessHandler = authenticationSucessHandler;
-        this.authenticationFailureHandler = authenticationFailureHandler;
-        this.myLogoutSuccessHandler = myLogoutSuccessHandler;
+    public SecurityConfig(MyUserDetailsService userDetailsService) {
+        //this.authenticationSucessHandler = authenticationSucessHandler;
+        //this.authenticationFailureHandler = authenticationFailureHandler;
+        //this.myLogoutSuccessHandler = myLogoutSuccessHandler;
         this.userDetailsService = userDetailsService;
     }
 

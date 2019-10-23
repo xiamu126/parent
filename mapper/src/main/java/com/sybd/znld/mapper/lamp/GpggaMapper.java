@@ -12,4 +12,5 @@ public interface GpggaMapper {
     int appendByFilename(@Param("filename") String filename, @Param("content") String content);
     GpggaModel selectByFilename(@Param("filename") String filename);
     List<GpggaModel> selectBetween(@Param("beginTime") LocalDateTime beginTime, @Param("endTime") LocalDateTime endTime);
+    List<String> listFiles();
 }

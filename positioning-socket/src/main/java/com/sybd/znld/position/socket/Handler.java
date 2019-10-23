@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.UUID;
 
 @Slf4j
 public class Handler extends ChannelInboundHandlerAdapter {
@@ -64,7 +65,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        fileName = "file_"+ MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3)+".log";
+        fileName = MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3);
         var path = new File("./history/"+MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT4));
         if(!path.exists()){
             path.mkdirs();

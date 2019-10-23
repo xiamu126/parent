@@ -1,17 +1,23 @@
 package com.sybd.znld.position.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.model.lamp.GpggaModel;
 import com.sybd.znld.position.App;
 import com.sybd.znld.position.model.Point;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.sybd.znld.mapper.lamp.GpggaMapper;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 public class HistoryHandler implements WebSocketHandler {
@@ -30,52 +36,29 @@ public class HistoryHandler implements WebSocketHandler {
         var gpggaMapper = App.ctx.getBean(GpggaMapper.class);
         var msg = message.getPayload().toString();
         if(msg.equals("list")){
-            var list = new ArrayList<String>();
-            list.add("file_20191021114115_244.log");
-            list.add("filename123");
             try {
-                session.sendMessage(new TextMessage(mapper.writeValueAsString(list)));
+                var files = gpggaMapper.listFiles();
+                session.sendMessage(new TextMessage(mapper.writeValueAsString(files)));
             } catch (IOException ex) {
                 log.error(ex.getMessage());
                 ex.printStackTrace();
             }
         }else if(msg.matches("^draw,.+")){
             var bag = msg.split(",");
-            ret = gpggaMapper.selectByFilename(bag[1]);
+            var filename = bag[1].trim();
+            ret = gpggaMapper.selectByFilename(filename);
             if(ret != null){
-                var lines = ret.content.split("\r\n");
-                var lng = 0.0;
-                var lat = 0.0;
-                for(var line : lines){
-                    var tmp = line.split(",");
-                    try{
-                        if(MyString.isEmptyOrNull(tmp[2]) || MyString.isEmptyOrNull(tmp[4])) continue;
-                        var a = tmp[2].substring(0, 2);// 3109.5152754
-                        var b = tmp[2].substring(2);
-                        lat = Double.parseDouble(a) + (Double.parseDouble(b) / 60);
-                        a = tmp[4].substring(0, 3);// 12038.8791150
-                        b = tmp[4].substring(3);
-                        lng = Double.parseDouble(a) + (Double.parseDouble(b) / 60);
-                    }catch (NumberFormatException | IndexOutOfBoundsException ex){
-                        continue;
-                    }
-                    var point = new Point();
-                    point.lng = lng;
-                    point.lat = lat;
-                    points.add(point);
-                    log.debug(lng+","+lat);
-                }
                 try {
-                    session.sendMessage(new TextMessage(mapper.writeValueAsString(points)));
+                    session.sendMessage(new TextMessage(ret.content));// 保存的内容为转换为百度坐标系的点
                 } catch (IOException ex) {
-                    log.error(ex.getMessage());
                     ex.printStackTrace();
+                    log.error(ex.getMessage());
                 }
             }
             return;
         }
 
-        ret = gpggaMapper.selectByFilename(message.getPayload().toString());
+        /*ret = gpggaMapper.selectByFilename(message.getPayload().toString());
         var maxCount = 10;
         var count = 0;
         if(ret != null){
@@ -138,7 +121,7 @@ public class HistoryHandler implements WebSocketHandler {
                     }
                 }
             }
-        }
+        }*/
     }
 
     @Override

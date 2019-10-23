@@ -1,12 +1,12 @@
 db-server: znld-mysql:3306
-redis-server: znld-redis
+redis-server: znld-redis-oauth2
 redis-server-port: 6379
 
 spring:
   redis:
     host: ${redis-server}
     port: ${redis-server-port}
-    password: 94f76e0864c411e980f50242ac110005
+    password: a2e168aea1bc4515ad186b5cfbcf0ce5
   datasource:
     oauth:
       pool-name: HikariPool-oauth

@@ -1,7 +1,9 @@
 package com.sybd.znld.oauth2.config;
 
+import com.sybd.znld.oauth2.core.MyRedisTokenStore;
 import com.sybd.znld.oauth2.core.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -24,19 +26,22 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private final MyUserDetailsService userDetailsService;
 
     @Autowired
-    public AuthorizationServerConfig(RedisConnectionFactory redisConnectionFactory,
+    public AuthorizationServerConfig(@Qualifier("redissonConnectionFactory") RedisConnectionFactory connectionFactory,
                                      AuthenticationManager authenticationManager,
                                      DataSource dataSource, MyUserDetailsService userDetailsService) {
-        this.redisConnectionFactory = redisConnectionFactory;
+        this.redisConnectionFactory = connectionFactory;
         this.authenticationManager = authenticationManager;
         this.dataSource = dataSource;
         this.userDetailsService = userDetailsService;
     }
 
-    @Bean
+    /*@Bean
     public RedisTokenStore tokenStore(){
         return new RedisTokenStore(redisConnectionFactory);
-    }
+    }*/
+
+    @Autowired
+    private MyRedisTokenStore tokenStore;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security){
@@ -54,7 +59,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-        endpoints.tokenStore(tokenStore())
+        endpoints.tokenStore(tokenStore)
                 .userDetailsService(this.userDetailsService) // 没这个，refresh_token会报错
                 .authenticationManager(authenticationManager); // 支持 password grant type
     }

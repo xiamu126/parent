@@ -6,7 +6,8 @@ create table gpgga(
     id varchar(32) not null primary key,
     begin_time timestamp not null default CURRENT_TIMESTAMP,
     end_time timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-    content longtext not null
+    content longtext not null,
+    filename varchar(100)
 );
 
 create table ministar_effect(

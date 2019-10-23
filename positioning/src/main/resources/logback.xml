@@ -4,7 +4,7 @@ scanPeriod：设置监测配置文件是否有修改的时间间隔，如果没�
 debug：当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。-->
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
     <property name="LOG_HOME" value="./"/>
-    <property name="appName" value="znld-websocket"/>
+    <property name="appName" value="znld-positioning"/>
     <property name="maxHistory" value="365" />
     <property name="maxFileSize" value="100MB" />
     <property name="pattern1"

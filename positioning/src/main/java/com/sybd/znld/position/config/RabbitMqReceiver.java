@@ -74,41 +74,37 @@ public class RabbitMqReceiver {
     @RabbitListener(queues="#{anonymousQueue.name}")
     public void receive(Message msg){
         var lineTxt = new String(msg.getBody());
-        try{
-            var lngLat = extract(lineTxt);
-            if(lngLat == null){
-                return;
-            }
-            // 转换为百度坐标
-            var convertedPoint = toBaiduCoordinate(this.restTemplate, lngLat);
-            PositioningWebSocketHandler.sendAll(convertedPoint.toString());
-            var props = msg.getMessageProperties();
-            var filename = props.getHeaders().get("filename");
-            if(!MyString.isEmptyOrNull(filename.toString())){
-                // 这里存在一个问题，如果本模块打开了多个实例，每个实例都会接收到这条信息，相同filename，null判断都为真，从而连续insert两次
-                // 分布式锁
-                var locker = this.redissonClient.getLock(this.getClass().getName()+"#gpggaMapper.insert");
-                if(locker.tryLock()){
-                    try{
-                        locker.lock();
-                        var ret = this.gpggaMapper.selectByFilename(filename.toString());
-                        if(ret == null){
-                            var model = new GpggaModel();
-                            model.content = convertedPoint.toString();
-                            model.filename = filename.toString();
-                            this.gpggaMapper.insert(model);
-                        }else {
-                            this.gpggaMapper.appendByFilename(filename.toString(), ";"+convertedPoint.toString());
-                        }
-                    }finally {
-                        locker.forceUnlock();
+        var lngLat = extract(lineTxt);
+        if(lngLat == null){
+            return;
+        }
+        // 转换为百度坐标
+        var convertedPoint = toBaiduCoordinate(this.restTemplate, lngLat);
+        PositioningWebSocketHandler.sendAll(convertedPoint.toString());
+        var props = msg.getMessageProperties();
+        var filename = props.getHeaders().get("filename");
+        if(!MyString.isEmptyOrNull(filename.toString())){
+            // 这里存在一个问题，如果本模块打开了多个实例，每个实例都会接收到这条信息，相同filename，null判断都为真，从而连续insert两次
+            // 分布式锁
+            var locker = this.redissonClient.getLock(this.getClass().getName()+"#gpggaMapper.insert");
+            if(locker.tryLock()){
+                try{
+                    locker.lock();
+                    var ret = this.gpggaMapper.selectByFilename(filename.toString());
+                    if(ret == null){
+                        var model = new GpggaModel();
+                        model.content = convertedPoint.toString();
+                        model.filename = filename.toString();
+                        this.gpggaMapper.insert(model);
+                    }else {
+                        this.gpggaMapper.appendByFilename(filename.toString(), ";"+convertedPoint.toString());
                     }
-                }else{
-                    log.debug("获取锁失败");
+                }finally {
+                    locker.forceUnlock();
                 }
+            }else{
+                log.debug("获取锁失败");
             }
-        }catch (NumberFormatException | IndexOutOfBoundsException ex){
-            log.debug("错误的数据："+lineTxt);
         }
     }
 }

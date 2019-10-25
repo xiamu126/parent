@@ -13,14 +13,15 @@ import java.util.Map;
 public class MyHandshakeInterceptor implements HandshakeInterceptor{
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-        if (request instanceof ServletServerHttpRequest) {
-            var servletRequest = (ServletServerHttpRequest) request;
-            var session = servletRequest.getServletRequest().getSession();
-            var names = session.getAttributeNames();
-            while(names.hasMoreElements()){
-                log.debug(names.nextElement());
-            }
+        /*if (request instanceof ServletServerHttpRequest) {
+        }*/
+        var servletRequest = (ServletServerHttpRequest) request;
+        var session = servletRequest.getServletRequest().getSession();
+        var names = session.getAttributeNames();
+        while(names.hasMoreElements()){
+            log.debug(names.nextElement());
         }
+        var map = servletRequest.getServletRequest().getParameterMap();
         return true;
     }
 

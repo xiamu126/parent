@@ -8,13 +8,11 @@ import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.lamp.dto.ElementAvgResult;
 import com.sybd.znld.model.lamp.dto.LampWithLocation;
-import com.sybd.znld.service.ISigService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MySignature;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.Reference;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,8 +39,8 @@ public class RegionController implements IRegionController {
     private final LampMapper lampMapper;
     private final RedissonClient accountRedis;
 
-    @Reference(url = "dubbo://localhost:18085")
-    private ISigService sigService;
+    /*@Reference(url = "dubbo://localhost:18085")
+    private ISigService sigService;*/
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -57,8 +55,8 @@ public class RegionController implements IRegionController {
 
     @Override
     public List<LampWithLocation> getRegionOfEnvironmentList(String organId, HttpServletRequest request) {
-        var ret = this.sigService.checkSig(null,null,null,null,null);
-        log.debug(ret.toString());
+        //var ret = this.sigService.checkSig(null,null,null,null,null);
+        //log.debug(ret.toString());
         var lamps = this.regionMapper.selectLampsOfEnvironment(organId);
         var result = new ArrayList<LampWithLocation>();
         var lampWithLocation = new LampWithLocation();
@@ -119,10 +117,15 @@ public class RegionController implements IRegionController {
     @Override
     public AQIResult getAQILastHourOfDevice(Integer deviceId) {
         var avgs = this.regionMapper.selectAvgOfEnvironmentElementLastHourByDeviceId(deviceId);
-        if(avgs == null || avgs.isEmpty()) return null;
+        var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursByDeviceId(deviceId, 8);
+        var avgs24 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursByDeviceId(deviceId, 24);
+        if(avgs == null || avgs.isEmpty() || avgs8 == null || avgs8.isEmpty() || avgs24 == null || avgs24.isEmpty()) return null;
         Map<String, Double> map = new HashMap<>();
         avgs.forEach(a -> map.put(a.name, a.value));
-        var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+        avgs8.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name, o3.value));
+        avgs24.stream().filter(a -> a.name.equals("PM10")).findFirst().ifPresent(pm10 -> map.put(pm10.name, pm10.value));
+        avgs24.stream().filter(a -> a.name.equals("PM2.5")).findFirst().ifPresent(pm25 -> map.put(pm25.name, pm25.value));
+        var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM10"), map.get("PM2.5"));
         result.at = MyDateTime.toTimestamp(avgs.get(0).at);
         return result;
     }
@@ -151,7 +154,7 @@ public class RegionController implements IRegionController {
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM10"), map.get("PM2.5"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -172,7 +175,7 @@ public class RegionController implements IRegionController {
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM10"), map.get("PM2.5"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -197,7 +200,7 @@ public class RegionController implements IRegionController {
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM10"), map.get("PM2.5"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -243,7 +246,7 @@ public class RegionController implements IRegionController {
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM10"), map.get("PM2.5"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }

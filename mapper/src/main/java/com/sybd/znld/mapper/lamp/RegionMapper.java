@@ -29,6 +29,7 @@ public interface RegionMapper {
     List<ElementAvgResult> selectAvgOfEnvironmentElementByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     List<ElementAvgResult> selectAvgOfEnvironmentElementLastDayByDeviceId(Integer deviceId);
     List<ElementAvgResult> selectAvgOfEnvironmentElementLastHourByDeviceId(Integer deviceId);
+    List<ElementAvgResult> selectAvgOfEnvironmentElementLastHoursByDeviceId(@Param("deviceId") Integer deviceId, @Param("hours") Integer hours);
     List<ElementAvgResult> selectAvgOfEnvironmentElementHourlyByDeviceId(@Param("deviceId") Integer deviceId, @Param("name") String name);
     List<ElementAvgResult> selectAvgOfEnvironmentElementDailyByDeviceId(@Param("deviceId") Integer deviceId, @Param("name") String name);
     List<ElementAvgResult> selectAvgOfEnvironmentElementMonthlyByDeviceId(@Param("deviceId") Integer deviceId, @Param("name") String name);

@@ -93,6 +93,13 @@
         group by name;
     </select>
 
+    <select id="selectAvgOfEnvironmentElementLastHoursByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
+        select name, round(avg(value), 2) as value, max(at) as at from data_environment
+        where device_id = #{deviceId} and
+            at between date_sub(date_format(now(),'%Y-%m-%d %H:00:00'), interval #{hours} hour) and date_format(now(),'%Y-%m-%d %H:00:00')
+        group by name;
+    </select>
+
     <select id="selectAvgOfEnvironmentElementHourlyByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, date_format(at,'%Y-%m-%d %H:00:00') as at from data_environment
         where name = #{name} and device_id = #{deviceId}

@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring().antMatchers("/css/**", "/js/**", "/plugins/**", "/favicon.ico");
         //web.ignoring().antMatchers(HttpMethod.OPTIONS);
         //web.ignoring().antMatchers("/tokens/revoke/*");
@@ -48,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/auth","/unauth", "/success", "/error").permitAll()
-                .antMatchers(HttpMethod.DELETE, "/oauth/token/revoke").permitAll()
+                //.antMatchers(HttpMethod.DELETE, "/oauth/token/revoke").permitAll()
                 .anyRequest().authenticated();
 
         /*http.formLogin().usernameParameter("user").passwordParameter("password")

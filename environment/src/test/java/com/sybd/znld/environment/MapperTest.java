@@ -66,4 +66,10 @@ public class MapperTest {
         var tmp = this.lampMapper.selectLampSummary();
         Assert.notNull(tmp);
     }
+
+    @Test
+    public void test6(){
+        var tmp = this.regionMapper.selectAvgOfEnvironmentElementLastHoursByDeviceId(533263283, 8);
+        Assert.notNull(tmp);
+    }
 }

@@ -21,13 +21,15 @@ public class AQI {
     public static final List<Integer> O3_8_HOUR = List.of(0, 100, 160, 215, 265, 800);
     public static final List<Integer> PM25_24_HOUR = List.of(0, 35, 75, 115, 150, 250, 350, 500);
 
-    public static AQIResult of1Hour(double so2, double no2, double co, double o3) {
+    public static AQIResult of1Hour(double so2, double no2, double co, double o3, double pm10, double pm25) {
         var result = new AQIResult();
         var map = new HashMap<String, Double>();
         map.put("SO2", of1Hour("SO2", so2));
         map.put("NO2", of1Hour("NO2", no2));
         map.put("CO", of1Hour("CO", co));
-        map.put("O3", of1Hour("O3", o3));
+        map.put("O3", of8Hour("O3", o3));
+        map.put("PM10", of24Hour("PM10", pm10));
+        map.put("PM25", of24Hour("PM25", pm25));
         var items = new ArrayList<>(map.entrySet());
         items.sort(Comparator.comparingDouble(Map.Entry::getValue));
         var theMax = items.get(items.size() - 1); // 最后一个即最大值
@@ -59,8 +61,8 @@ public class AQI {
         map.put("NO2", of24Hour("NO2", no2));
         map.put("CO", of24Hour("CO", co));
         map.put("O3", of24Hour("O3", o3));
-        map.put("MP10", of24Hour("MP10", pm10));
-        map.put("MP25", of24Hour("MP25", pm25));
+        map.put("PM10", of24Hour("PM10", pm10));
+        map.put("PM25", of24Hour("PM25", pm25));
         var items = new ArrayList<>(map.entrySet());
         items.sort(Comparator.comparingDouble(Map.Entry::getValue));
         var theMax = items.get(items.size() - 1); // 最后一个即最大值
@@ -165,15 +167,6 @@ public class AQI {
         }
         return result;
     }
-
-    public static void main(String[] args) throws ParseException {
-        Double ret = of1Hour("NO2", 100);
-        log.debug(ret.toString());
-        ret = of24Hour("O3", 700);
-        log.debug(ret.toString());
-        var result = of1Hour(100, 50, 90, 100);
-        log.debug(result.toString());
-    }
     private static double of8Hour(String type, double value){
         var result = -1.0;
         var minValue = 0;
@@ -274,6 +267,7 @@ public class AQI {
                 minIAQI = IAQI.get(index - 1);
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
+                log.debug("PM10:"+result);
                 break;
             case "PM25":
                 minValue = 0;

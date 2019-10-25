@@ -30,9 +30,7 @@ import java.util.List;
 public class DeviceControllerTest {
     @Autowired
     private WebApplicationContext wac;
-
     private MockMvc mockMvc;
-
     @Before
     public void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();

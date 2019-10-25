@@ -1,14 +1,12 @@
 package com.sybd.znld.environment;
 
-import org.apache.zookeeper.*;
-import org.apache.zookeeper.data.Stat;
 
 import java.util.concurrent.CountDownLatch;
 
 public class ZookeeperTest {
     public static void main(String[] args) throws Exception {
         //由于连接zk需要时间，所以这里使用countDownLatch
-        final var countDownLatch = new CountDownLatch(1);
+        /*final var countDownLatch = new CountDownLatch(1);
         var client = new ZooKeeper("192.168.11.101:2181", 3000, event -> {
             if (Watcher.Event.KeeperState.SyncConnected.equals(event.getState())){
                 System.out.println("连接成功" + event);
@@ -27,6 +25,6 @@ public class ZookeeperTest {
             }
         }, stat);
 
-        System.in.read();
+        System.in.read();*/
     }
 }

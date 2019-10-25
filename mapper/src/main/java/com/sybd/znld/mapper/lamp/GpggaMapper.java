@@ -13,4 +13,6 @@ public interface GpggaMapper {
     GpggaModel selectByFilename(@Param("filename") String filename);
     List<GpggaModel> selectBetween(@Param("beginTime") LocalDateTime beginTime, @Param("endTime") LocalDateTime endTime);
     List<String> listFiles();
+    List<GpggaModel> list();
+    int delete(@Param("filename") String filename);
 }

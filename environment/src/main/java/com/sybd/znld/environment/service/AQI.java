@@ -20,16 +20,43 @@ public class AQI {
     public static final List<Integer> O3_1_HOUR = List.of(0, 160, 200, 300, 400, 800, 1000, 1200);
     public static final List<Integer> O3_8_HOUR = List.of(0, 100, 160, 215, 265, 800);
     public static final List<Integer> PM25_24_HOUR = List.of(0, 35, 75, 115, 150, 250, 350, 500);
+    public static final String SO2_NAME_VALUE = "SO2";
+    public static final String NO2_NAME_VALUE = "NO2";
+    public static final String CO_NAME_VALUE = "CO";
+    public static final String O3_NAME_VALUE = "O3";
+    public static final String PM10_NAME_VALUE = "PM10";
+    public static final String PM25_NAME_VALUE = "PM2.5";
 
-    public static AQIResult of1Hour(double so2, double no2, double co, double o3, double pm10, double pm25) {
+    public static AQIResult of1Hour(Double so2, Double no2, Double co, Double o3, Double pm10, Double pm25, Double o3_8, Double pm10_24, Double pm25_24) {
         var result = new AQIResult();
         var map = new HashMap<String, Double>();
-        map.put("SO2", of1Hour("SO2", so2));
-        map.put("NO2", of1Hour("NO2", no2));
-        map.put("CO", of1Hour("CO", co));
-        map.put("O3", of8Hour("O3", o3));
-        map.put("PM10", of24Hour("PM10", pm10));
-        map.put("PM25", of24Hour("PM25", pm25));
+        if(so2 != null){
+            map.put("SO2", of1Hour(SO2_NAME_VALUE, so2));
+        }
+        if(no2 != null){
+            map.put("NO2", of1Hour(NO2_NAME_VALUE, no2));
+        }
+        if(co != null){
+            map.put("CO", of1Hour(CO_NAME_VALUE, co));
+        }
+        if(o3 != null){
+            map.put("O3", of1Hour(O3_NAME_VALUE, o3));
+        }
+        if(pm10 != null){
+            map.put("PM10", of1Hour(PM10_NAME_VALUE, pm10));
+        }
+        if(pm25 != null){
+            map.put("PM2.5", of1Hour(PM25_NAME_VALUE, pm25));
+        }
+        if(o3_8 != null){
+            map.put("O3_8", of8Hour(O3_NAME_VALUE, o3_8));
+        }
+        if(pm10_24 != null){
+            map.put("PM10_24", of24Hour(PM10_NAME_VALUE, pm10_24));
+        }
+        if(pm25_24 != null){
+            map.put("PM2.5_24", of24Hour(PM25_NAME_VALUE, pm25_24));
+        }
         var items = new ArrayList<>(map.entrySet());
         items.sort(Comparator.comparingDouble(Map.Entry::getValue));
         var theMax = items.get(items.size() - 1); // 最后一个即最大值
@@ -37,7 +64,7 @@ public class AQI {
         var nf = NumberFormat.getNumberInstance();
         nf.setMaximumFractionDigits(2);
         result.value = Float.parseFloat(nf.format(theMaxValue));
-        result.primary = theMax.getKey();
+        result.primary = theMax.getKey().split("_")[0]; // 如果有后缀的话，去掉，如PM10_24，去掉_24
         if(theMaxValue >= 0 && theMaxValue <= 50){
             result.describe = "优";
         }else if(theMaxValue > 50 && theMaxValue <= 100){
@@ -54,15 +81,30 @@ public class AQI {
         return result;
     }
 
-    public static AQIResult of24Hour(double so2, double no2, double co, double o3, double pm10, double pm25){
+    public static AQIResult of24Hour(Double so2, Double no2, Double co, Double o3_1, Double pm10, Double pm25, Double o3_8){
         var result = new AQIResult();
         var map = new HashMap<String, Double>();
-        map.put("SO2", of24Hour("SO2", so2));
-        map.put("NO2", of24Hour("NO2", no2));
-        map.put("CO", of24Hour("CO", co));
-        map.put("O3", of24Hour("O3", o3));
-        map.put("PM10", of24Hour("PM10", pm10));
-        map.put("PM25", of24Hour("PM25", pm25));
+        if(so2 != null){
+            map.put("SO2", of24Hour(SO2_NAME_VALUE, so2));
+        }
+        if(no2 != null){
+            map.put("NO2", of24Hour(NO2_NAME_VALUE, no2));
+        }
+        if(co != null){
+            map.put("CO", of24Hour(CO_NAME_VALUE, co));
+        }
+        if(o3_1 != null){
+            map.put("O3_1", of1Hour(O3_NAME_VALUE, o3_1));
+        }
+        if(pm10 != null){
+            map.put("PM10", of24Hour(PM10_NAME_VALUE, pm10));
+        }
+        if(pm25 != null){
+            map.put("PM25", of24Hour(PM25_NAME_VALUE, pm25));
+        }
+        if(o3_8 != null){
+            map.put("O3_8", of8Hour(O3_NAME_VALUE, o3_8));
+        }
         var items = new ArrayList<>(map.entrySet());
         items.sort(Comparator.comparingDouble(Map.Entry::getValue));
         var theMax = items.get(items.size() - 1); // 最后一个即最大值
@@ -70,7 +112,7 @@ public class AQI {
         var nf = NumberFormat.getNumberInstance();
         nf.setMaximumFractionDigits(2);
         result.value = Float.parseFloat(nf.format(theMaxValue));
-        result.primary = theMax.getKey();
+        result.primary = theMax.getKey().split("_")[0];
         if(theMaxValue >= 0 && theMaxValue <= 50){
             result.describe = "优";
         }else if(theMaxValue > 50 && theMaxValue <= 100){
@@ -95,7 +137,7 @@ public class AQI {
         var minIAQI = 0;
         var maxIAQI = 0;
         switch (type){
-            case "SO2":
+            case SO2_NAME_VALUE:
                 for(var i = 0 ; i < SO2_1_HOUR.size(); i++){
                     if(value <= SO2_1_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -110,7 +152,7 @@ public class AQI {
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
-            case "NO2":
+            case NO2_NAME_VALUE:
                 minValue = 0;
                 maxValue = 0;
                 index = 0;
@@ -128,7 +170,7 @@ public class AQI {
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
-            case "CO":
+            case CO_NAME_VALUE:
                 minValue = 0;
                 maxValue = 0;
                 index = 0;
@@ -146,7 +188,7 @@ public class AQI {
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
-            case "O3":
+            case O3_NAME_VALUE:
                 minValue = 0;
                 maxValue = 0;
                 index = 0;
@@ -174,7 +216,7 @@ public class AQI {
         var index = 0;
         var minIAQI = 0;
         var maxIAQI = 0;
-        if ("O3".equals(type)) {
+        if (O3_NAME_VALUE.equals(type)) {
             for (var i = 0; i < O3_8_HOUR.size(); i++) {
                 if (value <= O3_8_HOUR.get(i)) { // 找到最高值
                     index = i; // 最高位索引
@@ -199,7 +241,7 @@ public class AQI {
         var minIAQI = 0;
         var maxIAQI = 0;
         switch (type){
-            case "SO2":
+            case SO2_NAME_VALUE:
                 for(var i = 0 ; i < SO2_24_HOUR.size(); i++){
                     if(value <= SO2_24_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -214,7 +256,7 @@ public class AQI {
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
-            case "NO2":
+            case NO2_NAME_VALUE:
                 minValue = 0;
                 maxValue = 0;
                 index = 0;
@@ -232,7 +274,7 @@ public class AQI {
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
-            case "CO":
+            case CO_NAME_VALUE:
                 minValue = 0;
                 maxValue = 0;
                 index = 0;
@@ -250,7 +292,7 @@ public class AQI {
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
-            case "PM10":
+            case PM10_NAME_VALUE:
                 minValue = 0;
                 maxValue = 0;
                 index = 0;
@@ -267,9 +309,8 @@ public class AQI {
                 minIAQI = IAQI.get(index - 1);
                 maxIAQI = IAQI.get(index);
                 result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
-                log.debug("PM10:"+result);
                 break;
-            case "PM25":
+            case PM25_NAME_VALUE:
                 minValue = 0;
                 maxValue = 0;
                 index = 0;

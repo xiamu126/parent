@@ -20,6 +20,12 @@ public class MyNumber {
         }catch (Exception ignored){}
         return null;
     }
+    public static Double getDouble(Object num){
+        try{
+            return Double.parseDouble(num.toString());
+        }catch (Exception ignored){}
+        return null;
+    }
     public static Integer getInteger(Object num){
         try{
             return (Integer) num;

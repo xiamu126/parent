@@ -73,7 +73,7 @@
         where a.organization_id = #{organId} and c.environment = true
     </select>
 
-    <select id="selectAvgOfEnvironmentElementByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
+    <select id="selectAvgOfEnvironmentElementBetweenByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, max(at) as at from data_environment
         where device_id = #{deviceId} and at between #{begin} and #{end}
         group by name;
@@ -83,6 +83,19 @@
         select name, round(avg(value), 2) as value, max(at) as at from data_environment
         where device_id = #{deviceId} and
               at between date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval 1 day ) and date_format(now(),'%Y-%m-%d 00:00:00')
+        group by name;
+    </select>
+
+    <select id="selectAvgOfEnvironmentElementLastDayLastHoursByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
+        select name, round(avg(value), 2) as value, max(at) as at from data_environment
+        where device_id = #{deviceId} and
+            at between date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval #{hours} hour) and date_format(now(),'%Y-%m-%d 00:00:00')
+        group by name;
+    </select>
+
+    <select id="selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
+        select name, round(avg(value), 2) as value, max(at) as at from data_environment
+        where device_id = #{deviceId} and at between date_sub(#{begin}, interval #{hours} hour) and #{begin}
         group by name;
     </select>
 
@@ -103,6 +116,12 @@
     <select id="selectAvgOfEnvironmentElementHourlyByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, date_format(at,'%Y-%m-%d %H:00:00') as at from data_environment
         where name = #{name} and device_id = #{deviceId}
+        group by date_format(at,'%Y-%m-%d %H:00:00')
+        order by date_format(at,'%Y-%m-%d %H:00:00') desc limit 24;
+    </select>
+    <select id="selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
+        select name, round(avg(value), 2) as value, date_format(at,'%Y-%m-%d %H:00:00') as at from data_environment
+        where name = #{name} and device_id = #{deviceId} and at <![CDATA[ >= ]]>  #{end}
         group by date_format(at,'%Y-%m-%d %H:00:00')
         order by date_format(at,'%Y-%m-%d %H:00:00') desc limit 24;
     </select>

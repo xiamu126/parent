@@ -348,7 +348,7 @@ public class MiniStarController implements IMiniStarController{
         var errCount = 0;
         for(var e : effects){
             var tmp = this.miniStarEffectMapper.selectByOrganIdAndName(organId, e.name);
-            if(tmp != null){
+            if(tmp == null){
                 errCount++;
                 continue;
             }

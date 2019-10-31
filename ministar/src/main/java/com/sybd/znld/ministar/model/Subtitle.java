@@ -38,7 +38,7 @@ public class Subtitle implements Serializable {
         for(var c : this.colors){
             var tmp =  new Rgb();
             tmp.r = c.r * brightness / 100;
-            tmp.g = c.r * brightness / 100;
+            tmp.g = c.g * brightness / 100;
             tmp.b = c.b * brightness / 100;
             colors.append(tmp.toString());
         }

@@ -2,7 +2,7 @@ version: '3.7'
 services:
   redis:
     container_name: znld-redis
-    image: redis:5.0.5
+    image: redis:5.0.6
     restart: on-failure
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -23,7 +23,7 @@ services:
         target: /data
     ports:
       - target: 6379
-        published: 8380
+        published: 8390
         protocol: tcp
         mode: host
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]

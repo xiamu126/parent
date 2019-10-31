@@ -41,7 +41,7 @@ public class AqiTest {
         var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
         result.at = MyDateTime.toTimestamp(avgs.get(0).at);
         log.debug(result.toString());*/
-        var tmp = AQI.of24Hour(1, 1, 1, 1, 38, 1);
+        var tmp = AQI.of24Hour(1.0, 1.0, 1.0, 1.0, 38.0, 1.0,1.0);
         log.debug("");
     }
 }

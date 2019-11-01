@@ -20,9 +20,9 @@
         select filename from gpgga order by end_time desc limit 7;
     </select>
     <select id="list" resultType="com.sybd.znld.model.lamp.GpggaModel">
-        select * from gpgga order by end_time desc limit 7;
+        select * from gpgga where status=0 order by end_time desc limit 7;
     </select>
-    <delete id="delete">
-        delete from gpgga where filename = #{filename};
-    </delete>
+    <update id="delete">
+        update gpgga set status=1 where filename = #{filename};
+    </update>
 </mapper>

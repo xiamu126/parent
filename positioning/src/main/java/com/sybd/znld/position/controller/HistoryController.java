@@ -2,6 +2,7 @@ package com.sybd.znld.position.controller;
 
 import com.sybd.znld.mapper.lamp.GpggaMapper;
 import com.sybd.znld.position.controller.dto.HistoryItem;
+import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -23,8 +24,8 @@ public class HistoryController {
         var items = models.stream().map(m -> {
            var item = new HistoryItem();
             item.name = m.filename;
-            item.beginTime = m.beginTime;
-            item.endTime = m.endTime;
+            item.beginTime = MyDateTime.toTimestamp(m.beginTime);
+            item.endTime = MyDateTime.toTimestamp(m.endTime);
             return item;
         });
         return items.collect(Collectors.toList());

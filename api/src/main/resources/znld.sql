@@ -7,7 +7,8 @@ create table gpgga(
     begin_time timestamp not null default CURRENT_TIMESTAMP,
     end_time timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
     content longtext not null,
-    filename varchar(100)
+    filename varchar(100),
+    status tinyint not null default 0 comment '0：未删除，1：已删除'
 );
 
 create table ministar_effect(

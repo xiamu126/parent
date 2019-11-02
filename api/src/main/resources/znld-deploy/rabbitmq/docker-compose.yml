@@ -1,16 +1,16 @@
 version: '3.7'
 services:
   api:
-    container_name: znld-rabbitmq
-    image: rabbitmq:3.7.18-management
+    container_name: rabbitmq-test
+    image: rabbitmq:3.8.0-management
     restart: on-failure
     ports:
       - target: 5672
-        published: 5672
+        published: 8392
         protocol: tcp
         mode: host
       - target: 15672
-        published: 15672
+        published: 8393
         protocol: tcp
         mode: host
     volumes:

@@ -17,7 +17,8 @@ public class SubtitleForRegion extends Subtitle implements Serializable {
 
     public boolean isValid(){
         if(!MyString.isUuid(regionId)) return false;
-        if(!MyDateTime.isAllFutureAndStrict(beginTimestamp, endTimestamp)) return false;
+        //if(!MyDateTime.isAllFutureAndStrict(beginTimestamp, endTimestamp)) return false;
+        if(!MyDateTime.isFuture(endTimestamp)) return false;
         return super.isValid();
     }
 

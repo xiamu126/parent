@@ -1,5 +1,6 @@
 package com.sybd.znld.environment.controller;
 
+import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.environment.service.AQI;
 import com.sybd.znld.environment.service.dto.AQIResult;
 import com.sybd.znld.environment.service.dto.AVGResult;
@@ -9,6 +10,7 @@ import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.lamp.dto.ElementAvgResult;
 import com.sybd.znld.model.lamp.dto.LampWithLocation;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MySignature;
 import com.sybd.znld.util.MyString;
 import io.swagger.annotations.Api;
@@ -16,8 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.NumberFormat;
@@ -38,6 +43,7 @@ public class RegionController implements IRegionController {
     private final DataLocationMapper dataLocationMapper;
     private final LampMapper lampMapper;
     private final RedissonClient accountRedis;
+    private final RestTemplate restTemplate;
 
     //@Reference(url = "dubbo://localhost:18085")
     //private ISigService sigService;
@@ -46,11 +52,12 @@ public class RegionController implements IRegionController {
     @Autowired
     public RegionController(RegionMapper regionMapper,
                             DataLocationMapper dataLocationMapper, LampMapper lampMapper,
-                            @Qualifier("account-redis") RedissonClient accountRedis) {
+                            @Qualifier("account-redis") RedissonClient accountRedis, RestTemplate restTemplate) {
         this.regionMapper = regionMapper;
         this.dataLocationMapper = dataLocationMapper;
         this.lampMapper = lampMapper;
         this.accountRedis = accountRedis;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -65,15 +72,29 @@ public class RegionController implements IRegionController {
             lampWithLocation.deviceName = l.deviceName;
             var jingdu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗经度");
             var weidu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗纬度");
-            lampWithLocation.longitude = jingdu == null ? "" : jingdu.value.toString();
-            lampWithLocation.latitude = weidu == null ? "" : weidu.value.toString();
-
+            lampWithLocation.longitude = jingdu == null ? 0.0 : MyNumber.getDouble(jingdu.value.toString());
+            lampWithLocation.latitude = weidu == null ? 0.0 : MyNumber.getDouble(weidu.value.toString());
+            var builder = UriComponentsBuilder
+                    .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
+                    .queryParam("coords", lampWithLocation.longitude+","+lampWithLocation.latitude)
+                    .queryParam("from", 1)
+                    .queryParam("to", 5)
+                    .queryParam("ak", "x1ySji2AxajkmThvd8weGwOQ");
+            var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
+            var body = converted.getBody();
+            if(body != null){
+                int status = JsonPath.read(body, "$.status");
+                if(status == 0){
+                    lampWithLocation.longitude = JsonPath.read(body, "$.result[0].x");
+                    lampWithLocation.latitude = JsonPath.read(body, "$.result[0].y");
+                }
+            }
             result.add(lampWithLocation);
         }
         return result;
     }
 
-    @GetMapping(value="{organId:^[0-9a-f]{32}$}/2", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @GetMapping(value="{organId:^[0-9a-f]{32}$}/2", produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<LampWithLocation> getRegionOfEnvironmentList2(@PathVariable(name = "organId") String organId,
                                                               @RequestHeader("now") Long now,
                                                               @RequestHeader("nonce") String nonce,
@@ -116,11 +137,27 @@ public class RegionController implements IRegionController {
 
     @Override
     public AQIResult getAQILastHourOfDevice(Integer deviceId) {
-        var avgs = this.regionMapper.selectAvgOfEnvironmentElementLastHourByDeviceId(deviceId);
-        if(avgs == null || avgs.isEmpty()) return null;
+        var avgs = this.regionMapper.selectAvgOfEnvironmentElementLastHourByDeviceId(deviceId); // 过去1小时平均
+        var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursByDeviceId(deviceId, 8);
+        var avgs24 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursByDeviceId(deviceId, 24);
+        if(avgs == null || avgs.isEmpty() || avgs8 == null || avgs8.isEmpty() || avgs24 == null || avgs24.isEmpty()) return null;
+        // SO2，NO2，O3，CO，PM10，PM2.5 1小时平均
+        // O3 8小时滑动平均
+        // PM10，PM2.5 24小时滑动平均
         Map<String, Double> map = new HashMap<>();
         avgs.forEach(a -> map.put(a.name, a.value));
-        var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+        avgs8.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_8", o3.value));
+        avgs24.stream().filter(a -> a.name.equals("PM10")).findFirst().ifPresent(pm10 -> map.put(pm10.name+"_24", pm10.value));
+        avgs24.stream().filter(a -> a.name.equals("PM2.5")).findFirst().ifPresent(pm25 -> map.put(pm25.name+"_24", pm25.value));
+        var result = AQI.of1Hour(map.get("SO2"),
+                map.get("NO2"),
+                map.get("CO"),
+                map.get("O3"),
+                map.get("PM10"),
+                map.get("PM2.5"),
+                map.get("O3_8"),
+                map.get("PM10_24"),
+                map.get("PM2.5_24"));
         result.at = MyDateTime.toTimestamp(avgs.get(0).at);
         return result;
     }
@@ -128,10 +165,22 @@ public class RegionController implements IRegionController {
     @Override
     public AQIResult getAQILastDayOfDevice(Integer deviceId) {
         var avgs = this.regionMapper.selectAvgOfEnvironmentElementLastDayByDeviceId(deviceId);
+        var avgs1 = this.regionMapper.selectAvgOfEnvironmentElementLastDayLastHoursByDeviceId(deviceId, 1); // 昨天过去1小时平均
+        var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastDayLastHoursByDeviceId(deviceId, 8); // 昨天过去8小时平均
         if(avgs == null || avgs.isEmpty()) return null;
+        // SO2，NO2，CO，PM10，PM2.5 24小时平均
+        // O3 1小时滑动平均
+        // O3 8小时滑动平均
         Map<String, Double> map = new HashMap<>();
         avgs.forEach(a -> map.put(a.name, a.value));
-        var result = AQI.of24Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM10"), map.get("PM2.5"));
+        avgs1.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_1", o3.value));
+        avgs8.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_8", o3.value));
+        var result = AQI.of24Hour(map.get("SO2"),
+                map.get("NO2"),
+                map.get("CO"),
+                map.get("O3_1"),
+                map.get("PM10"),
+                map.get("PM2.5"), map.get("O3_8"));
         result.at = MyDateTime.toTimestamp(avgs.get(0).at);
         return result;
     }
@@ -143,13 +192,29 @@ public class RegionController implements IRegionController {
         var begin = end.minusHours(1);
         var list = new ArrayList<AQIResult>();
         for(var i = 1; i <= 24; i++){ // 过去二十四个小时
-            var avgs = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(deviceId, begin, end);
+            // SO2，NO2，O3，CO，PM10，PM2.5 1小时平均
+            // O3 8小时滑动平均
+            // PM10，PM2.5 24小时滑动平均
+            var avgs = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(deviceId, begin, end);
+            var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, begin,8);
+            var avgs24 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, begin,24);
             end = begin;
             begin = end.minusHours(1);
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            avgs8.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_8", o3.value));
+            avgs24.stream().filter(a -> a.name.equals("PM10")).findFirst().ifPresent(pm10 -> map.put(pm10.name+"_24", pm10.value));
+            avgs24.stream().filter(a -> a.name.equals("PM2.5")).findFirst().ifPresent(pm25 -> map.put(pm25.name+"_24", pm25.value));
+            var result = AQI.of1Hour(map.get("SO2"),
+                    map.get("NO2"),
+                    map.get("CO"),
+                    map.get("O3"),
+                    map.get("PM10"),
+                    map.get("PM2.5"),
+                    map.get("O3_8"),
+                    map.get("PM10_24"),
+                    map.get("PM2.5_24"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -163,14 +228,20 @@ public class RegionController implements IRegionController {
         var begin = end.minusDays(1);
         var list = new ArrayList<AQIResult>();
         for(var i = 1; i <= 30; i++){ // 过去30天
-            //log.debug(begin.toString() + "," + end.toString());
-            var avgs = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(deviceId, begin, end);
+            // SO2，NO2，CO，PM10，PM2.5 24小时平均
+            // O3 1小时滑动平均
+            // O3 8小时滑动平均
+            var avgs = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(deviceId, begin, end);
+            var avgs1 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, begin,1); // 昨天过去1小时平均
+            var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, begin,8); // 昨天过去8小时平均
             end = begin;
             begin = end.minusDays(1);
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            avgs1.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_1", o3.value));
+            avgs8.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_8", o3.value));
+            var result = AQI.of24Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3_1"), map.get("PM10"), map.get("PM2.5"),map.get("O3_8"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -178,7 +249,7 @@ public class RegionController implements IRegionController {
     }
 
     @Override
-    public List<AQIResult> getAQIMonthlyOfDevice(Integer deviceId) {
+    public List<AQIResult> getAQIMonthlyOfDevice(Integer deviceId) { // 忽略了O3
         var now = LocalDateTime.now().minusMonths(1); // 从上个月开始
         var yearMonthObject = YearMonth.of(now.getYear(), now.getMonth());
         var daysInMonth = yearMonthObject.lengthOfMonth();
@@ -186,7 +257,7 @@ public class RegionController implements IRegionController {
         var begin = LocalDateTime.of(now.getYear(), now.getMonth(), 1, 0, 0, 0);
         var list = new ArrayList<AQIResult>();
         for(var i = 1; i <= 12; i++){ // 过去12个月
-            var avgs = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(deviceId, begin, end);
+            var avgs = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(deviceId, begin, end);
             now = end.minusMonths(1);
             yearMonthObject = YearMonth.of(now.getYear(), now.getMonth());
             daysInMonth = yearMonthObject.lengthOfMonth();
@@ -195,7 +266,7 @@ public class RegionController implements IRegionController {
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            var result = AQI.of24Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM10"), map.get("PM2.5"),null);
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -235,13 +306,26 @@ public class RegionController implements IRegionController {
                 theBegin = theEnd.minusHours(1);
                 continue;
             }
-            var avgs = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(deviceId, theBegin, theEnd);
+            var avgs = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(deviceId, theBegin, theEnd);
+            var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, theBegin,8);
+            var avgs24 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, theBegin,24);
             theEnd = theBegin;
             theBegin = theEnd.minusHours(1);
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of1Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"));
+            avgs8.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_8", o3.value));
+            avgs24.stream().filter(a -> a.name.equals("PM10")).findFirst().ifPresent(pm10 -> map.put(pm10.name+"_24", pm10.value));
+            avgs24.stream().filter(a -> a.name.equals("PM2.5")).findFirst().ifPresent(pm25 -> map.put(pm25.name+"_24", pm25.value));
+            var result = AQI.of1Hour(map.get("SO2"),
+                    map.get("NO2"),
+                    map.get("CO"),
+                    map.get("O3"),
+                    map.get("PM10"),
+                    map.get("PM2.5"),
+                    map.get("O3_8"),
+                    map.get("PM10_24"),
+                    map.get("PM2.5_24"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -281,13 +365,17 @@ public class RegionController implements IRegionController {
                 theBegin = theEnd.minusDays(1);
                 continue;
             }
-            var avgs = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(deviceId, theBegin, theEnd);
+            var avgs = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(deviceId, theBegin, theEnd);
+            var avgs1 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, theBegin,1); // 昨天过去1小时平均
+            var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, theBegin,8); // 昨天过去8小时平均
             theEnd = theBegin;
             theBegin = theEnd.minusDays(1);
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of24Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM2.5"), map.get("PM10"));
+            avgs1.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_1", o3.value));
+            avgs8.stream().filter(a -> a.name.equals("O3")).findFirst().ifPresent(o3 -> map.put(o3.name+"_8", o3.value));
+            var result = AQI.of24Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3_1"), map.get("PM2.5"), map.get("PM10"), map.get("O3_8"));
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -295,7 +383,7 @@ public class RegionController implements IRegionController {
     }
 
     @Override
-    public List<AQIResult> getAQIMonthlyOfDeviceBetween(Integer deviceId, Long begin, Long end) {
+    public List<AQIResult> getAQIMonthlyOfDeviceBetween(Integer deviceId, Long begin, Long end) { // 忽略O3
         if(!MyDateTime.isAllPastAndStrict(begin, end)){
             log.debug("参数错误，开始结束时间并非按照严格的过去时间排列");
             return null;
@@ -326,7 +414,7 @@ public class RegionController implements IRegionController {
                 theBegin = LocalDateTime.of(now.getYear(), now.getMonth(), 1, 0, 0, 0);
                 continue;
             }
-            var avgs = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(deviceId, theBegin, theEnd);
+            var avgs = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(deviceId, theBegin, theEnd);
             now = theEnd.minusMonths(1);
             yearMonthObject = YearMonth.of(now.getYear(), now.getMonth());
             daysInMonth = yearMonthObject.lengthOfMonth();
@@ -335,7 +423,7 @@ public class RegionController implements IRegionController {
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
-            var result = AQI.of24Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM2.5"), map.get("PM10"));
+            var result = AQI.of24Hour(map.get("SO2"), map.get("NO2"), map.get("CO"), map.get("O3"), map.get("PM2.5"), map.get("PM10"), null);
             result.at = MyDateTime.toTimestamp(avgs.get(0).at);
             list.add(result);
         }
@@ -344,14 +432,16 @@ public class RegionController implements IRegionController {
 
     @Override
     public Map<String, List<AVGResult>> getAvgHourlyOfDevice(Integer deviceId) {
-        var avgsOfCo = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "CO");
-        var avgsOfNo2 = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "NO2");
-        var avgsOfSo2 = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "SO2");
-        var avgsOfO3 = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "O3");
-        var avgsOfPm25 = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "PM2.5");
-        var avgsOfPm10 = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "PM10");
-        var avgsOfWendu = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "温度");
-        var avgsOfShidu = this.regionMapper.selectAvgOfEnvironmentElementHourlyByDeviceId(deviceId, "湿度");
+        var now = LocalDateTime.now();
+        var end = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0,0,0);
+        var avgsOfCo = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "CO", end);
+        var avgsOfNo2 = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "NO2", end);
+        var avgsOfSo2 = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "SO2", end);
+        var avgsOfO3 = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "O3", end);
+        var avgsOfPm25 = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "PM2.5", end);
+        var avgsOfPm10 = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "PM10", end);
+        var avgsOfWendu = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "温度", end);
+        var avgsOfShidu = this.regionMapper.selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(deviceId, "湿度", end);
 
         return getAvg(avgsOfCo, avgsOfNo2, avgsOfSo2, avgsOfO3, avgsOfPm25, avgsOfPm10, avgsOfWendu, avgsOfShidu, "hourly");
     }
@@ -375,6 +465,7 @@ public class RegionController implements IRegionController {
         var result = new HashMap<String, List<AVGResult>>();
         var nf = NumberFormat.getNumberInstance();
         nf.setMaximumFractionDigits(2);
+
         for(var a : avgsOfCo){
             var tmp = new AVGResult();
             tmp.value = Float.parseFloat(nf.format(a.value));
@@ -382,15 +473,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);
@@ -405,15 +496,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);
@@ -428,15 +519,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);
@@ -451,15 +542,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                   // at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);
@@ -474,15 +565,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);
@@ -497,15 +588,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);
@@ -520,15 +611,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);
@@ -543,15 +634,15 @@ public class RegionController implements IRegionController {
             var at = a.at;
             switch (type) {
                 case "hourly":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), at.getHour(), 0, 0);
                     break;
                 case "daily":
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), at.getDayOfMonth(), 0, 0, 0);
                     break;
                 case "monthly":
                     var yearMonthObject = YearMonth.of(at.getYear(), at.getMonth());
                     var daysInMonth = yearMonthObject.lengthOfMonth();
-                    at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
+                    //at = LocalDateTime.of(at.getYear(), at.getMonth(), daysInMonth, 0, 0, 0);
                     break;
             }
             tmp.at = MyDateTime.toTimestamp(at);

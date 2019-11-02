@@ -15,7 +15,8 @@ public class SubtitleForDevice extends Subtitle implements Serializable {
 
     public boolean isValid(){
         if(!MyNumber.isPositive(deviceId)) return false;
-        if(!MyDateTime.isAllFutureAndStrict(beginTimestamp, endTimestamp)) return false;
+        //if(!MyDateTime.isAllFutureAndStrict(beginTimestamp, endTimestamp)) return false;
+        if(!MyDateTime.isFuture(endTimestamp)) return false;
         return super.isValid();
     }
 

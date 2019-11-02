@@ -6,6 +6,7 @@ import com.sybd.znld.model.lamp.dto.Lamp;
 import com.sybd.znld.model.lamp.dto.LampWithLocation;
 import com.sybd.znld.service.lamp.IRegionService;
 import com.sybd.znld.service.rbac.IRbacService;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import com.sybd.znld.web.controller.region.dto.RegionResult;
 import com.sybd.znld.web.controller.region.dto.RegionTreeResult;
@@ -84,8 +85,8 @@ public class RegionController implements IRegionController {
             lampWithLocation.deviceName = l.deviceName;
             var jingdu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗经度");
             var weidu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗纬度");
-            lampWithLocation.longitude = jingdu == null ? "" : jingdu.value.toString();
-            lampWithLocation.latitude = weidu == null ? "" : weidu.value.toString();
+            lampWithLocation.longitude = jingdu == null ? null : MyNumber.getDouble(jingdu.value);
+            lampWithLocation.latitude = weidu == null ? null : MyNumber.getDouble(weidu.value);
 
             result.add(lampWithLocation);
         }

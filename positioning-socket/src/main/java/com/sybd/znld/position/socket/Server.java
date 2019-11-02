@@ -1,20 +1,17 @@
 package com.sybd.znld.position.socket;
 
-import com.rabbitmq.client.BuiltinExchangeType;
-import com.rabbitmq.client.ConnectionFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
@@ -36,6 +33,7 @@ public class Server {
                             pipeline.addLast(new StringDecoder(CharsetUtil.UTF_8));
                             //pipeline.addLast(new LoginHandler());
                             pipeline.addLast(new Handler());
+                            pipeline.addLast(new IdleStateHandler(0, 60, 0, TimeUnit.SECONDS));
                         }
                     });
             log.debug("Server启动");

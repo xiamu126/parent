@@ -1,16 +1,23 @@
 package com.sybd.znld.position.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import com.sybd.znld.model.lamp.GpggaModel;
 import com.sybd.znld.position.App;
 import com.sybd.znld.position.model.Point;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.sybd.znld.mapper.lamp.GpggaMapper;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 public class HistoryHandler implements WebSocketHandler {
@@ -23,16 +30,41 @@ public class HistoryHandler implements WebSocketHandler {
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message){
-        var gpggaMapper = App.ctx.getBean(GpggaMapper.class);
-        var ret = gpggaMapper.selectByFilename(message.getPayload().toString());
+        var mapper = new ObjectMapper();
         List<Point> points = new ArrayList<>();
+        GpggaModel ret = null;
+        var gpggaMapper = App.ctx.getBean(GpggaMapper.class);
+        var msg = message.getPayload().toString();
+        if(msg.equals("list")){
+            try {
+                var files = gpggaMapper.listFiles();
+                session.sendMessage(new TextMessage(mapper.writeValueAsString(files)));
+            } catch (IOException ex) {
+                log.error(ex.getMessage());
+                ex.printStackTrace();
+            }
+        }else if(msg.matches("^draw,.+")){
+            var bag = msg.split(",");
+            var filename = bag[1].trim();
+            ret = gpggaMapper.selectByFilename(filename);
+            if(ret != null){
+                try {
+                    session.sendMessage(new TextMessage(ret.content));// 保存的内容为转换为百度坐标系的点
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    log.error(ex.getMessage());
+                }
+            }
+            return;
+        }
+
+        /*ret = gpggaMapper.selectByFilename(message.getPayload().toString());
         var maxCount = 10;
         var count = 0;
         if(ret != null){
             var lines = ret.content.split("\r\n");
             var lng = 0.0;
             var lat = 0.0;
-            var mapper = new ObjectMapper();
             for(var line : lines){
                 var tmp = line.split(",");
                 try{
@@ -72,7 +104,24 @@ public class HistoryHandler implements WebSocketHandler {
                     count = 0;
                 }
             }
-        }
+            if(!points.isEmpty()){
+                try{
+                    var result = mapper.writeValueAsString(points);
+                    log.debug(result);
+                    points.clear();
+                    session.sendMessage(new TextMessage(result));
+                }catch (Exception ex){
+                    log.error(ex.getMessage());
+                    ex.printStackTrace();
+                    try {
+                        session.close(CloseStatus.SERVER_ERROR);
+                    } catch (IOException ex2) {
+                        log.error(ex2.getMessage());
+                        ex2.printStackTrace();
+                    }
+                }
+            }
+        }*/
     }
 
     @Override

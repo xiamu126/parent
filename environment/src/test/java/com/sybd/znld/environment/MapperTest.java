@@ -51,7 +51,7 @@ public class MapperTest {
         var now = LocalDateTime.now();
         var end = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), now.getHour(), 0, 0);
         var begin = end.minusHours(1);
-        var list = this.regionMapper.selectAvgOfEnvironmentElementByDeviceId(533263283, begin, end);
+        var list = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(533263283, begin, end);
         Assert.notNull(list);
     }
 
@@ -64,6 +64,12 @@ public class MapperTest {
     @Test
     public void test5(){
         var tmp = this.lampMapper.selectLampSummary();
+        Assert.notNull(tmp);
+    }
+
+    @Test
+    public void test6(){
+        var tmp = this.regionMapper.selectAvgOfEnvironmentElementLastHoursByDeviceId(533263283, 8);
         Assert.notNull(tmp);
     }
 }

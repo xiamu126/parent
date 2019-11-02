@@ -15,7 +15,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(new PositioningWebSocketHandler(),"/positioning/data/news")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
-        registry.addHandler(new HistoryHandler(),"/positioning/data/history").setAllowedOrigins("*"); //支持websocket 的访问链接
+        registry.addHandler(new HistoryHandler(),"/positioning/data/history")
+                .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
        /* registry.addHandler(new PositioningWebSocketHandler(),"/positioning/data/news")
                 .addInterceptors(new MyHandshakeInterceptor()).withSockJS(); //不支持websocket的访问链接*/
     }

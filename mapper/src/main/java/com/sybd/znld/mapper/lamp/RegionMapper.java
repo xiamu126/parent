@@ -26,9 +26,19 @@ public interface RegionMapper {
     List<Lamp> selectLampsByRegionId(String regionId);
     List<LampWithLocation> selectLampsWithLocationByRegionId(String regionId);
     List<Lamp> selectLampsOfEnvironment(String organId);
-    List<ElementAvgResult> selectAvgOfEnvironmentElementByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+    // 某个时间区间内的平均值
+    List<ElementAvgResult> selectAvgOfEnvironmentElementBetweenByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+    List<ElementAvgResult> selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("hours") Integer hours);
+    // 昨天的平均值
     List<ElementAvgResult> selectAvgOfEnvironmentElementLastDayByDeviceId(Integer deviceId);
+    // 昨天过去N小时的平均值（即昨天23:59:59为起点往后推N个小时），N不能超过24
+    List<ElementAvgResult> selectAvgOfEnvironmentElementLastDayLastHoursByDeviceId(@Param("deviceId") Integer deviceId, @Param("hours") Integer hours);
+    // 过去1小时平均值
     List<ElementAvgResult> selectAvgOfEnvironmentElementLastHourByDeviceId(Integer deviceId);
+    // 过去N个小时的平均值
+    List<ElementAvgResult> selectAvgOfEnvironmentElementLastHoursByDeviceId(@Param("deviceId") Integer deviceId, @Param("hours") Integer hours);
+    // 获取每个小时的平均值，指定结束时间
+    List<ElementAvgResult> selectAvgOfEnvironmentElementHourlyWithEndTimeByDeviceId(@Param("deviceId") Integer deviceId, @Param("name") String name, @Param("end") LocalDateTime end);
     List<ElementAvgResult> selectAvgOfEnvironmentElementHourlyByDeviceId(@Param("deviceId") Integer deviceId, @Param("name") String name);
     List<ElementAvgResult> selectAvgOfEnvironmentElementDailyByDeviceId(@Param("deviceId") Integer deviceId, @Param("name") String name);
     List<ElementAvgResult> selectAvgOfEnvironmentElementMonthlyByDeviceId(@Param("deviceId") Integer deviceId, @Param("name") String name);

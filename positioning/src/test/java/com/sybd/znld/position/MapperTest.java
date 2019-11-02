@@ -60,7 +60,7 @@ public class MapperTest {
 
     @Test
     public void test5(){
-        var ret = this.gpggaMapper.selectByFilename("filename1231");
+        var ret = this.gpggaMapper.selectByFilename("file_20191023085633_290.log");
         Assert.assertNotNull(ret);
     }
 }

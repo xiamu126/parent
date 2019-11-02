@@ -16,4 +16,13 @@
     <select id="selectByFilename" resultType="com.sybd.znld.model.lamp.GpggaModel">
         select * from gpgga where filename = #{filename};
     </select>
+    <select id="listFiles" resultType="java.lang.String">
+        select filename from gpgga order by end_time desc limit 7;
+    </select>
+    <select id="list" resultType="com.sybd.znld.model.lamp.GpggaModel">
+        select * from gpgga where status=0 order by end_time desc limit 7;
+    </select>
+    <update id="delete">
+        update gpgga set status=1 where filename = #{filename};
+    </update>
 </mapper>

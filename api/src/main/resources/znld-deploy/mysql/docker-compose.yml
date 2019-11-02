@@ -2,15 +2,15 @@ version: '3.7'
 services:
   mysql:
     container_name: znld-mysql
-    image: mysql:8.0.16
+    image: mysql:8.0.18
     ports:
       - target: 3306
-        published: 8307
+        published: 8391
         protocol: tcp
         mode: host
     restart: on-failure
     healthcheck:
-      test: ["CMD", "mysqladmin", "--user=root", "--password=znld@DB#188188", "--silent", "ping"]
+      test: ["CMD", "mysqladmin", "--user=root", "--password=2019", "--silent", "ping"]
       interval: 1m30s
       timeout: 10s
       retries: 3
@@ -27,7 +27,7 @@ services:
         source: ./my.cnf
         target: /etc/mysql/conf.d/my.cnf
     environment:
-      MYSQL_ROOT_PASSWORD: znld@DB#188188
+      MYSQL_ROOT_PASSWORD: 2019
     networks:
       - znld-network
 networks:

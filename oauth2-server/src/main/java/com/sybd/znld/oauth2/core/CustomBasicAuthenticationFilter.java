@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Component
+//@Component
 public class CustomBasicAuthenticationFilter extends BasicAuthenticationFilter {
 
-    @Autowired
+    //@Autowired
     public CustomBasicAuthenticationFilter(final AuthenticationManager authenticationManager) {
         super(authenticationManager);
     }

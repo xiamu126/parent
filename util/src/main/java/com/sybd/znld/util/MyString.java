@@ -159,6 +159,9 @@ public final class MyString {
         out.write("test123".getBytes());// 写入一个换行
         out.flush();
         out.close();*/
+        str = "PM10";
+        var ret = str.split("_");
+        System.out.println(ret[0]);
     }
 }
 

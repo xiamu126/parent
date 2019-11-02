@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  nginx:
+    container_name: znld-zookeeper
+    image: zookeeper:3.4
+    ports:
+      - target: 2181
+        published: 2181
+        protocol: tcp
+        mode: host
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+    networks:
+      - znld-network
+networks:
+    znld-network:
+      driver: bridge
+      name: znld-net

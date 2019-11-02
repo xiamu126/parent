@@ -170,4 +170,10 @@ public class MapperTest {
         var ret = this.miniStarEffectMapper.selectByOrganIdAndName("099060a6971911e9b0790242c0a8b006", "测试景观灯效果9");
         Assert.assertNotNull(ret);
     }
+
+    @Test
+    public void test15(){
+        var ret = this.regionMapper.selectByRegionIdAndUserId("6314f1b056a111e98edc0242ac110007", "a6b354d551f111e9804a0242ac110007");
+        Assert.assertNull(ret);
+    }
 }

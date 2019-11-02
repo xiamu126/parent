@@ -11,23 +11,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.time.LocalDateTime;
 
 @Slf4j
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
+    private String fileName = null;
+    private File file = null;
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        var fileName = "./file_"+ MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3)+".log";
-        var writer = new BufferedWriter(new FileWriter(fileName));
+        var out = new FileOutputStream(file,true);
+
+        //var writer = new BufferedWriter(new FileWriter(file));
+
         var result = (ByteBuf) msg;
         var bytes = new byte[result.readableBytes()];
         result.readBytes(bytes);
-        System.out.println("收到的消息为："+new String(bytes));
-        writer.write(new String(bytes));
+        System.out.println("收到的消息为：" + new String(bytes));
+
+        out.write(bytes);
+        out.flush();
+        out.close();
+
         System.out.println(fileName);
         result.release();
-        writer.close();
+
+        //writer.append(new String(bytes));
+        //writer.flush();
+        //writer.close();
     }
 
     @Override
@@ -37,7 +50,21 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        // 判断是否为合法的登入
+
+    }
+
+    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+
+        fileName = "./file_"+ MyDateTime.toString(LocalDateTime.now(), MyDateTime.FORMAT3)+".log";
+        file = new File(fileName);
         System.out.println("channelActive in server");
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
     }
 }

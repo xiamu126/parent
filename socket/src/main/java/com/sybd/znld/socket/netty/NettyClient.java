@@ -14,7 +14,7 @@ public class NettyClient {
             bootstrap.group(loop)
                     .channel(NioSocketChannel.class)
                     .handler(new NettyClientHandler());
-            var channelFuture = bootstrap.connect("localhost", 8899).sync();
+            var channelFuture = bootstrap.connect("192.168.11.101", 8899).sync();
             channelFuture.channel().writeAndFlush("test");
             channelFuture.channel().closeFuture().sync();
         }finally {

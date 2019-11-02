@@ -95,21 +95,21 @@
 
     <select id="selectAvgOfEnvironmentElementHourlyByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, date_format(at,'%Y-%m-%d %H:00:00') as at from data_environment
-        where name = #{name} and device_id = #{deviceId}
+        where name = #{name} and device_id = #{deviceId} and date_format(at,'%Y-%m-%d') >= date_sub(date_format(now(),'%Y-%m-%d'), interval 1 day)
         group by date_format(at,'%Y-%m-%d %H:00:00')
         order by date_format(at,'%Y-%m-%d %H:00:00') desc limit 24;
     </select>
 
     <select id="selectAvgOfEnvironmentElementDailyByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, date_format(at,'%Y-%m-%d 00:00:00') as at from data_environment
-        where name = #{name} and device_id = #{deviceId}
+        where name = #{name} and device_id = #{deviceId} and date_format(at,'%Y-%m-%d') >= date_sub(date_format(now(),'%Y-%m-%d'), interval 1 month)
         group by date_format(at,'%Y-%m-%d 00:00:00')
         order by date_format(at,'%Y-%m-%d 00:00:00') desc limit 30;
     </select>
 
     <select id="selectAvgOfEnvironmentElementMonthlyByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, date_format(at,'%Y-%m-01 00:00:00') as at from data_environment
-        where name = #{name} and device_id = #{deviceId}
+        where name = #{name} and device_id = #{deviceId} and date_format(at,'%Y-%m') >= date_sub(date_format(now(),'%Y-%m'), interval 1 year)
         group by date_format(at,'%Y-%m-01 00:00:00')
         order by date_format(at,'%Y-%m-01 00:00:00') desc limit 12;
     </select>
@@ -133,5 +133,12 @@
         where name = #{name} and device_id = #{deviceId} and at between #{begin} and #{end}
         group by date_format(at,'%Y-%m-01 00:00:00')
         order by date_format(at,'%Y-%m-01 00:00:00');
+    </select>
+
+    <select id="selectByRegionIdAndUserId" resultType="java.lang.Object">
+        select 1 from region as a
+        left join RBAC_V2.organization as b on a.organization_id = b.id
+        left join RBAC_V2.user as c on c.organization_id = b.id
+        where c.id = #{userId} and a.id = #{regionId};
     </select>
 </mapper>

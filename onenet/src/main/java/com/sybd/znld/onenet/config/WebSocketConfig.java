@@ -22,6 +22,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(new MyWebSocketHandler(),"/onenet/data/news")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
-        //registry.addHandler(new MyWebSocketHandler(),"/com/veg").addInterceptors(new MyHandshakeInterceptor()).withSockJS(); //不支持websocket的访问链接
+        registry.addHandler(new PositioningWebSocketHandler(),"/positioning/data/news")
+                .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
+       /* registry.addHandler(new PositioningWebSocketHandler(),"/positioning/data/news")
+                .addInterceptors(new MyHandshakeInterceptor()).withSockJS(); //不支持websocket的访问链接*/
     }
 }

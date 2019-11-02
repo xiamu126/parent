@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class SubtitleForDevice extends Subtitle implements Serializable {
-    public Integer deviceId;
+    public Integer deviceId = null;
     public Long beginTimestamp;
     public Long endTimestamp;
 

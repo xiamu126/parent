@@ -2,6 +2,13 @@ drop database if exists ZNLD_V4;
 create database ZNLD_V4 default character set utf8mb4 collate utf8mb4_unicode_ci;
 use ZNLD_V4;
 
+create table gpgga(
+    id varchar(32) not null primary key,
+    begin_time timestamp not null default CURRENT_TIMESTAMP,
+    end_time timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+    content longtext not null
+);
+
 create table ministar_effect(
     id int primary key auto_increment,
     name varchar(50) not null,
@@ -26,7 +33,8 @@ create table ministar_task(
     speed int not null,
     brightness int not null,
     title varchar(50) not null,
-    cmd varchar(1024) not null comment '具体的发送给硬件的指令'
+    cmd varchar(1024) not null comment '具体的发送给硬件的指令',
+    trigger_time timestamp not null default CURRENT_TIMESTAMP comment '发生时间'
 );
 
 create table data_environment(

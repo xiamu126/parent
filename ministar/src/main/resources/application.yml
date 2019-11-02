@@ -37,3 +37,11 @@ project:
   cache-of-captcha-expiration-time: 30s
   auth2-token-expiration-time: 7d
   captcha-expiration-time: 30s
+dubbo:
+  application:
+    name: dubbo-app
+  scan:
+    base-packages: com.sybd.znld.ministar
+  registry:
+    address: 192.168.11.101:2181
+    protocol: zookeeper

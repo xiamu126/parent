@@ -1,0 +1,37 @@
+version: '3.7'
+services:
+  nginx:
+    container_name: znld-nginx-test2
+    image: nginx:1.16.1
+    ports:
+      - target: 80
+        published: 9002
+        protocol: tcp
+        mode: host
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "service", "nginx", "status"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/nginx.conf
+      - type: bind
+        source: ./html
+        target: /usr/share/nginx/html
+      - type: bind
+        source: ./
+        target: /var/log/nginx
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

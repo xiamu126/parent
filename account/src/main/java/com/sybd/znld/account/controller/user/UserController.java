@@ -6,6 +6,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.account.config.ProjectConfig;
 import com.sybd.znld.account.controller.user.dto.AccessToken;
+import com.sybd.znld.mapper.rbac.OrganizationMapper;
+import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.model.rbac.dto.CityAndCode;
 import com.sybd.znld.account.controller.user.dto.LoginResult;
 import com.sybd.znld.account.controller.user.dto.NeedCaptchaResult;
 import com.sybd.znld.account.model.LoginInput;
@@ -13,9 +16,7 @@ import com.sybd.znld.account.service.IUserService;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.UserModel;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
-import com.sybd.znld.util.MyDateTime;
-import com.sybd.znld.util.MyIp;
-import com.sybd.znld.util.MyString;
+import com.sybd.znld.util.*;
 import com.wf.captcha.SpecCaptcha;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -49,6 +50,7 @@ public class UserController implements IUserController {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
     private final MongoClient mongoClient;
     private final ProjectConfig projectConfig;
+    //private final ISigService sigService;
 
     @Value("${security.oauth2.client.client-id}")
     private String clientId;
@@ -62,6 +64,11 @@ public class UserController implements IUserController {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private OrganizationMapper organizationMapper;
+    @Autowired
+    private UserMapper userMapper;
+
     @Value("${project.captcha.expiration-time}")
     private Duration captchaExpirationTime;
     @Value("${project.captcha.width}")
@@ -71,6 +78,7 @@ public class UserController implements IUserController {
     @Value("${project.captcha.length}")
     private Integer length;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public UserController(IUserService userService,
                           RedissonClient redissonClient, MongoClient mongoClient, ProjectConfig projectConfig) {
@@ -83,67 +91,124 @@ public class UserController implements IUserController {
     @ApiOperation(value = "获取验证码")
     @GetMapping(value = "login/captcha", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public String getCaptcha(HttpServletRequest request){
+    public String getCaptcha(HttpServletRequest request) {
         var specCaptcha = new SpecCaptcha(this.width, this.height, this.length);
         var verCode = specCaptcha.text().toLowerCase();
-        while(redissonClient.getBucket(verCode).isExists()){
+        while (redissonClient.getBucket(verCode).isExists()) {
             verCode = specCaptcha.text().toLowerCase();
         }
-        redissonClient.getBucket(verCode).set("", this.captchaExpirationTime.toSeconds(), TimeUnit.SECONDS);
+        var tmp = redissonClient.getBucket(verCode);
+        var captchaExpirationTime = this.captchaExpirationTime.toSeconds();
+        tmp.set("", captchaExpirationTime, TimeUnit.SECONDS);
         return specCaptcha.toBase64();
     }
 
     @ApiOperation(value = "登入")
-    @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    @Override
-    public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
-                             HttpServletRequest request, BindingResult bindingResult){
+    @PostMapping(value = "login2", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public ApiResult login2(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
+                            @RequestHeader("now") Long now,
+                            @RequestHeader("nonce") String nonce,
+                            @RequestHeader("sig") String sig,
+                            @RequestHeader("key") String secretKey,
+                            HttpServletRequest request, BindingResult bindingResult) {
         try {
-            // 如果客户端传来了验证码，不管是否存在错误记录都会验证
-            if(input.captcha != null && !this.redissonClient.getBucket(input.captcha).isExists()){
-                return ApiResult.fail("验证码错误或已失效");
+            /*if(input == null || MyString.isEmptyOrNull(nonce) || MyString.isEmptyOrNull(sig)){
+                log.debug("传入的参数错误");
+                return ApiResult.fail("参数错误");
+            }
+            var theNow = MyDateTime.toLocalDateTime(now);
+            if(theNow == null){
+                log.debug("传入的时间戳错误");
+                return ApiResult.fail("参数错误");
+            }
+            var d = Duration.between(LocalDateTime.now(), theNow);
+            if(Math.abs(d.toSeconds()) >= 30){ // 超过30秒
+                log.debug("时差超过指定值");
+                return ApiResult.fail("参数错误");
+            }
+            if(!this.redissonClient.getBucket(secretKey).isExists()){
+                log.debug("secretKey不存在");
+                return ApiResult.fail("非法key");
+            }
+            if(this.redissonClient.getBucket(nonce).isExists()){
+                log.debug("nonce存在，重复的请求");
+                return ApiResult.fail("重复请求");
+            }else {
+                this.redissonClient.getBucket(nonce).set("", 3, TimeUnit.MINUTES);
+            }
+            var theSig = MySignature.generate(input.toMap(), secretKey);
+            log.debug(theSig);
+            if(!theSig.equals(sig)){
+                log.debug("签名错误");
+                return ApiResult.fail("签名错误");
+            }*/
+            //var ret = this.sigService.checkSig(input.toMap(), secretKey, now,nonce,sig);
+            //if(ret.isOk()) return login(input, request, bindingResult);
+            //return ret;
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+        }
+        return ApiResult.fail("用户名或密码错误");
+    }
+
+    @ApiOperation(value = "登入")
+    @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
+                           HttpServletRequest request, BindingResult bindingResult) {
+        try {
+            if (input == null) {
+                log.debug("传入的参数错误");
+                return ApiResult.fail("用户名或密码错误");
             }
             var userIp = MyIp.getIpAddr(request);
             var count = (Integer) this.redissonClient.getBucket(userIp).get();
-            if(count != null && count >= 3){ // 这个ip被登记过，且已经达到错误上线，必须验证验证码
-                if(input.captcha == null || !this.redissonClient.getBucket(input.captcha).isExists()){
+            if (count != null && count >= 3) { // 这个ip被登记过，且已经达到错误上线，必须验证验证码
+                if (MyString.isEmptyOrNull(input.captcha) || !this.redissonClient.getBucket(input.captcha.toLowerCase()).isExists()) {
                     var loginResult = new NeedCaptchaResult();
                     loginResult.needCaptcha = true;
+                    log.debug("累次错误已经达到3次，但验证码为空，或找不到验证码的缓存");
                     return ApiResult.fail("验证码错误或已失效", loginResult);
-                }else{
-                    this.redissonClient.getBucket(input.captcha).delete(); // 验证通过，删除验证码
+                } else {
+                    this.redissonClient.getBucket(input.captcha.toLowerCase()).delete(); // 验证通过，删除验证码
+                }
+            } else { // 如果没有达到错误上限；但是客户端传来了验证码，不管是否存在错误记录都会验证
+                log.debug("累计错误未达到上限");
+                if (input.captcha != null && !this.redissonClient.getBucket(input.captcha.toLowerCase()).isExists()) {
+                    log.debug("传来了验证码，但找不到验证码的缓存");
+                    return ApiResult.fail("验证码错误或已失效");
                 }
             }
             var user = this.userService.getUserByName(input.user);
-            if(user != null){
-                if(!this.encoder.matches(input.password, user.password)) {
-                    if(count == null){
+            if (user != null) {
+                if (!this.encoder.matches(input.password, user.password)) {
+                    if (count == null) {
                         count = 1;
-                    }else{
+                    } else {
                         count = count + 1;
                     }
-                    log.debug("用户ip为："+userIp+";累计："+count);
-                    this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS); // 延长错误记录的时间
-                    if(count >= 3){
+                    log.debug("用户ip为：" + userIp + ";累计：" + count);
+                    // 如果之前已经记录过这个错误IP，则重置过期时间
+                    this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS);
+                    if (count >= 3) {
                         var loginResult = new NeedCaptchaResult();
                         loginResult.needCaptcha = true;
                         return ApiResult.fail("用户名或密码错误", loginResult);
-                    }else{
+                    } else {
                         return ApiResult.fail("用户名或密码错误");
                     }
                 }
-                var db = mongoClient.getDatabase( "test" );
+                var db = mongoClient.getDatabase("test");
                 var c1 = db.getCollection("com.sybd.znld.account.profile");
                 var myDoc = c1.find(Filters.eq("id", user.id)).first();
                 String jsonStr = null;
-                if( myDoc != null) {
+                if (myDoc != null) {
                     myDoc.remove("_id");
                     jsonStr = myDoc.toJson();
                 }
                 // 获取rbac权限信息
                 var headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                var map= new LinkedMultiValueMap<String, String>();
+                var map = new LinkedMultiValueMap<String, String>();
                 map.add("grant_type", "password");
                 map.add("client_id", this.clientId);
                 map.add("client_secret", this.clientSecret);
@@ -152,7 +217,7 @@ public class UserController implements IUserController {
                 var httpEntity = new HttpEntity<>(map, headers);
                 var token = this.restTemplate.exchange(this.accessTokenUri, HttpMethod.POST, httpEntity, AccessToken.class);
                 var body = token.getBody();
-                if(body == null){
+                if (body == null) {
                     return ApiResult.fail("此账号无权限");
                 }
                 var data = new LoginResult();
@@ -161,25 +226,44 @@ public class UserController implements IUserController {
                 data.userId = user.id;
                 data.organId = user.organizationId;
                 data.menu = jsonStr;
-                if(input.user.equals("sybd_test_admin")){
+                if (input.user.equals("sybd_test_admin")) {
                     data.isRoot = true;
+                    data.menu = null;
+                    data.cities = this.organizationMapper.selectAllCityAndCode();
+                    if(data.cities != null && !data.cities.isEmpty()){
+                        for(var c : data.cities){
+                            var users = this.userMapper.selectByOrganizationId(c.code);
+                            if(users != null && !users.isEmpty()){
+                                db = mongoClient.getDatabase("test");
+                                c1 = db.getCollection("com.sybd.znld.account.profile");
+                                myDoc = c1.find(Filters.eq("id", users.get(0).id)).first();
+                                if (myDoc != null) {
+                                    myDoc.remove("_id");
+                                    myDoc.remove("app");
+                                    myDoc.remove("device");
+                                    jsonStr = myDoc.toJson();
+                                }
+                            }
+                            c.menu = jsonStr;
+                            jsonStr = null;
+                        }
+                    }
                 }
 
                 return ApiResult.success(data);
-            }
-            else{ // 这是用户名错误，也算累计
-                if(count == null){
+            } else { // 这是用户名错误，也算累计
+                if (count == null) {
                     count = 1;
-                }else{
+                } else {
                     count = count + 1;
                 }
-                log.debug("用户ip为："+userIp+";累计："+count);
+                log.debug("用户ip为：" + userIp + ";累计：" + count);
                 this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS); // 延长错误记录的时间
-                if(count >= 3){
+                if (count >= 3) {
                     var loginResult = new NeedCaptchaResult();
                     loginResult.needCaptcha = true;
                     return ApiResult.fail("用户名或密码错误", loginResult);
-                }else{
+                } else {
                     return ApiResult.fail("用户名或密码错误");
                 }
             }
@@ -189,23 +273,43 @@ public class UserController implements IUserController {
         return ApiResult.fail("用户名或密码错误");
     }
 
+    @GetMapping(value = "menu/{code:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public String getMenu(@PathVariable(name = "code") String code, @RequestHeader("root") String rootId, HttpServletRequest request){
+        var user = this.userMapper.selectById(rootId);
+        if(user == null){
+            return null;
+        }
+        var users = this.userMapper.selectByOrganizationId(code);
+        String jsonStr = null;
+        if(users != null && !users.isEmpty()){
+            var db = mongoClient.getDatabase("test");
+            var c1 = db.getCollection("com.sybd.znld.account.profile");
+            var myDoc = c1.find(Filters.eq("id", users.get(0).id)).first();
+            if (myDoc != null) {
+                myDoc.remove("_id");
+                jsonStr = myDoc.toJson();
+            }
+        }
+        return jsonStr;
+    }
+
     @ApiOperation(value = "登出")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "userId", value = "用户Id", required = true, dataType = "string", paramType = "path")
     })
     @PostMapping(value = "logout", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult logout(@RequestBody String jsonStr, HttpServletRequest request){
-        if(MyString.isEmptyOrNull(jsonStr)) return ApiResult.fail("错误的用户信息");
-        String id = JsonPath.read(jsonStr,"$.id");
+    public ApiResult logout(@RequestBody String jsonStr, HttpServletRequest request) {
+        if (MyString.isEmptyOrNull(jsonStr)) return ApiResult.fail("错误的用户信息");
+        String id = JsonPath.read(jsonStr, "$.id");
         return ApiResult.success();
     }
 
     @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult register(@RequestBody @Valid RegisterInput input, HttpServletRequest request, BindingResult bindingResult){
+    public ApiResult register(@RequestBody @Valid RegisterInput input, HttpServletRequest request, BindingResult bindingResult) {
         try {
-            if(userService.register(input) != null){
+            if (userService.register(input) != null) {
                 return ApiResult.success();
             }
         } catch (Exception ex) {
@@ -216,14 +320,14 @@ public class UserController implements IUserController {
 
     @GetMapping(value = "{id:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult getUserInfo(@PathVariable(name = "id") String id, HttpServletRequest request){
+    public ApiResult getUserInfo(@PathVariable(name = "id") String id, HttpServletRequest request) {
         var tmp = this.userService.getUserById(id);
         return ApiResult.success(tmp);
     }
 
     @PostMapping(value = "", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     @Override
-    public ApiResult updateUserInfo(@RequestBody @Valid UserModel input, HttpServletRequest request, BindingResult bindingResult){
+    public ApiResult updateUserInfo(@RequestBody @Valid UserModel input, HttpServletRequest request, BindingResult bindingResult) {
         this.userService.modifyUserById(input);
         return ApiResult.success();
     }

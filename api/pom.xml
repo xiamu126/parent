@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>com.sybd.znld</groupId>
-            <artifactId>myutil</artifactId>
+            <artifactId>util</artifactId>
             <version>1.3.10</version>
         </dependency>
         <dependency>

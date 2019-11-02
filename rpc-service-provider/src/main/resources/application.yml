@@ -1,0 +1,23 @@
+server:
+  port: 8083
+spring:
+  resources:
+    add-mappings: false
+  mvc:
+    throw-exception-if-no-handler-found: true
+  main:
+    banner-mode: "off"
+  profiles:
+    include:
+    active: dev
+dubbo:
+  application:
+    name: dubbo-service
+  scan:
+    base-packages: com.sybd.znld.service.rpc
+  registry:
+    address: 192.168.11.101:2181
+    protocol: zookeeper
+  protocol:
+    name: dubbo
+    port: 18083

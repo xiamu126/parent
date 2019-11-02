@@ -25,7 +25,7 @@ import java.util.Map;
 public class MyScheduledTask {
     private final RedissonClient redissonClient;
     private static Map<String, RLock> lockers;
-    private static final String CHECK_TASK = "CHECK_TASK";
+    private static final String CHECK_TASK = "com.sybd.znld.ministar.task.MyScheduledTask.CHECK_TASK";
     private final MiniStarTaskMapper miniStarTaskMapper;
     private final IMiniStarService miniStarService;
 
@@ -48,7 +48,7 @@ public class MyScheduledTask {
         lockers = Map.of(CHECK_TASK, this.redissonClient.getLock(CHECK_TASK));
     }
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 3)
+    //@Scheduled(initialDelay = 1000, fixedDelay = 1000 * 3)
     public void checkMiniStarTask() {
         var locker = lockers.get(CHECK_TASK);
         if (locker != null && locker.tryLock()) {

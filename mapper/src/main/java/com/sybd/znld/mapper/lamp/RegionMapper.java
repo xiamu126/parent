@@ -38,4 +38,5 @@ public interface RegionMapper {
                                                                                @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     List<ElementAvgResult> selectAvgOfEnvironmentElementMonthlyByDeviceIdBetween(@Param("deviceId") Integer deviceId, @Param("name") String name,
                                                                                  @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+    Object selectByRegionIdAndUserId(@Param("regionId") String regionId, @Param("userId") String userId);
 }

@@ -1,5 +1,6 @@
 package com.sybd.znld.ministar.controller;
 
+import com.sybd.znld.ministar.model.SubtitleForDevice;
 import com.sybd.znld.ministar.model.SubtitleForDevicePrepare;
 import com.sybd.znld.ministar.model.SubtitleForRegion;
 import com.sybd.znld.ministar.model.SubtitleForRegionPrepare;
@@ -20,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface IMiniStarController {
-
     @ApiOperation(value = "预存灯带节目，针对区域街道")
     @PostMapping(value="region/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
     ApiResult storeTask(@PathVariable(name = "organId")String organId,
@@ -33,7 +33,11 @@ public interface IMiniStarController {
 
     @ApiOperation(value = "新建灯带效果，针对区域街道的")
     @PostMapping(value = "region", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-    BaseApiResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody SubtitleForRegion subtitle, HttpServletRequest request);
+    BaseApiResult newMiniStarForRegion(@ApiParam(value = "具体的指令集", required = true) @RequestBody SubtitleForRegion subtitle, HttpServletRequest request);
+
+    @ApiOperation(value = "新建灯带效果，针对单个路灯的")
+    @PostMapping(value = "device", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    BaseApiResult newMiniStarForDevice(@ApiParam(value = "具体的指令集", required = true) @RequestBody SubtitleForDevice subtitle, HttpServletRequest request);
 
     @ApiOperation(value = "获取所有有效区域")
     @ApiImplicitParams({

@@ -1,0 +1,6 @@
+spring:
+  rabbitmq:
+    password: admin123
+    username: admin
+    port: 5672
+    addresses: znld-rabbitmq

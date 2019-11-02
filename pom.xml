@@ -61,7 +61,7 @@
         <mongodbVersion>3.11.0</mongodbVersion>
         <javatuplesVersion>1.2</javatuplesVersion>
 
-        <myutilVersion>1.3.10</myutilVersion>
+        <utilVersion>1.3.10</utilVersion>
         <znldModelVersion>0.0.2</znldModelVersion>
         <znldConfigVersion>0.0.2</znldConfigVersion>
         <znldAccountVersion>0.0.2</znldAccountVersion>
@@ -82,10 +82,31 @@
         <commonsCodecVersion>1.13</commonsCodecVersion>
 
         <activemqVersion>5.15.9</activemqVersion>
+        <dubboVersion>2.7.3</dubboVersion>
+        <curatorVersion>4.2.0</curatorVersion>
+        <zooKeeperVersion>3.4.14</zooKeeperVersion>
+
+        <fstVersion>2.57</fstVersion>
+        <rabbitmqVersion>5.7.3</rabbitmqVersion>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>${rabbitmqVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.ruedigermoeller</groupId>
+                <artifactId>fst</artifactId>
+                <version>${fstVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>${redissonVersion}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-all</artifactId>
@@ -142,6 +163,79 @@
                 <version>${springVersion}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- Apache Dubbo  -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-dependencies-bom</artifactId>
+                <version>${dubboVersion}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>${zooKeeperVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>slf4j-log4j12</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>slf4j-api</groupId>
+                        <artifactId>org.slf4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-recipes</artifactId>
+                <version>${curatorVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.zookeeper</groupId>
+                        <artifactId>zookeeper</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-framework</artifactId>
+                <version>${curatorVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.zookeeper</groupId>
+                        <artifactId>zookeeper</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${dubboVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>${dubboVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
@@ -206,6 +300,11 @@
             </dependency>
             <dependency>
                 <groupId>com.sybd.znld</groupId>
+                <artifactId>rpc-service</artifactId>
+                <version>0.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sybd.znld</groupId>
                 <artifactId>service</artifactId>
                 <version>${znldServiceVersion}</version>
             </dependency>
@@ -216,8 +315,8 @@
             </dependency>
             <dependency>
                 <groupId>com.sybd.znld</groupId>
-                <artifactId>myutil</artifactId>
-                <version>${myutilVersion}</version>
+                <artifactId>util</artifactId>
+                <version>${utilVersion}</version>
             </dependency>
 
             <dependency>
@@ -271,7 +370,7 @@
                 <version>${mysqlVersion}</version>
                 <scope>runtime</scope>
             </dependency>
-           <!-- <dependency>
+            <dependency>
                 <groupId>org.bytedeco</groupId>
                 <artifactId>javacv-platform</artifactId>
                 <version>${javacvVersion}</version>
@@ -280,7 +379,7 @@
                 <groupId>org.bytedeco</groupId>
                 <artifactId>ffmpeg-platform</artifactId>
                 <version>${javacvFfmpegVersion}</version>
-            </dependency>-->
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -319,7 +418,9 @@
                     <executions>
                         <execution>
                             <id>attach-sources</id>
-                            <goals><goal>jar</goal></goals>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
                         </execution>
                     </executions>
                 </plugin>
@@ -365,16 +466,19 @@
         <module>oauth2-server</module>
         <module>oauth2-resource</module>
         <module>model</module>
-        <module>myutil</module>
+        <module>util</module>
         <module>video</module>
         <module>account</module>
         <module>service</module>
         <module>config</module>
         <module>mapper</module>
-        <!--<module>hadoop</module>-->
         <module>onenet</module>
         <module>ministar</module>
         <module>environment</module>
+        <module>rpc-service</module>
+        <module>rpc-service-provider</module>
+        <module>positioning</module>
+        <module>positioning-socket</module>
     </modules>
 
 </project>

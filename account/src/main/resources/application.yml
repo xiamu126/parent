@@ -37,3 +37,14 @@ project:
     height: 30
     length: 5
     expiration-time: 60s
+#dubbo:
+#  application:
+#    name: dubbo-account
+#  scan:
+#    base-packages: com.sybd.znld.account
+#  registry:
+#    address: 192.168.11.101:2181
+#    protocol: zookeeper
+#  protocol:
+#    name: dubbo
+#    port: 18085

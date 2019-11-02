@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 interface IUserController {
     ApiResult register(RegisterInput input, HttpServletRequest request, BindingResult bindingResult);
     String getCaptcha(HttpServletRequest request);
-    ApiResult login(LoginInput input, HttpServletRequest request, BindingResult bindingResult);
     ApiResult logout(String id, HttpServletRequest request);
     ApiResult getUserInfo(String id, HttpServletRequest request);
     ApiResult updateUserInfo(UserModel input, HttpServletRequest request, BindingResult bindingResult);

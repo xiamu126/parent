@@ -38,16 +38,18 @@ datetime=$(date +'%Y%m%d-%H%M%S')
 theYear=$(date +'%Y')
 theMonth=$(date +'%m')
 name="znld-mysql"
-thePath="$1"/db-backup/"${theYear}"/"${theMonth}"
+thePath="${1%/}"/db-backup/"${theYear}"/"${theMonth}"
 
 if [[ ! -d "${thePath}" ]]; then
-  mkdir -p thePath
+  mkdir -p "${thePath}"
 fi
 
 docker_names=$(docker ps | sed -n "/${name}/p" | gawk '{print $NF}')
 
 for db_name in ${docker_names}; do
-  fileName="$1"/"${db_name}"--"${datetime}".sql.gz
+  #fileName="${1%/}"/"${db_name}"--"${datetime}".sql.gz
+  fileName="${thePath}"/"${db_name}"--"${datetime}".sql.gz
+  echo "${fileName}"
   docker exec -i "${db_name}" mysqldump --all-databases --protocol=tcp -uroot -p"$2" | gzip -9 > "${fileName}"
-  mv "${fileName}" "${thePath}"
+  #mv "${fileName}" "${thePath}${fileName}"
 done

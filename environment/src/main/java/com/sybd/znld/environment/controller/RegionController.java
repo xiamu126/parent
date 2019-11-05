@@ -7,6 +7,7 @@ import com.sybd.znld.environment.service.dto.AVGResult;
 import com.sybd.znld.mapper.lamp.DataLocationMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
+import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.lamp.dto.ElementAvgResult;
 import com.sybd.znld.model.lamp.dto.LampWithLocation;
 import com.sybd.znld.util.MyDateTime;
@@ -43,6 +44,7 @@ public class RegionController implements IRegionController {
     private final DataLocationMapper dataLocationMapper;
     private final LampMapper lampMapper;
     private final RedissonClient accountRedis;
+    private final RedissonClient redissonClient;
     private final RestTemplate restTemplate;
 
     /*@Reference(url = "dubbo://localhost:18085")
@@ -52,11 +54,12 @@ public class RegionController implements IRegionController {
     @Autowired
     public RegionController(RegionMapper regionMapper,
                             DataLocationMapper dataLocationMapper, LampMapper lampMapper,
-                            @Qualifier("account-redis") RedissonClient accountRedis, RestTemplate restTemplate) {
+                            @Qualifier("account-redis") RedissonClient accountRedis, RedissonClient redissonClient, RestTemplate restTemplate) {
         this.regionMapper = regionMapper;
         this.dataLocationMapper = dataLocationMapper;
         this.lampMapper = lampMapper;
         this.accountRedis = accountRedis;
+        this.redissonClient = redissonClient;
         this.restTemplate = restTemplate;
     }
 
@@ -92,6 +95,22 @@ public class RegionController implements IRegionController {
             result.add(lampWithLocation);
         }
         return result;
+    }
+
+    @Override
+    public List<RealTimeData> getRealTimeDataOfDevice(Integer deviceId) {
+        if(!MyNumber.isPositive(deviceId)) return null;
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+deviceId);
+        var list = new ArrayList<RealTimeData>();
+        map.forEach((k, v) -> {
+            if(v instanceof RealTimeData){
+                var tmp = (RealTimeData) v;
+                if(!tmp.describe.contains("开关") && !tmp.describe.contains("angle")){
+                    list.add(tmp);
+                }
+            }
+        });
+        return list;
     }
 
     @GetMapping(value="{organId:^[0-9a-f]{32}$}/2", produces = {MediaType.APPLICATION_JSON_VALUE})
@@ -191,7 +210,7 @@ public class RegionController implements IRegionController {
         var end = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), now.getHour(), 0, 0);
         var begin = end.minusHours(1);
         var list = new ArrayList<AQIResult>();
-        for(var i = 1; i <= 24; i++){ // 过去二十四个小时
+        for(var i = 0; i < 12; i++){ // 过去12个小时
             // SO2，NO2，O3，CO，PM10，PM2.5 1小时平均
             // O3 8小时滑动平均
             // PM10，PM2.5 24小时滑动平均
@@ -200,6 +219,8 @@ public class RegionController implements IRegionController {
             var avgs24 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, begin,24);
             end = begin;
             begin = end.minusHours(1);
+            var days = Duration.between(begin, now).toDays();
+            if(days >= 1) break;
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));
@@ -224,8 +245,8 @@ public class RegionController implements IRegionController {
     @Override
     public List<AQIResult> getAQIDailyOfDevice(Integer deviceId) {
         var now = LocalDateTime.now().minusDays(1);
-        var end = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0, 0);
-        var begin = end.minusDays(1);
+        var end = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59, 59);
+        var begin = LocalDateTime.of(end.minusDays(1).getYear(), end.minusDays(1).getMonth(), end.minusDays(1).getDayOfMonth(), 0, 0,0);
         var list = new ArrayList<AQIResult>();
         for(var i = 1; i <= 30; i++){ // 过去30天
             // SO2，NO2，CO，PM10，PM2.5 24小时平均
@@ -234,8 +255,8 @@ public class RegionController implements IRegionController {
             var avgs = this.regionMapper.selectAvgOfEnvironmentElementBetweenByDeviceId(deviceId, begin, end);
             var avgs1 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, begin,1); // 昨天过去1小时平均
             var avgs8 = this.regionMapper.selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(deviceId, begin,8); // 昨天过去8小时平均
-            end = begin;
-            begin = end.minusDays(1);
+            end = LocalDateTime.of(begin.getYear(), begin.getMonth(), begin.getDayOfMonth(), 23, 59, 59);
+            begin = LocalDateTime.of(end.minusDays(1).getYear(), end.minusDays(1).getMonth(), end.minusDays(1).getDayOfMonth(), 0, 0, 0);
             if(avgs == null || avgs.isEmpty()) continue;
             Map<String, Double> map = new HashMap<>();
             avgs.forEach(a -> map.put(a.name, a.value));

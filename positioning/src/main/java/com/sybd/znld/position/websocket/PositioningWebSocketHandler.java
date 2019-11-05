@@ -20,18 +20,20 @@ public class PositioningWebSocketHandler implements WebSocketHandler {
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        /*var msg = message.getPayload().toString();
+        var msg = message.getPayload().toString();
         if(msg.equals("data")){
             var file = ResourceUtils.getFile("classpath:data.log");
             var in = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
             var br = new BufferedReader(in);
-            var stringBuilder = new StringBuilder();
-            String s = "data;";
+            String s = "";
             while ((s=br.readLine())!=null){
-                stringBuilder.append(s);
+                var points = s.split(";");
+                for(var p : points){
+                    session.sendMessage(new TextMessage(p));
+                    Thread.sleep(1000);
+                }
             }
-            session.sendMessage(new TextMessage(stringBuilder.toString()));
-        }*/
+        }
     }
 
     @Override

@@ -64,7 +64,8 @@ create table data_location(
     datastream_id varchar(20) not null,
     name varchar(20) not null,
     value varchar(20) not null,
-    at timestamp not null
+    at timestamp not null,
+    locked boolean not null default false comment '是否锁定这个地址，即不再修改'
 );
 create table data_angle(
     id varchar(32) not null primary key,

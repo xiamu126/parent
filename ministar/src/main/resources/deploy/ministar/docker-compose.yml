@@ -2,7 +2,7 @@ version: '3.7'
 services:
   account:
     container_name: znld-ministar
-    image: openjdk:11.0.4-jdk
+    image: openjdk:11-jdk
     restart: on-failure
     working_dir: /ministar
     ports:

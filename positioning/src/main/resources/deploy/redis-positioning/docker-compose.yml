@@ -2,7 +2,7 @@ version: '3.7'
 services:
   redis:
     container_name: znld-redis-positioning
-    image: redis:5.0.5
+    image: redis:5
     restart: on-failure
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]

@@ -64,9 +64,7 @@ public class RegionController implements IRegionController {
     }
 
     @Override
-    public List<LampWithLocation> getRegionOfEnvironmentList(String organId, HttpServletRequest request) {
-        //var ret = this.sigService.checkSig(null,null,null,null,null);
-        //log.debug(ret.toString());
+    public List<LampWithLocation> getRegionOfEnvironmentList(String organId, Boolean convert, HttpServletRequest request) {
         var lamps = this.regionMapper.selectLampsOfEnvironment(organId);
         var result = new ArrayList<LampWithLocation>();
         var lampWithLocation = new LampWithLocation();
@@ -77,19 +75,21 @@ public class RegionController implements IRegionController {
             var weidu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗纬度");
             lampWithLocation.longitude = jingdu == null ? 0.0 : MyNumber.getDouble(jingdu.value.toString());
             lampWithLocation.latitude = weidu == null ? 0.0 : MyNumber.getDouble(weidu.value.toString());
-            var builder = UriComponentsBuilder
-                    .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
-                    .queryParam("coords", lampWithLocation.longitude+","+lampWithLocation.latitude)
-                    .queryParam("from", 1)
-                    .queryParam("to", 5)
-                    .queryParam("ak", "x1ySji2AxajkmThvd8weGwOQ");
-            var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
-            var body = converted.getBody();
-            if(body != null){
-                int status = JsonPath.read(body, "$.status");
-                if(status == 0){
-                    lampWithLocation.longitude = JsonPath.read(body, "$.result[0].x");
-                    lampWithLocation.latitude = JsonPath.read(body, "$.result[0].y");
+            if(convert != null && convert){
+                var builder = UriComponentsBuilder
+                        .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
+                        .queryParam("coords", lampWithLocation.longitude+","+lampWithLocation.latitude)
+                        .queryParam("from", 1)
+                        .queryParam("to", 5)
+                        .queryParam("ak", "x1ySji2AxajkmThvd8weGwOQ");
+                var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
+                var body = converted.getBody();
+                if(body != null){
+                    int status = JsonPath.read(body, "$.status");
+                    if(status == 0){
+                        lampWithLocation.longitude = JsonPath.read(body, "$.result[0].x");
+                        lampWithLocation.latitude = JsonPath.read(body, "$.result[0].y");
+                    }
                 }
             }
             result.add(lampWithLocation);

@@ -2,7 +2,7 @@ version: '3.7'
 services:
   nginx:
     container_name: znld-nginx-test2
-    image: nginx:1.16.1
+    image: nginx:1
     ports:
       - target: 80
         published: 9002

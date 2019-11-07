@@ -2,7 +2,7 @@ version: '3.7'
 services:
   api:
     container_name: rabbitmq-test
-    image: rabbitmq:3.8.0-management
+    image: rabbitmq:3-management
     restart: on-failure
     ports:
       - target: 5672

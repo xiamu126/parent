@@ -10,5 +10,6 @@ import org.apache.ibatis.annotations.Param;
 public interface DataLocationMapper {
     int insert(DataPushModel model);
     DataPushModel selectByDeviceIdAndResourceName(@Param("deviceId") Integer deviceId, @Param("name") String name);
-    int updateByDeviceIdAndResourceName(DataPushModel model);
+    int updateLocationByDeviceIdAndResourceName(DataPushModel model);
+    int updateLockStatusByDeviceIdAndResourceName(DataPushModel model);
 }

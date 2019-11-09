@@ -479,6 +479,7 @@
         <module>rpc-service-provider</module>
         <module>positioning</module>
         <module>positioning-socket</module>
+        <module>light-control</module>
     </modules>
 
 </project>

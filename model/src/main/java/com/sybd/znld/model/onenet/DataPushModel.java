@@ -16,4 +16,5 @@ public class DataPushModel {
     public String name;
     public Object value;
     public LocalDateTime at;
+    public Boolean locked = false;
 }

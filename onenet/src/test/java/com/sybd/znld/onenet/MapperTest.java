@@ -54,18 +54,23 @@ public class MapperTest {
     @Test
     public void test9(){
         var model = new DataPushModel();
-        model.deviceId = 528792157;
-        model.datastreamId = "3300_4_5700";
-        model.imei = "868194030008504";
+        model.deviceId = 533263283;
         model.name = "北斗经度";
-        model.value = "-0.3";
-        model.at = LocalDateTime.now();
-        var ret = this.dataLocationMapper.insert(model);
-        Assert.assertTrue(ret > 0);
-        model = this.dataLocationMapper.selectByDeviceIdAndResourceName(528792157, "北斗经度");
-        Assert.assertNotNull(model);
-        model.value = 0;
-        ret = this.dataLocationMapper.updateByDeviceIdAndResourceName(model);
-        Assert.assertTrue(ret > 0);
+        model.value = 120.66124706341829;
+        this.dataLocationMapper.updateLocationByDeviceIdAndResourceName(model);
+        model.name = "北斗纬度";
+        model.value = 31.150935273203878;
+        this.dataLocationMapper.updateLocationByDeviceIdAndResourceName(model);
+    }
+
+    @Test
+    public void test10(){
+        var model = new DataPushModel();
+        model.deviceId = 533263283;
+        model.name = "北斗经度";
+        model.locked = true;
+        this.dataLocationMapper.updateLockStatusByDeviceIdAndResourceName(model);
+        model.name = "北斗纬度";
+        this.dataLocationMapper.updateLockStatusByDeviceIdAndResourceName(model);
     }
 }

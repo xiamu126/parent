@@ -145,17 +145,14 @@ public class AQI {
                         break;
                     }
                 }
-                if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
+                if(index > 0){ // 如果index小于等于0，意味着第一个就是最高值，或者超过了列表中的全部值
                     minValue = SO2_1_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
             case NO2_NAME_VALUE:
-                minValue = 0;
-                maxValue = 0;
-                index = 0;
                 for(var i = 0 ; i < NO2_1_HOUR.size(); i++){
                     if(value <= NO2_1_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -165,15 +162,12 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = NO2_1_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
             case CO_NAME_VALUE:
-                minValue = 0;
-                maxValue = 0;
-                index = 0;
                 for(var i = 0 ; i < CO_1_HOUR.size(); i++){
                     if(value <= CO_1_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -183,15 +177,12 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = CO_1_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
             case O3_NAME_VALUE:
-                minValue = 0;
-                maxValue = 0;
-                index = 0;
                 for(var i = 0 ; i < O3_1_HOUR.size(); i++){
                     if(value <= O3_1_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -201,10 +192,10 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = O3_1_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
         }
         return result;
@@ -226,10 +217,10 @@ public class AQI {
             }
             if (index > 0) { // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                 minValue = O3_8_HOUR.get(index - 1);
+                minIAQI = IAQI.get(index - 1);
+                maxIAQI = IAQI.get(index);
+                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
             }
-            minIAQI = IAQI.get(index - 1);
-            maxIAQI = IAQI.get(index);
-            result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
         }
         return result;
     }
@@ -251,15 +242,12 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = SO2_24_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
             case NO2_NAME_VALUE:
-                minValue = 0;
-                maxValue = 0;
-                index = 0;
                 for(var i = 0 ; i < NO2_24_HOUR.size(); i++){
                     if(value <= NO2_24_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -269,15 +257,12 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = NO2_24_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
             case CO_NAME_VALUE:
-                minValue = 0;
-                maxValue = 0;
-                index = 0;
                 for(var i = 0 ; i < CO_24_HOUR.size(); i++){
                     if(value <= CO_24_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -287,15 +272,12 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = CO_24_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
             case PM10_NAME_VALUE:
-                minValue = 0;
-                maxValue = 0;
-                index = 0;
                 for(var i = 0 ; i < PM10_24_HOUR.size(); i++){
                     if(value <= PM10_24_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -305,15 +287,12 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = PM10_24_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
             case PM25_NAME_VALUE:
-                minValue = 0;
-                maxValue = 0;
-                index = 0;
                 for(var i = 0 ; i < PM25_24_HOUR.size(); i++){
                     if(value <= PM25_24_HOUR.get(i)){ // 找到最高值
                         index = i; // 最高位索引
@@ -323,10 +302,10 @@ public class AQI {
                 }
                 if(index > 0){ // 否则的话，意味着第一个就是最高值，或者超过了列表中的所有值，则不处理，返回默认值
                     minValue = PM25_24_HOUR.get(index - 1);
+                    minIAQI = IAQI.get(index - 1);
+                    maxIAQI = IAQI.get(index);
+                    result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 }
-                minIAQI = IAQI.get(index - 1);
-                maxIAQI = IAQI.get(index);
-                result = (maxIAQI - minIAQI) * 1.0 / (maxValue - minValue) * (value - minValue) + minIAQI;
                 break;
         }
         return result;

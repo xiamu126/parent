@@ -329,7 +329,7 @@ public class OneNetService implements IOneNetService {
         if(ret == null){ // 这个设备的地址没有保存过
             return this.dataLocationMapper.insert(model) > 0;
         }else{
-            return this.dataLocationMapper.updateByDeviceIdAndResourceName(model) > 0;
+            return this.dataLocationMapper.updateLocationByDeviceIdAndResourceName(model) > 0;
         }
     }
 

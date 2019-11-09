@@ -6,6 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.DataDeviceOnOffMapper;
 import com.sybd.znld.mapper.lamp.DataEnvironmentMapper;
 import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
+import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
 import com.sybd.znld.onenet.config.MyWebSocketHandler;
@@ -14,6 +15,7 @@ import com.sybd.znld.onenet.service.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
@@ -30,6 +32,7 @@ public class DataPushController {
     private final DataEnvironmentMapper dataEnvironmentMapper;
     private final DataDeviceOnOffMapper dataDeviceOnOffMapper;
     private final IOneNetService oneNetService;
+    private final RedissonClient redissonClient;
 
     private static String token ="abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
     private static String aeskey ="whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
@@ -40,12 +43,13 @@ public class DataPushController {
                               OneNetResourceMapper oneNetResourceMapper,
                               DataEnvironmentMapper dataEnvironmentMapper,
                               DataDeviceOnOffMapper dataDeviceOnOffMapper,
-                              IOneNetService oneNetService) {
+                              IOneNetService oneNetService, RedissonClient redissonClient) {
         this.jmsTemplate = jmsTemplate;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.dataEnvironmentMapper = dataEnvironmentMapper;
         this.dataDeviceOnOffMapper = dataDeviceOnOffMapper;
         this.oneNetService = oneNetService;
+        this.redissonClient = redissonClient;
     }
 
     /**
@@ -134,19 +138,47 @@ public class DataPushController {
                                         data.at = at;
                                         if(name.contains("开关")){
                                             this.oneNetService.addOrModifyDeviceOnOff(data);
+
+                                            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+data.deviceId);
+                                            var realTimeData = new RealTimeData();
+                                            realTimeData.describe = data.name;
+                                            realTimeData.value = data.value;
+                                            realTimeData.at = MyDateTime.toTimestamp(data.at);
+                                            map.put(data.name, realTimeData);
                                         } else if(name.contains("经度") || name.contains("纬度")) {
                                             var tmp = MyNumber.getDouble(value.toString());
                                             if(tmp != null && tmp != 0.0){
                                                 this.oneNetService.addOrModifyDeviceLocation(data);
+
+                                                var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+data.deviceId);
+                                                var realTimeData = new RealTimeData();
+                                                realTimeData.describe = data.name;
+                                                realTimeData.value = data.value;
+                                                realTimeData.at = MyDateTime.toTimestamp(data.at);
+                                                map.put(data.name, realTimeData);
                                             }else{
                                                 log.debug("经纬度不合法，为" + value);
                                             }
                                         } else if(name.contains("angle")){
                                             this.oneNetService.addOrModifyDeviceAngle(data);
+
+                                            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+data.deviceId);
+                                            var realTimeData = new RealTimeData();
+                                            realTimeData.describe = data.name;
+                                            realTimeData.value = data.value;
+                                            realTimeData.at = MyDateTime.toTimestamp(data.at);
+                                            map.put(data.name, realTimeData);
                                         } else if(name.contains("时间戳") ){
                                             log.debug("跳过时间戳");
                                         } else{
                                             this.dataEnvironmentMapper.insert(data);
+
+                                            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+data.deviceId);
+                                            var realTimeData = new RealTimeData();
+                                            realTimeData.describe = data.name;
+                                            realTimeData.value = data.value;
+                                            realTimeData.at = MyDateTime.toTimestamp(data.at);
+                                            map.put(data.name, realTimeData);
                                         }
                                     } catch (JsonProcessingException ex) {
                                         log.error(ex.getMessage());

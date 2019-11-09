@@ -8,11 +8,18 @@
     <select id="selectByDeviceIdAndResourceName" resultType="com.sybd.znld.model.onenet.DataPushModel">
         select * from data_location where name=#{name} and device_id=#{deviceId} limit 1
     </select>
-    <update id="updateByDeviceIdAndResourceName" parameterType="com.sybd.znld.model.onenet.DataPushModel">
+    <update id="updateLocationByDeviceIdAndResourceName" parameterType="com.sybd.znld.model.onenet.DataPushModel">
         update data_location
         <set>
             <if test="value != null">value=#{value},</if>
             <if test="at != null">at=#{at}</if>
+        </set>
+        where device_id=#{deviceId} and name=#{name} and locked = false;
+    </update>
+    <update id="updateLockStatusByDeviceIdAndResourceName" parameterType="com.sybd.znld.model.onenet.DataPushModel">
+        update data_location
+        <set>
+            <if test="locked != null">locked=#{locked},</if>
         </set>
         where device_id=#{deviceId} and name=#{name};
     </update>

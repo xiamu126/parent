@@ -128,7 +128,7 @@
 
     <select id="selectAvgOfEnvironmentElementDailyByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, date_format(at,'%Y-%m-%d 00:00:00') as at from data_environment
-        where name = #{name} and device_id = #{deviceId} and date_format(at,'%Y-%m-%d') >= date_sub(date_format(now(),'%Y-%m-%d'), interval 1 month)
+        where name = #{name} and device_id = #{deviceId} and at <![CDATA[ < ]]> date_format(now(),'%Y-%m-%d 00:00:00')
         group by date_format(at,'%Y-%m-%d 00:00:00')
         order by date_format(at,'%Y-%m-%d 00:00:00') desc limit 30;
     </select>

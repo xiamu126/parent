@@ -30,7 +30,7 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
         var authPack = this.userMapper.selectAuthPackByUserId(user.id);
         if(authPack == null || authPack.isEmpty()) return false;
         var antPathMatcher = new AntPathMatcher();
-        for(var a: authPack){
+        /*for(var a: authPack){
             var type = RbacInfo.getType(a.authValue);
             if(type.equals(RbacInfo.RbacType.API.getValue())){
                 var rbacApiInfo = RbacApiInfo.from(a.authValue);
@@ -45,7 +45,7 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
             }else if (type.equals(RbacInfo.RbacType.HTML.getValue())){ // 这部分内容交给前端处理，不做处理
                 //var tmp = RbacHtmlInfo.from(a.authValue);
             }
-        }
+        }*/
        /* var auth = this.getAuthentication().getAuthorities();
         var ret = auth.stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));*/
         return false;

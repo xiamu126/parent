@@ -1,9 +1,11 @@
 package com.sybd.znld.video.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.config.ProjectConfig;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.video.service.IVideoService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -18,7 +20,12 @@ public class AppStartupRunner implements ApplicationRunner {
     private final IVideoService videoService;
 
     @Autowired
-    public AppStartupRunner(CacheManager cacheManager, TaskScheduler taskScheduler, ProjectConfig projectConfig, IVideoService videoService) {
+    public AppStartupRunner(CacheManager cacheManager,
+                            TaskScheduler taskScheduler,
+                            ProjectConfig projectConfig,
+                            IVideoService videoService,
+                            RedissonClient redissonClient,
+                            ObjectMapper objectMapper) {
         this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig, redissonClient, objectMapper);
         this.videoService = videoService;
     }

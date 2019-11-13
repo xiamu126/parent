@@ -6,11 +6,11 @@ import com.sybd.znld.model.rbac.dto.AuthPackByUser;
 import java.util.List;
 
 public interface IAuthorityService {
-    AuthGroupModel addAuthGroup(AuthGroupModel model);
+    AuthorityGroupModel addAuthGroup(AuthorityGroupModel model);
     AuthorityModel addAuth(AuthorityModel model);
     RoleModel addRole(RoleModel model);
     UserRoleModel addUserRole(UserRoleModel model);
-    RoleAuthModel addRoleAuth(RoleAuthModel model);
+    RoleAuthorityGroupModel addRoleAuth(RoleAuthorityGroupModel model);
     List<AuthorityModel> getAuthoritiesByUserId(String userId);
     List<AuthPackByUser> getAuthPackByUserId(String userId);
     List<RoleModel> getRolesByUserId(String userId);

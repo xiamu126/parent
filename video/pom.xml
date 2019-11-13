@@ -132,7 +132,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>com.sybd.znld.video.com.sybd.znld.onenet.App</mainClass>
+                            <mainClass>com.sybd.znld.video.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

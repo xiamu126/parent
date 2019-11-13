@@ -37,7 +37,7 @@ public class AuthorityService implements IAuthorityService {
     }
 
     @Override
-    public AuthGroupModel addAuthGroup(AuthGroupModel model) {
+    public AuthorityGroupModel addAuthGroup(AuthorityGroupModel model) {
         if(model == null) return null;
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("传入的name为空"); return null;
@@ -128,7 +128,7 @@ public class AuthorityService implements IAuthorityService {
     }
 
     @Override
-    public RoleAuthModel addRoleAuth(RoleAuthModel model) {
+    public RoleAuthorityGroupModel addRoleAuth(RoleAuthorityGroupModel model) {
         if(model == null) return null;
         if(!MyString.isUuid(model.authId)){
             log.debug("非法的权限id"); return null;

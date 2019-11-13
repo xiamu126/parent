@@ -6,44 +6,27 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter @Setter
 public class UserModel implements Serializable {
-    public String id;
+    public String id = UUID.randomUUID().toString().replace("-","");
     public String name;
     public String password;
-    public String phone = "";
-    public String email = "";
-    public Short gender = 3;
-    public Short age = 0;
-    public String contactAddress = "";
-    public String realName = "";
-    public String idCardNo = "";
-    public LocalDateTime lastLoginTime = LocalDateTime.now();
+    public LocalDateTime lastLoginTime;
     public String lastLoginIp;
     public String organizationId;
-    public Short status = 0;
-
-    public static class Status{
-        public static final short OK = 0;
-        public static final short FROZEN = 1;
-        public static final short DELETED = 2;
-
-        public static boolean isValid(short v){
-            switch (v){
-                case OK: case FROZEN: case DELETED:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    }
-
-    public boolean isValid(){
-        return MyString.isUuid(id) && !MyString.isAnyEmptyOrNull(name, password) && MyString.isUuid(organizationId);
-    }
+    public Integer status = Status.OK.getValue();
 
     public boolean isValidForInsert(){
-        return !MyString.isAnyEmptyOrNull(name, password) && MyString.isUuid(organizationId);
+        if(!MyString.isUuid(id)) return false;
+        if(MyString.isEmptyOrNull(name)) return false;
+        if(MyString.isEmptyOrNull(password)) return false;
+        if(lastLoginTime != null) return false;
+        if(lastLoginIp != null) return false;
+        if(!MyString.isUuid(organizationId)) return false;
+        Status tmp = Status.getStatus(status);
+        if(tmp == null) return false;
+        return tmp == Status.OK;
     }
 }

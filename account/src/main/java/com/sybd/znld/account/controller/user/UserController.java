@@ -1,21 +1,21 @@
 package com.sybd.znld.account.controller.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.account.config.ProjectConfig;
 import com.sybd.znld.account.controller.user.dto.AccessToken;
-import com.sybd.znld.mapper.rbac.OrganizationMapper;
-import com.sybd.znld.mapper.rbac.UserMapper;
-import com.sybd.znld.model.rbac.dto.CityAndCode;
+import com.sybd.znld.mapper.rbac.*;
+import com.sybd.znld.model.rbac.dto.*;
 import com.sybd.znld.account.controller.user.dto.LoginResult;
 import com.sybd.znld.account.controller.user.dto.NeedCaptchaResult;
 import com.sybd.znld.account.model.LoginInput;
 import com.sybd.znld.account.service.IUserService;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.UserModel;
-import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.util.*;
 import com.wf.captcha.SpecCaptcha;
 import io.swagger.annotations.*;
@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +51,6 @@ public class UserController implements IUserController {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
     private final MongoClient mongoClient;
     private final ProjectConfig projectConfig;
-    //private final ISigService sigService;
 
     @Value("${security.oauth2.client.client-id}")
     private String clientId;
@@ -59,15 +59,15 @@ public class UserController implements IUserController {
     @Value("${security.oauth2.client.access-token-uri}")
     private String accessTokenUri;
 
-    @Autowired
-    private RestTemplate restTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private OrganizationMapper organizationMapper;
-    @Autowired
-    private UserMapper userMapper;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+    private final OrganizationMapper organizationMapper;
+    private final UserMapper userMapper;
+    private final UserRoleMapper userRoleMapper;
+    private final RoleMapper roleMapper;
+    private final RoleAuthGroupMapper roleAuthGroupMapper;
+    private final AuthGroupMapper authGroupMapper;
+    private final AuthorityMapper authorityMapper;
 
     @Value("${project.captcha.expiration-time}")
     private Duration captchaExpirationTime;
@@ -81,15 +81,30 @@ public class UserController implements IUserController {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public UserController(IUserService userService,
-                          RedissonClient redissonClient, MongoClient mongoClient, ProjectConfig projectConfig) {
+                          RedissonClient redissonClient,
+                          MongoClient mongoClient,
+                          ProjectConfig projectConfig,
+                          RestTemplate restTemplate,
+                          ObjectMapper objectMapper,
+                          OrganizationMapper organizationMapper,
+                          UserMapper userMapper, UserRoleMapper userRoleMapper, RoleMapper roleMapper, RoleAuthGroupMapper roleAuthGroupMapper, AuthGroupMapper authGroupMapper, AuthorityMapper authorityMapper) {
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.mongoClient = mongoClient;
         this.projectConfig = projectConfig;
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+        this.organizationMapper = organizationMapper;
+        this.userMapper = userMapper;
+        this.userRoleMapper = userRoleMapper;
+        this.roleMapper = roleMapper;
+        this.roleAuthGroupMapper = roleAuthGroupMapper;
+        this.authGroupMapper = authGroupMapper;
+        this.authorityMapper = authorityMapper;
     }
 
     @ApiOperation(value = "获取验证码")
-    @GetMapping(value = "login/captcha", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @GetMapping(value = "login/captcha", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public String getCaptcha(HttpServletRequest request) {
         var specCaptcha = new SpecCaptcha(this.width, this.height, this.length);
@@ -104,7 +119,7 @@ public class UserController implements IUserController {
     }
 
     @ApiOperation(value = "登入")
-    @PostMapping(value = "login2", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "login2", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ApiResult login2(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
                             @RequestHeader("now") Long now,
                             @RequestHeader("nonce") String nonce,
@@ -151,8 +166,64 @@ public class UserController implements IUserController {
         return ApiResult.fail("用户名或密码错误");
     }
 
+    private List<RbacApiInfoSummary> getRbacApiInfoByUserId(String userId, String app) {
+        List<RbacApiInfoSummary> results = new ArrayList<>();
+        var userRoleModels = this.userRoleMapper.selectByUserId(userId);
+        // 根据角色获取权限，一个账号可以关联多个角色
+        userRoleModels.forEach(userRoleModel -> {
+            var roleAuthModels = this.roleAuthGroupMapper.selectByRoleId(userRoleModel.roleId);
+            // 一个角色可以关联多个权限组
+            roleAuthModels.forEach(roleAuthModel -> {
+                var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.API.getValue());
+                authorities.forEach(a -> {
+                    List<RbacApiInfo.Detail> exclude = null;
+                    try {
+                        exclude = JsonPath.read(a.uri,"exclude");
+                    }catch (PathNotFoundException ignored){ }
+                    List<RbacApiInfo.Detail> include = null;
+                    try {
+                        include = JsonPath.read(a.uri,"include");
+                    }catch (PathNotFoundException ignored){ }
+                    var summary = new RbacApiInfoSummary();
+                    summary.exclude = exclude;
+                    summary.include = include;
+                    results.add(summary);
+                });
+            });
+        });
+        return results;
+    }
+
+    private List<RbacWebInfoSummary> getRbacWebInfoByUserId(String userId, String app) {
+        List<RbacWebInfoSummary> results = new ArrayList<>();
+        var userRoleModels = this.userRoleMapper.selectByUserId(userId);
+        // 根据角色获取权限，一个账号可以关联多个角色
+        userRoleModels.forEach(userRoleModel -> {
+            var roleAuthModels = this.roleAuthGroupMapper.selectByRoleId(userRoleModel.roleId);
+            // 一个角色可以关联多个权限组
+            roleAuthModels.forEach(roleAuthModel -> {
+                var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.WEB.getValue());
+                authorities.forEach(a -> {
+                    List<RbacWebInfo.Detail> exclude = null;
+                    try {
+                        exclude = JsonPath.read(a.uri,"exclude");
+                    }catch (PathNotFoundException ignored){ }
+                    List<RbacWebInfo.Detail> include = null;
+                    try {
+                        include = JsonPath.read(a.uri,"include");
+                    }catch (PathNotFoundException ignored){ }
+                    var summary = new RbacWebInfoSummary();
+                    summary.exclude = exclude;
+                    summary.include = include;
+                    results.add(summary);
+                });
+            });
+        });
+        return results;
+    }
+
     @ApiOperation(value = "登入")
-    @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
                            HttpServletRequest request, BindingResult bindingResult) {
         try {
@@ -226,6 +297,7 @@ public class UserController implements IUserController {
                 data.userId = user.id;
                 data.organId = user.organizationId;
                 data.menu = jsonStr;
+                data.rbac = this.getRbacWebInfoByUserId(user.id, "znld");
                 if (input.user.equals("sybd_test_admin")) {
                     data.isRoot = true;
                     data.menu = null;
@@ -273,7 +345,7 @@ public class UserController implements IUserController {
         return ApiResult.fail("用户名或密码错误");
     }
 
-    @GetMapping(value = "menu/{code:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @GetMapping(value = "menu/{code:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public String getMenu(@PathVariable(name = "code") String code, @RequestHeader("root") String rootId, HttpServletRequest request){
         var user = this.userMapper.selectById(rootId);
         if(user == null){
@@ -297,7 +369,7 @@ public class UserController implements IUserController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "userId", value = "用户Id", required = true, dataType = "string", paramType = "path")
     })
-    @PostMapping(value = "logout", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "logout", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public ApiResult logout(@RequestBody String jsonStr, HttpServletRequest request) {
         if (MyString.isEmptyOrNull(jsonStr)) return ApiResult.fail("错误的用户信息");
@@ -305,7 +377,7 @@ public class UserController implements IUserController {
         return ApiResult.success();
     }
 
-    @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public ApiResult register(@RequestBody @Valid RegisterInput input, HttpServletRequest request, BindingResult bindingResult) {
         try {
@@ -318,14 +390,14 @@ public class UserController implements IUserController {
         return ApiResult.fail("注册失败");
     }
 
-    @GetMapping(value = "{id:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @GetMapping(value = "{id:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public ApiResult getUserInfo(@PathVariable(name = "id") String id, HttpServletRequest request) {
         var tmp = this.userService.getUserById(id);
         return ApiResult.success(tmp);
     }
 
-    @PostMapping(value = "", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public ApiResult updateUserInfo(@RequestBody @Valid UserModel input, HttpServletRequest request, BindingResult bindingResult) {
         this.userService.modifyUserById(input);

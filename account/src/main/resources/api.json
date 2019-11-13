@@ -1,0 +1,12 @@
+{
+  "app": "znld",
+  "type": "api",
+  "exclude": [
+    { "path": "/api/v1/device/*", "methods": ["GET"] },
+    { "path": "/api/v1/ministar/*", "methods": ["*"] }
+  ],
+  "include": [
+    { "path": "/api/v1/device/execute/*", "methods": ["POST"] },
+    { "path": "/api/v1/user/**", "methods": ["*"] }
+  ]
+}

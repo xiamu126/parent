@@ -26,6 +26,10 @@ public class LoginResult {
     public Long now = MyDateTime.toTimestamp(LocalDateTime.now());
     @ApiModelProperty(value = "目录数据")
     public Object menu;
+    @ApiModelProperty(value = "是否为超级管理员")
     public Boolean isRoot = false;
+    @ApiModelProperty(value = "如果是超级管理员，这里包含了这个账号所有组织下面的全部城市及其代码")
     public List<CityAndCode> cities;
+    @ApiModelProperty(value = "权限数据")
+    public Object rbac;
 }

@@ -2,7 +2,7 @@ package com.sybd.znld.web.service.rbac;
 
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.model.rbac.dto.RbacHtmlInfo;
+import com.sybd.znld.model.rbac.dto.RbacWebInfo;
 import com.sybd.znld.model.rbac.dto.RbacApiInfo;
 import com.sybd.znld.service.rbac.IRbacService;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +58,7 @@ public class RbacServiceTest {
 
     @Test
     public void addAuthGroup(){
-        var model = new AuthGroupModel();
+        var model = new AuthorityGroupModel();
         model.name = "测试权限组";
         model.parentId = "e22eb96b4f8f11e9804a0242ac110007";
         model.position = 0;
@@ -96,7 +96,7 @@ public class RbacServiceTest {
 
     @Test
     public void addRoleAuth(){
-        var model = new RoleAuthModel();
+        var model = new RoleAuthorityGroupModel();
         model.roleId = "3c0a4d524f9611e9804a0242ac110007";
         model.authId = "dd468b264f9211e9804a0242ac110007";
         var ret = this.rbacService.addRoleAuth(model);
@@ -111,12 +111,12 @@ public class RbacServiceTest {
 
     @Test
     public void testRbacInfo(){
-        var rbacHtmlInfo = new RbacHtmlInfo.Builder()
+        var rbacHtmlInfo = new RbacWebInfo.Builder()
                 .setApp("znld").setPath("/LandscapeLight")
                 .setSelectors("div[class*='selectDateTimeLine'] > button[class*='sendBtn'] > span", "div[class*='tableBox2'] table td button:not([disabled]) > span")
                 .build();
         log.debug(rbacHtmlInfo.getJsonString());
-        log.debug(RbacHtmlInfo.getType(rbacHtmlInfo.getJsonString()));
+        log.debug(RbacWebInfo.getType(rbacHtmlInfo.getJsonString()));
 
         var rbacServerInfo = new RbacApiInfo.Builder()
                 .setApp("znld").setPath("/api/v1/device/execute/*")
@@ -129,7 +129,7 @@ public class RbacServiceTest {
 
     @Test
     public void addHtmlAuth(){
-        var rbacHtmlInfo = new RbacHtmlInfo.Builder()
+        var rbacHtmlInfo = new RbacWebInfo.Builder()
                 .setApp("znld").setPath("/LandscapeLight")
                 .setSelectors("div[class*='selectDateTimeLine'] > button[class*='sendBtn'] > span", "div[class*='tableBox2'] table td button:not([disabled]) > span")
                 .build();

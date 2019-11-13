@@ -1,0 +1,22 @@
+{
+  "api": {
+    "include": [
+      { "path": "/api/v1/device/execute/*", "methods": ["POST"] },
+      { "path": "/api/v1/user/**", "methods": ["*"] }
+    ],
+    "exclude": [
+      { "path": "/api/v1/device/*", "methods": ["GET"] },
+      { "path": "/api/v1/ministar/*", "methods": ["*"] }
+    ]
+  },
+  "web": {
+    "include": [
+      { "path": "/LandscapeLight", "selectors": ["selectorId1", "selectorId1"] },
+      { "path": "/general", "selectors": ["selectorId1", "selectorId1"] }
+    ],
+    "exclude": [
+      { "path": "/detail", "selectors": ["selectorId1", "selectorId1"] },
+      { "path": "/CenterConsole", "selectors": ["*"] }
+    ]
+  }
+}

@@ -16,10 +16,6 @@ public interface OrganizationMapper {
     OrganizationModel selectByName(String name);
     OrganizationModel selectById(String id);
     int updateById(OrganizationModel model);
-    List<OrganizationModel> selectByParentIdAndPosition(@Param("parentId") String parentId, @Param("position") Integer position);
-    int deleteById(String id, Short status);
-    List<OrganizationModel> selectByParentId(String parentId);
-    List<AuthPackByGroup> selectAuthPackByGroupId(String authGroupId);
-    AuthPackByGroup selectAuthPackByGroupIdAuthValueAndName(String authGroupId, String authValue, String authName);
+    int deleteById(String id);
     List<CityAndCode> selectAllCityAndCode();
 }

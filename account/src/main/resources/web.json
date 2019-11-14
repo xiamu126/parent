@@ -1,0 +1,12 @@
+{
+  "app": "znld",
+  "type": "web",
+  "exclude": [
+    { "path": "/detail", "selectors": ["selectorId1", "selectorId1"] },
+    { "path": "/CenterConsole", "selectors": ["*"] }
+  ],
+  "include": [
+    { "path": "/LandscapeLight", "selectors": ["selectorId1", "selectorId1"] },
+    { "path": "/general", "selectors": ["selectorId1", "selectorId1"] }
+  ]
+}

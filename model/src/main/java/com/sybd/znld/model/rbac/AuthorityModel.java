@@ -1,23 +1,25 @@
 package com.sybd.znld.model.rbac;
 
+import com.sybd.znld.model.IValidForDBInsert;
+import com.sybd.znld.model.Status;
+import com.sybd.znld.util.MyString;
+
 import java.io.Serializable;
+import java.util.UUID;
 
-public class AuthorityModel implements Serializable {
-    public String id;
+public class AuthorityModel implements Serializable, IValidForDBInsert {
+    public String id = UUID.randomUUID().toString().replace("-","");
     public String name;
-    public String authorityGroupId;
-    public String uri;
-    public Short status = Status.OK;
+    public String organizationId;
+    public Integer status = Status.OK.getValue();
 
-    public static class Status{
-        public static final short OK = 0;
-        public static final short DELETED = 1;
-
-        public static boolean isValid(short v){
-            switch (v){
-                case OK: case DELETED: return true;
-                default: return false;
-            }
-        }
+    @Override
+    public boolean isValidForInsert(){
+        if(!MyString.isUuid(id)) return false;
+        if(MyString.isEmptyOrNull(name)) return false;
+        if(!MyString.isUuid(organizationId)) return false;
+        var tmp = Status.getStatus(status);
+        if(tmp == null) return false;
+        return tmp == Status.OK;
     }
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.rbac.AuthorityOperationMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.rbac.AuthorityOperationModel">
+        insert into authority_operation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, authority_id, operation_id,
+            <if test="status != null">status,</if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{authority_id}, #{operation_id},
+            <if test="status != null">#{status},</if>
+        </trim>
+    </insert>
+
+    <select id="selectById" resultType="com.sybd.znld.model.rbac.AuthorityOperationModel">
+        select * from authority_operation where id = #{id};
+    </select>
+</mapper>

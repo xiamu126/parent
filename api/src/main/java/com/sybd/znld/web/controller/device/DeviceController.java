@@ -101,7 +101,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
                                                         @PathVariable(name = "dataStream") String dataStream,
                                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp,
@@ -127,7 +127,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "beginTimestamp", value = "开始时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @GetMapping(value = "data/history/pretty/{deviceId:^[1-9]\\d*$}/{dataStream}/{beginTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     public PrettyHistoryDataResult getPrettyHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
                                                         @PathVariable(name = "dataStream") String dataStream,
                                                         @PathVariable(name = "beginTimestamp") Long beginTimestamp){
@@ -152,7 +152,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @PostMapping(value = "data/avg/regions/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResultsMap getAvgHistoryDataWithRegionsAndDataStreams(@RequestBody RegionsAndDataStreams regionsAndDataStreams,
                                                                      @PathVariable(name = "beginTimestamp") Long beginTimestamp,
@@ -188,7 +188,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @PostMapping(value = "data/avg/region/{region}/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResults getAvgHistoryDataWithRegionAndDataStreams(@PathVariable(name = "region") String region,
                                                                  @RequestBody List<String> dataStreams,
@@ -221,7 +221,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @PostMapping(value = "data/avg/regions/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResults getAvgHistoryDataWithRegionsAndDataStream(@RequestBody List<String> regions,
                                                                  @PathVariable(name = "dataStream") String dataStream,
@@ -253,7 +253,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @PostMapping(value = "data/avg/deviceIds/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResultsMap getAvgHistoryDataWithDeviceIdsAndDataStreams(@RequestBody DeviceIdsAndDataStreams deviceIdsAndDataStreams,
                                                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
@@ -293,7 +293,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @PostMapping(value = "data/avg/deviceId/{deviceId}/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResults getAvgHistoryDataWithDeviceIdAndDataStreams(@PathVariable(name = "deviceId") Integer deviceId,
                                                                    @RequestBody List<String> dataStreams,
@@ -328,7 +328,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @PostMapping(value = "data/avg/deviceIds/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResults getAvgHistoryDataWithDeviceIdsAndDataStream(@RequestBody List<Integer> deviceIds,
                                                                    @PathVariable(name = "dataStream") String dataStream,
@@ -363,7 +363,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @GetMapping(value = "data/avg/region/{region}/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResult getAvgHistoryDataWithRegionAndDataStream(@PathVariable(name = "region") String region,
                                                                @PathVariable(name = "dataStream") String dataStream,
@@ -417,7 +417,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "long", paramType = "path")
     })
     @GetMapping(value = "data/avg/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResult getAvgHistoryDataWithDeviceIdAndDataStream(@PathVariable(name = "deviceId") Integer deviceId,
                                                                  @PathVariable(name = "dataStream") String dataStream,
@@ -467,7 +467,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "Long", paramType = "path")
     })
     @PostMapping(value = "data/max/regions/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResultsMap getMaxHistoryDataWithRegionsAndDataStreams(@RequestBody RegionsAndDataStreams regionsAndDataStreams,
                                                                      @PathVariable(name = "beginTimestamp") Long beginTimestamp,
@@ -506,7 +506,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "endTimestamp", value = "结束时间（时间戳）", required = true, dataType = "Long", paramType = "path")
     })
     @PostMapping(value = "data/max/deviceIds/dataStreams/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public DataResultsMap getMaxHistoryDataWithDeviceIdsAndDataStreams(@RequestBody DeviceIdsAndDataStreams deviceIdsAndDataStreams,
                                                                        @PathVariable(name = "beginTimestamp") Long beginTimestamp,
@@ -1169,7 +1169,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "limit", value = "数量", required = true, dataType = "int", paramType = "path")
     })
     @GetMapping(value = "data/history/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}/{limit:^[1-9]\\d*$}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public HistoryDataResult getHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
                                             @PathVariable(name = "dataStream") String dataStream,
@@ -1213,7 +1213,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "sort", value = "排序规则，升序ASC，降序DESC", required = true, dataType = "string", paramType = "path")
     })
     @GetMapping(value = "data/history/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}/{limit:^[1-9]\\d*$}/{sort:DESC|ASC}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public HistoryDataResult getHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
                                             @PathVariable(name = "dataStream") String dataStream,
@@ -1259,7 +1259,7 @@ public class DeviceController implements IDeviceController {
             @ApiImplicitParam(name = "sort", value = "排序规则，升序ASC，降序DESC", required = true, dataType = "string", paramType = "path")
     })
     @GetMapping(value = "data/history/deviceId/{deviceId:^[1-9]\\d*$}/dataStream/{dataStream}/{beginTimestamp:^\\d+$}/{endTimestamp:^\\d+$}/{limit:^[1-9]\\d*$}/{cursor:^\\d+_\\d+_\\d+$}/{sort:DESC|ASC}",
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+            produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public HistoryDataResult getHistoryData(@PathVariable(name = "deviceId") Integer deviceId,
                                             @PathVariable(name = "dataStream") String dataStream,
@@ -1299,7 +1299,7 @@ public class DeviceController implements IDeviceController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "deviceId", value = "设备的Id", required = true, dataType = "string", paramType = "path")
     })
-    @PostMapping(value = "execute/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "execute/{deviceId:^[1-9]\\d*$}", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public ExecuteResult execute(@PathVariable("deviceId") Integer deviceId,
                                  @ApiParam(value = "具体的命令", required = true) @RequestBody OneNetExecuteArgs data,
@@ -1360,7 +1360,7 @@ public class DeviceController implements IDeviceController {
 
     @ApiOperation(value = "获取所有的设备Id和名字")
     //@PreAuthorize("hasAuthority('USER') and isRequestAllowed(#request)")
-    @GetMapping(value = "info", produces = { MediaType.APPLICATION_JSON_UTF8_VALUE })
+    @GetMapping(value = "info", produces = { MediaType.APPLICATION_JSON_VALUE })
     @Override
     public DeviceIdAndNameResult getDeviceIdAndName(@RequestHeader("userId") String userId, HttpServletRequest request){
         try{
@@ -1383,7 +1383,7 @@ public class DeviceController implements IDeviceController {
     }
 
     @ApiOperation(value = "新建灯带效果")
-    @PostMapping(value = "ministar", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+    @PostMapping(value = "ministar", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public MiniStarResult newMiniStar(@ApiParam(value = "具体的指令集", required = true) @RequestBody List<OneNetExecuteArgs> data, HttpServletRequest request) {
         var result = new MiniStarResult();

@@ -2,17 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.rbac.AuthorityMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.rbac.AuthorityModel">
-        <selectKey keyProperty="id" resultType="string" order="BEFORE">
-            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
-        </selectKey>
-        insert authority(id, name, authority_group_id, uri, status)
-        values (#{id},#{name},#{authorityGroupId},#{uri},#{status})
+        insert authority(id, name, organization_id, status)
+        values (#{id}, #{name}, #{organizationId}, #{status})
     </insert>
+
+    <update id="update" parameterType="com.sybd.znld.model.rbac.AuthorityModel">
+        update authority
+        <set>
+            <if test=" name != null and name != '' ">name = #{name},</if>
+            <if test=" organizationId != null and organizationId != '' ">organization_id = #{organizationId},</if>
+            <if test=" status != null">status = #{status}</if>
+        </set>
+        where id = #{id};
+    </update>
 
     <select id="selectById" resultType="com.sybd.znld.model.rbac.AuthorityModel">
         select * from authority where id = #{id};
     </select>
-    <select id="selectByName" resultType="com.sybd.znld.model.rbac.AuthorityModel">
-        select * from authority where name = #{name};
+    <select id="selectByOrganIdAndAuthName" resultType="com.sybd.znld.model.rbac.AuthorityModel">
+        select * from authority where organization_id = #{organId} and name = #{authName};
     </select>
 </mapper>

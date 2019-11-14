@@ -2,16 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.rbac.AuthorityMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.rbac.AuthorityModel">
-        insert authority(id, name, authority_group_id, uri, status)
-        values (#{id},#{name},#{authorityGroupId},#{uri},#{status})
+        insert authority(id, name, organization_id, status)
+        values (#{id}, #{name}, #{organizationId}, #{status})
     </insert>
 
     <update id="update" parameterType="com.sybd.znld.model.rbac.AuthorityModel">
         update authority
         <set>
             <if test=" name != null and name != '' ">name = #{name},</if>
-            <if test=" authorityGroupId != null and authorityGroupId != '' ">authority_group_id = #{authorityGroupId},</if>
-            <if test=" uri != null and uri != '' ">uri = #{uri},</if>
+            <if test=" organizationId != null and organizationId != '' ">organization_id = #{organizationId},</if>
             <if test=" status != null">status = #{status}</if>
         </set>
         where id = #{id};
@@ -20,16 +19,7 @@
     <select id="selectById" resultType="com.sybd.znld.model.rbac.AuthorityModel">
         select * from authority where id = #{id};
     </select>
-    <select id="selectByAuthGroupIdAndAuthName" resultType="com.sybd.znld.model.rbac.AuthorityModel">
-        select * from authority where authority_group_id = #{authGroupId} and name = #{authName};
-    </select>
-    <select id="selectByAuthGroupId" resultType="com.sybd.znld.model.rbac.AuthorityModel">
-        select * from authority where authority_group_id = #{id};
-    </select>
-    <select id="selectByAuthGroupIdAndApp" resultType="com.sybd.znld.model.rbac.AuthorityModel">
-        select * from authority where authority_group_id = #{authGroupId} and uri->>"$.app" = #{app};
-    </select>
-    <select id="selectByAuthGroupIdAndAppAndType" resultType="com.sybd.znld.model.rbac.AuthorityModel">
-        select * from authority where authority_group_id = #{authGroupId} and uri->>"$.app" = #{app} and uri->>"$.type" = #{type};
+    <select id="selectByOrganIdAndAuthName" resultType="com.sybd.znld.model.rbac.AuthorityModel">
+        select * from authority where organization_id = #{organId} and name = #{authName};
     </select>
 </mapper>

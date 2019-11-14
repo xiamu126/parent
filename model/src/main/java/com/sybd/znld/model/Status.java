@@ -1,4 +1,4 @@
-package com.sybd.znld.model.rbac;
+package com.sybd.znld.model;
 
 public enum Status {
     OK(0), DELETED(1), FROZEN(2),

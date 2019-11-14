@@ -3,7 +3,7 @@ package com.sybd.znld.service.rbac;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.sybd.znld.mapper.rbac.*;
-import com.sybd.znld.model.db.DbDeleteResult;
+import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
 import com.sybd.znld.model.rbac.dto.*;
 ;
@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Service
 public class RbacService implements IRbacService {
-    private final AuthGroupMapper authGroupMapper;
+    private final AuthorityGroupMapper authorityGroupMapper;
     private final AuthorityMapper authorityMapper;
     private final RoleMapper roleMapper;
     private final UserRoleMapper userRoleMapper;
@@ -29,14 +29,14 @@ public class RbacService implements IRbacService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public RbacService(AuthGroupMapper authGroupMapper,
+    public RbacService(AuthorityGroupMapper authorityGroupMapper,
                        AuthorityMapper authorityMapper,
                        RoleMapper roleMapper,
                        UserRoleMapper userRoleMapper,
                        UserMapper userMapper,
                        RoleAuthGroupMapper roleAuthGroupMapper,
                        OrganizationMapper organizationMapper) {
-        this.authGroupMapper = authGroupMapper;
+        this.authorityGroupMapper = authorityGroupMapper;
         this.authorityMapper = authorityMapper;
         this.roleMapper = roleMapper;
         this.userRoleMapper = userRoleMapper;
@@ -54,11 +54,11 @@ public class RbacService implements IRbacService {
         if(MyNumber.isNegative(model.status)){
             log.debug("传入的status为负数"); return null;
         }
-        if(this.authGroupMapper.selectByName(model.name) != null){
+        if(this.authorityGroupMapper.selectByName(model.name) != null){
             log.debug("已经存在名为["+model.name+"]的权限组"); return null;
         }
         // id由数据库生成，不检查合法性
-        if(this.authGroupMapper.insert(model) > 0) return model;
+        if(this.authorityGroupMapper.insert(model) > 0) return model;
         return null;
     }
 
@@ -302,7 +302,7 @@ public class RbacService implements IRbacService {
     @Override
     public AuthorityModel addWebAuth(String authGroupId, RbacWebInfo rbacWebInfo, String authName) {
         // 检测权限组是否存在
-        var authGroup = this.authGroupMapper.selectById(authGroupId);
+        var authGroup = this.authorityGroupMapper.selectById(authGroupId);
         if(authGroup == null) {
             log.debug("指定的权限组不存在");
             return null;
@@ -358,7 +358,7 @@ public class RbacService implements IRbacService {
     @Override
     public AuthorityModel addApiAuth(String authGroupId, RbacApiInfo rbacApiInfo, String authName) {
         // 检测权限组是否存在
-        var authGroup = this.authGroupMapper.selectById(authGroupId);
+        var authGroup = this.authorityGroupMapper.selectById(authGroupId);
         if(authGroup == null) {
             log.debug("指定的权限组不存在");
             return null;

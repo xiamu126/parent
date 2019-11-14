@@ -7,18 +7,18 @@ import com.sybd.znld.util.MyString;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class RoleModel implements Serializable, IValidForDBInsert {
+public class AuthorityOperationModel implements Serializable, IValidForDBInsert {
     public String id = UUID.randomUUID().toString().replace("-","");
-    public String name;
-    public String organizationId;
-    public Integer status = Status.OK.getValue();
+    public String authorityId;
+    public String operationId;
+    public Integer status;
 
     @Override
-    public boolean isValidForInsert(){
+    public boolean isValidForInsert() {
         if(!MyString.isUuid(id)) return false;
-        if(MyString.isEmptyOrNull(name)) return false;
-        if(!MyString.isUuid(organizationId)) return false;
-        Status tmp = Status.getStatus(status);
+        if(!MyString.isUuid(authorityId)) return false;
+        if(!MyString.isUuid(operationId)) return false;
+        var tmp = Status.getStatus(status);
         if(tmp == null) return false;
         return tmp == Status.OK;
     }

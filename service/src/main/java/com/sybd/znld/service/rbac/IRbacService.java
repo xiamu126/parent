@@ -1,6 +1,6 @@
 package com.sybd.znld.service.rbac;
 
-import com.sybd.znld.model.db.DbDeleteResult;
+import com.sybd.znld.model.DbDeleteResult;
 import com.sybd.znld.model.rbac.*;
 import com.sybd.znld.model.rbac.dto.*;
 

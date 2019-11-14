@@ -1,4 +1,4 @@
-package com.sybd.znld.onenet.config;
+package com.sybd.znld.onenet.websocket;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;

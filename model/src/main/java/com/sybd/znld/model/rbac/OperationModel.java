@@ -1,10 +1,12 @@
 package com.sybd.znld.model.rbac;
 
+import com.sybd.znld.model.IValidForDBInsert;
+import com.sybd.znld.model.Status;
 import com.sybd.znld.util.MyString;
 
 import java.util.UUID;
 
-public class Operation {
+public class OperationModel implements IValidForDBInsert {
     public String id = UUID.randomUUID().toString().replace("-","");
     public String name;
     public String path;
@@ -14,6 +16,7 @@ public class Operation {
     public Integer type;
     public Integer status = Status.OPERATION_ALLOW.getValue();
 
+    @Override
     public boolean isValidForInsert(){
         if(!MyString.isUuid(id)) return false;
         if(MyString.isEmptyOrNull(name)) return false;

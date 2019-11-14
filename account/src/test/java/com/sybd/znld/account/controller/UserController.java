@@ -124,7 +124,7 @@ public class UserController {
     }
 
     @Autowired
-    public AuthGroupMapper authGroupMapper;
+    public AuthorityGroupMapper authorityGroupMapper;
     @Autowired
     public AuthorityMapper authorityMapper;
 
@@ -134,7 +134,7 @@ public class UserController {
         var model = new AuthorityGroupModel();
         model.name = "超级管理员权限组";
         model.organizationId = "a69ce5bf51f111e9804a0242ac110007";
-        this.authGroupMapper.insert(model);
+        this.authorityGroupMapper.insert(model);
     }
     // 新增api操作
     @Test

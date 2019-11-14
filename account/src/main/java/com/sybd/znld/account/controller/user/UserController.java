@@ -1,6 +1,5 @@
 package com.sybd.znld.account.controller.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -66,7 +65,7 @@ public class UserController implements IUserController {
     private final UserRoleMapper userRoleMapper;
     private final RoleMapper roleMapper;
     private final RoleAuthGroupMapper roleAuthGroupMapper;
-    private final AuthGroupMapper authGroupMapper;
+    private final AuthorityGroupMapper authorityGroupMapper;
     private final AuthorityMapper authorityMapper;
 
     @Value("${project.captcha.expiration-time}")
@@ -87,7 +86,7 @@ public class UserController implements IUserController {
                           RestTemplate restTemplate,
                           ObjectMapper objectMapper,
                           OrganizationMapper organizationMapper,
-                          UserMapper userMapper, UserRoleMapper userRoleMapper, RoleMapper roleMapper, RoleAuthGroupMapper roleAuthGroupMapper, AuthGroupMapper authGroupMapper, AuthorityMapper authorityMapper) {
+                          UserMapper userMapper, UserRoleMapper userRoleMapper, RoleMapper roleMapper, RoleAuthGroupMapper roleAuthGroupMapper, AuthorityGroupMapper authorityGroupMapper, AuthorityMapper authorityMapper) {
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.mongoClient = mongoClient;
@@ -99,7 +98,7 @@ public class UserController implements IUserController {
         this.userRoleMapper = userRoleMapper;
         this.roleMapper = roleMapper;
         this.roleAuthGroupMapper = roleAuthGroupMapper;
-        this.authGroupMapper = authGroupMapper;
+        this.authorityGroupMapper = authorityGroupMapper;
         this.authorityMapper = authorityMapper;
     }
 

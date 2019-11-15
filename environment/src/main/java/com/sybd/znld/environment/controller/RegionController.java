@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +47,8 @@ public class RegionController implements IRegionController {
     private final RedissonClient accountRedis;
     private final RedissonClient redissonClient;
     private final RestTemplate restTemplate;
+    @Value("${baidu-ak}")
+    private String baiduAK;
 
     /*@Reference(url = "dubbo://localhost:18085")
     private ISigService sigService;*/
@@ -73,15 +76,15 @@ public class RegionController implements IRegionController {
             lampWithLocation.deviceName = l.deviceName;
             var jingdu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗经度");
             var weidu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗纬度");
-            lampWithLocation.longitude = jingdu == null ? 0.0 : MyNumber.getDouble(jingdu.value.toString());
-            lampWithLocation.latitude = weidu == null ? 0.0 : MyNumber.getDouble(weidu.value.toString());
+            lampWithLocation.longitude = jingdu == null ? 0.0 : MyNumber.getDouble(jingdu.value);
+            lampWithLocation.latitude = weidu == null ? 0.0 : MyNumber.getDouble(weidu.value);
             if(convert != null && convert){
                 var builder = UriComponentsBuilder
                         .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
                         .queryParam("coords", lampWithLocation.longitude+","+lampWithLocation.latitude)
                         .queryParam("from", 1)
                         .queryParam("to", 5)
-                        .queryParam("ak", "x1ySji2AxajkmThvd8weGwOQ");
+                        .queryParam("ak", this.baiduAK);
                 var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
                 var body = converted.getBody();
                 if(body != null){

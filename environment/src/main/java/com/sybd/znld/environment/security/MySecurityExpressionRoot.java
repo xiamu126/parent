@@ -23,7 +23,7 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
     }
 
     public boolean isRequestAllowed(HttpServletRequest request){
-        var userName = this.getPrincipal();
+        /*var userName = this.getPrincipal();
         var user = this.userMapper.selectByName(userName.toString());
         var path = request.getRequestURI();
         var method = request.getMethod();
@@ -45,7 +45,7 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
             }else if (type.equals(RbacInfo.RbacType.HTML.getValue())){ // 这部分内容交给前端处理，不做处理
                 //var tmp = RbacHtmlInfo.from(a.authValue);
             }
-        }
+        }*/
        /* var auth = this.getAuthentication().getAuthorities();
         var ret = auth.stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));*/
         return false;

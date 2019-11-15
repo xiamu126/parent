@@ -64,7 +64,7 @@ public class UserController implements IUserController {
     private final UserMapper userMapper;
     private final UserRoleMapper userRoleMapper;
     private final RoleMapper roleMapper;
-    private final RoleAuthGroupMapper roleAuthGroupMapper;
+    private final RoleAuthorityGroupMapper roleAuthorityGroupMapper;
     private final AuthorityGroupMapper authorityGroupMapper;
     private final AuthorityMapper authorityMapper;
 
@@ -86,7 +86,7 @@ public class UserController implements IUserController {
                           RestTemplate restTemplate,
                           ObjectMapper objectMapper,
                           OrganizationMapper organizationMapper,
-                          UserMapper userMapper, UserRoleMapper userRoleMapper, RoleMapper roleMapper, RoleAuthGroupMapper roleAuthGroupMapper, AuthorityGroupMapper authorityGroupMapper, AuthorityMapper authorityMapper) {
+                          UserMapper userMapper, UserRoleMapper userRoleMapper, RoleMapper roleMapper, RoleAuthorityGroupMapper roleAuthorityGroupMapper, AuthorityGroupMapper authorityGroupMapper, AuthorityMapper authorityMapper) {
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.mongoClient = mongoClient;
@@ -97,7 +97,7 @@ public class UserController implements IUserController {
         this.userMapper = userMapper;
         this.userRoleMapper = userRoleMapper;
         this.roleMapper = roleMapper;
-        this.roleAuthGroupMapper = roleAuthGroupMapper;
+        this.roleAuthorityGroupMapper = roleAuthorityGroupMapper;
         this.authorityGroupMapper = authorityGroupMapper;
         this.authorityMapper = authorityMapper;
     }
@@ -170,7 +170,7 @@ public class UserController implements IUserController {
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限，一个账号可以关联多个角色
         userRoleModels.forEach(userRoleModel -> {
-            var roleAuthModels = this.roleAuthGroupMapper.selectByRoleId(userRoleModel.roleId);
+            var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
             // 一个角色可以关联多个权限组
             roleAuthModels.forEach(roleAuthModel -> {
                 var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.API.getValue());
@@ -198,7 +198,7 @@ public class UserController implements IUserController {
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限，一个账号可以关联多个角色
         userRoleModels.forEach(userRoleModel -> {
-            var roleAuthModels = this.roleAuthGroupMapper.selectByRoleId(userRoleModel.roleId);
+            var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
             // 一个角色可以关联多个权限组
             roleAuthModels.forEach(roleAuthModel -> {
                 var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.WEB.getValue());

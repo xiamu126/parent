@@ -1,23 +1,16 @@
-package com.sybd.znld.position.websocket;
+package com.sybd.znld.position.websocket.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.model.lamp.GpggaModel;
 import com.sybd.znld.position.App;
 import com.sybd.znld.position.model.Point;
-import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.sybd.znld.mapper.lamp.GpggaMapper;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 public class HistoryHandler implements WebSocketHandler {

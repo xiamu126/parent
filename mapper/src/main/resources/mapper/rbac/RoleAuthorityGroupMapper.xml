@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.rbac.RoleAuthorityGroupMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.rbac.RoleAuthorityGroupModel">
+        insert role_authority_group(id, authority_group_id, role_id) values (#{id},#{authGroupId},#{roleId});
+    </insert>
+
+    <select id="selectById" resultType="com.sybd.znld.model.rbac.RoleAuthorityGroupModel">
+        select * from role_authority_group where id = #{id};
+    </select>
+    <select id="selectByAuthGroupId" resultType="com.sybd.znld.model.rbac.RoleAuthorityGroupModel">
+        select * from role_authority_group where authority_group = #{id};
+    </select>
+    <select id="selectByRoleId" resultType="com.sybd.znld.model.rbac.RoleAuthorityGroupModel">
+        select * from role_authority_group where role_id = #{id};
+    </select>
+    <select id="selectByRoleIdAndAuthGroupId" resultType="com.sybd.znld.model.rbac.RoleAuthorityGroupModel">
+        select * from role_authority_group where role_id = #{roleId} and authority_group = #{authGroupId};
+    </select>
+</mapper>

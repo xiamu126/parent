@@ -1,5 +1,6 @@
 package com.sybd.znld.model.lamp;
 
+import com.sybd.znld.model.Status;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,7 @@ public class LampModel implements Serializable {
     public String deviceName;
     public String longitude = "";
     public String latitude = "";
-    public Short status = Status.OK;
+    public Integer status = Status.OK.getValue();
     public Float xAngle = 0.0f;
     public Float yAngle = 0.0f;
     public Integer linkTo = 0;
@@ -28,24 +29,9 @@ public class LampModel implements Serializable {
         if(!MyString.isEmptyOrNull(this.longitude) && MyString.isEmptyOrNull(this.latitude)){
             return false;
         }
-        return Status.isValid(this.status) && !MyString.isAnyEmptyOrNull(this.apiKey, this.deviceId.toString(), this.imei, this.deviceName);
+        return Status.getStatus(this.status) != null && !MyString.isAnyEmptyOrNull(this.apiKey, this.deviceId.toString(), this.imei, this.deviceName);
     }
     public boolean isLongitudeLatitudeAssigned(){
         return !MyString.isEmptyOrNull(this.longitude) && !MyString.isEmptyOrNull(this.latitude);
-    }
-
-    public static class Status{
-        public static final short OK = 0;
-        public static final short ERROR = 1;
-        public static final short DEAD = 2;
-
-        public static boolean isValid(short v){
-            switch (v){
-                case OK: case ERROR: case DEAD:
-                    return true;
-                default:
-                    return false;
-            }
-        }
     }
 }

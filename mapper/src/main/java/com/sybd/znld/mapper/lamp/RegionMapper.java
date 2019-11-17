@@ -1,6 +1,7 @@
 package com.sybd.znld.mapper.lamp;
 
 import com.sybd.znld.mapper.db.DbSource;
+import com.sybd.znld.model.Status;
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.*;
 import org.apache.ibatis.annotations.Mapper;
@@ -16,7 +17,7 @@ public interface RegionMapper {
     int insert(RegionModel model);
     RegionModel selectById(String id);
     RegionModel selectByName(String name);
-    RegionModel selectByRegionIdAndOrganId(@Param("regionId") String regionId, @Param("organId") String organId);
+    RegionModel selectByRegionIdAndOrganId(@Param("regionId") String regionId, String organId);
     List<RegionModel> selectAll();
     RegionModel selectOne();
     List<RegionModel> select(int count);
@@ -26,6 +27,8 @@ public interface RegionMapper {
     List<Lamp> selectLampsByRegionId(String regionId);
     List<LampWithLocation> selectLampsWithLocationByRegionId(String regionId);
     List<Lamp> selectLampsOfEnvironment(String organId);
+    // 获取某个组织的某个区域下的所有（正常运行）路灯
+    List<Lamp> selectLampsByOrganIdRegionIdNotStatus(@Param("organId") String organId, @Param("regionId") String regionId, @Param("status") Status status);
     // 某个时间区间内的平均值
     List<ElementAvgResult> selectAvgOfEnvironmentElementBetweenByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     List<ElementAvgResult> selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("hours") Integer hours);

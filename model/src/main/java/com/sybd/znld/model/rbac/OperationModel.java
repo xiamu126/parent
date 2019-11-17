@@ -14,7 +14,7 @@ public class OperationModel implements IValidForDBInsert {
     public String organizationId;
     public String app;
     public Integer type;
-    public Integer status = Status.OPERATION_ALLOW.getValue();
+    public Integer status = Status.AUTHORITY_OPERATION_ALLOW.getValue();
 
     @Override
     public boolean isValidForInsert(){
@@ -29,7 +29,7 @@ public class OperationModel implements IValidForDBInsert {
         Status tmp = Status.getStatus(status);
         if(tmp == null) return false;
         switch (tmp){ // 需要进一步判断，因为Operation不会覆盖Status的所有值
-            case OPERATION_ALLOW: case OPERATION_DENY: return true;
+            case AUTHORITY_OPERATION_ALLOW: case AUTHORITY_OPERATION_DENY: return true;
             default: return false;
         }
     }

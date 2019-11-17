@@ -7,6 +7,7 @@ import com.sybd.znld.environment.service.dto.AVGResult;
 import com.sybd.znld.mapper.lamp.DataLocationMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
+import com.sybd.znld.model.Status;
 import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.lamp.dto.ElementAvgResult;
 import com.sybd.znld.model.lamp.dto.LampWithLocation;
@@ -70,28 +71,68 @@ public class RegionController implements IRegionController {
     public List<LampWithLocation> getRegionOfEnvironmentList(String organId, Boolean convert, HttpServletRequest request) {
         var lamps = this.regionMapper.selectLampsOfEnvironment(organId);
         var result = new ArrayList<LampWithLocation>();
-        var lampWithLocation = new LampWithLocation();
         for(var l : lamps){
+            var lampWithLocation = new LampWithLocation();
             lampWithLocation.deviceId = l.deviceId;
             lampWithLocation.deviceName = l.deviceName;
-            var jingdu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗经度");
-            var weidu = this.dataLocationMapper.selectByDeviceIdAndResourceName(l.deviceId, "北斗纬度");
-            lampWithLocation.longitude = jingdu == null ? 0.0 : MyNumber.getDouble(jingdu.value);
-            lampWithLocation.latitude = weidu == null ? 0.0 : MyNumber.getDouble(weidu.value);
-            if(convert != null && convert){
-                var builder = UriComponentsBuilder
-                        .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
-                        .queryParam("coords", lampWithLocation.longitude+","+lampWithLocation.latitude)
-                        .queryParam("from", 1)
-                        .queryParam("to", 5)
-                        .queryParam("ak", this.baiduAK);
-                var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
-                var body = converted.getBody();
-                if(body != null){
-                    int status = JsonPath.read(body, "$.status");
-                    if(status == 0){
-                        lampWithLocation.longitude = JsonPath.read(body, "$.result[0].x");
-                        lampWithLocation.latitude = JsonPath.read(body, "$.result[0].y");
+            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+l.deviceId);
+            var realTimeData1 = (RealTimeData) map.get("北斗经度");
+            var realTimeData2 = (RealTimeData) map.get("北斗纬度");
+            if(realTimeData1 != null && realTimeData2 != null){
+                lampWithLocation.longitude = MyNumber.getDouble(realTimeData1.value);
+                lampWithLocation.latitude =  MyNumber.getDouble(realTimeData2.value);
+                if(convert != null && convert){
+                    var builder = UriComponentsBuilder
+                            .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
+                            .queryParam("coords", lampWithLocation.longitude+","+lampWithLocation.latitude)
+                            .queryParam("from", 1)
+                            .queryParam("to", 5)
+                            .queryParam("ak", this.baiduAK);
+                    var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
+                    var body = converted.getBody();
+                    if(body != null){
+                        int status = JsonPath.read(body, "$.status");
+                        if(status == 0){
+                            lampWithLocation.longitude = JsonPath.read(body, "$.result[0].x");
+                            lampWithLocation.latitude = JsonPath.read(body, "$.result[0].y");
+                        }
+                    }
+                }
+            }
+            result.add(lampWithLocation);
+        }
+        return result;
+    }
+
+    @Override
+    public List<LampWithLocation> getLampsByRegion(String organId, String regionId, Boolean convert, HttpServletRequest request) {
+        var lamps = this.regionMapper.selectLampsByOrganIdRegionIdNotStatus(organId, regionId, Status.LAMP_DEAD);
+        var result = new ArrayList<LampWithLocation>();
+        for(var l : lamps){
+            var lampWithLocation = new LampWithLocation();
+            lampWithLocation.deviceId = l.deviceId;
+            lampWithLocation.deviceName = l.deviceName;
+            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+l.deviceId);
+            var realTimeData1 = (RealTimeData) map.get("北斗经度");
+            var realTimeData2 = (RealTimeData) map.get("北斗纬度");
+            if(realTimeData1 != null && realTimeData2 != null){
+                lampWithLocation.longitude = MyNumber.getDouble(realTimeData1.value);
+                lampWithLocation.latitude = MyNumber.getDouble(realTimeData2.value);
+                if(convert != null && convert){
+                    var builder = UriComponentsBuilder
+                            .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
+                            .queryParam("coords", lampWithLocation.longitude+","+lampWithLocation.latitude)
+                            .queryParam("from", 1)
+                            .queryParam("to", 5)
+                            .queryParam("ak", this.baiduAK);
+                    var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
+                    var body = converted.getBody();
+                    if(body != null){
+                        int status = JsonPath.read(body, "$.status");
+                        if(status == 0){
+                            lampWithLocation.longitude = JsonPath.read(body, "$.result[0].x");
+                            lampWithLocation.latitude = JsonPath.read(body, "$.result[0].y");
+                        }
                     }
                 }
             }

@@ -17,8 +17,14 @@ import java.util.Map;
 public interface IRegionController {
     // 获取某个组织的可能的环境监测点
     @GetMapping(value="{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    List<LampWithLocation> getRegionOfEnvironmentList(@PathVariable(name = "organId") String organId, @RequestParam(name = "convert", required = false) Boolean convert, HttpServletRequest request);
-
+    List<LampWithLocation> getRegionOfEnvironmentList(@PathVariable(name = "organId") String organId,
+                                                      @RequestParam(name = "convert", required = false) Boolean convert,
+                                                      HttpServletRequest request);
+    // 获取某个组织的某个区域下的所有路灯
+    @GetMapping(value="{organId:^[0-9a-f]{32}$}/{regionId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    List<LampWithLocation> getLampsByRegion(@PathVariable(name = "organId") String organId, @PathVariable(name = "regionId") String regionId,
+                                                      @RequestParam(name = "convert", required = false) Boolean convert,
+                                                      HttpServletRequest request);
     // 获取某个分平台的某个监测点的实时数据
     @GetMapping(value="report/{deviceId}", produces = {MediaType.APPLICATION_JSON_VALUE})
     List<RealTimeData> getRealTimeDataOfDevice(@PathVariable(name = "deviceId") Integer deviceId);

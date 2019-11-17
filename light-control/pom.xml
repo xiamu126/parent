@@ -11,5 +11,10 @@
 
     <artifactId>light-control</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.sybd.znld</groupId>
+            <artifactId>util</artifactId>
+        </dependency>
+    </dependencies>
 </project>

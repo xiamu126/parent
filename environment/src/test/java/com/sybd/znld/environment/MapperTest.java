@@ -2,6 +2,7 @@ package com.sybd.znld.environment;
 
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
+import com.sybd.znld.model.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,5 +72,12 @@ public class MapperTest {
     public void test6(){
         var tmp = this.regionMapper.selectAvgOfEnvironmentElementLastHoursByDeviceId(533263283, 8);
         Assert.notNull(tmp);
+    }
+
+    @Test
+    public void test7(){
+        var tmp = this.regionMapper.selectLampsByOrganIdRegionIdNotStatus("a69ce5bf51f111e9804a0242ac110007",
+                "6314f1b056a111e98edc0242ac110007", Status.LAMP_DEAD);
+        Assert.isTrue(tmp.size() > 0, "test");
     }
 }

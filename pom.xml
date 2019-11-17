@@ -460,9 +460,7 @@
 
     <modules>
         <module>api</module>
-        <module>socket</module>
         <module>oauth2-server</module>
-        <module>oauth2-resource</module>
         <module>model</module>
         <module>util</module>
         <module>video</module>
@@ -478,6 +476,7 @@
         <module>positioning</module>
         <module>positioning-socket</module>
         <module>light-control</module>
+        <module>lamp-manage</module>
     </modules>
 
 </project>

@@ -6,6 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.DataDeviceOnOffMapper;
 import com.sybd.znld.mapper.lamp.DataEnvironmentMapper;
 import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
+import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
@@ -58,66 +59,62 @@ public class DataPushController {
         this.objectMapper = objectMapper;
     }
 
-    private String ds = null;
-    private Object value = null;
-    private LocalDateTime at = null;
-    private Integer deviceId = null;
-    private String imei = null;
-
-    private void extract(String body){
+    private RawData extract(String body){
+        String ds = null;
         try{
-            this.ds = JsonPath.read(body,"$.msg.ds_id");
-        }catch (Exception ignored){
-            this.ds = null;
-        }
+            ds = JsonPath.read(body,"$.msg.ds_id");
+        }catch (Exception ignored){ }
+        Object value = null;
         try{
-            this.value = JsonPath.read(body,"$.msg.value");
-        }catch (Exception ignored){
-            this.value = null;
-        }
+            value = JsonPath.read(body,"$.msg.value");
+        }catch (Exception ignored){ }
+        LocalDateTime at = null;
         try{
             Long tmp = JsonPath.read(body,"$.msg.at");
             var zoneId = ZoneId.of("Asia/Shanghai");
-            this.at = MyDateTime.toLocalDateTime(tmp, zoneId);
-        }catch (Exception ignored){
-            this.at = null;
-        }
+            at = MyDateTime.toLocalDateTime(tmp, zoneId);
+        }catch (Exception ignored){ }
+        Integer deviceId = null;
         try{
-            this.deviceId = JsonPath.read(body,"$.msg.dev_id");
-        }catch (Exception ignored){
-            this.deviceId = null;
-        }
+            deviceId = JsonPath.read(body,"$.msg.dev_id");
+        }catch (Exception ignored){ }
+        String imei = null;
         try{
-            this.imei = JsonPath.read(body,"$.msg.imei");
-        }catch (Exception ignored){
-            this.imei = null;
-        }
+            imei = JsonPath.read(body,"$.msg.imei");
+        }catch (Exception ignored){ }
+        var rawData = new RawData();
+        rawData.ds = ds;
+        rawData.value = value;
+        rawData.at = at;
+        rawData.deviceId = deviceId;
+        rawData.imei = imei;
+        return rawData;
     }
-    private void onOff(String name) {
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+this.deviceId);
+    private void onOff(RawData rawData, String name) {
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
-        realTimeData.value = this.value;
-        realTimeData.at = MyDateTime.toTimestamp(this.at);
+        realTimeData.value = rawData.value;
+        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
         map.put(name, realTimeData); // 更新实时缓存
 
         var news = new News();
-        news.deviceId = this.deviceId;
+        news.deviceId = rawData.deviceId;
         news.name = name;
-        news.value = this.value;
-        news.at = MyDateTime.toTimestamp(this.at);
+        news.value = rawData.value;
+        news.at = MyDateTime.toTimestamp(rawData.at);
         try {
             OnOffHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
         } catch (JsonProcessingException ignored) { }
     }
-    private void position(String name) {
-        var tmp = MyNumber.getDouble(this.value.toString());
+    private void position(RawData rawData, String name) {
+        var tmp = MyNumber.getDouble(rawData.value.toString());
         if(tmp != null && tmp != 0.0){
-            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+this.deviceId);
+            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
             var realTimeData = new RealTimeData();
             realTimeData.describe = name;
-            realTimeData.value = this.value;
-            realTimeData.at = MyDateTime.toTimestamp(this.at);
+            realTimeData.value = rawData.value;
+            realTimeData.at = MyDateTime.toTimestamp(rawData.at);
             map.put(name, realTimeData); // 更新实时缓存
             // 经度和纬度是分开传过来的，所以再发送实时数据的时候，必须要保证经度和纬度的数据都存在时才发送
             // 判断经度和纬度的数据是否为同一批数据，看这两个数据的时差，如果是30秒内的，就是同一批数据
@@ -128,7 +125,7 @@ public class DataPushController {
                 // 是经度数据，那么就从缓存里查纬度数据
                 realTimeData = (RealTimeData) map.get(name.replace("经", "纬"));
                 if(realTimeData != null){
-                    lng = this.value;
+                    lng = rawData.value;
                     lat = realTimeData.value;
                     at = MyDateTime.toLocalDateTime(realTimeData.at);
                 }
@@ -136,7 +133,7 @@ public class DataPushController {
                 realTimeData = (RealTimeData) map.get(name.replace("纬", "经"));
                 if(realTimeData != null){
                     lng = realTimeData.value;
-                    lat = this.value;
+                    lat = rawData.value;
                     at = MyDateTime.toLocalDateTime(realTimeData.at);
                 }
 
@@ -145,14 +142,14 @@ public class DataPushController {
                 return;
             }
             if(lng != null && lat != null){
-                var seconds = Duration.between(at, this.at).getSeconds();
+                var seconds = Duration.between(at, rawData.at).getSeconds();
                 if(Math.abs(seconds) <= 30){ // 是同一批的经纬度
                     try {
                         var news = new News();
-                        news.deviceId = this.deviceId;
+                        news.deviceId = rawData.deviceId;
                         news.name = name;
                         news.value = lng+","+lat;
-                        news.at = MyDateTime.toTimestamp(this.at);
+                        news.at = MyDateTime.toTimestamp(rawData.at);
                         PositionHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
                     } catch (JsonProcessingException ignored) { }
                 }
@@ -161,45 +158,45 @@ public class DataPushController {
             log.debug("经纬度不合法");
         }
     }
-    private void angle(String name) {
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+this.deviceId);
+    private void angle(RawData rawData, String name) {
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
-        realTimeData.value = this.value;
-        realTimeData.at = MyDateTime.toTimestamp(this.at);
+        realTimeData.value = rawData.value;
+        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
         map.put(name, realTimeData); // 更新实时缓存
 
         var news = new News();
-        news.deviceId = this.deviceId;
+        news.deviceId = rawData.deviceId;
         news.name = name;
-        news.value = this.value;
-        news.at = MyDateTime.toTimestamp(this.at);
+        news.value = rawData.value;
+        news.at = MyDateTime.toTimestamp(rawData.at);
         try {
             AngleHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
         } catch (JsonProcessingException ignored) { }
     }
-    private void environment(String name) {
+    private void environment(RawData rawData, String name) {
         var data = new DataPushModel();
-        data.deviceId = this.deviceId;
-        data.imei = this.imei;
-        data.datastreamId = this.ds;
+        data.deviceId = rawData.deviceId;
+        data.imei = rawData.imei;
+        data.datastreamId = rawData.ds;
         data.name = name;
-        data.value = this.value;
-        data.at = this.at;
+        data.value = rawData.value;
+        data.at = rawData.at;
         this.dataEnvironmentMapper.insert(data); // // 环境数据需要保存入数据库
 
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+this.deviceId);
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
-        realTimeData.value = this.value;
-        realTimeData.at = MyDateTime.toTimestamp(this.at);
+        realTimeData.value = rawData.value;
+        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
         map.put(name, realTimeData); // 更新实时缓存
 
         var news = new News();
-        news.deviceId = this.deviceId;
+        news.deviceId = rawData.deviceId;
         news.name = name;
-        news.value = this.value;
-        news.at = MyDateTime.toTimestamp(this.at);
+        news.value = rawData.value;
+        news.at = MyDateTime.toTimestamp(rawData.at);
         try {
             EnvironmentHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
         } catch (JsonProcessingException ignored) { }
@@ -230,41 +227,41 @@ public class DataPushController {
             log.debug("对解析的数据做签名验证失败");
             return "";
         }
-        this.extract(body);
-        if(this.ds != null){ // 为空时可能是其它数据，如登入
-            var ids = this.ds.split("_");
+        var rawData = this.extract(body);
+        if(rawData.ds != null){ // 为空时可能是其它数据，如登入
+            var ids = rawData.ds.split("_");
             if(ids.length != 3){
-                log.debug("不能解析DataStreamId："+this.ds);
+                log.debug("不能解析DataStreamId："+rawData.ds);
                 return "";
             }
             var name = this.oneNetResourceMapper.selectNameByDataStreamId(ids[0], ids[1], ids[2]);
             if(name == null){ // 有些DataStreamId是没有定义的，如北斗定位的误差之类
-                log.debug("通过DataStreamId获取相应的资源名称为空："+this.ds);
+                log.debug("通过DataStreamId获取相应的资源名称为空："+rawData.ds);
                 return "";
             }
-            if(this.value == null){
+            if(rawData.value == null){
                 log.debug("onenet推送过来的这个资源["+ name +"]的值为空");
                 return "";
             }
-            if(this.at == null){
+            if(rawData.at == null){
                 log.debug("onenet推送过来的这个资源["+ name +"]的更新时间为空");
                 return "";
             }
-            log.debug("onenet推送过来的这个资源["+ name +"]的值为"+value+"，更新时间为"+ MyDateTime.toString(this.at, MyDateTime.FORMAT1));
-            if(this.deviceId == null){
+            log.debug("onenet推送过来的这个资源["+ name +"]的值为"+rawData.value+"，更新时间为"+ MyDateTime.toString(rawData.at, MyDateTime.FORMAT1));
+            if(rawData.deviceId == null){
                 log.debug("onenet推送过来的这个资源["+ name +"]的deviceId为空");
                 return "";
             }
             if(name.contains("开关")){
-                this.onOff(name);
+                this.onOff(rawData, name);
             } else if(name.contains("经度") || name.contains("纬度")) {
-                this.position(name);
+                this.position(rawData, name);
             } else if(name.contains("angle")){
-                this.angle(name);
+                this.angle(rawData, name);
             } else if(name.contains("时间戳") ){
                 log.debug("跳过时间戳");
             } else{
-                this.environment(name);
+                this.environment(rawData, name);
             }
             return "ok";
         }

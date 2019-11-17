@@ -1,5 +1,7 @@
 package com.sybd.znld.mapper.config;
 
+import com.sybd.znld.mapper.StatusTypeHandler;
+import com.sybd.znld.model.Status;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -43,6 +45,8 @@ public class OAuthDataSourceConfig {
         var bean = factory.getObject();
         assert bean != null;
         bean.getConfiguration().setMapUnderscoreToCamelCase(true);
+        var typeHandlerRegistry = bean.getConfiguration().getTypeHandlerRegistry();
+        typeHandlerRegistry.register(Status.class, StatusTypeHandler.class);
         return bean;
     }
 }

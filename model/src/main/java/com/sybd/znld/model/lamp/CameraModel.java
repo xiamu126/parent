@@ -1,6 +1,8 @@
 package com.sybd.znld.model.lamp;
 
+import com.sybd.znld.model.Status;
 import com.sybd.znld.util.MyString;
+import io.swagger.models.auth.In;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,12 +15,8 @@ public class CameraModel implements Serializable {
     public String rtmp;
     public String flvUrl;
     public Boolean recordAudio = false;
-    public Short status = Status.ENABLED;
+    public Integer status = Status.OK.getValue();
 
-    public static class Status{
-        public static final short ENABLED = 0;
-        public static final short DISABLED = 1;
-    }
     public static class Rtmp{
         public String liveUrl;
         public String trackUrl;

@@ -73,6 +73,14 @@
         where a.organization_id = #{organId} and c.environment = true
     </select>
 
+    <select id="selectLampsByOrganIdRegionIdNotStatus" resultType="com.sybd.znld.model.lamp.dto.Lamp">
+        select c.device_id, c.device_name
+        from region as a
+        left join lamp_region as b on b.region_id = a.id
+        left join lamp as c on c.id = b.lamp_id
+        where a.organization_id = #{organId} and a.id = #{regionId} and c.status != #{status};
+    </select>
+
     <select id="selectAvgOfEnvironmentElementBetweenByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">
         select name, round(avg(value), 2) as value, max(at) as at from data_environment
         where device_id = #{deviceId} and at between #{begin} and #{end}

@@ -160,7 +160,7 @@ public class UserController {
     @Autowired
     public RoleMapper roleMapper;
     @Autowired
-    public RoleAuthGroupMapper roleAuthGroupMapper;
+    public RoleAuthorityGroupMapper roleAuthorityGroupMapper;
     // 新增角色
     @Test
     public void addRole(){
@@ -176,7 +176,7 @@ public class UserController {
         var model = new RoleAuthorityGroupModel();
         model.roleId = "28c98dcc82fe4bb1bedd0bec84a8a8f1";
         model.authGroupId = "c070a90bede849f6b937260aee1f65b6";
-        this.roleAuthGroupMapper.insert(model);
+        this.roleAuthorityGroupMapper.insert(model);
     }
 
     @Autowired
@@ -187,7 +187,7 @@ public class UserController {
         var userId = "a6b354d551f111e9804a0242ac110007";
         var userRoleModel = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限
-        var roleAuthModel = this.roleAuthGroupMapper.selectByRoleId(userRoleModel.get(0).roleId);
+        var roleAuthModel = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.get(0).roleId);
         var authorities = this.authorityMapper.selectByAuthGroupId(roleAuthModel.get(0).authGroupId);
         Assert.assertTrue(authorities.size() > 0);
         authorities.forEach(a -> {

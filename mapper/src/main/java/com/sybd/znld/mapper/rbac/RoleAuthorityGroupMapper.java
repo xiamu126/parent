@@ -9,7 +9,7 @@ import java.util.List;
 
 @Mapper
 @DbSource("rbac")
-public interface RoleAuthGroupMapper {
+public interface RoleAuthorityGroupMapper {
     int insert(RoleAuthorityGroupModel model);
     RoleAuthorityGroupModel selectById(String id);
     List<RoleAuthorityGroupModel> selectByRoleId(String id); //一个角色可以关联多个权限组

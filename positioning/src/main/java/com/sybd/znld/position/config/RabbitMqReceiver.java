@@ -4,8 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.GpggaMapper;
 import com.sybd.znld.model.lamp.GpggaModel;
 import com.sybd.znld.position.model.Point;
-import com.sybd.znld.position.websocket.PositioningWebSocketHandler;
-import com.sybd.znld.util.MyNumber;
+import com.sybd.znld.position.websocket.handler.RealTimeHandler;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
@@ -80,7 +79,7 @@ public class RabbitMqReceiver {
         }
         // 转换为百度坐标
         var convertedPoint = toBaiduCoordinate(this.restTemplate, lngLat);
-        PositioningWebSocketHandler.sendAll(convertedPoint.toString());
+        RealTimeHandler.sendAll(convertedPoint.toString());
         var props = msg.getMessageProperties();
         var filename = props.getHeaders().get("filename");
         if(!MyString.isEmptyOrNull(filename.toString())){

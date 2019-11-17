@@ -24,7 +24,7 @@ public class RbacService implements IRbacService {
     private final RoleMapper roleMapper;
     private final UserRoleMapper userRoleMapper;
     private final UserMapper userMapper;
-    private final RoleAuthGroupMapper roleAuthGroupMapper;
+    private final RoleAuthorityGroupMapper roleAuthorityGroupMapper;
     private final OrganizationMapper organizationMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -34,14 +34,14 @@ public class RbacService implements IRbacService {
                        RoleMapper roleMapper,
                        UserRoleMapper userRoleMapper,
                        UserMapper userMapper,
-                       RoleAuthGroupMapper roleAuthGroupMapper,
+                       RoleAuthorityGroupMapper roleAuthorityGroupMapper,
                        OrganizationMapper organizationMapper) {
         this.authorityGroupMapper = authorityGroupMapper;
         this.authorityMapper = authorityMapper;
         this.roleMapper = roleMapper;
         this.userRoleMapper = userRoleMapper;
         this.userMapper = userMapper;
-        this.roleAuthGroupMapper = roleAuthGroupMapper;
+        this.roleAuthorityGroupMapper = roleAuthorityGroupMapper;
         this.organizationMapper = organizationMapper;
     }
 
@@ -130,10 +130,10 @@ public class RbacService implements IRbacService {
         if(this.authorityMapper.selectById(model.authGroupId) == null){
             log.debug("指定的权限id不存在"); return null;
         }
-        if(this.roleAuthGroupMapper.selectByRoleIdAndAuthGroupId(model.roleId, model.authGroupId) != null){
+        if(this.roleAuthorityGroupMapper.selectByRoleIdAndAuthGroupId(model.roleId, model.authGroupId) != null){
             log.debug("指定的角色+权限已经存在"); return null;
         }
-        if(this.roleAuthGroupMapper.insert(model) > 0) return model;
+        if(this.roleAuthorityGroupMapper.insert(model) > 0) return model;
         return null;
     }
 
@@ -142,7 +142,7 @@ public class RbacService implements IRbacService {
         var roles = this.userRoleMapper.selectByUserId(userId);
         var authList = new ArrayList<AuthorityModel>();
         roles.forEach(r -> {
-            var roleAuthList = this.roleAuthGroupMapper.selectByRoleId(r.roleId);
+            var roleAuthList = this.roleAuthorityGroupMapper.selectByRoleId(r.roleId);
             roleAuthList.forEach(ra -> {
                 var auth = this.authorityMapper.selectById(ra.authGroupId);
                 authList.add(auth);
@@ -247,7 +247,7 @@ public class RbacService implements IRbacService {
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限，一个账号可以关联多个角色
         userRoleModels.forEach(userRoleModel -> {
-            var roleAuthModels = this.roleAuthGroupMapper.selectByRoleId(userRoleModel.roleId);
+            var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
             // 一个角色可以关联多个权限组
             roleAuthModels.forEach(roleAuthModel -> {
                 var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.API.getValue());
@@ -276,7 +276,7 @@ public class RbacService implements IRbacService {
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限，一个账号可以关联多个角色
         userRoleModels.forEach(userRoleModel -> {
-            var roleAuthModels = this.roleAuthGroupMapper.selectByRoleId(userRoleModel.roleId);
+            var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
             // 一个角色可以关联多个权限组
             roleAuthModels.forEach(roleAuthModel -> {
                 var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.WEB.getValue());
@@ -400,14 +400,14 @@ public class RbacService implements IRbacService {
             return null;
         }
         // 判断是否已经存在
-        if(this.roleAuthGroupMapper.selectByRoleIdAndAuthGroupId(roleId, authId) != null){
+        if(this.roleAuthorityGroupMapper.selectByRoleIdAndAuthGroupId(roleId, authId) != null){
             log.debug("此权限与此角色已经关联，无法再次绑定");
             return null;
         }
         var model = new RoleAuthorityGroupModel();
         model.authGroupId = authId;
         model.roleId = roleId;
-        if(this.roleAuthGroupMapper.insert(model) > 0) return model;
+        if(this.roleAuthorityGroupMapper.insert(model) > 0) return model;
         return null;
     }
 }

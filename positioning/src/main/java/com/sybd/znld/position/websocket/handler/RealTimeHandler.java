@@ -1,6 +1,5 @@
-package com.sybd.znld.position.websocket;
+package com.sybd.znld.position.websocket.handler;
 
-import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.socket.*;
@@ -10,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 @Slf4j
-public class PositioningWebSocketHandler implements WebSocketHandler {
+public class RealTimeHandler implements WebSocketHandler {
     private static final ArrayList<WebSocketSession> sessions = new ArrayList<>();
 
     @Override
@@ -58,7 +57,7 @@ public class PositioningWebSocketHandler implements WebSocketHandler {
         for(var session : sessions){
             var message = new TextMessage(msg);
             try {
-                synchronized (PositioningWebSocketHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
+                synchronized (RealTimeHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
                     session.sendMessage(message);
                 }
             } catch (IOException ex) {

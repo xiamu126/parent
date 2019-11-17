@@ -51,8 +51,8 @@ public class RegionController implements IRegionController {
     @Value("${baidu-ak}")
     private String baiduAK;
 
-    /*@Reference(url = "dubbo://localhost:18085")
-    private ISigService sigService;*/
+    //@Reference(url = "dubbo://localhost:18085")
+    //private ISigService sigService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired

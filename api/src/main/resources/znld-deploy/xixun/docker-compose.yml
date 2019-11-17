@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  xixun:
+    container_name: znld-xixun
+    image: node:latest
+    working_dir: /RealtimeServer
+    ports:
+      - target: 8181
+        published: 8181
+        protocol: tcp
+        mode: host
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./RealtimeServer
+        target: /RealtimeServer
+    command: npm run start
+    networks:
+      - znld-network
+networks:
+    znld-network:
+      driver: bridge
+      name: znld-net

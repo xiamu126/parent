@@ -3,9 +3,7 @@ package com.sybd.znld.onenet.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import com.sybd.znld.mapper.lamp.DataDeviceOnOffMapper;
-import com.sybd.znld.mapper.lamp.DataEnvironmentMapper;
-import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
+import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.onenet.DataPushModel;
@@ -36,6 +34,8 @@ public class DataPushController {
     private final OneNetResourceMapper oneNetResourceMapper;
     private final DataEnvironmentMapper dataEnvironmentMapper;
     private final DataDeviceOnOffMapper dataDeviceOnOffMapper;
+    private final DataLocationMapper dataLocationMapper;
+    private final DataAngleMapper dataAngleMapper;
     private final IOneNetService oneNetService;
     private final RedissonClient redissonClient;
     private final ObjectMapper objectMapper;
@@ -49,14 +49,26 @@ public class DataPushController {
                               OneNetResourceMapper oneNetResourceMapper,
                               DataEnvironmentMapper dataEnvironmentMapper,
                               DataDeviceOnOffMapper dataDeviceOnOffMapper,
+                              DataLocationMapper dataLocationMapper,
+                              DataAngleMapper dataAngleMapper,
                               IOneNetService oneNetService, RedissonClient redissonClient, ObjectMapper objectMapper) {
         this.jmsTemplate = jmsTemplate;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.dataEnvironmentMapper = dataEnvironmentMapper;
         this.dataDeviceOnOffMapper = dataDeviceOnOffMapper;
+        this.dataLocationMapper = dataLocationMapper;
+        this.dataAngleMapper = dataAngleMapper;
         this.oneNetService = oneNetService;
         this.redissonClient = redissonClient;
         this.objectMapper = objectMapper;
+    }
+
+    private Integer getMsgType(String body){
+        Integer type = null;
+        try{
+            type = JsonPath.read(body,"$.msg.type");
+        }catch (Exception ignored){ }
+        return type;
     }
 
     private RawData extract(String body){
@@ -110,6 +122,14 @@ public class DataPushController {
     private void position(RawData rawData, String name) {
         var tmp = MyNumber.getDouble(rawData.value.toString());
         if(tmp != null && tmp != 0.0){
+            /*var data = new DataPushModel();
+            data.deviceId = rawData.deviceId;
+            data.imei = rawData.imei;
+            data.datastreamId = rawData.ds;
+            data.name = name;
+            data.value = rawData.value;
+            data.at = rawData.at;
+            this.dataLocationMapper.insert(data); // 保存入数据库*/
             var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
             var realTimeData = new RealTimeData();
             realTimeData.describe = name;
@@ -159,6 +179,14 @@ public class DataPushController {
         }
     }
     private void angle(RawData rawData, String name) {
+        /*var data = new DataPushModel();
+        data.deviceId = rawData.deviceId;
+        data.imei = rawData.imei;
+        data.datastreamId = rawData.ds;
+        data.name = name;
+        data.value = rawData.value;
+        data.at = rawData.at;
+        this.dataAngleMapper.insert(data); // 保存入数据库*/
         var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
@@ -228,6 +256,35 @@ public class DataPushController {
             return "";
         }
         var rawData = this.extract(body);
+        var type = this.getMsgType(body);
+        if(type != null){
+            if(type == 2){
+                log.debug("设备上下线消息");
+                Integer status = null;
+                try{
+                    status = JsonPath.read(body,"$.msg.type");
+                }catch (Exception ignored){ }
+                if(status != null){
+                    if(status == 0){
+                        log.debug("设备下线了");
+                    }else if(status == 1){
+                        log.debug("设备上线了");
+                    }else {
+                        log.debug("未知的设备状态");
+                    }
+                    if(rawData.deviceId != null){
+                        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
+                        map.put("status", status);
+                    }
+                }
+            }else if (type == 1) {
+                log.debug("设备上传数据点消息");
+            }else if(type == 7){
+                log.debug("缓存命令下发后结果上报");
+            }else{
+                log.debug("位置的信息类型");
+            }
+        }
         if(rawData.ds != null){ // 为空时可能是其它数据，如登入
             var ids = rawData.ds.split("_");
             if(ids.length != 3){

@@ -54,14 +54,6 @@ public class UserService implements IUserService {
     @Override
     public UserModel modifyUserById(UserModel user) {
         if(!MyString.isUuid(user.id)) return null;
-        //如果存在有效的电话号码，则需要验证此号码是否已经使用过
-        if(user.phone != null && !user.phone.isEmpty() && MyString.isPhoneNo(user.phone)){
-            if(this.getUserByPhone(user.phone) != null) return null;
-        }
-        //如果存在有效的身份证号，则需要验证此号是否已经使用过
-        if(user.idCardNo != null && !user.idCardNo.isEmpty() && MyString.isIdCardNo(user.idCardNo)){
-            if(this.getUserByIdCardNo(user.idCardNo) != null) return null;
-        }
         if(this.userMapper.updateById(user) > 0) {
             return this.userMapper.selectById(user.id);
         }
@@ -157,7 +149,7 @@ public class UserService implements IUserService {
         user.password = input.password;
         user.organizationId = input.organizationId;
         user.lastLoginTime = LocalDateTime.now();
-        user.status = (short)0;
+        user.status = 0;
         return addUser(user);
     }
 

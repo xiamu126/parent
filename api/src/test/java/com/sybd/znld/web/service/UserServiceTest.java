@@ -88,7 +88,6 @@ public class UserServiceTest {
     public void updateById(){
         var user = new UserModel();
         user.id = "a6b354d551f111e9804a0242ac110007";
-        user.realName = "yyy";
         var tmp = this.userService.modifyUserById(user);
         log.debug(tmp.toString());
     }
@@ -127,7 +126,6 @@ public class UserServiceTest {
     public void update(){
         var entity = new UserModel();
         entity.setId("a48bfa0ff9e711e880a0000c294eb278");
-        entity.setAge((short)18);
         var ret = this.userService.modifyUserById(entity);
         log.debug(ret.toString());
     }

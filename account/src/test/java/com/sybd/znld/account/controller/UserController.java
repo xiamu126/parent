@@ -1,14 +1,11 @@
 package com.sybd.znld.account.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import com.sybd.znld.account.service.IUserService;
+import com.sybd.znld.mapper.lamp.LocationMapper;
 import com.sybd.znld.mapper.rbac.*;
+import com.sybd.znld.model.lamp.Location;
 import com.sybd.znld.model.rbac.AuthorityGroupModel;
-import com.sybd.znld.model.rbac.AuthorityModel;
-import com.sybd.znld.model.rbac.RoleAuthorityGroupModel;
 import com.sybd.znld.model.rbac.RoleModel;
 import com.sybd.znld.model.rbac.dto.*;
 import com.sybd.znld.util.MD5;
@@ -29,7 +26,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,26 +132,6 @@ public class UserController {
         model.organizationId = "a69ce5bf51f111e9804a0242ac110007";
         this.authorityGroupMapper.insert(model);
     }
-    // 新增api操作
-    @Test
-    public void addAuth() throws IOException {
-        var app = "znld"; // 这个操作是针对哪个app的
-        var api = new RbacApiInfo(app); // 针对api类型的操作（权限）集合
-        var includeDetail = new RbacApiInfo.Detail();
-        includeDetail.path = "/api/v1/device/*";
-        includeDetail.methods = List.of("post");
-        var excludeDetail = new RbacApiInfo.Detail();
-        excludeDetail.path = "/api/v1/ministar/*";
-        excludeDetail.methods = List.of("*");
-        api.include = List.of(includeDetail);
-        api.exclude = List.of(excludeDetail);
-        log.debug(api.toJson());
-        var model = new AuthorityModel();
-        model.authorityGroupId = "260fd9fbd1af4d4c9bb4b61e0957dadc";
-        model.name = "测试api操作";
-        model.uri = api.toJson();
-        this.authorityMapper.insert(model);
-    }
 
     @Autowired
     public RoleMapper roleMapper;
@@ -170,100 +146,9 @@ public class UserController {
         this.roleMapper.insert(model);
     }
 
-    // 关联角色和权限组
-    @Test
-    public void addRoleAuth(){
-        var model = new RoleAuthorityGroupModel();
-        model.roleId = "28c98dcc82fe4bb1bedd0bec84a8a8f1";
-        model.authGroupId = "c070a90bede849f6b937260aee1f65b6";
-        this.roleAuthorityGroupMapper.insert(model);
-    }
-
     @Autowired
     public UserRoleMapper userRoleMapper;
-    // 根据用户id获取权限相关信息
-    @Test
-    public void getRbacInfoByUserId() {
-        var userId = "a6b354d551f111e9804a0242ac110007";
-        var userRoleModel = this.userRoleMapper.selectByUserId(userId);
-        // 根据角色获取权限
-        var roleAuthModel = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.get(0).roleId);
-        var authorities = this.authorityMapper.selectByAuthGroupId(roleAuthModel.get(0).authGroupId);
-        Assert.assertTrue(authorities.size() > 0);
-        authorities.forEach(a -> {
-            String type = JsonPath.read(a.uri,"type");
-            if(type.equals("api")){
-                List<RbacApiInfo.Detail> exclude = JsonPath.read(a.uri,"exclude");
-                List<RbacApiInfo.Detail> include = JsonPath.read(a.uri,"include");
-                var summary = new RbacApiInfoSummary();
-                summary.exclude = exclude;
-                summary.include = include;
-                log.debug(summary.toJson());
-            }else if(type.equals("web")){
-                List<RbacWebInfo.Detail> exclude = null;
-                try {
-                    exclude = JsonPath.read(a.uri,"exclude");
-                }catch (PathNotFoundException ignored){ }
-                List<RbacWebInfo.Detail> include = null;
-                try {
-                    include = JsonPath.read(a.uri,"include");
-                }catch (PathNotFoundException ignored){ }
-                var summary = new RbacWebInfoSummary();
-                summary.exclude = exclude;
-                summary.include = include;
-                log.debug(summary.toJson());
-            }
-        });
-    }
 
-    // 新增web操作
-    @Test
-    public void addWebAuth() throws IOException {
-        var app = "znld"; // 这个操作是针对哪个app的
-        var web = new RbacWebInfo(app); // 针对web类型的操作（权限）集合
-        var includeDetail = new RbacWebInfo.Detail();
-        includeDetail.path = "/api/v1/device/*";
-        includeDetail.selectors = List.of("selectorId");
-        var excludeDetail = new RbacWebInfo.Detail();
-        excludeDetail.path = "/api/v1/ministar/*";
-        excludeDetail.selectors = List.of("*");
-        web.include = List.of(includeDetail);
-        web.exclude = List.of(excludeDetail);
-        log.debug(web.toJson());
-        var model = new AuthorityModel();
-        model.authorityGroupId = "260fd9fbd1af4d4c9bb4b61e0957dadc";
-        model.name = "测试web操作";
-        model.uri = web.toJson();
-        this.authorityMapper.insert(model);
-    }
-
-    // 新增超级管理员权限
-    @Test
-    public void addRootAuth() throws IOException {
-        var app = "znld"; // 这个操作是针对哪个app的
-        var web = new RbacWebInfo(app); // 针对web类型的操作（权限）集合
-        var includeWebDetail = new RbacWebInfo.Detail();
-        includeWebDetail.path = "/**";
-        includeWebDetail.selectors = List.of("*");
-        web.include = List.of(includeWebDetail);
-        var model = new AuthorityModel();
-        model.authorityGroupId = "c070a90bede849f6b937260aee1f65b6";
-        model.name = "超级管理员web操作";
-        model.uri = web.toJson();
-        this.authorityMapper.insert(model);
-
-        var api = new RbacApiInfo(app); // 针对api类型的操作（权限）集合
-        var includeApiDetail = new RbacApiInfo.Detail();
-        includeApiDetail.path = "/**";
-        includeApiDetail.methods = List.of("*");
-        api.include = List.of(includeApiDetail);
-        log.debug(api.toJson());
-        model = new AuthorityModel();
-        model.authorityGroupId = "c070a90bede849f6b937260aee1f65b6";
-        model.name = "超级管理员api操作";
-        model.uri = api.toJson();
-        this.authorityMapper.insert(model);
-    }
 
     private void addDetail(List<RbacApiInfo.Detail> list, RbacApiInfo.Detail detail){
         for(var d : list){
@@ -284,41 +169,6 @@ public class UserController {
         if(list2 == null || list2.isEmpty()) return;
         for(var detail : list2){
             addDetail(list1, detail);
-        }
-    }
-
-    @Test
-    public void appendAuth() throws JsonProcessingException {
-        var authGroupId = "a6bf84cc51f111e9804a0242ac110007";
-        var authName = "测试权限2";
-        var rbacApiInfo = new RbacApiInfo("znld");
-        var excludeDetail = new RbacApiInfo.Detail();
-        excludeDetail.path = "/api/v1/device/*";
-        excludeDetail.methods.add("get");
-        rbacApiInfo.exclude.add(excludeDetail);
-        //
-        var authority = this.authorityMapper.selectByAuthGroupIdAndAuthName(authGroupId, authName);
-        if(authority != null){
-            log.debug("这个权限组下已经存在名为["+authName+"]的权限");
-            var objectMapper = new ObjectMapper();
-            var rbacApiInfoTmp = objectMapper.readValue(authority.uri, RbacApiInfo.class);
-            if(rbacApiInfoTmp.app.equals(rbacApiInfo.app) && rbacApiInfoTmp.type.equals(rbacApiInfo.type)){
-                // 已经存在这个app及其type的权限信息，那么就追加
-                if(rbacApiInfoTmp.exclude != null) {
-                    // 合并相同路径的内容或添加
-                    addDetails(rbacApiInfo.exclude, rbacApiInfoTmp.exclude);
-                }
-
-                authority.uri = rbacApiInfo.toJson();
-                this.authorityMapper.update(authority);
-            }
-        }else {
-            // 新增
-            var model = new AuthorityModel();
-            model.name = authName;
-            model.authorityGroupId = authGroupId;
-            model.uri = rbacApiInfo.toJson();
-            this.authorityMapper.insert(model);
         }
     }
 
@@ -375,5 +225,69 @@ public class UserController {
         this.addDetails(exclude1, exclude2);
 
         log.debug(String.valueOf(exclude1.size()));
+    }
+
+    @Autowired
+    private LocationMapper locationMapper;
+
+    @Test
+    public void addRoot(){
+        var root = new Location();
+        root.name = "某个根节点";
+        root.level = 1;
+        root.sequenceNumber = 1;
+        root.rootId = root.id;
+        root.organizationId = "a69ce5bf51f111e9804a0242ac110007";
+        var ret = this.locationMapper.insert(root);
+        Assert.assertTrue(ret > 0);
+    }
+    // 新增路径树
+    @Test
+    public void addNode(){
+        var node = new Location();
+        node.name = "某个子节点";
+        node.level = 2;
+        node.sequenceNumber = 2;
+        node.rootId = "d5b725a493054249860dbe25c0f6cdda";
+        node.organizationId = "a69ce5bf51f111e9804a0242ac110007";
+        var ret = this.locationMapper.insert(node);
+        Assert.assertTrue(ret > 0);
+    }
+
+    @Test
+    public void addNode2(){
+        var node = new Location();
+        node.name = "松陵";
+        node.level = 3;
+        node.sequenceNumber = 3;
+        node.rootId = "aae19a2a9c8245dbb7c99432d5614d02";
+        node.organizationId = "a69ce5bf51f111e9804a0242ac110007";
+        var ret = this.locationMapper.insert(node);
+        Assert.assertTrue(ret > 0);
+        node = new Location();
+        node.name = "同里";
+        node.level = 3;
+        node.sequenceNumber = 4;
+        node.rootId = "aae19a2a9c8245dbb7c99432d5614d02";
+        node.organizationId = "a69ce5bf51f111e9804a0242ac110007";
+        ret = this.locationMapper.insert(node);
+        Assert.assertTrue(ret > 0);
+    }
+
+    @Test
+    public void addChild(){
+        var parent = this.locationMapper.selectByOrganIdName("a69ce5bf51f111e9804a0242ac110007", "苏州");
+        Assert.assertNotNull(parent);
+
+    }
+
+    @Test
+    public void getChild(){
+        var root = this.locationMapper.selectRoot("a69ce5bf51f111e9804a0242ac110007", "苏州");
+        Assert.assertNotNull(root);
+        var children = this.locationMapper.selectChild("aae19a2a9c8245dbb7c99432d5614d02");
+        Assert.assertTrue(children.size() > 0);
+        children = this.locationMapper.selectChildren("aae19a2a9c8245dbb7c99432d5614d02");
+        Assert.assertTrue(children.size() > 0);
     }
 }

@@ -31,20 +31,6 @@ public class MySecurityExpressionRoot extends SecurityExpressionRoot implements 
         if(authPack == null || authPack.isEmpty()) return false;
         var antPathMatcher = new AntPathMatcher();
         for(var a: authPack){
-            var type = RbacInfo.getType(a.authValue);
-            if(type.equals(RbacInfo.RbacType.API.getValue())){
-                var rbacApiInfo = RbacApiInfo.from(a.authValue);
-                if(antPathMatcher.match(rbacApiInfo.rbac.detail.include.path, path)){ // 请求的路径是允许的
-                    if(rbacApiInfo.rbac.detail.include.methods.stream().anyMatch(m -> m.equals("*"))){ // 支持任意的请求方法
-                        return true;
-                    }
-                    if(rbacApiInfo.rbac.detail.include.methods.stream().anyMatch(m -> m.equals(method))){ // 请求的方法是允许的
-                        return true;
-                    }
-                }
-            }else if (type.equals(RbacInfo.RbacType.HTML.getValue())){ // 这部分内容交给前端处理，不做处理
-                //var tmp = RbacHtmlInfo.from(a.authValue);
-            }
         }
        /* var auth = this.getAuthentication().getAuthorities();
         var ret = auth.stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));*/

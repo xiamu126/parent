@@ -127,10 +127,10 @@ public class RbacService implements IRbacService {
         if(this.roleMapper.selectById(model.roleId) == null){
             log.debug("指定的角色id不存在"); return null;
         }
-        if(this.authorityMapper.selectById(model.authGroupId) == null){
+        if(this.authorityMapper.selectById(model.authorityGroupId) == null){
             log.debug("指定的权限id不存在"); return null;
         }
-        if(this.roleAuthorityGroupMapper.selectByRoleIdAndAuthGroupId(model.roleId, model.authGroupId) != null){
+        if(this.roleAuthorityGroupMapper.selectByRoleIdAndAuthGroupId(model.roleId, model.authorityGroupId) != null){
             log.debug("指定的角色+权限已经存在"); return null;
         }
         if(this.roleAuthorityGroupMapper.insert(model) > 0) return model;
@@ -144,7 +144,7 @@ public class RbacService implements IRbacService {
         roles.forEach(r -> {
             var roleAuthList = this.roleAuthorityGroupMapper.selectByRoleId(r.roleId);
             roleAuthList.forEach(ra -> {
-                var auth = this.authorityMapper.selectById(ra.authGroupId);
+                var auth = this.authorityMapper.selectById(ra.authorityGroupId);
                 authList.add(auth);
             });
         });
@@ -153,13 +153,13 @@ public class RbacService implements IRbacService {
 
     @Override
     public OrganizationModel addOrganization(OrganizationModel model) {
-        if(model == null || !model.isValid()) {
+        if(model == null || !model.isValidForInsert()) {
             log.debug("输入参数为空");
             return null;
         }
         // 不可以有同名的组织（组织名称唯一，类似于公司名称）
         var organization = this.organizationMapper.selectByName(model.name);
-        if(organization != null){
+       /* if(organization != null){
             if(organization.status == OrganizationModel.Status.DELETED){
                 log.debug("已存在同名的组织，但这个组织处在删除状态，更新为可用状态");
                 organization.status = OrganizationModel.Status.OK;
@@ -168,23 +168,7 @@ public class RbacService implements IRbacService {
             }
             log.debug("已存在同名的组织，且这个组织处在非删除状态，无法新增");
             return null;
-        }
-        // 如果设置了父节点，则检测此父节点是否存在，若没设置意味着顶级节点
-        if(!MyString.isEmptyOrNull(model.parentId) && this.organizationMapper.selectById(model.parentId) == null) {
-            log.debug("设置了父节点（不为空），但此父节点是无效的");
-            return null;
-        }
-        // 监测position节点，同一个parentId下，不能重复；
-        // 一个组织只能由一个顶级节点；也就是组织A''0与组织B''0可以共存
-        if(model.parentId.equals("") && model.position == 0){// 顶级节点，不做唯一性判断
-
-        }else{ // 非顶级节点，也就是隶属于某个组织的子组织，子组织必须是唯一的，也就是某个父节点下面的每个位置只能有一个子节点
-            var ret = this.organizationMapper.selectByParentIdAndPosition(model.parentId, model.position);
-            if(ret != null && !ret.isEmpty()) {
-                log.debug("已经存在相同的父节点与位置");
-                return null;
-            }
-        }
+        }*/
         if(this.organizationMapper.insert(model) > 0) return model;
         return null;
     }
@@ -212,19 +196,20 @@ public class RbacService implements IRbacService {
     public List<OrganizationModel> getOrganizationByParenIdAndPosition(String parentId, Integer position) {
         if(!parentId.equals("") && !MyString.isUuid(parentId)) return null;
         if(MyNumber.isNegative(position)) return null;
-        return this.organizationMapper.selectByParentIdAndPosition(parentId, position);
+        return null;
     }
 
     @Override
     public DbDeleteResult removeOrganizationById(String id) {
         if(MyString.isEmptyOrNull(id) || !MyString.isUuid(id)) return DbDeleteResult.PARAM_ERROR;
         //查看此parentId是否被其他人引用过，如果存在有效引用，则不能删除
-        var ret = this.organizationMapper.selectByParentId(id);
+        /*var ret = this.organizationMapper.selectByParentId(id);
         if(ret != null && !ret.isEmpty()) return DbDeleteResult.CASCADE_ERROR;
         var organization = this.organizationMapper.selectById(id);
         if(organization.status == OrganizationModel.Status.DELETED) return DbDeleteResult.ALREADY_DELETED;
         if(this.organizationMapper.deleteById(id, OrganizationModel.Status.DELETED) > 0) return DbDeleteResult.SUCCESS;
-        return DbDeleteResult.NOT_FOUND;
+        return DbDeleteResult.NOT_FOUND;*/
+        return null;
     }
 
     @Override
@@ -238,35 +223,14 @@ public class RbacService implements IRbacService {
     @Override
     public List<OrganizationModel> getOrganizationByParenId(String parentId) {
         if(!MyString.isUuid(parentId)) return null;
-        return this.organizationMapper.selectByParentId(parentId);
+        //return this.organizationMapper.selectByParentId(parentId);
+        return null;
     }
 
     @Override
     public List<RbacApiInfoSummary> getRbacApiInfoByUserId(String userId) {
         List<RbacApiInfoSummary> results = new ArrayList<>();
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
-        // 根据角色获取权限，一个账号可以关联多个角色
-        userRoleModels.forEach(userRoleModel -> {
-            var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
-            // 一个角色可以关联多个权限组
-            roleAuthModels.forEach(roleAuthModel -> {
-                var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.API.getValue());
-                authorities.forEach(a -> {
-                    List<RbacApiInfo.Detail> exclude = null;
-                    try {
-                        exclude = JsonPath.read(a.uri,"exclude");
-                    }catch (PathNotFoundException ignored){ }
-                    List<RbacApiInfo.Detail> include = null;
-                    try {
-                        include = JsonPath.read(a.uri,"include");
-                    }catch (PathNotFoundException ignored){ }
-                    var summary = new RbacApiInfoSummary();
-                    summary.exclude = exclude;
-                    summary.include = include;
-                    results.add(summary);
-                });
-            });
-        });
         return results;
     }
 
@@ -275,27 +239,6 @@ public class RbacService implements IRbacService {
         List<RbacWebInfoSummary> results = new ArrayList<>();
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限，一个账号可以关联多个角色
-        userRoleModels.forEach(userRoleModel -> {
-            var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
-            // 一个角色可以关联多个权限组
-            roleAuthModels.forEach(roleAuthModel -> {
-                var authorities = this.authorityMapper.selectByAuthGroupIdAndAppAndType(roleAuthModel.authGroupId, app, RbacInfo.Type.WEB.getValue());
-                authorities.forEach(a -> {
-                    List<RbacWebInfo.Detail> exclude = null;
-                    try {
-                        exclude = JsonPath.read(a.uri,"exclude");
-                    }catch (PathNotFoundException ignored){ }
-                    List<RbacWebInfo.Detail> include = null;
-                    try {
-                        include = JsonPath.read(a.uri,"include");
-                    }catch (PathNotFoundException ignored){ }
-                    var summary = new RbacWebInfoSummary();
-                    summary.exclude = exclude;
-                    summary.include = include;
-                    results.add(summary);
-                });
-            });
-        });
         return results;
     }
 
@@ -315,43 +258,12 @@ public class RbacService implements IRbacService {
         }
         // 检测此组织名下的所有权限是否已经包含了相同的权限
         // 同一组织下的同一个权限组不能包含相同的权限（包括name和uri）
-        var authority = this.authorityMapper.selectByAuthGroupIdAndAuthName(authGroupId, authName);
+        var authority = this.authorityMapper.selectByOrganIdAndAuthName(authGroupId, authName);
         if(authority != null){
             log.debug("这个权限组下已经存在名为["+authName+"]的权限");
             // 如果已经存在，就append
-            String app = JsonPath.read(authority.uri, "$.app");
-            String type = JsonPath.read(authority.uri, "$.type");
-            if(app.equals(rbacWebInfo.app) && type.equals(rbacWebInfo.type)){
-                // 已经存在这个app及其type的权限信息，那么就追加
-                List<RbacWebInfo.Detail> exclude = null;
-                try {
-                    exclude = JsonPath.read(authority.uri,"exclude");
-                }catch (PathNotFoundException ignored){ }
-                List<RbacWebInfo.Detail> include = null;
-                try {
-                    include = JsonPath.read(authority.uri,"include");
-                }catch (PathNotFoundException ignored){ }
-                if(exclude != null){
-                    rbacWebInfo.exclude.removeAll(exclude);
-                    rbacWebInfo.exclude.addAll(exclude);
-                    authority.uri = rbacWebInfo.toJson();
-                    this.authorityMapper.update(authority)
-                }
-            }
             return null;
         }
-        var authValue = rbacWebInfo.toJson();
-        if(authValue == null) return null;
-        var pack = this.organizationMapper.selectAuthPackByGroupIdAuthValueAndName(authGroupId, authValue, authName);
-        if(pack != null) {
-            log.debug("已经存在权限[" + authName + "]: " + authValue);
-            return null;
-        }
-        var authModel = new AuthorityModel();
-        authModel.name = authName;
-        authModel.uri = authValue;
-        authModel.authorityGroupId = authGroupId;
-        if(this.authorityMapper.insert(authModel) > 0) return authModel;
         return null;
     }
 
@@ -372,16 +284,6 @@ public class RbacService implements IRbacService {
         // 检测此组织名下的所有权限是否已经包含了相同的权限
         // 同一组织下的同一个权限组不能包含相同的权限（包括name和uri）
         var authValue = rbacApiInfo.toJson();
-        var pack = this.organizationMapper.selectAuthPackByGroupIdAuthValueAndName(authGroupId, authValue, authName);
-        if(pack != null) {
-            log.debug("已经存在权限[" + authName + "]: " + authValue);
-            return null;
-        }
-        var authModel = new AuthorityModel();
-        authModel.name = authName;
-        authModel.uri = authValue;
-        authModel.authorityGroupId = authGroupId;
-        if(this.authorityMapper.insert(authModel) > 0) return authModel;
         return null;
     }
 
@@ -405,7 +307,7 @@ public class RbacService implements IRbacService {
             return null;
         }
         var model = new RoleAuthorityGroupModel();
-        model.authGroupId = authId;
+        model.authorityGroupId = authId;
         model.roleId = roleId;
         if(this.roleAuthorityGroupMapper.insert(model) > 0) return model;
         return null;

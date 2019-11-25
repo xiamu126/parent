@@ -63,7 +63,6 @@ public class UserServiceTest {
         var user = new UserModel();
         user.id = "8f9ced90446d11e993a60242ac110006";
         user.name = "test2";
-        user.phone = "12345678900";
         var ret = this.userService.modifyUserById(user);
         Assert.assertNotNull(ret);
     }

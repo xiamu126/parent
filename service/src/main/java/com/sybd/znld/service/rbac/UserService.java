@@ -84,14 +84,6 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
     public UserModel modifyUserById(UserModel user) {
         var key = this.getCacheKey(user.id);
         if(!MyString.isUuid(user.id)) return null;
-        //如果存在有效的电话号码，则需要验证此号码是否已经使用过
-        if(user.phone != null && !user.phone.isEmpty() && MyString.isPhoneNo(user.phone)){
-            if(this.getUserByPhone(user.phone) != null) return null;
-        }
-        //如果存在有效的身份证号，则需要验证此号是否已经使用过
-        if(user.idCardNo != null && !user.idCardNo.isEmpty() && MyString.isIdCardNo(user.idCardNo)){
-            if(this.getUserByIdCardNo(user.idCardNo) != null) return null;
-        }
         if(this.userMapper.updateById(user) > 0) {
             var tmp = this.userMapper.selectById(user.id);
             if(tmp != null) {
@@ -265,7 +257,7 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
         user.password = input.password;
         user.organizationId = input.organizationId;
         user.lastLoginTime = LocalDateTime.now();
-        user.status = (short)0;
+        user.status = 0;
         return addUser(user);
     }
 

@@ -169,7 +169,7 @@ public class UserController implements IUserController {
         List<RbacApiInfoSummary> results = new ArrayList<>();
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限，一个账号可以关联多个角色
-        userRoleModels.forEach(userRoleModel -> {
+        /*userRoleModels.forEach(userRoleModel -> {
             var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
             // 一个角色可以关联多个权限组
             roleAuthModels.forEach(roleAuthModel -> {
@@ -189,7 +189,7 @@ public class UserController implements IUserController {
                     results.add(summary);
                 });
             });
-        });
+        });*/
         return results;
     }
 
@@ -197,7 +197,7 @@ public class UserController implements IUserController {
         List<RbacWebInfoSummary> results = new ArrayList<>();
         var userRoleModels = this.userRoleMapper.selectByUserId(userId);
         // 根据角色获取权限，一个账号可以关联多个角色
-        userRoleModels.forEach(userRoleModel -> {
+        /*userRoleModels.forEach(userRoleModel -> {
             var roleAuthModels = this.roleAuthorityGroupMapper.selectByRoleId(userRoleModel.roleId);
             // 一个角色可以关联多个权限组
             roleAuthModels.forEach(roleAuthModel -> {
@@ -217,7 +217,7 @@ public class UserController implements IUserController {
                     results.add(summary);
                 });
             });
-        });
+        });*/
         return results;
     }
 
@@ -292,7 +292,8 @@ public class UserController implements IUserController {
                 }
                 var data = new LoginResult();
                 data.token = body.access_token;
-                data.tokenExpire = MyDateTime.toTimestamp(LocalDateTime.now(), body.expires_in);
+                var expireSeconds = body.expires_in - 10 * 60;
+                data.tokenExpire = MyDateTime.toTimestamp(LocalDateTime.now(), expireSeconds > 0 ? expireSeconds : body.expires_in);
                 data.userId = user.id;
                 data.organId = user.organizationId;
                 data.menu = jsonStr;

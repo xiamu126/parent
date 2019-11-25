@@ -60,8 +60,6 @@ public class RbacServiceTest {
     public void addAuthGroup(){
         var model = new AuthorityGroupModel();
         model.name = "测试权限组";
-        model.parentId = "e22eb96b4f8f11e9804a0242ac110007";
-        model.position = 0;
         var ret = this.rbacService.addAuthGroup(model);
         Assert.assertNotNull(ret);
     }
@@ -70,8 +68,6 @@ public class RbacServiceTest {
     public void addAuth(){
         var model = new AuthorityModel();
         model.name = "测试权限";
-        model.authorityGroupId = "bfb302934f8f11e9804a0242ac1100071";
-        model.uri = "/";
         var ret = this.rbacService.addAuth(model);
         Assert.assertNotNull(ret);
     }
@@ -94,14 +90,6 @@ public class RbacServiceTest {
         Assert.assertNotNull(ret);
     }
 
-    @Test
-    public void addRoleAuth(){
-        var model = new RoleAuthorityGroupModel();
-        model.roleId = "3c0a4d524f9611e9804a0242ac110007";
-        model.authId = "dd468b264f9211e9804a0242ac110007";
-        var ret = this.rbacService.addRoleAuth(model);
-        Assert.assertNotNull(ret);
-    }
 
     @Test
     public void getAuthList(){
@@ -109,39 +97,6 @@ public class RbacServiceTest {
         Assert.assertNotNull(ret);
     }
 
-    @Test
-    public void testRbacInfo(){
-        var rbacHtmlInfo = new RbacWebInfo.Builder()
-                .setApp("znld").setPath("/LandscapeLight")
-                .setSelectors("div[class*='selectDateTimeLine'] > button[class*='sendBtn'] > span", "div[class*='tableBox2'] table td button:not([disabled]) > span")
-                .build();
-        log.debug(rbacHtmlInfo.getJsonString());
-        log.debug(RbacWebInfo.getType(rbacHtmlInfo.getJsonString()));
-
-        var rbacServerInfo = new RbacApiInfo.Builder()
-                .setApp("znld").setPath("/api/v1/device/execute/*")
-                .setMethods("POST")
-                .build();
-        log.debug(rbacServerInfo.getJsonString());
-        log.debug(RbacApiInfo.getType(rbacServerInfo.getJsonString()));
-
-    }
-
-    @Test
-    public void addHtmlAuth(){
-        var rbacHtmlInfo = new RbacWebInfo.Builder()
-                .setApp("znld").setPath("/LandscapeLight")
-                .setSelectors("div[class*='selectDateTimeLine'] > button[class*='sendBtn'] > span", "div[class*='tableBox2'] table td button:not([disabled]) > span")
-                .build();
-        var ret = this.rbacService.addHtmlAuth("a6bf84cc51f111e9804a0242ac110007", rbacHtmlInfo, "测试权限1");
-    }
-
-    @Test
-    public void addApiAuth(){
-        var rbacApiInfo = new RbacApiInfo.Builder().setApp("znld").setPath("/api/v1/device/*").setMethods("GET").build();
-        var ret = this.rbacService.addApiAuth("a6bf84cc51f111e9804a0242ac110007", rbacApiInfo, "测试权限2");
-        Assert.assertNotNull(ret);
-    }
 
     @Test
     public void addAuthToUser(){

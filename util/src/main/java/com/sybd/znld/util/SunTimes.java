@@ -1,6 +1,4 @@
-package com.sybd.znld.control;
-
-import com.sybd.znld.util.MyDateTime;
+package com.sybd.znld.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,7 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
-public class SunTimesUtil {
+public class SunTimes {
     private static Double start = 0.0;
     private static Double end = 0.0;
     private static Double sRA = 0.0;
@@ -191,7 +189,7 @@ public class SunTimesUtil {
     }
 
     public static void setStart(Double start) {
-        SunTimesUtil.start = start;
+        SunTimes.start = start;
     }
 
     public static Double getsRA() {
@@ -199,7 +197,7 @@ public class SunTimesUtil {
     }
 
     public static void setsRA(Double sRA) {
-        SunTimesUtil.sRA = sRA;
+        SunTimes.sRA = sRA;
     }
 
     public static Double getSdec() {
@@ -207,7 +205,7 @@ public class SunTimesUtil {
     }
 
     public static void setSdec(Double sdec) {
-        SunTimesUtil.sdec = sdec;
+        SunTimes.sdec = sdec;
     }
 
     public static Double getSr() {
@@ -215,7 +213,7 @@ public class SunTimesUtil {
     }
 
     public static void setSr(Double sr) {
-        SunTimesUtil.sr = sr;
+        SunTimes.sr = sr;
     }
 
     public static Double getLon() {
@@ -223,7 +221,7 @@ public class SunTimesUtil {
     }
 
     public static void setLon(Double lon) {
-        SunTimesUtil.lon = lon;
+        SunTimes.lon = lon;
     }
 
     public static Double getEnd() {
@@ -231,6 +229,6 @@ public class SunTimesUtil {
     }
 
     public static void setEnd(Double end) {
-        SunTimesUtil.end = end;
+        SunTimes.end = end;
     }
 }

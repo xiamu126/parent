@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.ElectricityDispositionBoxMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.ElectricityDispositionBoxModel">
+        insert into electricity_disposition_box
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, api_key, device_id, imei, name,
+            status,
+            <if test="rawLongitude != null and rawLongitude != 0">raw_longitude, </if>
+            <if test="rawLatitude != null and rawLatitude != 0">raw_latitude, </if>
+            <if test="lng != null and lng != 0">lng,</if>
+            <if test="lat != null and lat != 0">lat,</if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{apiKey}, #{deviceId}, #{imei}, #{name},
+            #{status, typeHandler=com.sybd.znld.mapper.StatusTypeHandler},
+            <if test="rawLongitude != null and rawLongitude != 0">#{rawLongitude}, </if>
+            <if test="rawLatitude != null and rawLatitude != 0">#{rawLatitude}, </if>
+            <if test=" lng != null and lng !='' ">#{lng},</if>
+            <if test=" lat != null and lat != '' ">#{lat},</if>
+        </trim>
+    </insert>
+</mapper>

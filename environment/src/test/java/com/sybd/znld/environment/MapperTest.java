@@ -91,7 +91,7 @@ public class MapperTest {
         var root = new Location();
         root.name = "顶级节点";
         root.level = 1;
-        root.position = 1;
+        root.sequenceNumber = 1;
         root.rootId = root.id;
         root.organizationId = "a69ce5bf51f111e9804a0242ac110007";
         var ret = this.locationMapper.insert(root);

@@ -32,6 +32,7 @@ public class LampService implements ILampService {
     private final LampCameraMapper lampCameraMapper;
     private final IOneNetService oneNetService;
     private final LampModuleMapper lampModuleMapper;
+    private final LampLampModuleMapper lampLampModuleMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -40,7 +41,12 @@ public class LampService implements ILampService {
                        OneNetResourceMapper oneNetResourceMapper,
                        RegionMapper regionMapper,
                        LampRegionMapper lampRegionMapper,
-                       AppMapper appMapper, CameraMapper cameraMapper, LampCameraMapper lampCameraMapper, IOneNetService oneNetService, LampModuleMapper lampModuleMapper) {
+                       AppMapper appMapper,
+                       CameraMapper cameraMapper,
+                       LampCameraMapper lampCameraMapper,
+                       IOneNetService oneNetService,
+                       LampModuleMapper lampModuleMapper,
+                       LampLampModuleMapper lampLampModuleMapper) {
         this.lampMapper = lampMapper;
         this.lampResourceMapper = lampResourceMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
@@ -51,6 +57,7 @@ public class LampService implements ILampService {
         this.lampCameraMapper = lampCameraMapper;
         this.oneNetService = oneNetService;
         this.lampModuleMapper = lampModuleMapper;
+        this.lampLampModuleMapper = lampLampModuleMapper;
     }
 
     @Override
@@ -210,10 +217,12 @@ public class LampService implements ILampService {
                 if(this.lampRegionMapper.insert(lampRegionModel) > 0) {
                     // 关联路灯与功能模块
                     for(var m: modules){
-                        var lampLampModule = new LampLampModule();
+                        var module = moduleMap.get(m);
+                        if(module == null) continue;
+                        var lampLampModule = new LampLampModuleModel();
                         lampLampModule.lampId = lamp.id;
-                        lampLampModule.lampModuleId = m;
-                        if(this.lampResourceMapper.insert(lampResource) <= 0){
+                        lampLampModule.lampModuleId = module.id;
+                        if(this.lampLampModuleMapper.insert(lampLampModule) <= 0){
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                             return null;
                         }

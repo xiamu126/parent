@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampLampModuleMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampLampModuleModel">
+        insert into lamp_lamp_module
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, lamp_id, lamp_module_id
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{lampId}, #{lampModuleId}
+        </trim>
+    </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampLampModuleModel">
+        select * from lamp_lamp_module where id = #{id};
+    </select>
+    <select id="selectByLampId" resultType="com.sybd.znld.model.lamp.LampLampModuleModel">
+        select * from lamp_lamp_module where lamp_id = #{id};
+    </select>
+    <update id="update">
+        update lamp_lamp_module
+        set
+        <trim suffixOverrides=",">
+            <if test=" lampId != null and lampId != '' ">lamp_id=#{lampId},</if>
+            <if test=" lampModuleId != null and lampModuleId > 0 ">lamp_module_id=#{lampModuleId},</if>
+        </trim>
+        where id=#{id};
+    </update>
+</mapper>

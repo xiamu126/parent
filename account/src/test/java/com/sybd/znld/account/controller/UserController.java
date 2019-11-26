@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.account.service.IUserService;
 import com.sybd.znld.mapper.lamp.LocationMapper;
 import com.sybd.znld.mapper.rbac.*;
-import com.sybd.znld.model.lamp.Location;
+import com.sybd.znld.model.lamp.LocationModel;
 import com.sybd.znld.model.rbac.AuthorityGroupModel;
 import com.sybd.znld.model.rbac.RoleModel;
 import com.sybd.znld.model.rbac.dto.*;
@@ -232,7 +232,7 @@ public class UserController {
 
     @Test
     public void addRoot(){
-        var root = new Location();
+        var root = new LocationModel();
         root.name = "某个根节点";
         root.level = 1;
         root.sequenceNumber = 1;
@@ -244,7 +244,7 @@ public class UserController {
     // 新增路径树
     @Test
     public void addNode(){
-        var node = new Location();
+        var node = new LocationModel();
         node.name = "某个子节点";
         node.level = 2;
         node.sequenceNumber = 2;
@@ -256,7 +256,7 @@ public class UserController {
 
     @Test
     public void addNode2(){
-        var node = new Location();
+        var node = new LocationModel();
         node.name = "松陵";
         node.level = 3;
         node.sequenceNumber = 3;
@@ -264,7 +264,7 @@ public class UserController {
         node.organizationId = "a69ce5bf51f111e9804a0242ac110007";
         var ret = this.locationMapper.insert(node);
         Assert.assertTrue(ret > 0);
-        node = new Location();
+        node = new LocationModel();
         node.name = "同里";
         node.level = 3;
         node.sequenceNumber = 4;

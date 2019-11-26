@@ -1,10 +1,11 @@
 package com.sybd.znld.model.lamp;
 
+import java.time.LocalTime;
 import java.util.UUID;
 
-public class LampStrategyTarget {
+public class LampStrategyPointModel {
     public String id = UUID.randomUUID().toString().replace("-","");
-    public String targetId;
-    public Integer targetType;
+    public LocalTime at;
+    public Integer brightness;
     public String lampStrategyId;
 }

@@ -4,7 +4,7 @@ import com.sybd.znld.mapper.lamp.LocationMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
 import com.sybd.znld.model.Status;
-import com.sybd.znld.model.lamp.Location;
+import com.sybd.znld.model.lamp.LocationModel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +88,7 @@ public class MapperTest {
 
     @Test
     public void addNode(){
-        var root = new Location();
+        var root = new LocationModel();
         root.name = "顶级节点";
         root.level = 1;
         root.sequenceNumber = 1;

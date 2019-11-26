@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampStrategyMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStrategyModel">
+        insert into lamp_strategy
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, name, from_date, to_date, from_time, to_time, auto_generate_time, type,status,
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{name}, #{fromDate}, #{toDate}, #{fromTime}, #{toTime}, #{autoGenerateTime}, #{type},#{status}
+        </trim>
+    </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select * from lamp_strategy where id = #{id};
+    </select>
+    <select id="selectByName" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select * from lamp_strategy where name = #{name};
+    </select>
+    <update id="update">
+        update lamp_strategy
+        set
+        <trim suffixOverrides=",">
+            <if test=" name != null and name != '' ">name=#{name},</if>
+            <if test=" fromDate != null ">from_date=#{fromDate},</if>
+            <if test=" toDate != null ">to_date=#{toDate},</if>
+            <if test=" fromTime != null ">from_time=#{fromTime},</if>
+            <if test=" toTime != null ">to_time=#{toTime},</if>
+            <if test=" autoGenerateTime != null ">auto_generate_time=#{autoGenerateTime},</if>
+            <if test=" type != null ">type=#{type},</if>
+            <if test=" status != null ">status=#{status},</if>
+        </trim>
+        where id=#{id};
+    </update>
+</mapper>

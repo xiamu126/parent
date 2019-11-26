@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.LocationMapper">
-    <insert id="insert" parameterType="com.sybd.znld.model.lamp.Location">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LocationModel">
         insert into location(id, name, level, sequence_number, root_id, organization_id, status)
-        values (#{id}, #{name}, #{level}, #{sequenceNumber}, #{rootId}, #{organizationId}, #{status, typeHandler=com.sybd.znld.mapper.StatusTypeHandler});
+        values (#{id}, #{name}, #{level}, #{sequenceNumber}, #{rootId}, #{organizationId}, #{status, typeHandler=com.sybd.znld.mapper.EnumTypeHandler});
     </insert>
-    <select id="selectById" resultType="com.sybd.znld.model.lamp.Location">
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LocationModel">
         select * from location where id = #{id};
     </select>
-    <select id="selectByOrganIdName" resultType="com.sybd.znld.model.lamp.Location">
+    <select id="selectByOrganIdName" resultType="com.sybd.znld.model.lamp.LocationModel">
         select * from location where organization_id = #{organId} and name = #{name};
     </select>
-    <select id="selectRoots" resultType="com.sybd.znld.model.lamp.Location">
+    <select id="selectRoots" resultType="com.sybd.znld.model.lamp.LocationModel">
         select * from location where organization_id = #{organId} and level = 1;
     </select>
-    <select id="selectRoot" resultType="com.sybd.znld.model.lamp.Location">
+    <select id="selectRoot" resultType="com.sybd.znld.model.lamp.LocationModel">
         select * from location where organization_id = #{organId} and level = 1 and name = #{name};
     </select>
-    <select id="selectChildren" resultType="com.sybd.znld.model.lamp.Location">
+    <select id="selectChildren" resultType="com.sybd.znld.model.lamp.LocationModel">
         with cte as (select * from location where id = #{parentId})
         select * from location
         where organization_id = (select organization_id from cte limit 1) and
               sequence_number > (select sequence_number from cte limit 1);
     </select>
-    <select id="selectChild" resultType="com.sybd.znld.model.lamp.Location">
+    <select id="selectChild" resultType="com.sybd.znld.model.lamp.LocationModel">
         with cte as (select * from location where id = #{parentId})
         select * from location
         where organization_id = (select organization_id from cte limit 1) and

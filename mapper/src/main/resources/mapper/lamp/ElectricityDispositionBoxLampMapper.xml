@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.ElectricityDispositionBoxLampMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.ElectricityDispositionBoxLampModel">
+        insert into electricity_disposition_box_lamp
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, electricity_disposition_box_id, lamp_id
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{electricityDispositionBoxId}, #{lampId}
+        </trim>
+    </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.ElectricityDispositionBoxLampModel">
+        select * from electricity_disposition_box_lamp where id = #{id};
+    </select>
+    <select id="selectByBoxId" resultType="com.sybd.znld.model.lamp.ElectricityDispositionBoxLampModel">
+        select * from electricity_disposition_box_lamp where electricity_disposition_box_id = #{id};
+    </select>
+    <update id="update">
+        update electricity_disposition_box_lamp
+        set
+        <trim suffixOverrides=",">
+            <if test=" electricityDispositionBoxId != null and electricityDispositionBoxId != '' ">electricity_disposition_box_id=#{electricityDispositionBoxId},</if>
+            <if test=" lampId != null and lampId != '' ">lamp_id=#{lampId},</if>
+        </trim>
+        where id=#{id};
+    </update>
+</mapper>

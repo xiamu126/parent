@@ -8,6 +8,7 @@ import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class LampService implements ILampService {
     private final CameraMapper cameraMapper;
     private final LampCameraMapper lampCameraMapper;
     private final IOneNetService oneNetService;
+    private final LampModuleMapper lampModuleMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -38,7 +40,7 @@ public class LampService implements ILampService {
                        OneNetResourceMapper oneNetResourceMapper,
                        RegionMapper regionMapper,
                        LampRegionMapper lampRegionMapper,
-                       AppMapper appMapper, CameraMapper cameraMapper, LampCameraMapper lampCameraMapper, IOneNetService oneNetService) {
+                       AppMapper appMapper, CameraMapper cameraMapper, LampCameraMapper lampCameraMapper, IOneNetService oneNetService, LampModuleMapper lampModuleMapper) {
         this.lampMapper = lampMapper;
         this.lampResourceMapper = lampResourceMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
@@ -48,6 +50,7 @@ public class LampService implements ILampService {
         this.cameraMapper = cameraMapper;
         this.lampCameraMapper = lampCameraMapper;
         this.oneNetService = oneNetService;
+        this.lampModuleMapper = lampModuleMapper;
     }
 
     @Override
@@ -156,9 +159,84 @@ public class LampService implements ILampService {
     }
 
     @Override
+    public LampRegionModel addLampToRegionWithModules(LampModel lamp, String regionId, List<String> modules) {
+        if(lamp == null){
+            log.debug("lamp为空");
+            return null;
+        }
+        if(!lamp.isValidForInsert()){
+            log.debug("lamp实体类包含错误的数据,"+lamp.toString());
+            return null;
+        }
+        var tmp = this.lampMapper.selectByDeviceId(lamp.deviceId);
+        if(tmp != null){
+            log.debug("这个设备id["+lamp.deviceId+"]已经绑定在其它路灯上");
+            return null;
+        }
+        tmp = this.lampMapper.selectByDeviceName(lamp.deviceName);
+        if(tmp != null){
+            log.debug("这个设备名字["+lamp.deviceName+"]已经在使用");
+            return null;
+        }
+        if(!MyString.isUuid(regionId)){
+            log.debug("错误的区域id");
+            return null;
+        }
+        var region = this.regionMapper.selectById(regionId);
+        if(region == null){
+            log.debug("指定的区域id不存在");
+            return null;
+        }
+        if(modules.stream().anyMatch(MyString::isEmptyOrNull)){
+            log.debug("模块包含空字符串");
+            return null;
+        }
+        var moduleMap = new HashMap<String, LampModule>();
+        for(var m : modules){
+            var module = this.lampModuleMapper.selectByName(m);
+            if(module == null){
+                log.debug("指定的模块["+m+"]不存在");
+                return null;
+            }else{
+                moduleMap.put(m, module);
+            }
+        }
+        // 开启事务
+        try{
+            if(this.lampMapper.insert(lamp) > 0){
+                var lampRegionModel = new LampRegionModel();
+                lampRegionModel.lampId = lamp.id;
+                lampRegionModel.regionId = regionId;
+                if(this.lampRegionMapper.insert(lampRegionModel) > 0) {
+                    // 关联路灯与功能模块
+                    for(var m: modules){
+                        var lampLampModule = new LampLampModule();
+                        lampLampModule.lampId = lamp.id;
+                        lampLampModule.lampModuleId = m;
+                        if(this.lampResourceMapper.insert(lampResource) <= 0){
+                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                            return null;
+                        }
+                    }
+                    // 关联资源成功
+                    return lampRegionModel;
+                } else {
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return null;
+                }
+            }
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        return null;
+    }
+
+    @Override
     @Transactional(rollbackFor = { Exception.class }, transactionManager = "znldTransactionManager")
     public LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds) {
-        if(lamp == null || !lamp.isValidBeforeInsert() || !MyString.isUuid(regionId) || resourceIds == null || resourceIds.isEmpty()){
+        if(lamp == null || !lamp.isValidForInsert() || !MyString.isUuid(regionId) || resourceIds == null || resourceIds.isEmpty()){
             log.debug("非法的参数");
             return null;
         }

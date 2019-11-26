@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampStrategyPointMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStrategyPointModel">
+        insert into lamp_strategy_point
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, at, brightness, lamp_strategy_id
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{at}, #{brightness}, #{lampStrategyId}
+        </trim>
+    </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampStrategyPointModel">
+        select * from lamp_strategy_point where id = #{id};
+    </select>
+    <select id="selectByStrategyId" resultType="com.sybd.znld.model.lamp.LampStrategyPointModel">
+        select * from lamp_strategy_point where lamp_strategy_id = #{id};
+    </select>
+    <update id="update">
+        update lamp_strategy_point
+        set
+        <trim suffixOverrides=",">
+            <if test=" at != null ">at=#{at},</if>
+            <if test=" brightness != null ">brightness=#{brightness},</if>
+            <if test=" lampStrategyId != null ">lamp_strategy_id=#{lampStrategyId},</if>
+        </trim>
+        where id=#{id};
+    </update>
+</mapper>

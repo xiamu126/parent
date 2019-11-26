@@ -1,6 +1,6 @@
 package com.sybd.znld.mapper.config;
 
-import com.sybd.znld.mapper.StatusTypeHandler;
+import com.sybd.znld.mapper.EnumTypeHandler;
 import com.sybd.znld.model.Status;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -43,7 +43,8 @@ public class LampDataSourceConfig {
         assert bean != null;
         bean.getConfiguration().setMapUnderscoreToCamelCase(true);
         var typeHandlerRegistry = bean.getConfiguration().getTypeHandlerRegistry();
-        typeHandlerRegistry.register(Status.class, StatusTypeHandler.class);
+        //typeHandlerRegistry.register(Status.class, EnumTypeHandler.class);
+        typeHandlerRegistry.setDefaultEnumTypeHandler(EnumTypeHandler.class);
         return bean;
     }
 }

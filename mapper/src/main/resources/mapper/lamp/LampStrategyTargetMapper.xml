@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampStrategyTargetMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStrategyTargetModel">
+        insert into lamp_strategy_target
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, target_id, target_type, lamp_strategy_id
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{targetId}, #{targetType}, #{lampStrategyId}
+        </trim>
+    </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampStrategyTargetModel">
+        select * from lamp_strategy_target where id = #{id};
+    </select>
+    <select id="selectByStrategyId" resultType="com.sybd.znld.model.lamp.LampStrategyTargetModel">
+        select * from lamp_strategy_target where lamp_strategy_id = #{id};
+    </select>
+    <update id="update">
+        update lamp_strategy_target
+        set
+        <trim suffixOverrides=",">
+            <if test=" targetId != null and targetId != '' ">target_id=#{targetId},</if>
+            <if test=" targetType != null ">target_type=#{targetType},</if>
+            <if test=" lampStrategyId != null ">lamp_strategy_id=#{lampStrategyId},</if>
+        </trim>
+        where id=#{id};
+    </update>
+</mapper>

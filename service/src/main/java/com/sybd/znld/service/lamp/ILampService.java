@@ -18,7 +18,10 @@ public interface ILampService {
     CheckedResource getCheckedEnvResourceByDeviceIdAndResourceDesc(Integer deviceId, String resourceDesc);
     CheckedResource getCheckedEnvResourceByOrganIdAndResourceDesc(String organId, String resourceDesc);
     OneNetResourceModel getResourceByCommandValue(String cmd);
+    // 新增路灯到区域（街道）
     LampRegionModel addLampToRegion(String lampId, String regionId);
+    // 新增路灯到区域（街道），并设置安装的模块；
+    LampRegionModel addLampToRegionWithModules(LampModel lamp, String regionId, List<String> modules);
     LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds);
     List<LampModel> getLampsByRegionId(String regionId);
     LampModel getLampByDeviceId(Integer deviceId);

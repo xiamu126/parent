@@ -4,7 +4,7 @@ import com.sybd.znld.model.Status;
 
 import java.util.UUID;
 
-public class Location {
+public class LocationModel {
     public String id = UUID.randomUUID().toString().replace("-","");
     public String name;
     public Integer level;

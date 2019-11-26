@@ -14,11 +14,33 @@
         values
         <trim prefix="(" suffix=")" suffixOverrides=",">
             #{id}, #{apiKey}, #{deviceId}, #{imei}, #{name},
-            #{status, typeHandler=com.sybd.znld.mapper.StatusTypeHandler},
+            #{status, typeHandler=com.sybd.znld.mapper.EnumTypeHandler},
             <if test="rawLongitude != null and rawLongitude != 0">#{rawLongitude}, </if>
             <if test="rawLatitude != null and rawLatitude != 0">#{rawLatitude}, </if>
             <if test=" lng != null and lng !='' ">#{lng},</if>
             <if test=" lat != null and lat != '' ">#{lat},</if>
         </trim>
     </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.ElectricityDispositionBoxModel">
+        select * from electricity_disposition_box where id = #{id};
+    </select>
+    <select id="selectByName" resultType="com.sybd.znld.model.lamp.ElectricityDispositionBoxModel">
+        select * from electricity_disposition_box where name = #{name};
+    </select>
+    <update id="update">
+        update electricity_disposition_box
+        set
+        <trim suffixOverrides=",">
+            <if test=" apiKey != null and apiKey != '' ">api_key=#{apiKey},</if>
+            <if test=" deviceId != null and deviceId != '' ">device_id=#{deviceId},</if>
+            <if test=" imei != null and imei != '' ">imei=#{imei},</if>
+            <if test=" name != null and name != '' ">name=#{name},</if>
+            <if test=" status != null ">status=#{status, typeHandler=com.sybd.znld.mapper.EnumTypeHandler},</if>
+            <if test=" rawLongitude != null and rawLongitude != 0 ">raw_longitude=#{rawLongitude},</if>
+            <if test=" rawLatitude != null and rawLatitude != 0 ">raw_latitude=#{rawLatitude},</if>
+            <if test="lng != null and lng != 0">lng=#{lng},</if>
+            <if test="lat != null and lat != 0">lat=#{lat},</if>
+        </trim>
+        where id=#{id};
+    </update>
 </mapper>

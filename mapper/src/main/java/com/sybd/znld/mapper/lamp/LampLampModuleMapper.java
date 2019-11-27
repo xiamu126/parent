@@ -11,6 +11,6 @@ import java.util.List;
 public interface LampLampModuleMapper {
     int insert(LampLampModuleModel model);
     int update(LampLampModuleModel model);
-    int selectById(String id);
+    LampLampModuleModel selectById(String id);
     List<LampLampModuleModel> selectByLampId(String id);
 }

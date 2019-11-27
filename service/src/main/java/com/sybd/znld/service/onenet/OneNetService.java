@@ -91,7 +91,7 @@ public class OneNetService implements IOneNetService {
     private static String ZNLD_LOCATION_STOP_REPORTING;
     private static String ZNLD_DD_EXECUTE;
 
-    @PostConstruct
+    //@PostConstruct
     private void init(){
         ZNLD_HEART_BEAT = command.ZNLD_HEART_BEAT;
         ZNLD_SCREEN_OPEN = command.ZNLD_SCREEN_OPEN;

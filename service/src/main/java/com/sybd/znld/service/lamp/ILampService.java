@@ -22,6 +22,8 @@ public interface ILampService {
     LampRegionModel addLampToRegion(String lampId, String regionId);
     // 新增路灯到区域（街道），并设置安装的模块；
     LampRegionModel addLampToRegionWithModules(LampModel lamp, String regionId, List<String> modules);
+    // 新增配电箱到区域
+    ElectricityDispositionBoxRegionModel addElectricityBoxToRegion(ElectricityDispositionBoxModel box, String regionId);
     LampRegionModel addLampToRegion(LampModel lamp, String regionId, List<String> resourceIds);
     List<LampModel> getLampsByRegionId(String regionId);
     LampModel getLampByDeviceId(Integer deviceId);

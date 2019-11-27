@@ -18,7 +18,7 @@ public class UserModel implements Serializable, IValidForDBInsert {
     public LocalDateTime lastLoginTime;
     public String lastLoginIp;
     public String organizationId;
-    public Integer status = Status.OK.getValue();
+    public UserStatus status = UserStatus.OK;
 
     @Override
     public boolean isValidForInsert(){
@@ -27,9 +27,6 @@ public class UserModel implements Serializable, IValidForDBInsert {
         if(MyString.isEmptyOrNull(password)) return false;
         if(lastLoginTime != null) return false;
         if(lastLoginIp != null) return false;
-        if(!MyString.isUuid(organizationId)) return false;
-        Status tmp = Status.getStatus(status);
-        if(tmp == null) return false;
-        return tmp == Status.OK;
+        return MyString.isUuid(organizationId);
     }
 }

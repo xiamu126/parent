@@ -1,7 +1,7 @@
 package com.sybd.znld.light;
 
 import com.sybd.znld.mapper.lamp.LampModuleMapper;
-import com.sybd.znld.model.lamp.LampModule;
+import com.sybd.znld.model.lamp.LampModuleModel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,14 +20,14 @@ public class LampModuleMapperTest {
     // 新增，异常
     @Test(expected = Exception.class)
     public void test(){
-        var model = new LampModule();
+        var model = new LampModuleModel();
         this.lampModuleMapper.insert(model);
     }
 
     //新增
     @Test
     public void test1(){
-        var model = new LampModule();
+        var model = new LampModuleModel();
         model.name = "test";
         var ret = this.lampModuleMapper.insert(model);
         Assert.assertTrue(ret > 0);
@@ -36,7 +36,7 @@ public class LampModuleMapperTest {
     // 修改
     @Test
     public void test2(){
-        var model = new LampModule();
+        var model = new LampModuleModel();
         model.id = 13;
         model.name = "test3";
         var ret = this.lampModuleMapper.update(model);

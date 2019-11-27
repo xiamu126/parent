@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.LampModuleMapper">
-    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampModule">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampModuleModel">
         insert into lamp_module
         <trim prefix="(" suffix=")" suffixOverrides=",">name</trim>
         values
         <trim prefix="(" suffix=")" suffixOverrides=",">#{name}</trim>
     </insert>
-    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampModule">
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampModuleModel">
         select * from lamp_module where id = #{id};
     </select>
-    <select id="selectByName" resultType="com.sybd.znld.model.lamp.LampModule">
+    <select id="selectByName" resultType="com.sybd.znld.model.lamp.LampModuleModel">
         select * from lamp_module where name = #{name};
     </select>
     <update id="update">

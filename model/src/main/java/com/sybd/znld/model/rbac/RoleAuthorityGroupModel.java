@@ -10,15 +10,12 @@ public class RoleAuthorityGroupModel implements Serializable, IValidForDBInsert 
     public String id;
     public String roleId;
     public String authorityGroupId; // 权限组编号
-    public Integer status = Status.OK.getValue();
+    public Status status = Status.OK;
 
     @Override
     public boolean isValidForInsert(){
         if(!MyString.isUuid(id)) return false;
         if(!MyString.isUuid(roleId)) return false;
-        if(!MyString.isUuid(authorityGroupId)) return false;
-        Status tmp = Status.getStatus(status);
-        if(tmp == null) return false;
-        return tmp == Status.OK;
+        return MyString.isUuid(authorityGroupId);
     }
 }

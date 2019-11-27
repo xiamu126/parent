@@ -2,20 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.rbac.UserMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.rbac.UserModel">
-        <selectKey keyProperty="id" resultType="string" order="BEFORE">
-            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
-        </selectKey>
         insert user
-            <trim prefix="(" suffix=")" suffixOverrides=",">
-                id,name,password,phone,email,gender,age,contact_address,real_name,id_card_no,
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,name,password,
             <if test=" lastLoginIp != null and lastLoginIp != '' ">last_login_ip,</if>
+            <if test=" lastLoginTime != null ">last_login_time,</if>
             organization_id,status
-            </trim>
+        </trim>
         values
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            #{id},#{name},#{password},#{phone},#{email},#{gender},#{age},#{contactAddress},#{realName},#{idCardNo},
+            #{id},#{name},#{password},
             <if test=" lastLoginIp != null and lastLoginIp != '' ">#{lastLoginIp},</if>
-               #{organizationId},#{status}
+            <if test=" lastLoginTime != null ">#{lastLoginTime},</if>
+            #{organizationId},#{status}
         </trim>
     </insert>
 
@@ -24,16 +23,10 @@
         <set>
             <if test=" name != null and name != '' ">name = #{name},</if>
             <if test=" password != null and password != '' ">password = #{password},</if>
-            <if test=" phone != null and phone != '' ">phone = #{phone},</if>
-            <if test=" email != null and email != '' ">email = #{email},</if>
-            <if test=" gender != null and (gender gte 0 and gender lt 3) ">gender = #{gender},</if>
-            <if test=" age != null and (age gte 18 and age lt 100) ">age = #{age},</if>
-            <if test=" contactAddress != null and contactAddress != '' ">contact_address = #{contactAddress},</if>
-            <if test=" realName != null and realName != '' ">real_name = #{realName},</if>
-            <if test=" idCardNo != null and idCardNo != '' ">id_card_no = #{idCardNo},</if>
             <if test=" lastLoginIp != null and lastLoginIp != '' ">last_login_ip = #{lastLoginIp},</if>
+            <if test=" lastLoginTime != null ">last_login_time=#{lastLoginTime},</if>
             <if test=" organizationId != null and organizationId != '' ">organization_id = #{organizationId},</if>
-            <if test=" status != null and status gte 0 ">status = #{status},</if>
+            <if test=" status != null">status = #{status},</if>
         </set>
         where id = #{id}
     </update>
@@ -48,16 +41,10 @@
         update user
         <set>
             <if test=" password != null and password != '' ">password = #{password},</if>
-            <if test=" phone != null and phone != '' ">phone = #{phone},</if>
-            <if test=" email != null and email != '' ">email = #{email},</if>
-            <if test=" gender != null and (gender gte 0 and gender lt 3) ">gender = #{gender},</if>
-            <if test=" age != null and (age gte 18 and age lt 100) ">age = #{age},</if>
-            <if test=" contactAddress != null and contactAddress != '' ">contact_address = #{contactAddress},</if>
-            <if test=" realName != null and realName != '' ">real_name = #{realName},</if>
-            <if test=" idCardNo != null and idCardNo != '' ">id_card_no = #{idCardNo},</if>
+            <if test=" lastLoginTime != null ">last_login_time=#{lastLoginTime},</if>
             <if test=" lastLoginIp != null and lastLoginIp != '' ">last_login_ip = #{lastLoginIp},</if>
             <if test=" organizationId != null and organizationId != '' ">organization_id = #{organizationId},</if>
-            <if test=" status != null and status gte 0 ">status = #{status},</if>
+            <if test=" status != null">status = #{status},</if>
         </set>
         where name = #{name};
     </update>
@@ -67,15 +54,6 @@
     </select>
     <select id="selectByName" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where name = #{_parameter}
-    </select>
-    <select id="selectByPhone" resultType="com.sybd.znld.model.rbac.UserModel">
-        select * from user where phone = #{_parameter}
-    </select>
-    <select id="selectByEmail" resultType="com.sybd.znld.model.rbac.UserModel">
-        select * from user where email = #{_parameter}
-    </select>
-    <select id="selectByIdCardNo" resultType="com.sybd.znld.model.rbac.UserModel">
-        select * from user where id_card_no = #{_parameter}
     </select>
     <select id="selectByOrganizationId" resultType="com.sybd.znld.model.rbac.UserModel">
         select * from user where organization_id = #{_parameter}

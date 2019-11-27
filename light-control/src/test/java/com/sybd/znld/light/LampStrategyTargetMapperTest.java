@@ -31,7 +31,6 @@ public class LampStrategyTargetMapperTest {
     public void test1(){
         var model = new LampStrategyTargetModel();
         model.targetId = "10bb23399d3611e995980242c0a8b008";
-        model.targetType = Target.LAMP;
         model.lampStrategyId = "c1034d8e20024bcbb1a6623f8c9a4bdc";
         var ret = this.lampStrategyTargetMapper.insert(model);
         Assert.assertTrue(ret > 0);

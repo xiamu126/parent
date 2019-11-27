@@ -51,9 +51,6 @@ public class RbacService implements IRbacService {
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("传入的name为空"); return null;
         }
-        if(MyNumber.isNegative(model.status)){
-            log.debug("传入的status为负数"); return null;
-        }
         if(this.authorityGroupMapper.selectByName(model.name) != null){
             log.debug("已经存在名为["+model.name+"]的权限组"); return null;
         }

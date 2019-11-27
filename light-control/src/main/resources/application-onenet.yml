@@ -1,0 +1,30 @@
+onenet-server: http://api.heclouds.com
+znld:
+  onenet:
+    getHistoryDataStreamUrl: ${onenet-server}/devices/{deviceId}/datapoints
+    postExecuteUrl: ${onenet-server}/nbiot/execute
+    offlineExecuteUrl: ${onenet-server}/nbiot/execute/offline
+    getLastDataStreamUrl: ${onenet-server}/devices/datapoints?devIds={devIds}
+    getDeviceUrl: ${onenet-server}/devices/{deviceId}
+    getDataStreamByIdUrl: ${onenet-server}/devices/{deviceId}/datastreams/{datastreamId}
+    getDataStreamsByIdsUrl: ${onenet-server}/devices/{deviceId}/datastreams?datastream_ids={dataStreamIds}
+    writeValueUrl: ${onenet-server}/nbiot
+    readValueUrl: ${onenet-server}/nbiot
+    command:
+      ZNLD_HEART_BEAT: "000"#心跳
+      ZNLD_SCREEN_OPEN: "001"#打开屏幕
+      ZNLD_SCREEN_CLOSE: "002"#关闭屏幕
+      ZNLD_QXZ_OPEN: "003"#打开气象站
+      ZNLD_QXZ_CLOSE: "004"#关闭气象站
+      ZNLD_QXZ_DATA_UPLOAD: "101"#气象站数据上传
+      ZNLD_STATUS_QUERY: "102"#路灯状态查询
+      ZNLD_LOCATION_QUERY: "103"#位置信息查询
+      ZNLD_HANDSHAKE: "104"#路灯与平台握手
+      ZNLD_QX_UPLOAD_RATE: "A"#气象信息上传频率
+      ZNLD_LOCATION_UPLOAD_RATE: "B"#位置信息上传频率
+      ZNLD_STATUS_UPLOAD_RATE: "C"#路灯状态信息上传频率
+      ZNLD_QXZ_START_REPORTING: "200"#环境监测开始上传信息
+      ZNLD_QXZ_STOP_REPORTING: "201"#环境监测停止上传信息
+      ZNLD_LOCATION_START_REPORTING: "202"#位置信息开始上传
+      ZNLD_LOCATION_STOP_REPORTING: "203"#位置信息停止上传
+      ZNLD_DD_EXECUTE: "204"#上传景观灯执行内容

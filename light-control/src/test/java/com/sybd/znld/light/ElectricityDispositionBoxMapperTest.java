@@ -31,7 +31,7 @@ public class ElectricityDispositionBoxMapperTest {
         var model = new ElectricityDispositionBoxModel();
         model.name = "测试配电箱";
         model.apiKey = "test api key";
-        model.deviceId = "test device id";
+        model.deviceId = 20002;
         model.imei = "test imei";
         var ret = this.electricityDispositionBoxMapper.insert(model);
         Assert.assertTrue(ret > 0);
@@ -43,7 +43,7 @@ public class ElectricityDispositionBoxMapperTest {
         var model = new ElectricityDispositionBoxModel();
         model.name = "测试配电箱";
         model.apiKey = "test api key";
-        model.deviceId = "test device id";
+        model.deviceId = 20003;
         model.imei = "test imei";
         model.rawLatitude = 37.4207605;
         model.rawLongitude = 122.16780126;
@@ -57,7 +57,7 @@ public class ElectricityDispositionBoxMapperTest {
         var model = new ElectricityDispositionBoxModel();
         model.name = "测试配电箱";
         model.apiKey = "test api key";
-        model.deviceId = "test device id";
+        model.deviceId = 20004;
         model.imei = "test imei";
         model.rawLatitude = 37.4207605;
         model.rawLongitude = 122.16780126;
@@ -92,7 +92,7 @@ public class ElectricityDispositionBoxMapperTest {
         model.id = "08a9cf07fd27406faf298c9770c29dfc";
         model.name = "测试配电箱";
         model.apiKey = "test api key";
-        model.deviceId = "test device id";
+        model.deviceId = 20005;
         model.imei = "imei";
         model.rawLatitude = 0.0;
         model.rawLongitude = 0.0;

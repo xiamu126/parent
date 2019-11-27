@@ -10,9 +10,6 @@ public interface BaseUserMapper {
     int insert(UserModel model);
     UserModel selectById(String id);
     UserModel selectByName(String name);
-    UserModel selectByPhone(String phone);
-    UserModel selectByEmail(String email);
-    UserModel selectByIdCardNo(String idCardNo);
     List<UserModel> selectByOrganizationId(String organizationId);
     int updateById(UserModel user);
     UserModel selectByNameAndPassword(String name, String password);

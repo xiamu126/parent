@@ -4,11 +4,11 @@
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStrategyTargetModel">
         insert into lamp_strategy_target
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            id, target_id, target_type, lamp_strategy_id
+            id, target_id, lamp_strategy_id
         </trim>
         values
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            #{id}, #{targetId}, #{targetType}, #{lampStrategyId}
+            #{id}, #{targetId}, #{lampStrategyId}
         </trim>
     </insert>
     <select id="selectById" resultType="com.sybd.znld.model.lamp.LampStrategyTargetModel">
@@ -22,7 +22,6 @@
         set
         <trim suffixOverrides=",">
             <if test=" targetId != null and targetId != '' ">target_id=#{targetId},</if>
-            <if test=" targetType != null ">target_type=#{targetType},</if>
             <if test=" lampStrategyId != null ">lamp_strategy_id=#{lampStrategyId},</if>
         </trim>
         where id=#{id};

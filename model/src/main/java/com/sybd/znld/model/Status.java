@@ -67,11 +67,4 @@ public enum Status implements IEnum {
     public int getValue(){
         return this.value;
     }
-    public static Status getStatus(int v){
-        var status = Status.class.getEnumConstants();
-        for(var s : status){
-            if(s.value == v) return s;
-        }
-        return null;
-    }
 }

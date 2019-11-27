@@ -8,10 +8,11 @@ spring:
   main:
     banner-mode: "off"
   profiles:
-    include:
+    include: onenet
     active: dev
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
 baidu-ak: x1ySji2AxajkmThvd8weGwOQ
+zone-id : Asia/Shanghai

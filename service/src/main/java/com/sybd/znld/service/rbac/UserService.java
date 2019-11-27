@@ -37,7 +37,7 @@ import java.util.List;
 @SuppressWarnings("SpringCacheNamesInspection")//在基类中已经设置了CacheConfig
 @Slf4j
 @Service
-public class UserService extends BaseService implements IUserService, BaseUserMapper {
+public class UserService implements IUserService {
     private final UserRoleMapper userRoleMapper;
     private final UserMapper userMapper;
     private final RegionMapper regionMapper;
@@ -48,13 +48,9 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
     private final LampRegionMapper lampRegionMapper;
     private final BCryptPasswordEncoder encoder;
 
-    private static final String cachePrefix = BaseService.cachePrefix + "USER::";
-
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public UserService(UserMapper userMapper,
-                       CacheManager cacheManager, TaskScheduler taskScheduler,
-                       ProjectConfig projectConfig,
                        UserRoleMapper userRoleMapper,
                        RegionMapper regionMapper,
                        LampMapper lampMapper,
@@ -64,7 +60,6 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
                        LampRegionMapper lampRegionMapper,
                        RedissonClient redissonClient,
                        ObjectMapper objectMapper) {
-        super(cacheManager, taskScheduler, projectConfig, redissonClient, objectMapper);
         this.userMapper = userMapper;
         this.userRoleMapper = userRoleMapper;
         this.regionMapper = regionMapper;
@@ -76,20 +71,11 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
         this.encoder = new BCryptPasswordEncoder(10);
     }
 
-    public String getCacheKey(String userId){
-        return super.getCacheKey("USER::" + userId);
-    }
-
     @Override
     public UserModel modifyUserById(UserModel user) {
-        var key = this.getCacheKey(user.id);
         if(!MyString.isUuid(user.id)) return null;
         if(this.userMapper.updateById(user) > 0) {
-            var tmp = this.userMapper.selectById(user.id);
-            if(tmp != null) {
-                this.putCache(key, tmp);
-                return tmp;
-            }
+            return this.userMapper.selectById(user.id);
         }
         return null;
     }
@@ -98,12 +84,7 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
     public UserModel modifyUserByName(UserModel user) {
         if(user == null || MyString.isEmptyOrNull(user.name)) return null;
         if(this.userMapper.updateByName(user) > 0) {
-            var tmp = this.userMapper.selectByName(user.name);
-            var key = this.getCacheKey(user.id);
-            if(tmp != null) {
-                this.putCache(key, tmp);
-                return tmp;
-            }
+            return this.userMapper.selectByName(user.name);
         }
         return null;
     }
@@ -111,104 +92,19 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
     @Override
     public UserModel getUserById(String id) {
         if(!MyString.isUuid(id)) return null;
-        var key = this.getCacheKey(id);
-        var cached = this.getCache(key, UserModel.class);
-        if(cached != null){
-            return cached;
-        }
-        var user = this.userMapper.selectById(id);
-        if(user == null){
-            this.putNullCache(key);
-        }else{
-            this.putCache(key, user);
-        }
-        return user;
+        return this.userMapper.selectById(id);
     }
 
     @Override
     public UserModel getUserByName(String name) {
         if(MyString.isEmptyOrNull(name)) return null;
-        var key = this.getCacheKey(name);
-        var cached = this.getCache(key, UserModel.class);
-        if(cached != null){
-            return cached;
-        }
-        var user = this.userMapper.selectByName(name);
-        if(user == null){
-            this.putNullCache(key);
-        }else {
-            this.putCache(key, user);
-        }
-        return user;
+        return this.userMapper.selectByName(name);
     }
 
-    @Override
-    public UserModel getUserByPhone(String phone) {
-        if(!MyString.isPhoneNo(phone)) return null;
-        var key = this.getCacheKey(phone);
-        var cached = this.getCache(key, UserModel.class);
-        if(cached != null){
-            return cached;
-        }
-        var user = this.userMapper.selectByPhone(phone);
-        if(user == null){
-            this.putNullCache(key);
-        }else {
-            this.putCache(key, user);
-        }
-        return user;
-    }
-
-    @Override
-    public UserModel getUserByEmail(String email) {
-        if(!MyString.isEmail(email)) return null;
-        var key = this.getCacheKey(email);
-        var cached = this.getCache(key, UserModel.class);
-        if(cached != null){
-            return cached;
-        }
-        var user = this.userMapper.selectByEmail(email);
-        if(user == null){
-            this.putNullCache(key);
-        }else {
-            this.putCache(key, user);
-        }
-        return user;
-    }
-
-    @Override
-    public UserModel getUserByIdCardNo(String idCardNo) {
-        if(!MyString.isIdCardNo(idCardNo)) return null;
-        var key = this.getCacheKey(idCardNo);
-        var cached = this.getCache(key, UserModel.class);
-        if(cached != null){
-            return cached;
-        }
-        var user = this.userMapper.selectByIdCardNo(idCardNo);
-        if(user == null){
-            this.putNullCache(key);
-        }else {
-            this.putCache(key, user);
-        }
-        return user;
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
     public List<UserModel> getUserByOrganizationId(String organizationId) {
         if(!MyString.isUuid(organizationId)) return null;
-        var key = this.getCacheKey("ORGANIZATION::" + organizationId);
-        var cached = this.getCache(key, List.class);
-        if(cached != null){
-            return cached;
-        }
-        var users = this.userMapper.selectByOrganizationId(organizationId);
-        if(users == null){
-            this.putNullCache(key);
-        }else{
-            this.putCache(key, users);
-        }
-        return users;
+        return this.userMapper.selectByOrganizationId(organizationId);
     }
 
     @Override
@@ -238,11 +134,7 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
     public UserModel addUser(UserModel model) {
         if(model == null || !model.isValidForInsert()) return null;
         //名字不能重复
-        //if(this.userMapper.selectByName(model.name) != null) return null;
         if(this.getUserByName(model.name) != null) return null;
-        //手机号不能重复，如果存在的话
-        //身份证号不能重复，如果存在的话
-        //邮箱不能重复，如果存在的话
         //所属组织必须存在
         if(this.organizationMapper.selectById(model.organizationId) == null) return null;
         model.password = this.encoder.encode(model.password); // 密码加密后存储，统一在这里做，其它地方可以免去
@@ -257,7 +149,6 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
         user.password = input.password;
         user.organizationId = input.organizationId;
         user.lastLoginTime = LocalDateTime.now();
-        user.status = 0;
         return addUser(user);
     }
 
@@ -320,125 +211,5 @@ public class UserService extends BaseService implements IUserService, BaseUserMa
                 }
             }
         }
-    }
-
-    @Override
-    public int insert(UserModel model) {
-        // 参数检测
-        if(model == null || !model.isValidForInsert()) return 0;
-
-        try{
-            var key = cachePrefix + model.name;
-            var user = this.getCache(key, UserModel.class);
-            if(user != null){ // 存在缓存（这个缓存也可能是nullCache，当然nullCache的话，就是空字符串），即此用户名已经存在
-                return 0;
-            }else{ // 看看物理表中是否有
-                user = this.userMapper.selectByName(model.name);
-                if(user != null){ // 物理表中存在
-                    return 0;
-                }else{ // 防止缓存穿透
-                    this.putNullCache(key);
-                }
-            }
-            // 到这里说明，名字没有重复
-            //手机号不能重复，如果存在的话
-            //身份证号不能重复，如果存在的话
-            //邮箱不能重复，如果存在的话
-            //所属组织必须存在
-            var organ = this.getCache(cachePrefix + model.organizationId, OrganizationModel.class);
-            if(organ == null){ // 缓存中没有发现
-                if(this.organizationMapper.selectById(model.organizationId) == null) { // 并且物理表中也没有
-                    return 0;
-                }
-            }
-            var count = this.userMapper.insert(model);
-            if(count > 0){
-                key = this.getCacheKey(model.id);
-                this.putCache(key, model);
-                return count;
-            }
-            return 0;
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-        }
-
-        /*var user = this.getCache(key, UserModel.class);
-        if(user != null){ // 缓存中有记录
-            return 0;
-        }
-        //名字不能重复
-        if(this.userMapper.selectByName(model.name) != null) return 0;
-        //手机号不能重复，如果存在的话
-        //身份证号不能重复，如果存在的话
-        //邮箱不能重复，如果存在的话
-        //所属组织必须存在
-        if(this.organizationMapper.selectById(model.organizationId) == null) return 0;
-        model.password = this.encoder.encode(model.password); // 密码加密后存储，统一在这里做，其它地方可以免去
-
-        if(count > 0) {
-            this.putCache(key, model);
-            return count;
-        }*/
-        return 0;
-    }
-
-    @Override
-    public UserModel selectById(String id) {
-        return null;
-    }
-
-    @Override
-    public UserModel selectByName(String name) {
-        return null;
-    }
-
-    @Override
-    public UserModel selectByPhone(String phone) {
-        return null;
-    }
-
-    @Override
-    public UserModel selectByEmail(String email) {
-        return null;
-    }
-
-    @Override
-    public UserModel selectByIdCardNo(String idCardNo) {
-        return null;
-    }
-
-    @Override
-    public List<UserModel> selectByOrganizationId(String organizationId) {
-        return null;
-    }
-
-    @Override
-    public int updateById(UserModel user) {
-        return 0;
-    }
-
-    @Override
-    public UserModel selectByNameAndPassword(String name, String password) {
-        return null;
-    }
-
-    @Override
-    public int updatePasswordByName(UserModel model) {
-        return 0;
-    }
-
-    @Override
-    public int updateByName(UserModel model) {
-        return 0;
-    }
-
-    @Override
-    public List<AuthPackByUser> selectAuthPackByUserId(String userId) {
-        return null;
-    }
-
-    @Override
-    public List<RoleModel> selectRolesByUserId(String userId) {
-        return null;
     }
 }

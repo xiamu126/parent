@@ -33,6 +33,9 @@ public class LampService implements ILampService {
     private final IOneNetService oneNetService;
     private final LampModuleMapper lampModuleMapper;
     private final LampLampModuleMapper lampLampModuleMapper;
+    private final ElectricityDispositionBoxMapper electricityDispositionBoxMapper;
+    private final ElectricityDispositionBoxRegionMapper electricityDispositionBoxRegionMapper;
+    private final ElectricityDispositionBoxLampMapper electricityDispositionBoxLampMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -46,7 +49,10 @@ public class LampService implements ILampService {
                        LampCameraMapper lampCameraMapper,
                        IOneNetService oneNetService,
                        LampModuleMapper lampModuleMapper,
-                       LampLampModuleMapper lampLampModuleMapper) {
+                       LampLampModuleMapper lampLampModuleMapper,
+                       ElectricityDispositionBoxMapper electricityDispositionBoxMapper,
+                       ElectricityDispositionBoxRegionMapper electricityDispositionBoxRegionMapper,
+                       ElectricityDispositionBoxLampMapper electricityDispositionBoxLampMapper) {
         this.lampMapper = lampMapper;
         this.lampResourceMapper = lampResourceMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
@@ -58,6 +64,9 @@ public class LampService implements ILampService {
         this.oneNetService = oneNetService;
         this.lampModuleMapper = lampModuleMapper;
         this.lampLampModuleMapper = lampLampModuleMapper;
+        this.electricityDispositionBoxMapper = electricityDispositionBoxMapper;
+        this.electricityDispositionBoxRegionMapper = electricityDispositionBoxRegionMapper;
+        this.electricityDispositionBoxLampMapper = electricityDispositionBoxLampMapper;
     }
 
     @Override
@@ -165,51 +174,51 @@ public class LampService implements ILampService {
         return null;
     }
 
+    @Transactional(transactionManager = "znldTransactionManager")
     @Override
     public LampRegionModel addLampToRegionWithModules(LampModel lamp, String regionId, List<String> modules) {
-        if(lamp == null){
-            log.debug("lamp为空");
-            return null;
-        }
-        if(!lamp.isValidForInsert()){
-            log.debug("lamp实体类包含错误的数据,"+lamp.toString());
-            return null;
-        }
-        var tmp = this.lampMapper.selectByDeviceId(lamp.deviceId);
-        if(tmp != null){
-            log.debug("这个设备id["+lamp.deviceId+"]已经绑定在其它路灯上");
-            return null;
-        }
-        tmp = this.lampMapper.selectByDeviceName(lamp.deviceName);
-        if(tmp != null){
-            log.debug("这个设备名字["+lamp.deviceName+"]已经在使用");
-            return null;
-        }
-        if(!MyString.isUuid(regionId)){
-            log.debug("错误的区域id");
-            return null;
-        }
-        var region = this.regionMapper.selectById(regionId);
-        if(region == null){
-            log.debug("指定的区域id不存在");
-            return null;
-        }
-        if(modules.stream().anyMatch(MyString::isEmptyOrNull)){
-            log.debug("模块包含空字符串");
-            return null;
-        }
-        var moduleMap = new HashMap<String, LampModule>();
-        for(var m : modules){
-            var module = this.lampModuleMapper.selectByName(m);
-            if(module == null){
-                log.debug("指定的模块["+m+"]不存在");
-                return null;
-            }else{
-                moduleMap.put(m, module);
-            }
-        }
-        // 开启事务
         try{
+            if(lamp == null){
+                log.debug("lamp为空");
+                return null;
+            }
+            if(!lamp.isValidForInsert()){
+                log.debug("lamp实体类包含错误的数据,"+lamp.toString());
+                return null;
+            }
+            var tmp = this.lampMapper.selectByDeviceId(lamp.deviceId);
+            if(tmp != null){
+                log.debug("这个设备id["+lamp.deviceId+"]已经绑定在其它路灯上");
+                return null;
+            }
+            tmp = this.lampMapper.selectByDeviceName(lamp.deviceName);
+            if(tmp != null){
+                log.debug("这个设备名字["+lamp.deviceName+"]已经在使用");
+                return null;
+            }
+            if(!MyString.isUuid(regionId)){
+                log.debug("错误的区域id");
+                return null;
+            }
+            var region = this.regionMapper.selectById(regionId);
+            if(region == null){
+                log.debug("指定的区域id不存在");
+                return null;
+            }
+            if(modules.stream().anyMatch(MyString::isEmptyOrNull)){
+                log.debug("模块包含空字符串");
+                return null;
+            }
+            var moduleMap = new HashMap<String, LampModuleModel>();
+            for(var m : modules){
+                var module = this.lampModuleMapper.selectByName(m);
+                if(module == null){
+                    log.debug("指定的模块["+m+"]不存在");
+                    return null;
+                }else{
+                    moduleMap.put(m, module);
+                }
+            }
             if(this.lampMapper.insert(lamp) > 0){
                 var lampRegionModel = new LampRegionModel();
                 lampRegionModel.lampId = lamp.id;
@@ -233,6 +242,50 @@ public class LampService implements ILampService {
                     TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                     return null;
                 }
+            }
+        }catch (Exception ex){
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        return null;
+    }
+
+    @Transactional(transactionManager = "znldTransactionManager")
+    @Override
+    public ElectricityDispositionBoxRegionModel addElectricityBoxToRegion(ElectricityDispositionBoxModel box, String regionId) {
+        try{
+            if(box == null){
+                log.debug("box为空");
+                return null;
+            }
+            if(!box.isValidForInsert()){
+                log.debug("配电箱实体包含错误的数据");
+                return null;
+            }
+            if(!MyString.isUuid(regionId)){
+                log.debug("错误的区域id");
+                return null;
+            }
+            var region = this.regionMapper.selectById(regionId);
+            if(region == null){
+                log.debug("指定的区域id不存在");
+                return null;
+            }
+            var tmpBox = this.electricityDispositionBoxMapper.selectByName(box.name);
+            if(tmpBox != null){
+                log.debug("已经存在名为["+box.name+"]的配电箱");
+                return null;
+            }
+            if(this.electricityDispositionBoxMapper.insert(box) > 0){
+                var model = new ElectricityDispositionBoxRegionModel();
+                model.regionId = regionId;
+                model.electricityDispositionBoxId = box.id;
+                if(this.electricityDispositionBoxRegionMapper.insert(model) > 0){
+                    return model;
+                }
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return null;
             }
         }catch (Exception ex){
             log.error(ex.getMessage());

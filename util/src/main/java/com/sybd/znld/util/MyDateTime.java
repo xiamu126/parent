@@ -92,6 +92,7 @@ public final class MyDateTime {
             return null;
         }
     }
+
     public static LocalDateTime toLocalDateTime(Long timestamp, ZoneOffset zoneOffset){
         var instant = Instant.ofEpochMilli(timestamp);
         return LocalDateTime.ofInstant(instant, zoneOffset);
@@ -344,6 +345,9 @@ public final class MyDateTime {
     // 格式化
     public static String toString(LocalDateTime dateTime, String format){
         return DateTimeFormatter.ofPattern(format).format(dateTime);
+    }
+    public static String toString(LocalDate date, String format){
+        return DateTimeFormatter.ofPattern(format).format(date);
     }
     public static String toString(Long timestamp, String format){
         var dateTime = toLocalDateTime(timestamp);

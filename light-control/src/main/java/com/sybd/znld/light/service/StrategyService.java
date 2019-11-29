@@ -1,158 +1,130 @@
 package com.sybd.znld.light.service;
 
-import com.sybd.znld.light.control.dto.NewBoxStrategy;
-import com.sybd.znld.light.control.dto.NewLampStrategy;
+import com.sybd.znld.light.config.ProjectConfig;
+import com.sybd.znld.light.control.dto.BaseStrategy;
+import com.sybd.znld.light.control.dto.LampStrategy;
+import com.sybd.znld.light.control.dto.StrategyTarget;
 import com.sybd.znld.mapper.lamp.*;
-import com.sybd.znld.model.lamp.LampStrategyModel;
-import com.sybd.znld.model.lamp.LampStrategyPointModel;
-import com.sybd.znld.model.lamp.LampStrategyTargetModel;
-import com.sybd.znld.model.lamp.Strategy;
+import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.util.MyDateTime;
-import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class StrategyService implements IStrategyService {
     private final IUserService userService;
-    private final LampStrategyMapper lampStrategyMapper;
-    private final LampStrategyTargetMapper lampStrategyTargetMapper;
-    private final LampStrategyPointMapper lampStrategyPointMapper;
+    private final StrategyMapper strategyMapper;
+    private final StrategyTargetMapper strategyTargetMapper;
+    private final StrategyPointMapper strategyPointMapper;
     private final LampMapper lampMapper;
+    private final RegionMapper regionMapper;
     private final ElectricityDispositionBoxMapper electricityDispositionBoxMapper;
+    private final ProjectConfig projectConfig;
 
     @Autowired
     public StrategyService(IUserService userService,
-                           LampStrategyMapper lampStrategyMapper,
-                           LampStrategyTargetMapper lampStrategyTargetMapper,
-                           LampStrategyPointMapper lampStrategyPointMapper,
+                           StrategyMapper strategyMapper,
+                           StrategyTargetMapper strategyTargetMapper,
+                           StrategyPointMapper strategyPointMapper,
                            LampMapper lampMapper,
-                           ElectricityDispositionBoxMapper electricityDispositionBoxMapper) {
+                           RegionMapper regionMapper,
+                           ElectricityDispositionBoxMapper electricityDispositionBoxMapper,
+                           ProjectConfig projectConfig) {
         this.userService = userService;
-        this.lampStrategyMapper = lampStrategyMapper;
-        this.lampStrategyTargetMapper = lampStrategyTargetMapper;
-        this.lampStrategyPointMapper = lampStrategyPointMapper;
+        this.strategyMapper = strategyMapper;
+        this.strategyTargetMapper = strategyTargetMapper;
+        this.strategyPointMapper = strategyPointMapper;
         this.lampMapper = lampMapper;
+        this.regionMapper = regionMapper;
         this.electricityDispositionBoxMapper = electricityDispositionBoxMapper;
-    }
-
-    private boolean isStrategyValid(com.sybd.znld.light.control.dto.Strategy strategy){
-        if(MyString.isEmptyOrNull(strategy.name)){ // 策略名称可以重复
-            log.debug("策略名称为空");
-            return false;
-        }
-        if(strategy.ids == null || strategy.ids.isEmpty() || strategy.ids.stream().anyMatch(MyString::isAnyEmptyOrNull)){
-            log.debug("id为空");
-            return false;
-        }
-        for(var id : strategy.ids){
-            if(this.lampMapper.selectById(id) == null){
-                log.debug("指定id["+id+"]不存在");
-                return false;
-            }
-        }
-        var to = MyDateTime.toLocalDateTime(strategy.to, ZoneId.of("Asia/Shanghai"));
-        var toDate = to.toLocalDate();
-        if(toDate.isBefore(LocalDate.now())){
-            log.debug("指定的截止日期["+MyDateTime.toString(toDate, MyDateTime.FORMAT4)+"]为过去日期");
-            return false;
-        }
-        return true;
+        this.projectConfig = projectConfig;
     }
 
     @Transactional(transactionManager = "znldTransactionManager")
     @Override
-    public boolean newLampStrategy(NewLampStrategy strategy) {
+    public boolean newLampStrategy(LampStrategy strategy) {
         if(strategy == null){
-            log.debug("策略为空");
+            log.debug("传参为空");
             return false;
         }
-        if(MyString.isEmptyOrNull(strategy.name)){ // 策略名称可以重复
-            log.debug("策略名称为空");
+        if(!strategy.isValidForInsert(this.projectConfig.zoneId)){
             return false;
         }
-        if(strategy.ids == null || strategy.ids.isEmpty() || strategy.ids.stream().anyMatch(MyString::isAnyEmptyOrNull)){
-            log.debug("id为空");
-            return false;
-        }
-        for(var id : strategy.ids){
-            if(this.lampMapper.selectById(id) == null){
-                log.debug("指定id["+id+"]不存在");
-                return false;
+        for(var t : strategy.targets){
+            for(var id : t.ids){ // 放心循环，前面的代码已经做了基础检查
+                if(t.target == Target.REGION){
+                    if(this.regionMapper.selectById(id) == null){
+                        log.debug("target中的id集合，指定的类型为区域（街道），但其中id["+id+"]在区域表中不存在");
+                        return false;
+                    }
+                }else{
+                    if(this.lampMapper.selectById(id) == null){
+                        log.debug("target中的id集合，指定的类型为非区域（街道）即单个路灯，但其中id["+id+"]在路灯表中不存在");
+                        return false;
+                    }
+                }
             }
         }
-        var from = MyDateTime.toLocalDateTime(strategy.from, ZoneId.of("Asia/Shanghai"));
-        var to = MyDateTime.toLocalDateTime(strategy.to, ZoneId.of("Asia/Shanghai"));
+        var from = strategy.getFrom(this.projectConfig.zoneId);
+        var to = strategy.getTo(this.projectConfig.zoneId);
         var fromDate = from.toLocalDate();
         var fromTime = from.toLocalTime();
         var toDate = to.toLocalDate();
         var toTime = to.toLocalTime();
-        if(toDate.isBefore(LocalDate.now())){
-            log.debug("指定的截止日期["+MyDateTime.toString(toDate, MyDateTime.FORMAT4)+"]为过去日期");
-            return false;
-        }
         var userId = strategy.userId;
-        if(MyString.isEmptyOrNull(userId)){
-            log.debug("用户id为空");
-            return false;
-        }
         var user = this.userService.getUserById(userId);
         if(user == null){
             log.debug("用户不存在");
             return false;
         }
-        // 如果存在时间点
-        if(strategy.points != null && strategy.points.size() > 0){
-            for(var p : strategy.points){
-                if(p.brightness < 0 || p.brightness > 100){
-                    log.debug("时间点关联的亮度值["+p.brightness+"]非法");
-                    return false;
-                }
-                var dateTime = MyDateTime.toLocalDateTime(p.time);
-                if(dateTime == null){
-                    log.debug("时间点["+p.time+"]错误");
-                    return false;
-                }
-            }
-        }
         // 保存下发记录
-        var lampStrategy = new LampStrategyModel();
-        lampStrategy.name = strategy.name;
-        lampStrategy.fromDate = fromDate;
-        lampStrategy.toDate = toDate;
-        lampStrategy.fromTime = fromTime;
-        lampStrategy.toTime = toTime;
-        lampStrategy.autoGenerateTime = false;
-        lampStrategy.type = Strategy.LAMP;
-        if(this.lampStrategyMapper.insert(lampStrategy) > 0){ // 保存策略
-            for(var id : strategy.ids){
-                var lampStrategyTarget = new LampStrategyTargetModel();
-                lampStrategyTarget.targetId = id;
-                lampStrategyTarget.lampStrategyId = lampStrategy.id;
-                if(this.lampStrategyTargetMapper.insert(lampStrategyTarget) <= 0){ // 保存策略关联的对象
-                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                    return false;
+        var s = new StrategyModel();
+        s.name = strategy.name;
+        s.fromDate = fromDate;
+        s.toDate = toDate;
+        s.fromTime = fromTime;
+        s.toTime = toTime;
+        s.autoGenerateTime = false;
+        s.type = Strategy.LAMP;
+        s.userId = strategy.userId;
+        s.organizationId = strategy.organId;
+        if(this.strategyMapper.insert(s) > 0){ // 保存策略
+            for(var target : strategy.targets){ // 保存策略关联的对象
+                for(var id : target.ids){
+                    var lampStrategyTarget = new StrategyTargetModel();
+                    lampStrategyTarget.targetId = id;
+                    lampStrategyTarget.strategyId = s.id;
+                    lampStrategyTarget.targetType = target.target;
+                    if(this.strategyTargetMapper.insert(lampStrategyTarget) <= 0){
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                        return false;
+                    }
                 }
             }
-            // 关联时间点
+            // 关联时间点，如果存在，之前已经检查了参数
             if(strategy.points != null && strategy.points.size() > 0){
                 for(var p : strategy.points){
                     var dateTime = MyDateTime.toLocalDateTime(p.time);
                     assert dateTime != null; // 不可能为空，前面已经判断了
                     var time = dateTime.toLocalTime();
-                    var lampStrategyPoint = new LampStrategyPointModel();
-                    lampStrategyPoint.lampStrategyId = lampStrategy.id;
+                    var lampStrategyPoint = new StrategyPointModel();
+                    lampStrategyPoint.strategyId = s.id;
                     lampStrategyPoint.brightness = p.brightness;
                     lampStrategyPoint.at = time;
-                    if(this.lampStrategyPointMapper.insert(lampStrategyPoint) <= 0){ // 保存策略关联的时间点
+                    if(this.strategyPointMapper.insert(lampStrategyPoint) <= 0){ // 保存策略关联的时间点
                         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                         return false;
                     }
@@ -164,66 +136,154 @@ public class StrategyService implements IStrategyService {
     }
 
     @Override
-    public boolean newBoxStrategy(NewBoxStrategy strategy) {
+    public List<LampStrategy> getLampStrategies(String organId) {
+        var strategies = this.strategyMapper.selectByOrganIdType(organId, Strategy.LAMP);
+        if(strategies == null || strategies.isEmpty()) return null;
+        var list = new ArrayList<LampStrategy>(strategies.size());
+        for(var s : strategies){
+            var targets = this.strategyTargetMapper.selectByStrategyId(s.id); // 这个对象集合里头可能包含单个对象或者区域（街道）
+            if(targets == null || targets.isEmpty()) continue;
+            var tmp = new LampStrategy();
+            tmp.targets = new ArrayList<>();
+            tmp.name = s.name;
+            tmp.userId = s.userId;
+            tmp.organId = s.organizationId;
+            tmp.from = MyDateTime.toTimestamp(LocalDateTime.of(s.fromDate, s.fromTime));
+            tmp.to = MyDateTime.toTimestamp(LocalDateTime.of(s.toDate, s.toTime));
+            var singleTarget = new StrategyTarget();
+            singleTarget.target = Target.SINGLE;
+            singleTarget.ids = new ArrayList<>();
+            var regionTarget = new StrategyTarget();
+            regionTarget.target = Target.REGION;
+            regionTarget.ids = new ArrayList<>();
+            for(var target : targets){
+                if(target.targetType == Target.REGION){ // 这是区域的id
+                    regionTarget.ids.add(target.targetId);
+                }else { // 否则就是单个设备的id，这里这个设备就是路灯
+                    singleTarget.ids.add(target.targetId);
+                }
+            }
+            // 现在已经将区域和单个设备分开了
+            if(!singleTarget.ids.isEmpty()) tmp.targets.add(singleTarget);
+            if(!regionTarget.ids.isEmpty()) tmp.targets.add(regionTarget);
+            // 把照明灯策略关联的时间点加上去
+            var points = this.strategyPointMapper.selectByStrategyId(s.id);
+            tmp.points = points.stream().map(p -> {
+                ZoneId zoneId = null;
+                try{
+                    zoneId = ZoneId.of(this.projectConfig.zoneId);
+                }catch (Exception ex){
+                    log.debug(ex.getMessage());
+                    zoneId = ZoneId.systemDefault();
+                }
+                var zoneOffset = Instant.now().atZone(zoneId).getOffset();
+                var localDateTime = LocalDateTime.of(LocalDate.now(), p.at); // 为了转换方便，加了LocalDate.now()，前端收到这个后应该忽略date部分
+                var timestamp = localDateTime.toInstant(zoneOffset).toEpochMilli();
+                return new LampStrategy.Point(timestamp, p.brightness);
+            }).collect(Collectors.toList());
+            // 把这个策略的具体情况加入到结果集合中
+            list.add(tmp);
+        }
+        return list;
+    }
+
+    @Override
+    public boolean newBoxStrategy(BaseStrategy strategy) {
         if(strategy == null){
-            log.debug("策略为空");
+            log.debug("传参为空");
             return false;
         }
-        if(MyString.isEmptyOrNull(strategy.name)){ // 策略名称可以重复
-            log.debug("策略名称为空");
+        if(!strategy.isValidForInsert(this.projectConfig.zoneId)){
             return false;
         }
-        if(strategy.ids == null || strategy.ids.isEmpty() || strategy.ids.stream().anyMatch(MyString::isAnyEmptyOrNull)){
-            log.debug("id为空");
-            return false;
-        }
-        for(var id : strategy.ids){
-            if(this.electricityDispositionBoxMapper.selectById(id) == null){
-                log.debug("指定id["+id+"]不存在");
-                return false;
+        for(var t : strategy.targets){
+            for(var id : t.ids){
+                if(t.target == Target.REGION){
+                    if(this.regionMapper.selectById(id) == null){
+                        log.debug("target中的id集合，指定的类型为区域（街道），但其中id["+id+"]在区域表中不存在");
+                        return false;
+                    }
+                }else{
+                    if(this.electricityDispositionBoxMapper.selectById(id) == null){
+                        log.debug("target中的id集合，指定的类型为非区域（街道）即单个配电箱，但其中id["+id+"]在配电箱表中不存在");
+                        return false;
+                    }
+                }
             }
         }
-        var from = MyDateTime.toLocalDateTime(strategy.from, ZoneId.of("Asia/Shanghai"));
-        var to = MyDateTime.toLocalDateTime(strategy.to, ZoneId.of("Asia/Shanghai"));
+        var from = strategy.getFrom(this.projectConfig.zoneId);
+        var to = strategy.getTo(this.projectConfig.zoneId);
         var fromDate = from.toLocalDate();
         var fromTime = from.toLocalTime();
         var toDate = to.toLocalDate();
         var toTime = to.toLocalTime();
-        if(toDate.isBefore(LocalDate.now())){
-            log.debug("指定的截止日期["+MyDateTime.toString(toDate, MyDateTime.FORMAT4)+"]为过去日期");
-            return false;
-        }
-        var userId = strategy.userId;
-        if(MyString.isEmptyOrNull(userId)){
-            log.debug("用户id为空");
-            return false;
-        }
-        var user = this.userService.getUserById(userId);
-        if(user == null){
-            log.debug("用户不存在");
+        if(this.userService.getUserById(strategy.userId) == null){
+            log.debug("用户id["+strategy.userId+"]不存在");
             return false;
         }
         // 保存下发记录
-        var lampStrategy = new LampStrategyModel();
-        lampStrategy.name = strategy.name;
-        lampStrategy.fromDate = fromDate;
-        lampStrategy.toDate = toDate;
-        lampStrategy.fromTime = fromTime;
-        lampStrategy.toTime = toTime;
-        lampStrategy.autoGenerateTime = false;
-        lampStrategy.type = Strategy.ELECTRICITY_DISPOSITION_BOX;
-        if(this.lampStrategyMapper.insert(lampStrategy) > 0){ // 保存策略
-            for(var id : strategy.ids){
-                var lampStrategyTarget = new LampStrategyTargetModel();
-                lampStrategyTarget.targetId = id;
-                lampStrategyTarget.lampStrategyId = lampStrategy.id;
-                if(this.lampStrategyTargetMapper.insert(lampStrategyTarget) <= 0){ // 保存策略关联的对象
-                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                    return false;
+        var s = new StrategyModel();
+        s.name = strategy.name;
+        s.fromDate = fromDate;
+        s.toDate = toDate;
+        s.fromTime = fromTime;
+        s.toTime = toTime;
+        s.autoGenerateTime = false;
+        s.type = Strategy.ELECTRICITY_DISPOSITION_BOX;
+        s.userId = strategy.userId;
+        s.organizationId = strategy.organId;
+        if(this.strategyMapper.insert(s) > 0){ // 保存策略
+            for(var target : strategy.targets){ // 保存策略关联的对象
+                for(var id : target.ids){
+                    var lampStrategyTarget = new StrategyTargetModel();
+                    lampStrategyTarget.targetId = id;
+                    lampStrategyTarget.strategyId = s.id;
+                    lampStrategyTarget.targetType = target.target;
+                    if(this.strategyTargetMapper.insert(lampStrategyTarget) <= 0){
+                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                        return false;
+                    }
                 }
             }
         }
         // 发送到onenet
         return true;
+    }
+
+    @Override
+    public List<BaseStrategy> getBoxStrategies(String organId) {
+        var strategies = this.strategyMapper.selectByOrganIdType(organId, Strategy.ELECTRICITY_DISPOSITION_BOX);
+        if(strategies == null || strategies.isEmpty()) return null;
+        var list = new ArrayList<BaseStrategy>(strategies.size());
+        for(var s : strategies){
+            var targets = this.strategyTargetMapper.selectByStrategyId(s.id); // 这个对象集合里头可能包含单个对象或者区域（街道）
+            if(targets == null || targets.isEmpty()) continue;
+            var tmp = new BaseStrategy();
+            tmp.targets = new ArrayList<>();
+            tmp.name = s.name;
+            tmp.userId = s.userId;
+            tmp.organId = s.organizationId;
+            tmp.from = MyDateTime.toTimestamp(LocalDateTime.of(s.fromDate, s.fromTime));
+            tmp.to = MyDateTime.toTimestamp(LocalDateTime.of(s.toDate, s.toTime));
+            var singleTarget = new StrategyTarget();
+            singleTarget.target = Target.SINGLE;
+            singleTarget.ids = new ArrayList<>();
+            var regionTarget = new StrategyTarget();
+            regionTarget.target = Target.REGION;
+            regionTarget.ids = new ArrayList<>();
+            for(var target : targets){
+                if(target.targetType == Target.REGION){ // 这是区域的id
+                    regionTarget.ids.add(target.targetId);
+                }else { // 否则就是单个设备的id，这里这个设备就是路灯
+                    singleTarget.ids.add(target.targetId);
+                }
+            }
+            // 现在已经将区域和单个设备分开了
+            if(!singleTarget.ids.isEmpty()) tmp.targets.add(singleTarget);
+            if(!regionTarget.ids.isEmpty()) tmp.targets.add(regionTarget);
+            // 把这个策略的具体情况加入到结果集合中
+            list.add(tmp);
+        }
+        return list;
     }
 }

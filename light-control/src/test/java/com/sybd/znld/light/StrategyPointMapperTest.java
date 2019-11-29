@@ -1,7 +1,7 @@
 package com.sybd.znld.light;
 
-import com.sybd.znld.mapper.lamp.LampStrategyPointMapper;
-import com.sybd.znld.model.lamp.LampStrategyPointModel;
+import com.sybd.znld.mapper.lamp.StrategyPointMapper;
+import com.sybd.znld.model.lamp.StrategyPointModel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,35 +15,35 @@ import java.time.LocalTime;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
-public class LampStrategyPointMapperTest {
+public class StrategyPointMapperTest {
     @Autowired
-    private LampStrategyPointMapper lampStrategyPointMapper;
+    private StrategyPointMapper strategyPointMapper;
 
     // 新增 异常
     @Test(expected = Exception.class)
     public void test(){
-        var model = new LampStrategyPointModel();
-        this.lampStrategyPointMapper.insert(model);
+        var model = new StrategyPointModel();
+        this.strategyPointMapper.insert(model);
     }
 
     // 新增
     @Test
     public void test1(){
-        var model = new LampStrategyPointModel();
+        var model = new StrategyPointModel();
         model.at = LocalTime.of(5,0,0);
         model.brightness = 70;
-        model.lampStrategyId = "c1034d8e20024bcbb1a6623f8c9a4bdc";
-        var ret = this.lampStrategyPointMapper.insert(model);
+        model.strategyId = "c1034d8e20024bcbb1a6623f8c9a4bdc";
+        var ret = this.strategyPointMapper.insert(model);
         Assert.assertTrue(ret > 0);
     }
 
     // 修改
     @Test
     public void test2(){
-        var model = new LampStrategyPointModel();
+        var model = new StrategyPointModel();
         model.id = "34c714cfc7854151b419cf82ac9471a6";
         model.brightness = 80;
-        var ret = this.lampStrategyPointMapper.update(model);
+        var ret = this.strategyPointMapper.update(model);
         Assert.assertTrue(ret > 0);
         Assert.assertEquals(80, (int) model.brightness);
     }
@@ -52,7 +52,7 @@ public class LampStrategyPointMapperTest {
     @Test
     public void test3(){
         var id = "34c714cfc7854151b419cf82ac9471a6";
-        var ret = this.lampStrategyPointMapper.selectById(id);
+        var ret = this.strategyPointMapper.selectById(id);
         Assert.assertNotNull(ret);
         Assert.assertEquals(ret.id, id);
     }
@@ -61,7 +61,7 @@ public class LampStrategyPointMapperTest {
     @Test
     public void test4(){
         var id = "c1034d8e20024bcbb1a6623f8c9a4bdc";
-        var ret = this.lampStrategyPointMapper.selectByStrategyId(id);
+        var ret = this.strategyPointMapper.selectByStrategyId(id);
         Assert.assertNotNull(ret);
         Assert.assertFalse(ret.isEmpty());
     }

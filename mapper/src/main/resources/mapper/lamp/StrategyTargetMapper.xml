@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.StrategyTargetMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.StrategyTargetModel">
+        insert into strategy_target
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, target_id, target_type, strategy_id
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{targetId}, #{targetType}, #{strategyId}
+        </trim>
+    </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.StrategyTargetModel">
+        select * from strategy_target where id = #{id};
+    </select>
+    <select id="selectByStrategyId" resultType="com.sybd.znld.model.lamp.StrategyTargetModel">
+        select * from strategy_target where strategy_id = #{id};
+    </select>
+    <update id="update">
+        update strategy_target
+        set
+        <trim suffixOverrides=",">
+            <if test=" targetId != null and targetId != '' ">target_id=#{targetId},</if>
+            <if test=" targetType != null ">target_type=#{targetType},</if>
+            <if test=" strategyId != null ">strategy_id=#{strategyId},</if>
+        </trim>
+        where id=#{id};
+    </update>
+</mapper>

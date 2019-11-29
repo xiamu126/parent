@@ -3,7 +3,7 @@ package com.sybd.znld.model.lamp;
 import com.sybd.znld.model.IEnum;
 
 public enum Target implements IEnum {
-    LAMP(0), REGION(1);
+    REGION(0), SINGLE(1);
     Target(int v){
         this.value = v;
     }

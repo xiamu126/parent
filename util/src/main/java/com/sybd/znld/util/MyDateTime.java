@@ -71,6 +71,12 @@ public final class MyDateTime {
         var zoneOffset = Instant.now().atZone(zoneId).getOffset();
         return dateTime.toInstant(zoneOffset).toEpochMilli();
     }
+    public static Long toTimestamp(LocalDate date, LocalTime time){
+        var zoneId = ZoneId.systemDefault();
+        var zoneOffset = Instant.now().atZone(zoneId).getOffset();
+        var localDateTime = LocalDateTime.of(date, time);
+        return localDateTime.toInstant(zoneOffset).toEpochMilli();
+    }
     public static Long toTimestamp(LocalDateTime dateTime, ZoneOffset zoneOffset){
         return dateTime.toInstant(zoneOffset).toEpochMilli();
     }

@@ -1,9 +1,10 @@
 package com.sybd.znld.light;
 
+import com.sybd.znld.light.control.dto.BaseStrategy;
 import com.sybd.znld.light.control.dto.LampStrategy;
-import com.sybd.znld.light.control.dto.NewBoxStrategy;
-import com.sybd.znld.light.control.dto.NewLampStrategy;
+import com.sybd.znld.light.control.dto.StrategyTarget;
 import com.sybd.znld.light.service.IStrategyService;
+import com.sybd.znld.model.lamp.Target;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -26,10 +27,13 @@ public class StrategyServiceTest {
     // 新增照明灯策略
     @Test
     public void test(){
-        var strategy = new NewLampStrategy();
+        var strategy = new LampStrategy();
         strategy.name = "照明灯策略测试";
         strategy.userId = "a6b354d551f111e9804a0242ac110007";
-        strategy.ids = List.of("123b93dd012142ee82deb3558d8df055");
+        var t = new StrategyTarget();
+        t.ids = List.of("123b93dd012142ee82deb3558d8df055");
+        t.target = Target.SINGLE;
+        strategy.targets = List.of(t);
         strategy.from = MyDateTime.toTimestamp(LocalDateTime.of(2019, 11,28,17,0,0));
         strategy.to = MyDateTime.toTimestamp(LocalDateTime.of(2019, 12,28,6,0,0));
         var point1 = new LampStrategy.Point();
@@ -46,13 +50,32 @@ public class StrategyServiceTest {
     // 新增配电箱策略
     @Test
     public void test2(){
-        var strategy = new NewBoxStrategy();
+        var strategy = new BaseStrategy();
         strategy.name = "配电箱策略测试";
         strategy.userId = "a6b354d551f111e9804a0242ac110007";
-        strategy.ids = List.of("0e88236629de4bf4b97225b95d3f8f9f");
+        var t = new StrategyTarget();
+        t.ids = List.of("0e88236629de4bf4b97225b95d3f8f9f");
+        t.target = Target.SINGLE;
+        strategy.targets = List.of(t);
         strategy.from = MyDateTime.toTimestamp(LocalDateTime.of(2019, 11,28,17,0,0));
         strategy.to = MyDateTime.toTimestamp(LocalDateTime.of(2019, 12,28,6,0,0));
         var ret = this.strategyService.newBoxStrategy(strategy);
         Assert.assertTrue(ret);
+    }
+
+    // 获取某个组织下的所有照明灯策略的具体情况
+    @Test
+    public void test3(){
+        var ret = this.strategyService.getLampStrategies("88cc4ad365d9493f85db160b336c8414");
+        Assert.assertNotNull(ret);
+        Assert.assertFalse(ret.isEmpty());
+    }
+
+    // 获取某个组织下的所有配电箱策略的具体情况
+    @Test
+    public void test4(){
+        var ret = this.strategyService.getBoxStrategies("88cc4ad365d9493f85db160b336c8414");
+        Assert.assertNotNull(ret);
+        Assert.assertFalse(ret.isEmpty());
     }
 }

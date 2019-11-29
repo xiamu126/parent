@@ -22,6 +22,7 @@ public interface RegionMapper {
     RegionModel selectOne();
     List<RegionModel> select(int count);
     int updateById(RegionModel model);
+
     List<RegionWithLocation> selectAllRegionWithValidLamp(String organId);
     List<Region> selectByOrganId(String organId);
     List<Lamp> selectLampsByRegionId(String regionId);

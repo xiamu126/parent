@@ -1,6 +1,8 @@
 package com.sybd.znld.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.model.onenet.OneNetKey;
+import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.service.onenet.IOneNetService;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,6 +27,8 @@ public class OneNetTest {
     private final Logger log = LoggerFactory.getLogger(OneNetTest.class);
     @Autowired
     private IOneNetService oneNet;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private WebApplicationContext wac;
@@ -79,5 +83,16 @@ public class OneNetTest {
     public void isDeviceOnline(){
         var ret = this.oneNet.isDeviceOnline(528792157);
         Assert.assertTrue(ret);
+    }
+
+    @Test
+    public void test(){
+        var param = new CommandParams();
+        param.deviceId = 522756040;
+        param.imei = "868194030003265";
+        param.oneNetKey = OneNetKey.from("3311_0_5706");
+        param.command = "{\"s\":[{\"v\":1,\"t\":10},{\"v\":1,\"t\":10},{\"v\":1,\"t\":10}]}";
+        var ret = this.oneNet.execute(param);
+        log.debug(ret.error+" "+ret.errno);
     }
 }

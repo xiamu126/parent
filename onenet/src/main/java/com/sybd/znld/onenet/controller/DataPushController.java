@@ -317,6 +317,8 @@ public class DataPushController {
                 this.angle(rawData, name);
             } else if(name.contains("时间戳") ){
                 log.debug("跳过时间戳");
+            } else if(name.contains("单灯下发")){
+
             } else{
                 this.environment(rawData, name);
             }

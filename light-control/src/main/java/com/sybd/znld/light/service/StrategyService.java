@@ -1,9 +1,7 @@
 package com.sybd.znld.light.service;
 
 import com.sybd.znld.light.config.ProjectConfig;
-import com.sybd.znld.light.control.dto.BaseStrategy;
-import com.sybd.znld.light.control.dto.LampStrategy;
-import com.sybd.znld.light.control.dto.StrategyTarget;
+import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.service.rbac.IUserService;
@@ -285,5 +283,20 @@ public class StrategyService implements IStrategyService {
             list.add(tmp);
         }
         return list;
+    }
+
+    @Override
+    public boolean sendCmdToLamp(ManualStrategy strategy) {
+        return false;
+    }
+
+    @Override
+    public boolean sendCmdToBox(ManualStrategy strategy) {
+        return false;
+    }
+
+    @Override
+    public boolean sendBrightnessCmdToLamp(ManualBrightnessStrategy strategy) {
+        return false;
     }
 }

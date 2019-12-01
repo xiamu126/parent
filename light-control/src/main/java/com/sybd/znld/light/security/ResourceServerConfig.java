@@ -30,7 +30,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                         new Http403ForbiddenEntryPoint(),
                         new AntPathRequestMatcher("/**"));
-        http.authorizeRequests().anyRequest().authenticated();
+        http.authorizeRequests().anyRequest().permitAll();
         http.cors();
     }
 }

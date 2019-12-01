@@ -1,4 +1,4 @@
-package com.sybd.znld.light.control.dto;
+package com.sybd.znld.light.controller.dto;
 
 import com.sybd.znld.util.MyDateTime;
 import lombok.AllArgsConstructor;
@@ -6,13 +6,26 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
 @ToString(callSuper = true)
 public class LampStrategy extends BaseStrategy {
+    public Integer brightness = 100;
     public List<Point> points;
+
+    public Message toMessage(){
+        var msg = new Message();
+        var time = this.getFromTime();
+        if(time == null) return null;
+        var duration = Duration.between(LocalTime.of(0,0,0), time);
+        var seconds = duration.getSeconds();
+        msg.s.add(new Message.Pair(this.brightness, seconds));
+        return msg;
+    }
 
     @Override
     public boolean isValidForInsert(String zoneId) {

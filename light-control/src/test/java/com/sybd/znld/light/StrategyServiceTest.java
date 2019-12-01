@@ -1,8 +1,8 @@
 package com.sybd.znld.light;
 
-import com.sybd.znld.light.control.dto.BaseStrategy;
-import com.sybd.znld.light.control.dto.LampStrategy;
-import com.sybd.znld.light.control.dto.StrategyTarget;
+import com.sybd.znld.light.controller.dto.BaseStrategy;
+import com.sybd.znld.light.controller.dto.LampStrategy;
+import com.sybd.znld.light.controller.dto.StrategyTarget;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.model.lamp.Target;
 import com.sybd.znld.util.MyDateTime;

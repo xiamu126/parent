@@ -38,7 +38,7 @@ public class AuthorityService implements IAuthorityService {
 
     @Override
     public AuthorityGroupModel addAuthGroup(AuthorityGroupModel model) {
-        if(model == null) return null;
+        /*if(model == null) return null;
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("传入的name为空"); return null;
         }
@@ -60,13 +60,13 @@ public class AuthorityService implements IAuthorityService {
             log.debug("已经存在名为["+model.name+"]的权限组"); return null;
         }
         // id由数据库生成，不检查合法性
-        if(this.authGroupMapper.insert(model) > 0) return model;
+        if(this.authGroupMapper.insert(model) > 0) return model;*/
         return null;
     }
 
     @Override
     public AuthorityModel addAuth(AuthorityModel model) {
-        if(model == null) return null;
+        /*if(model == null) return null;
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("传入的name为空"); return null;
         }
@@ -85,13 +85,13 @@ public class AuthorityService implements IAuthorityService {
         if(this.authGroupMapper.selectById(model.authorityGroupId) == null){
             log.debug("指定的权限组不存在"); return null;
         }
-        if(this.authorityMapper.insert(model) > 0) return model;
+        if(this.authorityMapper.insert(model) > 0) return model;*/
         return null;
     }
 
     @Override
     public RoleModel addRole(RoleModel model) {
-        if(model == null) return null;
+       /* if(model == null) return null;
         if(MyString.isEmptyOrNull(model.name)){
             log.debug("名称不能为空"); return null;
         }
@@ -101,7 +101,7 @@ public class AuthorityService implements IAuthorityService {
         if(this.roleMapper.selectByName(model.name) != null){
             log.debug("已经存在名为["+model.name+"]的角色"); return null;
         }
-        if(this.roleMapper.insert(model) > 0) return model;
+        if(this.roleMapper.insert(model) > 0) return model;*/
         return null;
     }
 
@@ -129,7 +129,7 @@ public class AuthorityService implements IAuthorityService {
 
     @Override
     public RoleAuthorityGroupModel addRoleAuth(RoleAuthorityGroupModel model) {
-        if(model == null) return null;
+       /* if(model == null) return null;
         if(!MyString.isUuid(model.authId)){
             log.debug("非法的权限id"); return null;
         }
@@ -145,13 +145,13 @@ public class AuthorityService implements IAuthorityService {
         if(this.roleAuthMapper.selectByRoleIdAndAuthId(model.roleId, model.authId) != null){
             log.debug("指定的角色+权限已经存在"); return null;
         }
-        if(this.roleAuthMapper.insert(model) > 0) return model;
+        if(this.roleAuthMapper.insert(model) > 0) return model;*/
         return null;
     }
 
     @Override
     public List<AuthorityModel> getAuthoritiesByUserId(String userId) {
-        var roles = this.userRoleMapper.selectByUserId(userId);
+        /*var roles = this.userRoleMapper.selectByUserId(userId);
         var authList = new ArrayList<AuthorityModel>();
         roles.forEach(r -> {
             var roleAuthList = this.roleAuthMapper.selectByRoleId(r.roleId);
@@ -160,7 +160,8 @@ public class AuthorityService implements IAuthorityService {
                 authList.add(auth);
             });
         });
-        return authList.size() > 0 ? authList : null;
+        return authList.size() > 0 ? authList : null;*/
+        return null;
     }
 
     @Override

@@ -1,8 +1,7 @@
-package com.sybd.znld.light.control.dto;
+package com.sybd.znld.light.controller.dto;
 
 import com.sybd.znld.model.lamp.Target;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class StrategyTarget {

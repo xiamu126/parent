@@ -1,9 +1,9 @@
-package com.sybd.znld.light.control;
+package com.sybd.znld.light.controller;
 
-import com.sybd.znld.light.control.dto.BaseStrategy;
-import com.sybd.znld.light.control.dto.LampStrategy;
-import com.sybd.znld.light.control.dto.ManualBrightnessStrategy;
-import com.sybd.znld.light.control.dto.ManualStrategy;
+import com.sybd.znld.light.controller.dto.BaseStrategy;
+import com.sybd.znld.light.controller.dto.LampStrategy;
+import com.sybd.znld.light.controller.dto.ManualBrightnessStrategy;
+import com.sybd.znld.light.controller.dto.ManualStrategy;
 import com.sybd.znld.model.BaseApiResult;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;

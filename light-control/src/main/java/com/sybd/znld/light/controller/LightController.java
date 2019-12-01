@@ -1,9 +1,9 @@
-package com.sybd.znld.light.control;
+package com.sybd.znld.light.controller;
 
-import com.sybd.znld.light.control.dto.BaseStrategy;
-import com.sybd.znld.light.control.dto.LampStrategy;
-import com.sybd.znld.light.control.dto.ManualBrightnessStrategy;
-import com.sybd.znld.light.control.dto.ManualStrategy;
+import com.sybd.znld.light.controller.dto.BaseStrategy;
+import com.sybd.znld.light.controller.dto.LampStrategy;
+import com.sybd.znld.light.controller.dto.ManualBrightnessStrategy;
+import com.sybd.znld.light.controller.dto.ManualStrategy;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.util.MyString;
@@ -53,12 +53,16 @@ public class LightController implements ILightController {
 
     @Override
     public BaseApiResult manualLampStrategy(ManualStrategy strategy) {
-        return BaseApiResult.fail("");
+        if(!strategy.isValidForInsert()) return BaseApiResult.fail("");
+        // 执行下发
+        return null;
     }
 
     @Override
     public BaseApiResult manualLampBrightnessStrategy(ManualBrightnessStrategy strategy) {
-        return BaseApiResult.fail("");
+        if(!strategy.isValidForInsert()) return BaseApiResult.fail("");
+        // 执行下发
+        return null;
     }
 
     @Override
@@ -91,6 +95,8 @@ public class LightController implements ILightController {
 
     @Override
     public BaseApiResult manualBoxStrategy(ManualStrategy strategy) {
-        return BaseApiResult.fail("");
+        if(!strategy.isValidForInsert()) return BaseApiResult.fail("");
+        // 执行下发
+        return null;
     }
 }

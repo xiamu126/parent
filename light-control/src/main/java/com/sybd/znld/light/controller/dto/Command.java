@@ -1,5 +1,6 @@
 package com.sybd.znld.light.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sybd.znld.model.IEnum;
 import com.sybd.znld.model.IValidForDBInsert;
@@ -9,12 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 @Slf4j
-public class Command implements IValidForDBInsert {
+public abstract class Command implements IValidForDBInsert {
     public List<StrategyTarget> targets; // 这个target可以是区域的集合或者单个设备的集合，至于是照明灯的id还是配电箱的id，由继承类决定
     @JsonProperty("user_id")
     public String userId; // 是谁新建这个策略的
     @JsonProperty("organ_id")
     public String organId;
+    @JsonIgnore
+    public static final int LAMP_CLOSE_CODE = 0;
+    @JsonIgnore
+    public static final int BOX_OPEN_CODE = 100;
+    @JsonIgnore
+    public static final int BOX_CLOSE_CODE = 0;
 
     @Override
     public boolean isValidForInsert() {

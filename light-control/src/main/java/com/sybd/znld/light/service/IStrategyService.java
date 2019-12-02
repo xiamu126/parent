@@ -1,9 +1,6 @@
 package com.sybd.znld.light.service;
 
-import com.sybd.znld.light.controller.dto.BaseStrategy;
-import com.sybd.znld.light.controller.dto.LampStrategy;
-import com.sybd.znld.light.controller.dto.ManualBrightnessStrategy;
-import com.sybd.znld.light.controller.dto.ManualStrategy;
+import com.sybd.znld.light.controller.dto.*;
 
 import java.util.List;
 
@@ -13,9 +10,9 @@ public interface IStrategyService {
     // 获取某个组织下的所有照明灯策略
     List<LampStrategy> getLampStrategies(String organId);
     // 下发配电箱策略并保存记录
-    boolean newBoxStrategy(BaseStrategy strategy);
+    boolean newBoxStrategy(BoxStrategy strategy);
     // 获取某个组织下的所有配电箱策略
-    List<BaseStrategy> getBoxStrategies(String organId);
+    List<BoxStrategy> getBoxStrategies(String organId);
     // 手动开关照明灯
     boolean sendCmdToLamp(ManualStrategy strategy);
     // 手动开关配电箱

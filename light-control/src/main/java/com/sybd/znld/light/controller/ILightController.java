@@ -1,9 +1,6 @@
 package com.sybd.znld.light.controller;
 
-import com.sybd.znld.light.controller.dto.BaseStrategy;
-import com.sybd.znld.light.controller.dto.LampStrategy;
-import com.sybd.znld.light.controller.dto.ManualBrightnessStrategy;
-import com.sybd.znld.light.controller.dto.ManualStrategy;
+import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.model.BaseApiResult;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,10 +28,10 @@ public interface ILightController {
 
     // 下发配电箱策略
     @PostMapping(value = "strategy/box", produces = {MediaType.APPLICATION_JSON_VALUE})
-    BaseApiResult newBoxStrategy(@RequestBody BaseStrategy strategy);
+    BaseApiResult newBoxStrategy(@RequestBody BoxStrategy strategy);
 
     @GetMapping(value = "strategy/box/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    List<BaseStrategy> getBoxStrategies(@PathVariable(name = "organId") String organId);
+    List<BoxStrategy> getBoxStrategies(@PathVariable(name = "organId") String organId);
 
     // 手动打开关闭配电箱
     @PostMapping(value = "strategy/manual/box", produces = {MediaType.APPLICATION_JSON_VALUE})

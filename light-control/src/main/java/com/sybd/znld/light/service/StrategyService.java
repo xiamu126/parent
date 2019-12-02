@@ -130,6 +130,7 @@ public class StrategyService implements IStrategyService {
             }
         }
         // 发送到onenet
+        var msg = strategy.toMessage();
         return true;
     }
 
@@ -186,7 +187,7 @@ public class StrategyService implements IStrategyService {
     }
 
     @Override
-    public boolean newBoxStrategy(BaseStrategy strategy) {
+    public boolean newBoxStrategy(BoxStrategy strategy) {
         if(strategy == null){
             log.debug("传参为空");
             return false;
@@ -249,14 +250,14 @@ public class StrategyService implements IStrategyService {
     }
 
     @Override
-    public List<BaseStrategy> getBoxStrategies(String organId) {
+    public List<BoxStrategy> getBoxStrategies(String organId) {
         var strategies = this.strategyMapper.selectByOrganIdType(organId, Strategy.ELECTRICITY_DISPOSITION_BOX);
         if(strategies == null || strategies.isEmpty()) return null;
-        var list = new ArrayList<BaseStrategy>(strategies.size());
+        var list = new ArrayList<BoxStrategy>(strategies.size());
         for(var s : strategies){
             var targets = this.strategyTargetMapper.selectByStrategyId(s.id); // 这个对象集合里头可能包含单个对象或者区域（街道）
             if(targets == null || targets.isEmpty()) continue;
-            var tmp = new BaseStrategy();
+            var tmp = new BoxStrategy();
             tmp.targets = new ArrayList<>();
             tmp.name = s.name;
             tmp.userId = s.userId;

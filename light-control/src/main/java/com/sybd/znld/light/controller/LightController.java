@@ -1,9 +1,6 @@
 package com.sybd.znld.light.controller;
 
-import com.sybd.znld.light.controller.dto.BaseStrategy;
-import com.sybd.znld.light.controller.dto.LampStrategy;
-import com.sybd.znld.light.controller.dto.ManualBrightnessStrategy;
-import com.sybd.znld.light.controller.dto.ManualStrategy;
+import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.util.MyString;
@@ -66,7 +63,7 @@ public class LightController implements ILightController {
     }
 
     @Override
-    public BaseApiResult newBoxStrategy(BaseStrategy strategy) {
+    public BaseApiResult newBoxStrategy(BoxStrategy strategy) {
         try{
             if(this.strategyService.newBoxStrategy(strategy)){
                 return BaseApiResult.success("");
@@ -80,7 +77,7 @@ public class LightController implements ILightController {
     }
 
     @Override
-    public List<BaseStrategy> getBoxStrategies(String organId) {
+    public List<BoxStrategy> getBoxStrategies(String organId) {
         if(MyString.isEmptyOrNull(organId)){
             return null;
         }

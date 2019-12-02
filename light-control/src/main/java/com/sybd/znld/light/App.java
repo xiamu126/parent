@@ -11,8 +11,6 @@ import java.time.ZoneId;
 @SpringBootApplication(scanBasePackages = {"com.sybd.znld"})
 public class App {
     public static void main(String[] args) {
-        var duration = Duration.between(LocalTime.of(0,0,0), LocalTime.of(15,0,0));
-        System.out.println(duration.toSeconds());
         SpringApplication.run(App.class, args);
     }
 }

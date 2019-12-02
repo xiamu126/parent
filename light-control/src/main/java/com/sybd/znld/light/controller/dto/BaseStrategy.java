@@ -1,6 +1,8 @@
 package com.sybd.znld.light.controller.dto;
 
 import com.sybd.znld.model.IValidForDbInsertWithZoneId;
+import com.sybd.znld.model.lamp.IStrategyMessage;
+import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyString;
 import lombok.ToString;
@@ -11,23 +13,13 @@ import java.time.*;
 
 @Slf4j
 @ToString
-public class BaseStrategy extends Command implements IValidForDbInsertWithZoneId {
+public abstract class BaseStrategy extends Command implements IValidForDbInsertWithZoneId {
     public String name; // 策略的名称
     public Long from; // 时间统一以时间戳，这个时间戳里包含日和时
     public Long to;
 
     @JsonIgnore
     public String zoneId = ZoneId.systemDefault().getId(); // aop会将配置文件中定义的时区覆盖这个默认值
-
-    public Message toMessage(){
-        var msg = new Message();
-        var time = this.getFromTime();
-        if(time == null) return null;
-        var duration = Duration.between(LocalTime.of(0,0,0), time);
-        var seconds = duration.getSeconds();
-        msg.s.add(new Message.Pair(0, seconds));
-        return msg;
-    }
 
     public LocalDate getFromDate() {
         try{

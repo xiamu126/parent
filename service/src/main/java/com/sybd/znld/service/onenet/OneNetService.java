@@ -9,16 +9,20 @@ import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
 import com.sybd.znld.model.onenet.dto.*;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,7 +43,6 @@ public class OneNetService implements IOneNetService {
     private final LampMapper lampMapper;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
-    private final DataDeviceOnOffMapper dataDeviceOnOffMapper;
 
     @Getter @Setter public String getHistoryDataStreamUrl;
     @Getter @Setter public String postExecuteUrl;
@@ -47,78 +51,15 @@ public class OneNetService implements IOneNetService {
     @Getter @Setter public String getDeviceUrl;
     @Getter @Setter public String getDataStreamByIdUrl;
     @Getter @Setter public String getDataStreamsByIdsUrl;
-    @Getter @Setter public Command command;
     @Getter @Setter public String writeValueUrl;
     @Getter @Setter public String readValueUrl;
 
-    @Getter @Setter
-    public static class Command{
-        public String ZNLD_HEART_BEAT;
-        public String ZNLD_SCREEN_OPEN;
-        public String ZNLD_SCREEN_CLOSE;
-        public String ZNLD_QXZ_OPEN;
-        public String ZNLD_QXZ_CLOSE;
-        public String ZNLD_QXZ_DATA_UPLOAD;
-        public String ZNLD_STATUS_QUERY;
-        public String ZNLD_LOCATION_QUERY;
-        public String ZNLD_HANDSHAKE;
-        public String ZNLD_QX_UPLOAD_RATE;
-        public String ZNLD_LOCATION_UPLOAD_RATE;
-        public String ZNLD_STATUS_UPLOAD_RATE;
-        public String ZNLD_QXZ_START_REPORTING;
-        public String ZNLD_QXZ_STOP_REPORTING;
-        public String ZNLD_LOCATION_START_REPORTING;
-        public String ZNLD_LOCATION_STOP_REPORTING;
-        public String ZNLD_DD_EXECUTE;
-    }
-
-    // spring不支持静态变量注入
-    private static String ZNLD_HEART_BEAT;
-    private static String ZNLD_SCREEN_OPEN;
-    private static String ZNLD_SCREEN_CLOSE;
-    private static String ZNLD_QXZ_OPEN;
-    private static String ZNLD_QXZ_CLOSE;
-    private static String ZNLD_QXZ_DATA_UPLOAD;
-    private static String ZNLD_STATUS_QUERY;
-    private static String ZNLD_LOCATION_QUERY;
-    private static String ZNLD_HANDSHAKE;
-    private static String ZNLD_QX_UPLOAD_RATE;
-    private static String ZNLD_LOCATION_UPLOAD_RATE;
-    private static String ZNLD_STATUS_UPLOAD_RATE;
-    private static String ZNLD_QXZ_START_REPORTING;
-    private static String ZNLD_QXZ_STOP_REPORTING;
-    private static String ZNLD_LOCATION_START_REPORTING;
-    private static String ZNLD_LOCATION_STOP_REPORTING;
-    private static String ZNLD_DD_EXECUTE;
-
-    //@PostConstruct
-    private void init(){
-        ZNLD_HEART_BEAT = command.ZNLD_HEART_BEAT;
-        ZNLD_SCREEN_OPEN = command.ZNLD_SCREEN_OPEN;
-        ZNLD_SCREEN_CLOSE = command.ZNLD_SCREEN_CLOSE;
-        ZNLD_QXZ_OPEN = command.ZNLD_QXZ_OPEN;
-        ZNLD_QXZ_CLOSE = command.ZNLD_QXZ_CLOSE;
-        ZNLD_QXZ_DATA_UPLOAD = command.ZNLD_QXZ_DATA_UPLOAD;
-        ZNLD_STATUS_QUERY = command.ZNLD_STATUS_QUERY;
-        ZNLD_LOCATION_QUERY = command.ZNLD_LOCATION_QUERY;
-        ZNLD_HANDSHAKE = command.ZNLD_HANDSHAKE;
-        ZNLD_QX_UPLOAD_RATE = command.ZNLD_QX_UPLOAD_RATE;
-        ZNLD_LOCATION_UPLOAD_RATE = command.ZNLD_LOCATION_UPLOAD_RATE;
-        ZNLD_STATUS_UPLOAD_RATE = command.ZNLD_STATUS_UPLOAD_RATE;
-        ZNLD_QXZ_START_REPORTING = command.ZNLD_QXZ_START_REPORTING;
-        ZNLD_QXZ_STOP_REPORTING = command.ZNLD_QXZ_STOP_REPORTING;
-        ZNLD_LOCATION_START_REPORTING = command.ZNLD_LOCATION_START_REPORTING;
-        ZNLD_LOCATION_STOP_REPORTING = command.ZNLD_LOCATION_STOP_REPORTING;
-        ZNLD_DD_EXECUTE = command.ZNLD_DD_EXECUTE;
-    }
-
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper, RestTemplate restTemplate, DataDeviceOnOffMapper dataDeviceOnOffMapper) {
+    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper, RestTemplate restTemplate) {
         this.lampMapper = lampMapper;
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
-        this.dataDeviceOnOffMapper = dataDeviceOnOffMapper;
     }
 
     @Override
@@ -137,8 +78,47 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
-    public String getApiKeyByDeviceId(Integer deviceId){
-        return this.lampMapper.selectApiKeyByDeviceId(deviceId);
+    public String getApiKeyByImei(String imei){
+        return this.lampMapper.selectApiKeyByImei(imei);
+    }
+
+    @Async
+    @Override
+    public Future<BaseResult> executeAsync(CommandParams params) {
+        try {
+            if(params == null){
+                log.error("传入的参数为空");
+                return new AsyncResult<>(new BaseResult(1, "参数错误"));
+            }
+            if(MyString.isEmptyOrNull(params.imei)){
+                log.error("错误的imei["+params.imei+"]");
+                return new AsyncResult<>(new BaseResult(1, "参数错误"));
+            }
+            if(!params.oneNetKey.isValid()){
+                log.error("错误的oneNetKey["+params.oneNetKey.toDataStreamId()+"]");
+                return new AsyncResult<>(new BaseResult(1, "参数错误"));
+            }
+            if(MyString.isEmptyOrNull(params.command)){
+                log.error("错误的command，为空");
+                return new AsyncResult<>(new BaseResult(1, "参数错误"));
+            }
+            var lamp = this.lampMapper.selectByImei(params.imei);
+            if(lamp == null){
+                log.error("指定的imei["+params.imei+"]在数据库中找不到");
+                return new AsyncResult<>(new BaseResult(1, "参数错误"));
+            }
+            var executeEntity = new OneNetExecuteParams();
+            executeEntity.args = params.command;
+            var jsonBody = objectMapper.writeValueAsString(executeEntity);
+            var httpEntity = getHttpEntity(params.imei, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var url = this.postExecuteUrl;
+            url = url + params.toUrlString();
+            var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, BaseResult.class);
+            return new AsyncResult<>(responseEntity.getBody());
+        } catch (Exception ex) {
+            log.error(ExceptionUtils.getStackTrace(ex));
+        }
+        return new AsyncResult<>(new BaseResult(1, "执行命令发生异常"));
     }
 
     private String getLastDataStreamUrl(Integer deviceId){
@@ -166,13 +146,13 @@ public class OneNetService implements IOneNetService {
     public static String DESC = "DESC";
     public static String ASC = "ASC";
 
-    private HttpEntity<String> getHttpEntity(Integer deviceId, MediaType mediaType){
-        return getHttpEntity(deviceId, mediaType, null);
+    private HttpEntity<String> getHttpEntity(String imei, MediaType mediaType){
+        return getHttpEntity(imei, mediaType, null);
     }
 
-    private HttpEntity<String> getHttpEntity(Integer deviceId, MediaType mediaType, String body){
+    private HttpEntity<String> getHttpEntity(String imei, MediaType mediaType, String body){
         var headers = new HttpHeaders();
-        headers.add("api-key", this.getApiKeyByDeviceId(deviceId));
+        headers.add("api-key", this.getApiKeyByImei(imei));
         headers.setContentType(mediaType);
         return new HttpEntity<>(body, headers);
     }
@@ -180,10 +160,11 @@ public class OneNetService implements IOneNetService {
     @Override
     public GetLastDataStreamsResult getLastDataStream(Integer deviceId){
         var model = this.lampMapper.selectByDeviceId(deviceId);
-        if(model != null && model.linkTo > 0){
+        if(model == null) return null;
+        if(model.linkTo > 0){
             deviceId = model.linkTo;
         }
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getLastDataStreamUrl(deviceId);
         log.debug(url);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetLastDataStreamsResult.class);
@@ -199,13 +180,13 @@ public class OneNetService implements IOneNetService {
     public GetHistoryDataStreamResult
     getHistoryDataStream(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end, Integer limit, String sort, String cursor) {
         if(end != null && start.isAfter(end)) return null;
-
         var model = this.lampMapper.selectByDeviceId(deviceId);
-        if(model != null && model.linkTo > 0){
+        if(model == null) return null;
+        if(model.linkTo > 0){
             deviceId = model.linkTo;
         }
 
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getHistoryDataStreamUrl(deviceId);
 
         var map = new HashMap<String, String>();
@@ -225,10 +206,11 @@ public class OneNetService implements IOneNetService {
     @Override
     public GetDataStreamByIdResult getLastDataStreamById(Integer deviceId, String dataStreamId) {
         var model = this.lampMapper.selectByDeviceId(deviceId);
-        if(model != null && model.linkTo > 0){
+        if(model == null) return null;
+        if(model.linkTo > 0){
             deviceId = model.linkTo;
         }
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getDataStreamUrl(deviceId, dataStreamId);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamByIdResult.class);
         return responseEntity.getBody();
@@ -237,10 +219,11 @@ public class OneNetService implements IOneNetService {
     @Override
     public GetDataStreamsByIdsResult getLastDataStreamsByIds(Integer deviceId, String... dataStreamIds) {
         var model = this.lampMapper.selectByDeviceId(deviceId);
-        if(model != null && model.linkTo > 0){
+        if(model == null) return null;
+        if(model.linkTo > 0){
             deviceId = model.linkTo;
         }
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+        var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
         var url = this.getDataStreamsByIdsUrl(deviceId, dataStreamIds);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDataStreamsByIdsResult.class);
         return responseEntity.getBody();
@@ -260,13 +243,14 @@ public class OneNetService implements IOneNetService {
     @Override
     public OneNetExecuteResult getValue(Integer deviceId, OneNetKey oneNetKey) {
         var model = this.lampMapper.selectByDeviceId(deviceId);
-        if(model != null && model.linkTo > 0){
+        if(model == null) return null;
+        if(model.linkTo > 0){
             deviceId = model.linkTo;
         }
         var lamp = this.lampMapper.selectByDeviceId(deviceId);
         if(lamp == null) return null;
         try{
-            var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
+            var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/x-www-form-urlencoded; charset=UTF-8"));
             var url = readValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId+"&res_id"+oneNetKey.resId;
             var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, OneNetExecuteResult.class);
             return responseEntity.getBody();
@@ -279,7 +263,8 @@ public class OneNetService implements IOneNetService {
     @Override
     public BaseResult setValue(Integer deviceId, OneNetKey oneNetKey, Object value) {
         var model = this.lampMapper.selectByDeviceId(deviceId);
-        if(model != null && model.linkTo > 0){
+        if(model == null) return null;
+        if(model.linkTo > 0){
             deviceId = model.linkTo;
         }
         var lamp = this.lampMapper.selectByDeviceId(deviceId);
@@ -288,7 +273,7 @@ public class OneNetService implements IOneNetService {
             var url = writeValueUrl + "?imei="+lamp.imei + "&obj_id="+oneNetKey.objId + "&obj_inst_id="+oneNetKey.objInstId + "&mode=1";
             var param = new OneNetWriteParams(oneNetKey.resId, null, value);
             var jsonBody = this.objectMapper.writeValueAsString(param);
-            var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, BaseResult.class);
             return responseEntity.getBody();
         } catch (Exception ex) {
@@ -298,8 +283,10 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
-    public boolean isDeviceOnline(Integer deviceId) {
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
+    public Boolean isDeviceOnline(Integer deviceId) {
+        var model = this.lampMapper.selectByDeviceId(deviceId);
+        if(model == null) return null;
+        var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/json; charset=UTF-8"));
         var url = this.getDeviceUrl(deviceId);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Object.class);
         var obj = responseEntity.getBody();
@@ -309,13 +296,26 @@ public class OneNetService implements IOneNetService {
     @Override
     public BaseResult execute(CommandParams params){
         try {
-            var model = this.lampMapper.selectByDeviceId(params.deviceId);
-            if(model != null && model.linkTo > 0){
-                params.deviceId = model.linkTo;
+            if(params == null){
+                log.error("传入的参数为空");
+                return new BaseResult(1, "参数错误");
             }
             if(MyString.isEmptyOrNull(params.imei)){
-                var tmp = this.lampMapper.selectByDeviceId(params.deviceId);
-                params.imei = tmp.imei;
+                log.error("错误的imei["+params.imei+"]");
+                return new BaseResult(1, "参数错误");
+            }
+            if(!params.oneNetKey.isValid()){
+                log.error("错误的oneNetKey["+params.oneNetKey.toDataStreamId()+"]");
+                return new BaseResult(1, "参数错误");
+            }
+            if(MyString.isEmptyOrNull(params.command)){
+                log.error("错误的command，为空");
+                return new BaseResult(1, "参数错误");
+            }
+            var lamp = this.lampMapper.selectByImei(params.imei);
+            if(lamp == null){
+                log.error("指定的imei["+params.imei+"]在数据库中找不到");
+                return new BaseResult(1, "参数错误");
             }
             var executeEntity = new OneNetExecuteParams();
             if(MyString.isEmptyOrNull(params.command)){
@@ -323,7 +323,7 @@ public class OneNetService implements IOneNetService {
             }
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
-            var httpEntity = getHttpEntity(params.deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var httpEntity = getHttpEntity(params.imei, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var url = this.postExecuteUrl;
             url = url + params.toUrlString();
             log.debug(url);
@@ -338,14 +338,31 @@ public class OneNetService implements IOneNetService {
     @Override
     public OfflineExecuteResult offlineExecute(CommandParams params) {
         try {
-            var model = this.lampMapper.selectByDeviceId(params.deviceId);
-            if(model != null && model.linkTo > 0){
-                params.deviceId = model.linkTo;
+            if(params == null){
+                log.error("传入的参数为空");
+                return new OfflineExecuteResult(1, "参数错误");
+            }
+            if(MyString.isEmptyOrNull(params.imei)){
+                log.error("错误的imei["+params.imei+"]");
+                return new OfflineExecuteResult(1, "参数错误");
+            }
+            if(!params.oneNetKey.isValid()){
+                log.error("错误的oneNetKey["+params.oneNetKey.toDataStreamId()+"]");
+                return new OfflineExecuteResult(1, "参数错误");
+            }
+            if(MyString.isEmptyOrNull(params.command)){
+                log.error("错误的command，为空");
+                return new OfflineExecuteResult(1, "参数错误");
+            }
+            var lamp = this.lampMapper.selectByImei(params.imei);
+            if(lamp == null){
+                log.error("指定的imei["+params.imei+"]在数据库中找不到");
+                return new OfflineExecuteResult(1, "参数错误");
             }
             var executeEntity = new OneNetExecuteParams();
             executeEntity.args = params.command;
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
-            var httpEntity = getHttpEntity(params.deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
+            var httpEntity = getHttpEntity(params.imei, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var url = this.offlineExecuteUrl;
             url = url + params.toOfflineUrlString();
             log.debug(url);
@@ -360,10 +377,11 @@ public class OneNetService implements IOneNetService {
     @Override
     public GetDeviceResult getDeviceById(Integer deviceId) {
         var model = this.lampMapper.selectByDeviceId(deviceId);
-        if(model != null && model.linkTo > 0){
+        if(model == null) return null;
+        if(model.linkTo > 0){
             deviceId = model.linkTo;
         }
-        var httpEntity = getHttpEntity(deviceId, MediaType.parseMediaType("application/json; charset=UTF-8"));
+        var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/json; charset=UTF-8"));
         var url = this.getDeviceUrl(deviceId);
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDeviceResult.class);
         return responseEntity.getBody();

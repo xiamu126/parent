@@ -2,6 +2,7 @@ package com.sybd.znld.mapper.lamp;
 
 import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.Status;
+import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.*;
 import org.apache.ibatis.annotations.Mapper;
@@ -25,7 +26,7 @@ public interface RegionMapper {
 
     List<RegionWithLocation> selectAllRegionWithValidLamp(String organId);
     List<Region> selectByOrganId(String organId);
-    List<Lamp> selectLampsByRegionId(String regionId);
+    List<LampModel> selectLampsByRegionId(String regionId);
     List<LampWithLocation> selectLampsWithLocationByRegionId(String regionId);
     List<Lamp> selectLampsOfEnvironment(String organId);
     // 获取某个组织的某个区域下的所有（正常运行）路灯

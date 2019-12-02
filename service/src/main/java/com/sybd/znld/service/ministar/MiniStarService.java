@@ -119,7 +119,7 @@ public class MiniStarService implements IMiniStarService {
             if(regionId == null) {
                 return null;
             }
-            var resource = this.oneNetResourceMapper.selectByCommandValue(Command.ZNLD_DD_EXECUTE);
+            var resource = this.oneNetResourceMapper.selectByResourceName("景观灯下发");
             if(resource == null) {
                 return null;
             }
@@ -129,7 +129,6 @@ public class MiniStarService implements IMiniStarService {
             }
             for (var lamp : lamps) {
                 var params = new CommandParams();
-                params.deviceId = lamp.deviceId;
                 params.imei = lamp.imei;
                 params.oneNetKey = resource.toOneNetKey();
                 params.timeout = resource.timeout;

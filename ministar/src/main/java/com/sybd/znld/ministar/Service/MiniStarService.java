@@ -9,6 +9,7 @@ import com.sybd.znld.ministar.model.SubtitleForRegion;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.onenet.Command;
 import com.sybd.znld.model.onenet.dto.CommandParams;
+import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,11 @@ public class MiniStarService implements IMiniStarService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public MiniStarService(UserMapper userMapper, RegionMapper regionMapper, OneNetResourceMapper oneNetResourceMapper, LampMapper lampMapper, IOneNetService oneNetService) {
+    public MiniStarService(UserMapper userMapper,
+                           RegionMapper regionMapper,
+                           OneNetResourceMapper oneNetResourceMapper,
+                           LampMapper lampMapper,
+                           IOneNetService oneNetService) {
         this.userMapper = userMapper;
         this.regionMapper = regionMapper;
         this.oneNetResourceMapper = oneNetResourceMapper;
@@ -61,7 +66,7 @@ public class MiniStarService implements IMiniStarService {
             result.msg = "参数错误";
             return result;
         }
-        var resource = this.oneNetResourceMapper.selectByCommandValue(Command.ZNLD_DD_EXECUTE);
+        var resource = this.oneNetResourceMapper.selectByResourceName("景观灯下发");
         if(resource == null) {
             log.error("获取景观灯下发资源发生错误");
             result.code = 1;
@@ -78,7 +83,6 @@ public class MiniStarService implements IMiniStarService {
         var map = new HashMap<Integer, BaseApiResult>();
         for (var lamp : lamps) {
             var params = new CommandParams();
-            params.deviceId = lamp.deviceId;
             params.imei = lamp.imei;
             params.oneNetKey = resource.toOneNetKey();
             params.timeout = resource.timeout;
@@ -115,7 +119,7 @@ public class MiniStarService implements IMiniStarService {
             result.msg = "参数错误";
             return result;
         }
-        var resource = this.oneNetResourceMapper.selectByCommandValue(Command.ZNLD_DD_EXECUTE);
+        var resource = this.oneNetResourceMapper.selectByResourceName("景观灯下发");
         if(resource == null) {
             log.error("获取景观灯下发资源发生错误");
             result.code = 1;
@@ -123,7 +127,6 @@ public class MiniStarService implements IMiniStarService {
             return result;
         }
         var params = new CommandParams();
-        params.deviceId = lamp.deviceId;
         params.imei = lamp.imei;
         params.oneNetKey = resource.toOneNetKey();
         params.timeout = resource.timeout;

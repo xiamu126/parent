@@ -11,7 +11,6 @@ import com.sybd.znld.onenet.Util;
 import com.sybd.znld.onenet.websocket.handler.AngleHandler;
 import com.sybd.znld.onenet.websocket.handler.EnvironmentHandler;
 import com.sybd.znld.onenet.controller.dto.News;
-import com.sybd.znld.onenet.service.IOneNetService;
 import com.sybd.znld.onenet.websocket.handler.OnOffHandler;
 import com.sybd.znld.onenet.websocket.handler.PositionHandler;
 import com.sybd.znld.util.MyDateTime;
@@ -36,7 +35,6 @@ public class DataPushController {
     private final DataDeviceOnOffMapper dataDeviceOnOffMapper;
     private final DataLocationMapper dataLocationMapper;
     private final DataAngleMapper dataAngleMapper;
-    private final IOneNetService oneNetService;
     private final RedissonClient redissonClient;
     private final ObjectMapper objectMapper;
 
@@ -51,14 +49,13 @@ public class DataPushController {
                               DataDeviceOnOffMapper dataDeviceOnOffMapper,
                               DataLocationMapper dataLocationMapper,
                               DataAngleMapper dataAngleMapper,
-                              IOneNetService oneNetService, RedissonClient redissonClient, ObjectMapper objectMapper) {
+                              RedissonClient redissonClient, ObjectMapper objectMapper) {
         this.jmsTemplate = jmsTemplate;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.dataEnvironmentMapper = dataEnvironmentMapper;
         this.dataDeviceOnOffMapper = dataDeviceOnOffMapper;
         this.dataLocationMapper = dataLocationMapper;
         this.dataAngleMapper = dataAngleMapper;
-        this.oneNetService = oneNetService;
         this.redissonClient = redissonClient;
         this.objectMapper = objectMapper;
     }

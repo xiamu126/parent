@@ -28,6 +28,9 @@
     <select id="selectByDeviceId" resultType="com.sybd.znld.model.lamp.LampModel">
         select * from lamp where device_id=#{_parameter}
     </select>
+    <select id="selectByImei" resultType="com.sybd.znld.model.lamp.LampModel">
+        select * from lamp where imei=#{imei}
+    </select>
 
     <select id="selectByDeviceName" resultType="com.sybd.znld.model.lamp.LampModel">
         select * from lamp where device_name=#{_parameter}
@@ -59,6 +62,9 @@
 
     <select id="selectApiKeyByDeviceId" resultType="java.lang.String">
         select distinct api_key from lamp where device_id=#{_parameter};
+    </select>
+    <select id="selectApiKeyByImei" resultType="java.lang.String">
+        select distinct api_key from lamp where imei=#{imei};
     </select>
 
     <select id="selectImeiByDeviceId" resultType="java.lang.String">

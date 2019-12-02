@@ -1,6 +1,7 @@
 package com.sybd.znld.model.lamp.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sybd.znld.model.IEnum;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -13,14 +14,27 @@ public class Message {
     public Integer m; // 代表模式，0是手动，1是策略
     public Integer n; // 表示策略数目，就是s的长度
 
-    @JsonIgnore
-    public static final int MANUAL_MODEL_CODE = 0;
-    @JsonIgnore
-    public static final int STRATEGY_MODEL_CODE = 1;
+    public Message(Model model, List<Pair> list){
+        this.m = model.getValue();
+        this.s = list;
+        this.n = list.size();
+    }
 
     @AllArgsConstructor @NoArgsConstructor
     public static class Pair {
         public float v;
         public float t;
+    }
+
+    public enum Model implements IEnum {
+        MANUAL(0), STRATEGY(1);
+        Model(int v){
+            this.value = v;
+        }
+        private int value;
+        @Override
+        public int getValue() {
+            return this.value;
+        }
     }
 }

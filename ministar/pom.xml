@@ -94,12 +94,14 @@
         <dependency>
             <groupId>com.sybd.znld</groupId>
             <artifactId>model</artifactId>
-            <version>0.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sybd.znld</groupId>
+            <artifactId>service</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sybd.znld</groupId>
             <artifactId>mapper</artifactId>
-            <version>0.0.2</version>
         </dependency>
         <dependency>
             <groupId>com.sybd.znld</groupId>

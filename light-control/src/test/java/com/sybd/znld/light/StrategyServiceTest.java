@@ -1,6 +1,7 @@
 package com.sybd.znld.light;
 
 import com.sybd.znld.light.controller.dto.BaseStrategy;
+import com.sybd.znld.light.controller.dto.BoxStrategy;
 import com.sybd.znld.light.controller.dto.LampStrategy;
 import com.sybd.znld.light.controller.dto.StrategyTarget;
 import com.sybd.znld.light.service.IStrategyService;
@@ -50,7 +51,7 @@ public class StrategyServiceTest {
     // 新增配电箱策略
     @Test
     public void test2(){
-        var strategy = new BaseStrategy();
+        var strategy = new BoxStrategy();
         strategy.name = "配电箱策略测试";
         strategy.userId = "a6b354d551f111e9804a0242ac110007";
         var t = new StrategyTarget();
@@ -77,5 +78,16 @@ public class StrategyServiceTest {
         var ret = this.strategyService.getBoxStrategies("88cc4ad365d9493f85db160b336c8414");
         Assert.assertNotNull(ret);
         Assert.assertFalse(ret.isEmpty());
+    }
+
+    // 测试下发照明灯指令
+    @Test
+    public void test5(){
+        var strategy = new LampStrategy();
+        var strategyTarget = new StrategyTarget();
+        strategyTarget.ids = List.of("10bb23399d3611e995980242c0a8b008", "3a991b715c3911e98edc0242ac110007", "3acb80545c3911e98edc0242ac110007");
+        strategyTarget.target = Target.SINGLE;
+        strategy.targets = List.of();
+        this.strategyService.newLampStrategy(strategy);
     }
 }

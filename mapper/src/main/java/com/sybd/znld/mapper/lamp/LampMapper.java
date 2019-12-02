@@ -18,12 +18,14 @@ public interface LampMapper {
     List<LampModel> selectEnvironmentLampByOrganId(String organId);
     LampModel selectById(String lampId);
     LampModel selectByDeviceId(Integer deviceId);
+    LampModel selectByImei(String imei);
     LampModel selectByDeviceName(String deviceName);
     LampModel selectByLatitude(String latitude);
     LampModel selectByLongitude(String longitude);
     Location selectLocationByDeviceId(Integer deviceId);
     List<Integer> selectAllDeviceIds();
     String selectApiKeyByDeviceId(Integer deviceId);
+    String selectApiKeyByImei(String imei);
     HashMap<String, String> selectResourceMapByDeviceId(Integer deviceId);
     String selectImeiByDeviceId(Integer deviceId);
     List<DeviceIdAndImei> selectAllDeviceIdAndImei();

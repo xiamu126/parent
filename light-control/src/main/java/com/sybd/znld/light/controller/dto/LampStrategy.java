@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -29,26 +30,26 @@ public class LampStrategy extends BaseStrategy implements IStrategyMessage {
             log.debug(ex.getMessage());
             zone = ZoneId.systemDefault();
         }
-        var msg = new Message();
+        var list = new ArrayList<Message.Pair>();
         var fromTime = this.getFromTime();
         var toTime = this.getToTime();
         if (fromTime == null || toTime == null) return null;
         var seconds = Duration.between(LocalTime.of(0, 0, 0), fromTime).getSeconds();
-        msg.s.add(new Message.Pair(this.brightness, seconds)); // 这个时间点以这个亮度点亮照明灯
+        list.add(new Message.Pair(this.brightness, seconds)); // 这个时间点以这个亮度点亮照明灯
         seconds = Duration.between(LocalTime.of(0, 0, 0), toTime).getSeconds();
-        msg.s.add(new Message.Pair(Command.LAMP_CLOSE_CODE, seconds)); // 这个时间点关闭照明灯
+        list.add(new Message.Pair(Command.LAMP_CLOSE_CODE, seconds)); // 这个时间点关闭照明灯
         // 以上添加了开关灯时间点，下面继续添加时间点亮度和时间区间亮度
         for (var p : this.points) {
             var time = MyDateTime.toLocalDateTime(p.time, zone).toLocalTime();
             seconds = Duration.between(LocalTime.of(0, 0, 0), time).getSeconds();
-            msg.s.add(new Message.Pair(p.brightness, seconds)); // 这个时间点照明灯的亮度为这个
+            list.add(new Message.Pair(p.brightness, seconds)); // 这个时间点照明灯的亮度为这个
         }
         for (var s : this.sections) {
             var time = MyDateTime.toLocalDateTime(s.from, zone).toLocalTime();
             seconds = Duration.between(LocalTime.of(0, 0, 0), time).getSeconds();
-            msg.s.add(new Message.Pair(s.brightness, seconds)); // 这个时间点照明灯的亮度为这个
+            list.add(new Message.Pair(s.brightness, seconds)); // 这个时间点照明灯的亮度为这个
         }
-        return msg;
+        return new Message(Message.Model.STRATEGY, list);
     }
 
     @Override

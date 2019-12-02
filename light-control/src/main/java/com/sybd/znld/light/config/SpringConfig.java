@@ -5,8 +5,13 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
+@EnableAsync
 @Configuration
 public class SpringConfig {
     @Bean("restTemplate")
@@ -20,5 +25,18 @@ public class SpringConfig {
         var client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
         var httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
         return new RestTemplate(httpComponentsClientHttpRequestFactory);
+    }
+
+    @Bean("OneNetThreadPool")
+    public ThreadPoolTaskExecutor myTaskAsyncPool() {
+        var executor =new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(30);
+        executor.setQueueCapacity(100);
+        executor.setKeepAliveSeconds(60);
+        executor.setThreadNamePrefix("OneNetThreadPool");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
     }
 }

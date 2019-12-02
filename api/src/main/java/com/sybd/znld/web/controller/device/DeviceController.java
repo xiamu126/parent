@@ -1,11 +1,11 @@
 package com.sybd.znld.web.controller.device;
 
 import com.sybd.znld.config.ProjectConfig;
+import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.DeviceIdsAndDataStreams;
 import com.sybd.znld.model.lamp.dto.RegionsAndDataStreams;
 import com.sybd.znld.model.ministar.dto.Subtitle;
-import com.sybd.znld.model.onenet.Command;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.model.onenet.dto.OneNetExecuteArgs;
 import com.sybd.znld.service.lamp.ILampService;
@@ -44,6 +44,7 @@ public class DeviceController implements IDeviceController {
     private final IUserService userService;
     private final IRegionService regionService;
     private final IMiniStarService miniStarService;
+    private final OneNetResourceMapper oneNetResourceMapper;
 
     @Autowired
     public DeviceController(RedissonClient redissonClient,
@@ -51,7 +52,7 @@ public class DeviceController implements IDeviceController {
                             ILampService lampService,
                             ProjectConfig projectConfig,
                             IUserService userService,
-                            IRegionService regionService, IMiniStarService miniStarService) {
+                            IRegionService regionService, IMiniStarService miniStarService, OneNetResourceMapper oneNetResourceMapper) {
         this.redissonClient = redissonClient;
         this.oneNet = oneNet;
         this.lampService = lampService;
@@ -59,6 +60,7 @@ public class DeviceController implements IDeviceController {
         this.userService = userService;
         this.regionService = regionService;
         this.miniStarService = miniStarService;
+        this.oneNetResourceMapper = oneNetResourceMapper;
     }
 
     private Map<LocalDateTime, Double> getResourceByHour(Integer deviceId, String dataStreamId, LocalDateTime begin, LocalDateTime end){
@@ -1308,7 +1310,7 @@ public class DeviceController implements IDeviceController {
             if(!MyNumber.isPositive(deviceId) || !data.isValid()){
                 return ExecuteResult.fail("非法的参数");
             }
-            var resource = this.lampService.getResourceByCommandValue(data.cmd);
+            var resource = this.oneNetResourceMapper.selectByResourceName("景观灯下发");
             if(resource == null) {
                 return ExecuteResult.fail("获取命令相关数据失败");
             }
@@ -1319,7 +1321,6 @@ public class DeviceController implements IDeviceController {
                 return ExecuteResult.fail("未找到指定设备的imei");
             }
             var params = new CommandParams();
-            params.deviceId = deviceId;
             params.imei = imei;
             params.oneNetKey = resource.toOneNetKey();
             params.timeout = resource.timeout;
@@ -1339,10 +1340,9 @@ public class DeviceController implements IDeviceController {
         }
     }
 
-    private ExecuteResult execute(Integer deviceId, String imei, OneNetKey resource, short timeout, String cmd){
+    private ExecuteResult execute(Integer deviceId, String imei, OneNetKey resource, int timeout, String cmd){
         try{
             var params = new CommandParams();
-            params.deviceId = deviceId;
             params.imei = imei;
             params.oneNetKey = resource;
             params.timeout = timeout;
@@ -1431,7 +1431,7 @@ public class DeviceController implements IDeviceController {
                 return result;
             }
             var lamp = this.lampService.getLampByDeviceId(deviceId);
-            var resource = this.lampService.getResourceByCommandValue(Command.ZNLD_DD_EXECUTE);
+            var resource = this.oneNetResourceMapper.selectByResourceName("景观灯下发");
             if(lamp == null || resource == null){
                 result.code = 1;
                 result.msg = "参数错误";
@@ -1477,7 +1477,6 @@ public class DeviceController implements IDeviceController {
             }
         }
         var cmd = new CommandParams();
-        cmd.deviceId = deviceId;
         cmd.oneNetKey = OneNetKey.from(dataStreamId);
         cmd.command = value.toString();
         var tmp = this.oneNet.execute(cmd);

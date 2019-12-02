@@ -15,8 +15,8 @@ public class OneNetResourceModel implements Serializable {
     public Integer resId;
     public String value;
     public String description;
-    public Short timeout = 5;
-    public Short type;
+    public Integer timeout = 5;
+    public Integer type;
 
     public boolean isValidBeforeInsert(){
         if(objId == null || objInstId == null || resId == null || type == null) return false;
@@ -36,7 +36,7 @@ public class OneNetResourceModel implements Serializable {
         public static final short State = 3;
         public static final short Other = 4;
 
-        public static boolean isValid(short v){
+        public static boolean isValid(int v){
             switch (v){
                 case Command: case Value: case Unit: case State: case Other: return true;
                 default: return false;

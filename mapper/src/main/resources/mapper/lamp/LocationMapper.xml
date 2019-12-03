@@ -3,7 +3,7 @@
 <mapper namespace="com.sybd.znld.mapper.lamp.LocationMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.LocationModel">
         insert into location(id, name, level, sequence_number, root_id, organization_id, status)
-        values (#{id}, #{name}, #{level}, #{sequenceNumber}, #{rootId}, #{organizationId}, #{status, typeHandler=com.sybd.znld.mapper.EnumTypeHandler});
+        values (#{id}, #{name}, #{level}, #{sequenceNumber}, #{rootId}, #{organizationId}, #{status});
     </insert>
     <select id="selectById" resultType="com.sybd.znld.model.lamp.LocationModel">
         select * from location where id = #{id};

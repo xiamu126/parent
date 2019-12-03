@@ -1,6 +1,7 @@
 package com.sybd.znld.light;
 
 import com.sybd.znld.mapper.lamp.StrategyMapper;
+import com.sybd.znld.model.Status;
 import com.sybd.znld.model.lamp.StrategyModel;
 import com.sybd.znld.model.lamp.Strategy;
 import com.sybd.znld.model.onenet.OneNetKey;
@@ -98,11 +99,17 @@ public class StrategyMapperTest {
     @Test
     public void test7(){
         var param = new CommandParams();
-        param.deviceId = 522756040;
         param.imei = "868194030003265";
         param.oneNetKey = OneNetKey.from("3311_0_5706");
         param.command = "{\"s\":[{\"v\":1,\"t\":10},{\"v\":1,\"t\":10},{\"v\":1,\"t\":10}]}";
         var ret = this.oneNetService.execute(param);
         log.debug(ret.error+" "+ret.errno);
+    }
+
+    @Test
+    public void test8(){
+        var id = "88cc4ad365d9493f85db160b336c8414";
+        var list = this.strategyMapper.selectByOrganIdTypeNotStatus(id, Strategy.LAMP, Status.LAMP_STRATEGY_EXPIRED);
+        Assert.assertNotNull(list);
     }
 }

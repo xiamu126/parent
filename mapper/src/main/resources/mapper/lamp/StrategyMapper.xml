@@ -23,6 +23,9 @@
     <select id="selectByOrganIdType" resultType="com.sybd.znld.model.lamp.StrategyModel">
         select * from strategy where organization_id = #{id} and type=#{type}
     </select>
+    <select id="selectByOrganIdTypeNotStatus" resultType="com.sybd.znld.model.lamp.StrategyModel">
+        select * from strategy where organization_id = #{id} and type=#{type} and status != #{status}
+    </select>
     <update id="update">
         update strategy
         set

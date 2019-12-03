@@ -16,11 +16,16 @@ import com.sybd.znld.onenet.websocket.handler.PositionHandler;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -37,9 +42,12 @@ public class DataPushController {
     private final DataAngleMapper dataAngleMapper;
     private final RedissonClient redissonClient;
     private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
+    @Value("${baidu-ak}")
+    private String baiduAK;
 
-    private static String token ="abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
-    private static String aeskey ="whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
+    private static String token = "abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
+    private static String aeskey = "whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -49,7 +57,9 @@ public class DataPushController {
                               DataDeviceOnOffMapper dataDeviceOnOffMapper,
                               DataLocationMapper dataLocationMapper,
                               DataAngleMapper dataAngleMapper,
-                              RedissonClient redissonClient, ObjectMapper objectMapper) {
+                              RedissonClient redissonClient,
+                              ObjectMapper objectMapper,
+                              RestTemplate restTemplate) {
         this.jmsTemplate = jmsTemplate;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.dataEnvironmentMapper = dataEnvironmentMapper;
@@ -58,39 +68,46 @@ public class DataPushController {
         this.dataAngleMapper = dataAngleMapper;
         this.redissonClient = redissonClient;
         this.objectMapper = objectMapper;
+        this.restTemplate = restTemplate;
     }
 
-    private Integer getMsgType(String body){
+    private Integer getMsgType(String body) {
         Integer type = null;
-        try{
-            type = JsonPath.read(body,"$.msg.type");
-        }catch (Exception ignored){ }
+        try {
+            type = JsonPath.read(body, "$.msg.type");
+        } catch (Exception ignored) {
+        }
         return type;
     }
 
-    private RawData extract(String body){
+    private RawData extract(String body) {
         String ds = null;
-        try{
-            ds = JsonPath.read(body,"$.msg.ds_id");
-        }catch (Exception ignored){ }
+        try {
+            ds = JsonPath.read(body, "$.msg.ds_id");
+        } catch (Exception ignored) {
+        }
         Object value = null;
-        try{
-            value = JsonPath.read(body,"$.msg.value");
-        }catch (Exception ignored){ }
+        try {
+            value = JsonPath.read(body, "$.msg.value");
+        } catch (Exception ignored) {
+        }
         LocalDateTime at = null;
-        try{
-            Long tmp = JsonPath.read(body,"$.msg.at");
+        try {
+            Long tmp = JsonPath.read(body, "$.msg.at");
             var zoneId = ZoneId.of("Asia/Shanghai");
             at = MyDateTime.toLocalDateTime(tmp, zoneId);
-        }catch (Exception ignored){ }
+        } catch (Exception ignored) {
+        }
         Integer deviceId = null;
-        try{
-            deviceId = JsonPath.read(body,"$.msg.dev_id");
-        }catch (Exception ignored){ }
+        try {
+            deviceId = JsonPath.read(body, "$.msg.dev_id");
+        } catch (Exception ignored) {
+        }
         String imei = null;
-        try{
-            imei = JsonPath.read(body,"$.msg.imei");
-        }catch (Exception ignored){ }
+        try {
+            imei = JsonPath.read(body, "$.msg.imei");
+        } catch (Exception ignored) {
+        }
         var rawData = new RawData();
         rawData.ds = ds;
         rawData.value = value;
@@ -99,8 +116,9 @@ public class DataPushController {
         rawData.imei = imei;
         return rawData;
     }
+
     private void onOff(RawData rawData, String name) {
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -114,11 +132,13 @@ public class DataPushController {
         news.at = MyDateTime.toTimestamp(rawData.at);
         try {
             OnOffHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-        } catch (JsonProcessingException ignored) { }
+        } catch (JsonProcessingException ignored) {
+        }
     }
+
     private void position(RawData rawData, String name) {
         var tmp = MyNumber.getDouble(rawData.value.toString());
-        if(tmp != null && tmp != 0.0){
+        if (tmp != null && tmp != 0.0) {
             /*var data = new DataPushModel();
             data.deviceId = rawData.deviceId;
             data.imei = rawData.imei;
@@ -127,7 +147,7 @@ public class DataPushController {
             data.value = rawData.value;
             data.at = rawData.at;
             this.dataLocationMapper.insert(data); // 保存入数据库*/
-            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
+            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
             var realTimeData = new RealTimeData();
             realTimeData.describe = name;
             realTimeData.value = rawData.value;
@@ -138,43 +158,66 @@ public class DataPushController {
             Object lng = null;
             Object lat = null;
             LocalDateTime at = null;
-            if(name.contains("经度")){
+            if (name.contains("经度")) {
                 // 是经度数据，那么就从缓存里查纬度数据
                 realTimeData = (RealTimeData) map.get(name.replace("经", "纬"));
-                if(realTimeData != null){
+                if (realTimeData != null) {
                     lng = rawData.value;
                     lat = realTimeData.value;
                     at = MyDateTime.toLocalDateTime(realTimeData.at);
                 }
-            }else {
+            } else {
                 realTimeData = (RealTimeData) map.get(name.replace("纬", "经"));
-                if(realTimeData != null){
+                if (realTimeData != null) {
                     lng = realTimeData.value;
                     lat = rawData.value;
                     at = MyDateTime.toLocalDateTime(realTimeData.at);
                 }
 
             }
-            if(at == null){
+            if (at == null) {
                 return;
             }
-            if(lng != null && lat != null){
+            if (lng != null && lat != null) {
+                try {
+                    var builder = UriComponentsBuilder
+                            .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
+                            .queryParam("coords", lng + "," + lat)
+                            .queryParam("from", 1)
+                            .queryParam("to", 5)
+                            .queryParam("ak", this.baiduAK);
+                    var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
+                    var body = converted.getBody();
+                    if (body != null) {
+                        int status = JsonPath.read(body, "$.status");
+                        if (status == 0) {
+                            var baiduLng = JsonPath.read(body, "$.result[0].x");
+                            var baiduLat = JsonPath.read(body, "$.result[0].y");
+                            map.put("百度经度", new RealTimeData(baiduLng, MyDateTime.toTimestamp(at)));
+                            map.put("百度纬度", new RealTimeData(baiduLat, MyDateTime.toTimestamp(at)));
+                        }
+                    }
+                } catch (Exception ex) {
+                    log.error(ex.getMessage());
+                    log.error(ExceptionUtils.getStackTrace(ex));
+                }
                 var seconds = Duration.between(at, rawData.at).getSeconds();
-                if(Math.abs(seconds) <= 30){ // 是同一批的经纬度
+                if (Math.abs(seconds) <= 30) { // 是同一批的经纬度
                     try {
                         var news = new News();
                         news.deviceId = rawData.deviceId;
                         news.name = name;
-                        news.value = lng+","+lat;
+                        news.value = lng + "," + lat;
                         news.at = MyDateTime.toTimestamp(rawData.at);
                         PositionHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
                     } catch (JsonProcessingException ignored) { }
                 }
             }
-        }else{
+        } else {
             log.debug("经纬度不合法");
         }
     }
+
     private void angle(RawData rawData, String name) {
         /*var data = new DataPushModel();
         data.deviceId = rawData.deviceId;
@@ -184,7 +227,7 @@ public class DataPushController {
         data.value = rawData.value;
         data.at = rawData.at;
         this.dataAngleMapper.insert(data); // 保存入数据库*/
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -198,8 +241,10 @@ public class DataPushController {
         news.at = MyDateTime.toTimestamp(rawData.at);
         try {
             AngleHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-        } catch (JsonProcessingException ignored) { }
+        } catch (JsonProcessingException ignored) {
+        }
     }
+
     private void environment(RawData rawData, String name) {
         var data = new DataPushModel();
         data.deviceId = rawData.deviceId;
@@ -210,7 +255,7 @@ public class DataPushController {
         data.at = rawData.at;
         this.dataEnvironmentMapper.insert(data); // // 环境数据需要保存入数据库
 
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -224,99 +269,102 @@ public class DataPushController {
         news.at = MyDateTime.toTimestamp(rawData.at);
         try {
             EnvironmentHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-        } catch (JsonProcessingException ignored) { }
+        } catch (JsonProcessingException ignored) {
+        }
     }
 
     /**
      * 功能描述：第三方平台数据接收。<p>
-     *           <ul>注:
-     *               <li>1.OneNet平台为了保证数据不丢失，有重发机制，如果重复数据对业务有影响，数据接收端需要对重复数据进行排除重复处理。</li>
-     *               <li>2.OneNet每一次post数据请求后，等待客户端的响应都设有时限，在规定时限内没有收到响应会认为发送失败。
-     *                    接收程序接收到数据时，尽量先缓存起来，再做业务逻辑处理。</li>
-     *           </ul>
+     * <ul>注:
+     *     <li>1.OneNet平台为了保证数据不丢失，有重发机制，如果重复数据对业务有影响，数据接收端需要对重复数据进行排除重复处理。</li>
+     *     <li>2.OneNet每一次post数据请求后，等待客户端的响应都设有时限，在规定时限内没有收到响应会认为发送失败。
+     *          接收程序接收到数据时，尽量先缓存起来，再做业务逻辑处理。</li>
+     * </ul>
+     *
      * @param body 数据消息
      * @return 任意字符串。OneNet平台接收到http 200的响应，才会认为数据推送成功，否则会重发。
      */
-    @RequestMapping(value = "/receive",method = RequestMethod.POST)
+    @RequestMapping(value = "/receive", method = RequestMethod.POST)
     @ResponseBody
     public String receive(@RequestBody String body) {
         // 明文模式
         var obj = Util.resolveBody(body, false); // 解析数据
-        if(obj == null){
+        if (obj == null) {
             log.debug("收到onenet推送的数据，但解析结果为空");
             return "";
         }
-        log.debug("收到onenet推送的数据，解析结果为：" +obj);
+        log.debug("收到onenet推送的数据，解析结果为：" + obj);
         var dataRight = Util.checkSignature(obj, token);
-        if(!dataRight){
+        if (!dataRight) {
             log.debug("对解析的数据做签名验证失败");
             return "";
         }
         var rawData = this.extract(body);
         var type = this.getMsgType(body);
-        if(type != null){
-            if(type == 2){
+        if (type != null) {
+            if (type == 2) {
                 log.debug("设备上下线消息");
                 Integer status = null;
-                try{
-                    status = JsonPath.read(body,"$.msg.type");
-                }catch (Exception ignored){ }
-                if(status != null){
-                    if(status == 0){
+                try {
+                    status = JsonPath.read(body, "$.msg.type");
+                } catch (Exception ignored) {
+                }
+                if (status != null) {
+                    if (status == 0) {
                         log.debug("设备下线了");
-                    }else if(status == 1){
+                    } else if (status == 1) {
                         log.debug("设备上线了");
-                    }else {
+                    } else {
                         log.debug("未知的设备状态");
                     }
-                    if(rawData.deviceId != null){
-                        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+rawData.deviceId);
+                    if (rawData.deviceId != null) {
+                        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
                         map.put("status", status);
                     }
                 }
-            }else if (type == 1) {
+            } else if (type == 1) {
                 log.debug("设备上传数据点消息");
-            }else if(type == 7){
+            } else if (type == 7) {
                 log.debug("缓存命令下发后结果上报");
-            }else{
+            } else {
                 log.debug("位置的信息类型");
             }
         }
-        if(rawData.ds != null){ // 为空时可能是其它数据，如登入
+        if (rawData.ds != null) { // 为空时可能是其它数据，如登入
             var ids = rawData.ds.split("_");
-            if(ids.length != 3){
-                log.debug("不能解析DataStreamId："+rawData.ds);
+            if (ids.length != 3) {
+                log.debug("不能解析DataStreamId：" + rawData.ds);
                 return "";
             }
             var name = this.oneNetResourceMapper.selectNameByDataStreamId(ids[0], ids[1], ids[2]);
-            if(name == null){ // 有些DataStreamId是没有定义的，如北斗定位的误差之类
-                log.debug("通过DataStreamId获取相应的资源名称为空："+rawData.ds);
+            if (name == null) { // 有些DataStreamId是没有定义的，如北斗定位的误差之类
+                log.debug("通过DataStreamId获取相应的资源名称为空：" + rawData.ds);
                 return "";
             }
-            if(rawData.value == null){
-                log.debug("onenet推送过来的这个资源["+ name +"]的值为空");
+            if (rawData.value == null) {
+                log.debug("onenet推送过来的这个资源[" + name + "]的值为空");
                 return "";
             }
-            if(rawData.at == null){
-                log.debug("onenet推送过来的这个资源["+ name +"]的更新时间为空");
+            if (rawData.at == null) {
+                log.debug("onenet推送过来的这个资源[" + name + "]的更新时间为空");
                 return "";
             }
-            log.debug("onenet推送过来的这个资源["+ name +"]的值为"+rawData.value+"，更新时间为"+ MyDateTime.toString(rawData.at, MyDateTime.FORMAT1));
-            if(rawData.deviceId == null){
-                log.debug("onenet推送过来的这个资源["+ name +"]的deviceId为空");
+            log.debug("onenet推送过来的这个资源[" + name + "]的值为" + rawData.value + "，更新时间为" + MyDateTime.toString(rawData.at, MyDateTime.FORMAT1));
+            if (rawData.deviceId == null) {
+                log.debug("onenet推送过来的这个资源[" + name + "]的deviceId为空");
                 return "";
             }
-            if(name.contains("开关")){
+            if (name.contains("开关")) {
                 this.onOff(rawData, name);
-            } else if(name.contains("经度") || name.contains("纬度")) {
+            } else if (name.contains("经度") || name.contains("纬度")) {
                 this.position(rawData, name);
-            } else if(name.contains("angle")){
+            } else if (name.contains("angle")) {
                 this.angle(rawData, name);
-            } else if(name.contains("时间戳") ){
+            } else if (name.contains("时间戳")) {
                 log.debug("跳过时间戳");
-            } else if(name.contains("单灯下发")){
+            } else if (name.contains("单灯下发")) {
 
-            } else{
+            } else {
                 this.environment(rawData, name);
             }
             return "ok";
@@ -340,8 +388,9 @@ public class DataPushController {
 
     /**
      * 功能说明： URL&Token验证接口。如果验证成功返回msg的值，否则返回其他值。
-     * @param msg 验证消息
-     * @param nonce 随机串
+     *
+     * @param msg       验证消息
+     * @param nonce     随机串
      * @param signature 签名
      * @return msg值
      */
@@ -351,10 +400,10 @@ public class DataPushController {
                         @RequestParam(value = "nonce") String nonce,
                         @RequestParam(value = "signature") String signature) {
 
-        log.info("url&token check: msg:{} nonce{} signature:{}",msg,nonce,signature);
-        if (Util.checkToken(msg,nonce,signature,token)){
+        log.info("url&token check: msg:{} nonce{} signature:{}", msg, nonce, signature);
+        if (Util.checkToken(msg, nonce, signature, token)) {
             return msg;
-        }else {
+        } else {
             return "error";
         }
     }

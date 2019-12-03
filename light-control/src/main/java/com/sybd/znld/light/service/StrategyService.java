@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.config.ProjectConfig;
 import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.mapper.lamp.*;
+import com.sybd.znld.mapper.rbac.OrganizationMapper;
+import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.Pair;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.onenet.OneNetKey;
@@ -24,7 +26,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -42,6 +46,8 @@ public class StrategyService implements IStrategyService {
     private final ObjectMapper objectMapper;
     private final IOneNetService oneNetService;
     private final OneNetResourceMapper oneNetResourceMapper;
+    private final OrganizationMapper organizationMapper;
+    private final UserMapper userMapper;
 
     @Autowired
     public StrategyService(IUserService userService,
@@ -54,7 +60,9 @@ public class StrategyService implements IStrategyService {
                            ProjectConfig projectConfig,
                            ObjectMapper objectMapper,
                            IOneNetService oneNetService,
-                           OneNetResourceMapper oneNetResourceMapper) {
+                           OneNetResourceMapper oneNetResourceMapper,
+                           OrganizationMapper organizationMapper,
+                           UserMapper userMapper) {
         this.userService = userService;
         this.strategyMapper = strategyMapper;
         this.strategyTargetMapper = strategyTargetMapper;
@@ -66,33 +74,16 @@ public class StrategyService implements IStrategyService {
         this.objectMapper = objectMapper;
         this.oneNetService = oneNetService;
         this.oneNetResourceMapper = oneNetResourceMapper;
+        this.organizationMapper = organizationMapper;
+        this.userMapper = userMapper;
     }
 
     @Transactional(transactionManager = "znldTransactionManager")
     @Override
-    public boolean newLampStrategy(LampStrategy strategy) {
+    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampStrategy(LampStrategy strategy) {
         try {
-            if (strategy == null) {
-                log.debug("传参为空");
-                return false;
-            }
-            if (!strategy.isValidForInsert(this.projectConfig.zoneId)) {
-                return false;
-            }
-            for (var t : strategy.targets) {
-                for (var id : t.ids) { // 放心循环，前面的代码已经做了基础检查
-                    if (t.target == Target.REGION) {
-                        if (this.regionMapper.selectById(id) == null) {
-                            log.debug("target中的id集合，指定的类型为区域（街道），但其中id[" + id + "]在区域表中不存在");
-                            return false;
-                        }
-                    } else {
-                        if (this.lampMapper.selectById(id) == null) {
-                            log.debug("target中的id集合，指定的类型为非区域（街道）即单个路灯，但其中id[" + id + "]在路灯表中不存在");
-                            return false;
-                        }
-                    }
-                }
+            if(this.isLampParamError(strategy)){
+                return null;
             }
             var from = strategy.getFrom(this.projectConfig.zoneId);
             var to = strategy.getTo(this.projectConfig.zoneId);
@@ -100,12 +91,6 @@ public class StrategyService implements IStrategyService {
             var fromTime = from.toLocalTime();
             var toDate = to.toLocalDate();
             var toTime = to.toLocalTime();
-            var userId = strategy.userId;
-            var user = this.userService.getUserById(userId);
-            if (user == null) {
-                log.debug("用户不存在");
-                return false;
-            }
             // 保存下发记录
             var s = new StrategyModel();
             s.name = strategy.name;
@@ -126,7 +111,7 @@ public class StrategyService implements IStrategyService {
                         lampStrategyTarget.targetType = target.target;
                         if (this.strategyTargetMapper.insert(lampStrategyTarget) <= 0) {
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return false;
+                            return null;
                         }
                     }
                 }
@@ -142,56 +127,21 @@ public class StrategyService implements IStrategyService {
                         lampStrategyPoint.at = time;
                         if (this.strategyPointMapper.insert(lampStrategyPoint) <= 0) { // 保存策略关联的时间点
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return false;
+                            return null;
                         }
                     }
                 }
             }
             // 发送到onenet
-            var msg = strategy.toMessage(); // 得到硬件能识别的指令
-            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
-            if (resource == null) {
-                log.error("在oneNetResource找不到单灯下发的id");
+            var map = this.sendToLamp(strategy);
+            if (map == null) {
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                return false;
             }
-            var singleResults = new ArrayList<Pair<String, Future<BaseResult>>>();
-            var regionResults = new ArrayList<Pair<String, Future<BaseResult>>>();
-            for (var t : strategy.targets) {
-                if (t.target == Target.SINGLE) {
-                    for (var id : t.ids) {
-                        var lamp = this.lampMapper.selectById(id);
-                        var cmd = new CommandParams(lamp.imei,
-                                OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
-                                this.objectMapper.writeValueAsString(msg));
-                        singleResults.add(new Pair<>(id, this.oneNetService.executeAsync(cmd)));
-                    }
-                } else { // 是针对街道区域的
-                    for (var id : t.ids) {
-                        var lamps = this.regionMapper.selectLampsByRegionId(id);
-                        if (lamps == null || lamps.isEmpty()) continue;
-                        for (var lamp : lamps) {
-                            var cmd = new CommandParams(lamp.imei,
-                                    OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
-                                    this.objectMapper.writeValueAsString(msg));
-                            regionResults.add(new Pair<>(id, this.oneNetService.executeAsync(cmd)));
-                        }
-                    }
-                }
-            }
-            var singles = new ArrayList<Pair<String, BaseResult>>();
-            var regions = new ArrayList<Pair<String, BaseResult>>();
-            for (var pair : singleResults) {
-                singles.add(new Pair<>(pair.one, pair.two.get()));
-            }
-            for (var pair : regionResults) {
-                regions.add(new Pair<>(pair.one, pair.two.get()));
-            }
-            return true;
+            return map;
         } catch (Exception ex) {
             log.error(ExceptionUtils.getStackTrace(ex));
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return false;
+            return null;
         }
     }
 
@@ -247,67 +197,161 @@ public class StrategyService implements IStrategyService {
         return list;
     }
 
+    private Map<Target, ArrayList<Pair<String, BaseResult>>> sendToBox(Command cmd) {
+        try {
+            var msg = cmd.toMessage(); // 得到硬件能识别的指令
+            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
+            if (resource == null) {
+                log.error("在oneNetResource找不到单灯下发的id");
+                return null;
+            }
+            var singleResults = new ArrayList<Pair<String, Future<BaseResult>>>();
+            var regionResults = new ArrayList<Pair<String, Future<BaseResult>>>();
+            for (var t : cmd.targets) {
+                if (t.target == Target.SINGLE) {
+                    for (var id : t.ids) {
+                        var box = this.electricityDispositionBoxMapper.selectById(id);
+                        var params = new CommandParams(box.imei,
+                                OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
+                                this.objectMapper.writeValueAsString(msg));
+                        singleResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
+                        log.debug("json为" + this.objectMapper.writeValueAsString(msg));
+                    }
+                } else { // 是针对街道区域的
+                    for (var id : t.ids) {
+                        var boxes = this.regionMapper.selectBoxesByRegionId(id);
+                        if (boxes == null || boxes.isEmpty()) continue;
+                        for (var box : boxes) {
+                            var params = new CommandParams(box.imei,
+                                    OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
+                                    this.objectMapper.writeValueAsString(msg));
+                            regionResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
+                            log.debug("json为" + this.objectMapper.writeValueAsString(msg));
+                        }
+                    }
+                }
+            }
+            var singles = new ArrayList<Pair<String, BaseResult>>();
+            var regions = new ArrayList<Pair<String, BaseResult>>();
+            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
+            map.put(Target.SINGLE, singles);
+            map.put(Target.REGION, regions);
+            for (var pair : singleResults) {
+                singles.add(new Pair<>(pair.one, pair.two.get()));
+            }
+            for (var pair : regionResults) {
+                regions.add(new Pair<>(pair.one, pair.two.get()));
+            }
+            return map;
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+        }
+        return null;
+    }
+
+    private Map<Target, ArrayList<Pair<String, BaseResult>>> sendToLamp(Command cmd) {
+        try {
+            var msg = cmd.toMessage(); // 得到硬件能识别的指令
+            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
+            if (resource == null) {
+                log.error("在oneNetResource找不到单灯下发的id");
+                return null;
+            }
+            var singleResults = new ArrayList<Pair<String, Future<BaseResult>>>();
+            var regionResults = new ArrayList<Pair<String, Future<BaseResult>>>();
+            for (var t : cmd.targets) {
+                if (t.target == Target.SINGLE) {
+                    for (var id : t.ids) {
+                        var lamp = this.lampMapper.selectById(id);
+                        var params = new CommandParams(lamp.imei,
+                                OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
+                                this.objectMapper.writeValueAsString(msg));
+                        singleResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
+                        log.debug("json为" + this.objectMapper.writeValueAsString(msg));
+                    }
+                } else { // 是针对街道区域的
+                    for (var id : t.ids) {
+                        var lamps = this.regionMapper.selectLampsByRegionId(id);
+                        if (lamps == null || lamps.isEmpty()) continue;
+                        for (var lamp : lamps) {
+                            var params = new CommandParams(lamp.imei,
+                                    OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
+                                    this.objectMapper.writeValueAsString(msg));
+                            regionResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
+                            log.debug("json为" + this.objectMapper.writeValueAsString(msg));
+                        }
+                    }
+                }
+            }
+            var singles = new ArrayList<Pair<String, BaseResult>>();
+            var regions = new ArrayList<Pair<String, BaseResult>>();
+            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
+            map.put(Target.SINGLE, singles);
+            map.put(Target.REGION, regions);
+            for (var pair : singleResults) {
+                singles.add(new Pair<>(pair.one, pair.two.get()));
+            }
+            for (var pair : regionResults) {
+                regions.add(new Pair<>(pair.one, pair.two.get()));
+            }
+            return map;
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+        }
+        return null;
+    }
+
     @Override
-    public boolean newBoxStrategy(BoxStrategy strategy) {
-        if (strategy == null) {
-            log.debug("传参为空");
-            return false;
-        }
-        if (!strategy.isValidForInsert(this.projectConfig.zoneId)) {
-            return false;
-        }
-        for (var t : strategy.targets) {
-            for (var id : t.ids) {
-                if (t.target == Target.REGION) {
-                    if (this.regionMapper.selectById(id) == null) {
-                        log.debug("target中的id集合，指定的类型为区域（街道），但其中id[" + id + "]在区域表中不存在");
-                        return false;
-                    }
-                } else {
-                    if (this.electricityDispositionBoxMapper.selectById(id) == null) {
-                        log.debug("target中的id集合，指定的类型为非区域（街道）即单个配电箱，但其中id[" + id + "]在配电箱表中不存在");
-                        return false;
+    public Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxStrategy(BoxStrategy strategy) {
+        try {
+            if(this.isBoxParamError(strategy)){
+                return null;
+            }
+            var from = strategy.getFrom(this.projectConfig.zoneId);
+            var to = strategy.getTo(this.projectConfig.zoneId);
+            var fromDate = from.toLocalDate();
+            var fromTime = from.toLocalTime();
+            var toDate = to.toLocalDate();
+            var toTime = to.toLocalTime();
+            // 保存下发记录
+            var s = new StrategyModel();
+            s.name = strategy.name;
+            s.fromDate = fromDate;
+            s.toDate = toDate;
+            s.fromTime = fromTime;
+            s.toTime = toTime;
+            s.autoGenerateTime = false;
+            s.type = Strategy.ELECTRICITY_DISPOSITION_BOX;
+            s.userId = strategy.userId;
+            s.organizationId = strategy.organId;
+            if (this.strategyMapper.insert(s) > 0) { // 保存策略
+                for (var target : strategy.targets) { // 保存策略关联的对象
+                    for (var id : target.ids) {
+                        var lampStrategyTarget = new StrategyTargetModel();
+                        lampStrategyTarget.targetId = id;
+                        lampStrategyTarget.strategyId = s.id;
+                        lampStrategyTarget.targetType = target.target;
+                        if (this.strategyTargetMapper.insert(lampStrategyTarget) <= 0) {
+                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                            return null;
+                        }
                     }
                 }
             }
-        }
-        var from = strategy.getFrom(this.projectConfig.zoneId);
-        var to = strategy.getTo(this.projectConfig.zoneId);
-        var fromDate = from.toLocalDate();
-        var fromTime = from.toLocalTime();
-        var toDate = to.toLocalDate();
-        var toTime = to.toLocalTime();
-        if (this.userService.getUserById(strategy.userId) == null) {
-            log.debug("用户id[" + strategy.userId + "]不存在");
-            return false;
-        }
-        // 保存下发记录
-        var s = new StrategyModel();
-        s.name = strategy.name;
-        s.fromDate = fromDate;
-        s.toDate = toDate;
-        s.fromTime = fromTime;
-        s.toTime = toTime;
-        s.autoGenerateTime = false;
-        s.type = Strategy.ELECTRICITY_DISPOSITION_BOX;
-        s.userId = strategy.userId;
-        s.organizationId = strategy.organId;
-        if (this.strategyMapper.insert(s) > 0) { // 保存策略
-            for (var target : strategy.targets) { // 保存策略关联的对象
-                for (var id : target.ids) {
-                    var lampStrategyTarget = new StrategyTargetModel();
-                    lampStrategyTarget.targetId = id;
-                    lampStrategyTarget.strategyId = s.id;
-                    lampStrategyTarget.targetType = target.target;
-                    if (this.strategyTargetMapper.insert(lampStrategyTarget) <= 0) {
-                        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                        return false;
-                    }
-                }
+            // 发送到onenet
+            var map = this.sendToLamp(strategy);
+            if (map == null) {
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             }
+            return map;
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return null;
         }
-        // 发送到onenet
-        return true;
     }
 
     @Override
@@ -348,17 +392,127 @@ public class StrategyService implements IStrategyService {
     }
 
     @Override
-    public boolean sendCmdToLamp(ManualStrategy strategy) {
+    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManual(ManualStrategy strategy) {
+        try {
+            if(this.isLampParamError(strategy)){
+                return null;
+            }
+            // 直接发送到onenet
+            return this.sendToLamp(strategy);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            return null;
+        }
+    }
+
+    @Override
+    public Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxManual(ManualStrategy strategy) {
+        try {
+            if(this.isBoxParamError(strategy)){
+                return null;
+            }
+            // 直接发送到onenet
+            return this.sendToBox(strategy);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            return null;
+        }
+    }
+
+    private boolean isBoxParamError(Command cmd){
+        if (cmd == null) {
+            log.debug("传参为空");
+            return true;
+        }
+        if (!cmd.isValidForInsert()) {
+            return true;
+        }
+        for (var t : cmd.targets) {
+            for (var id : t.ids) {
+                if (t.target == Target.REGION) {
+                    if (this.regionMapper.selectById(id) == null) {
+                        log.debug("target中的id集合，指定的类型为区域（街道），但其中id[" + id + "]在区域表中不存在");
+                        return true;
+                    }
+                } else {
+                    if (this.electricityDispositionBoxMapper.selectById(id) == null) {
+                        log.debug("target中的id集合，指定的类型为非区域（街道）即单个配电箱，但其中id[" + id + "]在配电箱表中不存在");
+                        return true;
+                    }
+                }
+            }
+        }
+        var organ = this.organizationMapper.selectById(cmd.organId);
+        if (organ == null) {
+            log.error("组织不存在");
+            return true;
+        }
+        var user = this.userMapper.selectById(cmd.userId);
+        if (user == null) {
+            log.error("用户不存在");
+            return true;
+        }
+        if (!user.organizationId.equals(organ.id)) {
+            log.error("指定的组织id[" + cmd.organId + "]和用户id[" + cmd.userId + "]不符");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isLampParamError(Command cmd){
+        if (cmd == null) {
+            log.debug("传参为空");
+            return true;
+        }
+        if (!cmd.isValidForInsert()) {
+            return true;
+        }
+        for (var t : cmd.targets) {
+            for (var id : t.ids) {
+                if (t.target == Target.REGION) {
+                    if (this.regionMapper.selectById(id) == null) {
+                        log.debug("target中的id集合，指定的类型为区域（街道），但其中id[" + id + "]在区域表中不存在");
+                        return true;
+                    }
+                } else {
+                    if (this.lampMapper.selectById(id) == null) {
+                        log.debug("target中的id集合，指定的类型为非区域（街道）即单个路灯，但其中id[" + id + "]在路灯表中不存在");
+                        return true;
+                    }
+                }
+            }
+        }
+        var organ = this.organizationMapper.selectById(cmd.organId);
+        if (organ == null) {
+            log.error("组织不存在");
+            return true;
+        }
+        var user = this.userMapper.selectById(cmd.userId);
+        if (user == null) {
+            log.error("用户不存在");
+            return true;
+        }
+        if (!user.organizationId.equals(organ.id)) {
+            log.error("指定的组织id[" + cmd.organId + "]和用户id[" + cmd.userId + "]不符");
+            return true;
+        }
         return false;
     }
 
     @Override
-    public boolean sendCmdToBox(ManualStrategy strategy) {
-        return false;
-    }
-
-    @Override
-    public boolean sendBrightnessCmdToLamp(ManualBrightnessStrategy strategy) {
-        return false;
+    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManualBrightness(ManualBrightnessStrategy strategy) {
+        try {
+            if(this.isLampParamError(strategy)){
+                return null;
+            }
+            // 直接发送到onenet
+            return this.sendToLamp(strategy);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            return null;
+        }
     }
 }

@@ -3,7 +3,7 @@
 <mapper namespace="com.sybd.znld.mapper.lamp.LampMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampModel">
         insert into lamp(id, api_key, device_id, imei, device_name, longitude, latitude, status)
-        values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status, typeHandler=com.sybd.znld.mapper.EnumTypeHandler});
+        values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status});
     </insert>
 
     <select id="selectLampSummary" resultType="com.sybd.znld.model.lamp.dto.LampSummary">

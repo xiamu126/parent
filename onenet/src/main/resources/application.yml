@@ -3,4 +3,5 @@ server:
 spring:
   profiles:
     include: onenet
-    active: prod
+    active: dev
+baidu-ak: x1ySji2AxajkmThvd8weGwOQ

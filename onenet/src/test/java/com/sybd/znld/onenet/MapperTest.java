@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,6 +25,9 @@ public class MapperTest {
     private DataAngleMapper dataAngleMapper;
     @Autowired
     private DataLocationMapper dataLocationMapper;
+
+    @Autowired
+    private RedissonClient redissonClient;
 
 
     @Test
@@ -72,5 +76,11 @@ public class MapperTest {
         this.dataLocationMapper.updateLockStatusByDeviceIdAndResourceName(model);
         model.name = "北斗纬度";
         this.dataLocationMapper.updateLockStatusByDeviceIdAndResourceName(model);
+    }
+
+    @Test
+    public void test11(){
+        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + 528130535);
+        Assert.assertNotNull(map);
     }
 }

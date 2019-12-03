@@ -24,7 +24,7 @@ public class LightController implements ILightController {
     @Override
     public BaseApiResult newLampStrategy(LampStrategy strategy) {
         try{
-            if(this.strategyService.newLampStrategy(strategy)){
+            if(this.strategyService.newLampStrategy(strategy) != null){
                 return BaseApiResult.success("");
             }
         }catch (Exception ex){
@@ -65,7 +65,7 @@ public class LightController implements ILightController {
     @Override
     public BaseApiResult newBoxStrategy(BoxStrategy strategy) {
         try{
-            if(this.strategyService.newBoxStrategy(strategy)){
+            if(this.strategyService.newBoxStrategy(strategy) != null){
                 return BaseApiResult.success("");
             }
         }catch (Exception ex){

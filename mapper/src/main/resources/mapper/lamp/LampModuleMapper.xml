@@ -19,6 +19,12 @@
         <trim suffixOverrides=",">
             <if test=" name != null and name != '' ">name=#{name},</if>
         </trim>
-        where id=#{id};
+        where id = #{id};
     </update>
+    <select id="selectModulesByLampId" resultType="com.sybd.znld.model.lamp.LampModuleModel">
+        select a.* from lamp_module as a
+        left join lamp_lamp_module as b on b.lamp_module_id = a.id
+        left join lamp as c on c.id = b.lamp_id
+        where c.id = #{id};
+    </select>
 </mapper>

@@ -2,6 +2,7 @@ package com.sybd.znld.mapper.lamp;
 
 import com.sybd.znld.mapper.db.DbSource;
 import com.sybd.znld.model.Status;
+import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
 import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.*;
@@ -27,10 +28,14 @@ public interface RegionMapper {
     List<RegionWithLocation> selectAllRegionWithValidLamp(String organId);
     List<Region> selectByOrganId(String organId);
     List<LampModel> selectLampsByRegionId(String regionId);
+    List<ElectricityDispositionBoxModel> selectBoxesByRegionId(String id);
     List<LampWithLocation> selectLampsWithLocationByRegionId(String regionId);
     List<Lamp> selectLampsOfEnvironment(String organId);
     // 获取某个组织的某个区域下的所有（正常运行）路灯
     List<Lamp> selectLampsByOrganIdRegionIdNotStatus(@Param("organId") String organId, @Param("regionId") String regionId, @Param("status") Status status);
+    List<LampModel> selectLampsByOrganIdRegionId(@Param("organId") String organId, @Param("regionId") String regionId);
+    // 获取某个区域下的所有配电箱
+    List<ElectricityDispositionBoxModel> selectBoxesByOrganIdRegionId(@Param("organId") String organId, @Param("regionId") String regionId);
     // 某个时间区间内的平均值
     List<ElementAvgResult> selectAvgOfEnvironmentElementBetweenByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     List<ElementAvgResult> selectAvgOfEnvironmentElementLastHoursWithBeginTimeByDeviceId(@Param("deviceId") Integer deviceId, @Param("begin") LocalDateTime begin, @Param("hours") Integer hours);

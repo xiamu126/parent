@@ -53,11 +53,17 @@
         where c.status = 0 and a.status = 0 and a.id = #{regionId};
     </select>-->
 
-    <select id="selectLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Lamp">
+    <select id="selectLampsByRegionId" resultType="com.sybd.znld.model.lamp.LampModel">
         select c.* from region as a
         left join lamp_region as b on b.region_id = a.id
         left join lamp as c on c.id = b.lamp_id
         where a.id = #{regionId};
+    </select>
+    <select id="selectBoxesByRegionId" resultType="com.sybd.znld.model.lamp.ElectricityDispositionBoxModel">
+        select c.* from region as a
+        left join electricity_disposition_box_region as b on b.region_id = a.id
+        left join electricity_disposition_box as c on c.id = b.electricity_disposition_box_id
+        where a.id = #{id};
     </select>
 
     <select id="selectLampsWithLocationByRegionId" resultType="com.sybd.znld.model.lamp.dto.LampWithLocation">
@@ -86,6 +92,19 @@
         left join lamp_region as b on b.region_id = a.id
         left join lamp as c on c.id = b.lamp_id
         where a.organization_id = #{organId} and a.id = #{regionId} and c.status != #{status};
+    </select>
+    <select id="selectLampsByOrganIdRegionId" resultType="com.sybd.znld.model.lamp.LampModel">
+        select c.* from region as a
+        left join lamp_region as b on b.region_id = a.id
+        left join lamp as c on c.id = b.lamp_id
+        where a.organization_id = #{organId} and a.id = #{regionId};
+    </select>
+
+    <select id="selectBoxesByOrganIdRegionId" resultType="com.sybd.znld.model.lamp.ElectricityDispositionBoxModel">
+        select c.* from region as a
+        left join electricity_disposition_box_region as b on b.region_id = a.id
+        left join electricity_disposition_box as c on c.id = b.electricity_disposition_box_id
+        where a.organization_id = #{organId} and a.id = #{regionId};
     </select>
 
     <select id="selectAvgOfEnvironmentElementBetweenByDeviceId" resultType="com.sybd.znld.model.lamp.dto.ElementAvgResult">

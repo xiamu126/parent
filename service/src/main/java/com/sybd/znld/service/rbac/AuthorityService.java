@@ -1,33 +1,31 @@
-package com.sybd.znld.oauth2.service;
+package com.sybd.znld.service.rbac;
 
+import com.sybd.znld.mapper.db.DbSource;
+import com.sybd.znld.mapper.rbac.*;
 import com.sybd.znld.model.rbac.*;
-import com.sybd.znld.oauth2.db.DbSource;
-import com.sybd.znld.oauth2.mapper.*;
 import com.sybd.znld.model.rbac.dto.AuthPackByUser;
-import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Service
 @DbSource("rbac")
 public class AuthorityService implements IAuthorityService {
-    private final AuthGroupMapper authGroupMapper;
+    private final AuthorityGroupMapper authGroupMapper;
     private final AuthorityMapper authorityMapper;
     private final RoleMapper roleMapper;
     private final UserRoleMapper userRoleMapper;
     private final UserMapper userMapper;
-    private final RoleAuthMapper roleAuthMapper;
+    private final RoleAuthorityGroupMapper roleAuthMapper;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public AuthorityService(AuthGroupMapper authGroupMapper, AuthorityMapper authorityMapper,
-                            RoleMapper roleMapper, UserRoleMapper userRoleMapper, UserMapper userMapper, RoleAuthMapper roleAuthMapper) {
+    public AuthorityService(AuthorityGroupMapper authGroupMapper, AuthorityMapper authorityMapper,
+                            RoleMapper roleMapper, UserRoleMapper userRoleMapper, UserMapper userMapper, RoleAuthorityGroupMapper roleAuthMapper) {
         this.authGroupMapper = authGroupMapper;
         this.authorityMapper = authorityMapper;
         this.roleMapper = roleMapper;

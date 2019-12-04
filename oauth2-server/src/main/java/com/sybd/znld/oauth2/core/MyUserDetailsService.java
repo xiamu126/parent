@@ -1,7 +1,7 @@
 package com.sybd.znld.oauth2.core;
 
-import com.sybd.znld.oauth2.mapper.UserMapper;
-import com.sybd.znld.oauth2.service.AuthorityService;
+import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.service.rbac.AuthorityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;

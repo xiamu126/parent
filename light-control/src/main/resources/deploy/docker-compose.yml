@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+  account:
+    container_name: znld-light-control
+    image: openjdk:11-jdk
+    restart: on-failure
+    working_dir: /light-control
+    ports:
+      - target: 8089
+        published: 8089
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./
+        target: /light-control
+    command: java -Duser.timezone=Asia/Shanghai -jar app.jar
+    networks:
+      - znld-network
+networks:
+  znld-network:
+    driver: bridge
+    name: znld-net

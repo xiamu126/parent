@@ -1,5 +1,6 @@
 package com.sybd.znld.light.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sybd.znld.model.IValidForDbInsertWithZoneId;
 import com.sybd.znld.model.lamp.IStrategyMessage;
 import com.sybd.znld.model.lamp.dto.Message;
@@ -7,7 +8,6 @@ import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyString;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.annotate.JsonIgnore;
 
 import java.time.*;
 
@@ -21,6 +21,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
     @JsonIgnore
     public String zoneId = ZoneId.systemDefault().getId(); // aop会将配置文件中定义的时区覆盖这个默认值
 
+    @JsonIgnore
     public LocalDate getFromDate() {
         try {
             var zone = ZoneId.of(zoneId);
@@ -31,6 +32,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
         return null;
     }
 
+    @JsonIgnore
     public LocalTime getFromTime() {
         try {
             var zone = ZoneId.of(zoneId);
@@ -41,6 +43,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
         return null;
     }
 
+    @JsonIgnore
     public LocalDate getToDate() {
         try {
             var zone = ZoneId.of(zoneId);
@@ -51,6 +54,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
         return null;
     }
 
+    @JsonIgnore
     public LocalTime getToTime() {
         try {
             var zone = ZoneId.of(zoneId);
@@ -61,6 +65,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
         return null;
     }
 
+    @JsonIgnore
     public LocalDateTime getFrom(String zoneId) {
         ZoneId zone = null;
         try {
@@ -72,6 +77,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
         return MyDateTime.toLocalDateTime(this.from, zone);
     }
 
+    @JsonIgnore
     public LocalDateTime getTo(String zoneId) {
         ZoneId zone = null;
         try {

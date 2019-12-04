@@ -1,12 +1,12 @@
 package com.sybd.znld.oauth2.core;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindingResult;
 
+@Slf4j
 public class ApiResult {
-    private static Logger log = LoggerFactory.getLogger(ApiResult.class);
-
     public int code;
     public String msg;
     public Object json;

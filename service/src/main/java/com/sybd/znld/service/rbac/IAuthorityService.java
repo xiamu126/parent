@@ -1,4 +1,4 @@
-package com.sybd.znld.oauth2.service;
+package com.sybd.znld.service.rbac;
 
 import com.sybd.znld.model.rbac.*;
 import com.sybd.znld.model.rbac.dto.AuthPackByUser;

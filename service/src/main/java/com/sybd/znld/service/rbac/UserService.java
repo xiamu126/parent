@@ -23,7 +23,6 @@ import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.service.BaseService;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;

@@ -18,6 +18,7 @@ public abstract class Command implements IValidForDBInsert, IStrategyMessage {
     @JsonProperty("organ_id")
     public String organId;
 
+    @JsonIgnore
     @Override
     public boolean isValidForInsert() {
         if (this.targets == null || this.targets.isEmpty()) {

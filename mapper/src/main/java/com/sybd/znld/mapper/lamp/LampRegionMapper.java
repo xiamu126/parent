@@ -10,5 +10,6 @@ import org.apache.ibatis.annotations.Param;
 public interface LampRegionMapper {
     int insert(LampRegionModel model);
     LampRegionModel selectById(String id);
+    LampRegionModel selectByLampId(String id);
     LampRegionModel selectByLampIdAndRegionId(@Param("lampId") String lampId, @Param("regionId") String regionId);
 }

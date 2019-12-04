@@ -16,9 +16,6 @@ public class MyRedisTokenStore extends RedisTokenStore {
         super(connectionFactory);
     }
 
-    @Autowired
-    private RedissonClient redissonClient;
-
     @Override
     public OAuth2AccessToken getAccessToken(OAuth2Authentication authentication) {
         var token = super.getAccessToken(authentication);

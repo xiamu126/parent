@@ -20,28 +20,21 @@ import javax.sql.DataSource;
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
-    private final RedisConnectionFactory redisConnectionFactory;
     private final AuthenticationManager authenticationManager;
     private final DataSource dataSource;
     private final MyUserDetailsService userDetailsService;
+    private final MyRedisTokenStore tokenStore;
 
     @Autowired
-    public AuthorizationServerConfig(@Qualifier("redissonConnectionFactory") RedisConnectionFactory connectionFactory,
-                                     AuthenticationManager authenticationManager,
-                                     DataSource dataSource, MyUserDetailsService userDetailsService) {
-        this.redisConnectionFactory = connectionFactory;
+    public AuthorizationServerConfig(AuthenticationManager authenticationManager,
+                                     @Qualifier("oauthDataSource") DataSource dataSource,
+                                     MyUserDetailsService userDetailsService,
+                                     MyRedisTokenStore tokenStore) {
         this.authenticationManager = authenticationManager;
         this.dataSource = dataSource;
         this.userDetailsService = userDetailsService;
+        this.tokenStore = tokenStore;
     }
-
-    /*@Bean
-    public RedisTokenStore tokenStore(){
-        return new RedisTokenStore(redisConnectionFactory);
-    }*/
-
-    @Autowired
-    private MyRedisTokenStore tokenStore;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security){

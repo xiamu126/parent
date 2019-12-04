@@ -211,7 +211,8 @@ public class DataPushController {
                         news.value = lng + "," + lat;
                         news.at = MyDateTime.toTimestamp(rawData.at);
                         PositionHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-                    } catch (JsonProcessingException ignored) { }
+                    } catch (JsonProcessingException ignored) {
+                    }
                 }
             }
         } else {

@@ -2,6 +2,7 @@ package com.sybd.znld.model.lamp;
 
 import com.sybd.znld.model.IValidForDBInsert;
 import com.sybd.znld.model.Status;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,6 +38,12 @@ public class LampModel implements Serializable, IValidForDBInsert {
         if(!MyString.isEmptyOrNull(this.longitude) && MyString.isEmptyOrNull(this.latitude)){
             return false;
         }
-        return !MyString.isAnyEmptyOrNull(this.apiKey, this.deviceId.toString(), this.imei, this.deviceName);
+        if(!MyNumber.isPositive(this.deviceId)) {
+            return false;
+        }
+        if(!MyString.isUuid(this.id)) {
+            return false;
+        }
+        return !MyString.isAnyEmptyOrNull(this.apiKey, this.imei, this.deviceName);
     }
 }

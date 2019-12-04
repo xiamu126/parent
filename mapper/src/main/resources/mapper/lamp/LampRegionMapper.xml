@@ -2,9 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.LampRegionMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampRegionModel">
-        <selectKey keyProperty="id" resultType="string" order="BEFORE">
-            select replace(uuid(), '-', ''); <!--设置了这个之后自动绑定id这个值，就算你在model里设置了id，用的还是这里这个id-->
-        </selectKey>
         insert into lamp_region(id, lamp_id, region_id) values(#{id}, #{lampId}, #{regionId});
     </insert>
 
@@ -14,5 +11,9 @@
 
     <select id="selectByLampIdAndRegionId" resultType="com.sybd.znld.model.lamp.LampRegionModel">
         select * from lamp_region where lamp_id = #{lampId} and region_id = #{regionId};
+    </select>
+
+    <select id="selectByLampId" resultType="com.sybd.znld.model.lamp.LampRegionModel">
+        select * from lamp_region where lamp_id = #{lampId};
     </select>
 </mapper>

@@ -4,9 +4,11 @@ import com.sybd.znld.light.controller.dto.BaseStrategy;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,18 +38,10 @@ public class AopConfig {
     public Object around(ProceedingJoinPoint proceedingJoinPoint){
         return executeAopAround(proceedingJoinPoint);
     }
-
-    private Object executeAopAround(ProceedingJoinPoint proceedingJoinPoint) {
-        var args = proceedingJoinPoint.getArgs();
-        String requestId = null;
+    @Before("checkControllerParam()")
+    public void before(JoinPoint joinPoint){
+        var args = joinPoint.getArgs();
         for(var arg : args){
-            if(arg instanceof BindingResult){
-                var bindingResult = (BindingResult) arg;
-                if (bindingResult.hasErrors()) return BaseApiResult.fail("非法的参数");
-            }
-            if(arg instanceof HttpServletRequest){
-                var request = (HttpServletRequest)arg;
-            }
             if(BaseStrategy.class.isAssignableFrom(arg.getClass())){
                 if(!MyString.isEmptyOrNull(this.projectConfig.zoneId) &&
                         ZoneId.getAvailableZoneIds().contains(this.projectConfig.zoneId)){
@@ -55,6 +49,17 @@ public class AopConfig {
                     s.zoneId = this.projectConfig.zoneId;
                 }
             }
+        }
+    }
+
+    private Object executeAopAround(ProceedingJoinPoint proceedingJoinPoint) {
+        var args = proceedingJoinPoint.getArgs();
+        for(var arg : args){
+            if(arg instanceof BindingResult){
+                var bindingResult = (BindingResult) arg;
+                if (bindingResult.hasErrors()) return BaseApiResult.fail("非法的参数");
+            }
+            if(arg instanceof HttpServletRequest){ }
         }
         try {
             return proceedingJoinPoint.proceed();

@@ -30,11 +30,11 @@ public class OneNetResourceModel implements Serializable {
     }
 
     public static class Type{
-        public static final short Command = 0;
-        public static final short Value = 1;
-        public static final short Unit = 2;
-        public static final short State = 3;
-        public static final short Other = 4;
+        public static final int Command = 0;
+        public static final int Value = 1;
+        public static final int Unit = 2;
+        public static final int State = 3;
+        public static final int Other = 4;
 
         public static boolean isValid(int v){
             switch (v){

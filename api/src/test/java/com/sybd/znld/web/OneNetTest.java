@@ -88,7 +88,6 @@ public class OneNetTest {
     @Test
     public void test(){
         var param = new CommandParams();
-        param.deviceId = 522756040;
         param.imei = "868194030003265";
         param.oneNetKey = OneNetKey.from("3311_0_5706");
         param.command = "{\"s\":[{\"v\":1,\"t\":10},{\"v\":1,\"t\":10},{\"v\":1,\"t\":10}]}";

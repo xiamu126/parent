@@ -15,20 +15,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class AppStartupRunner implements ApplicationRunner {
-    private final BaseService baseService;
 
     @Autowired
-    public AppStartupRunner(CacheManager cacheManager,
-                            TaskScheduler taskScheduler,
-                            ProjectConfig projectConfig,
-                            RedissonClient redissonClient,
-                            ObjectMapper objectMapper) {
-        this.baseService = new BaseService(cacheManager, taskScheduler, projectConfig, redissonClient, objectMapper);
+    public AppStartupRunner() {
     }
 
     @Override
     public void run(ApplicationArguments args){
         log.debug("执行程序启动初始化任务");
-        this.baseService.removeAllCache();
     }
 }

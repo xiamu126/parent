@@ -6,6 +6,8 @@ import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.model.ApiResult;
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.Pair;
 import com.sybd.znld.model.StrategyStatus;
 import com.sybd.znld.model.lamp.*;
@@ -77,20 +79,34 @@ public class StrategyService implements IStrategyService {
         this.userMapper = userMapper;
     }
 
+    @Override
+    public void terminateStrategy(String id) {
+        try {
+            if (!MyString.isUuid(id)) return;
+            var s = this.strategyMapper.selectById(id);
+            if (s == null) return;
+            if(s.status == StrategyStatus.READY) { // 已经发送到硬件那里的策略是不能终止的
+                s.status = StrategyStatus.TERMINATED;
+                this.strategyMapper.update(s);
+            }
+        } catch (Exception ignored) {}
+    }
+
     @Transactional(transactionManager = "znldTransactionManager")
     @Override
-    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampStrategy(LampStrategy strategy) {
+    public ApiResult newLampStrategy(LampStrategy strategy) {
         try {
-            if(this.isLampParamError(strategy)){
-                return null;
+            if (this.isLampParamError(strategy)) {
+                return ApiResult.fail("参数错误");
             }
-            var from = strategy.getFrom(this.projectConfig.zoneId);
-            var to = strategy.getTo(this.projectConfig.zoneId);
+            // 判断下指定的开始结束时间是否和已有的策略有冲突；所谓冲突，即开始时间不能一样
+            var from = strategy.getFrom();
+            var to = strategy.getTo();
             var fromDate = from.toLocalDate();
             var fromTime = from.toLocalTime();
             var toDate = to.toLocalDate();
             var toTime = to.toLocalTime();
-            // 保存下发记录
+            // 首先，保存策略
             var s = new StrategyModel();
             s.name = strategy.name;
             s.fromDate = fromDate;
@@ -110,7 +126,7 @@ public class StrategyService implements IStrategyService {
                         lampStrategyTarget.targetType = target.target;
                         if (this.strategyTargetMapper.insert(lampStrategyTarget) <= 0) {
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return null;
+                            return ApiResult.fail("发生错误");
                         }
                     }
                 }
@@ -118,7 +134,6 @@ public class StrategyService implements IStrategyService {
                 if (strategy.points != null && strategy.points.size() > 0) {
                     for (var p : strategy.points) {
                         var dateTime = MyDateTime.toLocalDateTime(p.time);
-                        assert dateTime != null; // 不可能为空，前面已经判断了
                         var time = dateTime.toLocalTime();
                         var lampStrategyPoint = new StrategyPointModel();
                         lampStrategyPoint.strategyId = s.id;
@@ -126,21 +141,37 @@ public class StrategyService implements IStrategyService {
                         lampStrategyPoint.at = time;
                         if (this.strategyPointMapper.insert(lampStrategyPoint) <= 0) { // 保存策略关联的时间点
                             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return null;
+                            return ApiResult.fail("发生错误");
                         }
                     }
                 }
             }
-            // 发送到onenet
-            var map = this.sendToLamp(strategy);
-            if (map == null) {
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            // 如果是即时命令，直接下面onenet
+            var isImmediate = strategy.isImmediate();
+            if(isImmediate != null && isImmediate) {
+                var map = this.sendToLamp(strategy); // 发送到硬件失败不触发事务回滚
+                // 把失败的过滤出来
+                if(map != null) {
+                    for(var e : map.entrySet()) {
+                        var v = e.getValue();
+                        if(v != null) {
+                            v.removeIf(p -> {
+                                if(p.two.errno == 0) {
+                                    log.debug("从结果集中删除成功的结果，策略对象类型为["+e.getKey()+"]，路灯id为["+p.one+"]");
+                                }
+                                return p.two.errno == 0;
+                            });
+                        }
+                    }
+                    // 针对部分成功部分失败的处理
+                }
+                return ApiResult.success("", map);
             }
-            return map;
+            return ApiResult.success("");
         } catch (Exception ex) {
             log.error(ExceptionUtils.getStackTrace(ex));
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return null;
+            return ApiResult.fail("发生错误");
         }
     }
 
@@ -162,7 +193,7 @@ public class StrategyService implements IStrategyService {
         return this.getLampStrategies(strategies);
     }
 
-    private  ArrayList<LampStrategy> getLampStrategies(List<StrategyModel> strategies) {
+    private ArrayList<LampStrategy> getLampStrategies(List<StrategyModel> strategies) {
         if (strategies == null || strategies.isEmpty()) return null;
         var list = new ArrayList<LampStrategy>(strategies.size());
         for (var s : strategies) {
@@ -249,15 +280,15 @@ public class StrategyService implements IStrategyService {
             }
             var singles = new ArrayList<Pair<String, BaseResult>>();
             var regions = new ArrayList<Pair<String, BaseResult>>();
-            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
-            map.put(Target.SINGLE, singles);
-            map.put(Target.REGION, regions);
             for (var pair : singleResults) {
                 singles.add(new Pair<>(pair.one, pair.two.get()));
             }
             for (var pair : regionResults) {
                 regions.add(new Pair<>(pair.one, pair.two.get()));
             }
+            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
+            map.put(Target.SINGLE, singles);
+            map.put(Target.REGION, regions);
             return map;
         } catch (Exception ex) {
             log.error(ex.getMessage());
@@ -302,31 +333,31 @@ public class StrategyService implements IStrategyService {
             }
             var singles = new ArrayList<Pair<String, BaseResult>>();
             var regions = new ArrayList<Pair<String, BaseResult>>();
-            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
-            map.put(Target.SINGLE, singles);
-            map.put(Target.REGION, regions);
             for (var pair : singleResults) {
                 singles.add(new Pair<>(pair.one, pair.two.get()));
             }
             for (var pair : regionResults) {
                 regions.add(new Pair<>(pair.one, pair.two.get()));
             }
+            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
+            map.put(Target.SINGLE, singles);
+            map.put(Target.REGION, regions);
             return map;
         } catch (Exception ex) {
             log.error(ex.getMessage());
             log.error(ExceptionUtils.getStackTrace(ex));
+            return null;
         }
-        return null;
     }
 
     @Override
     public Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxStrategy(BoxStrategy strategy) {
         try {
-            if(this.isBoxParamError(strategy)){
+            if (this.isBoxParamError(strategy)) {
                 return null;
             }
-            var from = strategy.getFrom(this.projectConfig.zoneId);
-            var to = strategy.getTo(this.projectConfig.zoneId);
+            var from = strategy.getFrom();
+            var to = strategy.getTo();
             var fromDate = from.toLocalDate();
             var fromTime = from.toLocalTime();
             var toDate = to.toLocalDate();
@@ -410,7 +441,7 @@ public class StrategyService implements IStrategyService {
     @Override
     public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManual(ManualStrategy strategy) {
         try {
-            if(this.isLampParamError(strategy)){
+            if (this.isLampParamError(strategy)) {
                 return null;
             }
             // 直接发送到onenet
@@ -425,7 +456,7 @@ public class StrategyService implements IStrategyService {
     @Override
     public Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxManual(ManualStrategy strategy) {
         try {
-            if(this.isBoxParamError(strategy)){
+            if (this.isBoxParamError(strategy)) {
                 return null;
             }
             // 直接发送到onenet
@@ -437,7 +468,7 @@ public class StrategyService implements IStrategyService {
         }
     }
 
-    private boolean isBoxParamError(Command cmd){
+    private boolean isBoxParamError(Command cmd) {
         if (cmd == null) {
             log.debug("传参为空");
             return true;
@@ -477,7 +508,7 @@ public class StrategyService implements IStrategyService {
         return false;
     }
 
-    private boolean isLampParamError(Command cmd){
+    private boolean isLampParamError(Command cmd) {
         if (cmd == null) {
             log.debug("传参为空");
             return true;
@@ -520,7 +551,7 @@ public class StrategyService implements IStrategyService {
     @Override
     public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManualBrightness(ManualBrightnessStrategy strategy) {
         try {
-            if(this.isLampParamError(strategy)){
+            if (this.isLampParamError(strategy)) {
                 return null;
             }
             // 直接发送到onenet
@@ -535,21 +566,21 @@ public class StrategyService implements IStrategyService {
     @Override
     public void processPendingStrategy(String organId) {
         ZoneId zone = ZoneId.systemDefault();
-        if(!MyString.isEmptyOrNull(this.projectConfig.zoneId)) {
+        if (!MyString.isEmptyOrNull(this.projectConfig.zoneId)) {
             zone = ZoneId.of(this.projectConfig.zoneId);
         }
         var strategies = this.getLampStrategies(organId, StrategyStatus.READY);
         var now = LocalDate.now(zone);
-        for(var strategy : strategies) {
+        for (var strategy : strategies) {
             var model = this.strategyMapper.selectById(strategy.id);
-            if(model.toDate.isBefore(now)) {
-                log.debug("这个id["+strategy.id+"]的策略已经过期，关闭");
+            if (model.toDate.isBefore(now)) {
+                log.debug("这个id[" + strategy.id + "]的策略已经过期，关闭");
                 model.status = StrategyStatus.EXPIRED; // 已经过期关闭这条记录
                 this.strategyMapper.update(model);
             }
-            //log.debug(Period.between(model.fromDate, now).getDays());
-            if(Period.between(model.fromDate, now).getDays() <= 1) { // 如果开始日期距离现在小于等于1天，是时候发送到硬件了
-                log.debug("这个id["+strategy.id+"]的策略距离开始日期小于等于1天，将策略下发到硬件，并更新策略状态");
+            var days = Period.between(model.fromDate, now).getDays();
+            if (Math.abs(days) <= 1) { // 如果开始日期距离现在小于等于1天（可能超过1天了也可能还差1天），是时候发送到硬件了
+                log.debug("这个id[" + strategy.id + "]的策略距离开始日期小于等于1天，将策略下发到硬件，并更新策略状态");
                 // 通过onenet发送
                 this.sendToLamp(strategy);
                 // 把状态更新为正在运行

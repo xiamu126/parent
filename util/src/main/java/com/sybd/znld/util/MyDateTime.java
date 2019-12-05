@@ -90,13 +90,9 @@ public final class MyDateTime {
 
     // 时间戳转换为本地时间
     public static LocalDateTime toLocalDateTime(Long timestamp){
-        try{
-            var instant = Instant.ofEpochMilli(timestamp);
-            var zoneId = ZoneId.systemDefault();
-            return LocalDateTime.ofInstant(instant, zoneId);
-        }catch (Exception ex){
-            return null;
-        }
+        var instant = Instant.ofEpochMilli(timestamp);
+        var zoneId = ZoneId.systemDefault();
+        return LocalDateTime.ofInstant(instant, zoneId);
     }
 
     public static LocalDateTime toLocalDateTime(Long timestamp, ZoneOffset zoneOffset){

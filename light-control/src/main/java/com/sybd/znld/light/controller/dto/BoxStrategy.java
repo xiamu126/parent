@@ -17,13 +17,6 @@ import java.util.ArrayList;
 public class BoxStrategy extends BaseStrategy {
     @Override
     public Message toMessage() {
-        ZoneId zone = null;
-        try {
-            zone = ZoneId.of(zoneId);
-        } catch (Exception ex) {
-            log.debug(ex.getMessage());
-            zone = ZoneId.systemDefault();
-        }
         var list = new ArrayList<Message.Pair>();
         var fromTime = this.getFromTime();
         var toTime = this.getToTime();

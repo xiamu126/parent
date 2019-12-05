@@ -26,13 +26,6 @@ public class LampStrategy extends BaseStrategy {
 
     @Override
     public Message toMessage() {
-        ZoneId zone = null;
-        try {
-            zone = ZoneId.of(zoneId);
-        } catch (Exception ex) {
-            log.debug(ex.getMessage());
-            zone = ZoneId.systemDefault();
-        }
         var list = new ArrayList<Message.Pair>();
         var fromTime = this.getFromTime();
         var toTime = this.getToTime();
@@ -44,14 +37,14 @@ public class LampStrategy extends BaseStrategy {
         // 以上添加了开关灯时间点，下面继续添加时间点亮度和时间区间亮度
         if (this.points != null) {
             for (var p : this.points) {
-                var time = MyDateTime.toLocalDateTime(p.time, zone).toLocalTime();
+                var time = MyDateTime.toLocalDateTime(p.time).toLocalTime();
                 seconds = Duration.between(LocalTime.of(0, 0, 0), time).getSeconds();
                 list.add(new Message.Pair(p.brightness, seconds)); // 这个时间点照明灯的亮度为这个
             }
         }
         if (this.sections != null) {
             for (var s : this.sections) {
-                var time = MyDateTime.toLocalDateTime(s.from, zone).toLocalTime();
+                var time = MyDateTime.toLocalDateTime(s.from).toLocalTime();
                 seconds = Duration.between(LocalTime.of(0, 0, 0), time).getSeconds();
                 list.add(new Message.Pair(s.brightness, seconds)); // 这个时间点照明灯的亮度为这个
             }
@@ -60,14 +53,7 @@ public class LampStrategy extends BaseStrategy {
     }
 
     @Override
-    public boolean isValidForInsert(String zoneId) {
-        ZoneId zone = null;
-        try {
-            zone = ZoneId.of(zoneId);
-        } catch (Exception ex) {
-            log.debug(ex.getMessage());
-            zone = ZoneId.systemDefault();
-        }
+    public boolean isValidForInsert() {
         var theBeginTime = this.getFromTime();
         var theEndTime = this.getToTime();
         if (theBeginTime == null || theEndTime == null) return false;
@@ -75,7 +61,7 @@ public class LampStrategy extends BaseStrategy {
         if (this.points != null && !this.points.isEmpty()) {
             for (var p : this.points) {
                 try {
-                    var dateTime = MyDateTime.toLocalDateTime(p.time, zone);
+                    var dateTime = MyDateTime.toLocalDateTime(p.time);
                     var time = dateTime.toLocalTime();
                     if (time.isBefore(theBeginTime) || time.isAfter(theEndTime)) {
                         log.debug("时间点[" + p.time + "]不在指定的开始结束区间内[" + theBeginTime + "," + theEndTime + "]");
@@ -96,8 +82,8 @@ public class LampStrategy extends BaseStrategy {
         if (this.sections != null && !this.sections.isEmpty()) {
             for (var s : this.sections) {
                 try {
-                    var from = MyDateTime.toLocalDateTime(s.from, zone);
-                    var to = MyDateTime.toLocalDateTime(s.to, zone);
+                    var from = MyDateTime.toLocalDateTime(s.from);
+                    var to = MyDateTime.toLocalDateTime(s.to);
                     var beginTime = from.toLocalTime();
                     var endTime = to.toLocalTime();
                     if (beginTime.isAfter(endTime)) {
@@ -122,7 +108,7 @@ public class LampStrategy extends BaseStrategy {
                 }
             }
         }
-        return super.isValidForInsert(zoneId);
+        return super.isValidForInsert();
     }
 
     @NoArgsConstructor

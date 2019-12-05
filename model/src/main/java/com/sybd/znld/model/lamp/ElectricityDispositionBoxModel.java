@@ -1,14 +1,13 @@
 package com.sybd.znld.model.lamp;
 
 import com.sybd.znld.model.DeviceStatus;
-import com.sybd.znld.model.IValidForDBInsert;
-import com.sybd.znld.model.Status;
+import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 
 import java.util.UUID;
 
-public class ElectricityDispositionBoxModel implements IValidForDBInsert {
+public class ElectricityDispositionBoxModel implements IValidForDbInsert {
     public String id = UUID.randomUUID().toString().replace("-","");
     public String apiKey;
     public Integer deviceId;

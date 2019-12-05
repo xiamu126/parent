@@ -1,7 +1,6 @@
 package com.sybd.znld.model.rbac;
 
-import com.sybd.znld.model.IValidForDBInsert;
-import com.sybd.znld.model.Status;
+import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter @Setter
-public class UserModel implements Serializable, IValidForDBInsert {
+public class UserModel implements Serializable, IValidForDbInsert {
     public String id = UUID.randomUUID().toString().replace("-","");
     public String name;
     public String password;

@@ -1,6 +1,7 @@
 package com.sybd.znld.light.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.model.IValidForDbInsertWithZoneId;
 import com.sybd.znld.model.lamp.IStrategyMessage;
 import com.sybd.znld.model.lamp.dto.Message;
@@ -13,20 +14,23 @@ import java.time.*;
 
 @Slf4j
 @ToString
-public abstract class BaseStrategy extends Command implements IValidForDbInsertWithZoneId {
+public abstract class BaseStrategy extends Command {
     public String name; // 策略的名称
     public Long from; // 时间统一以时间戳，这个时间戳里包含日和时
     public Long to;
     public String id;
 
     @JsonIgnore
-    public String zoneId = ZoneId.systemDefault().getId(); // aop会将配置文件中定义的时区覆盖这个默认值
+    public Boolean isImmediate() {
+        var from = this.getFromDate();
+        if(from == null) return null;
+        return from.isBefore(LocalDate.now()); // 如果开始时间为过去时间则认为这是一条即时命令
+    }
 
     @JsonIgnore
     public LocalDate getFromDate() {
         try {
-            var zone = ZoneId.of(zoneId);
-            var dateTime = MyDateTime.toLocalDateTime(this.from, zone);
+            var dateTime = MyDateTime.toLocalDateTime(this.from);
             return dateTime.toLocalDate();
         } catch (Exception ignored) {
         }
@@ -36,8 +40,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
     @JsonIgnore
     public LocalTime getFromTime() {
         try {
-            var zone = ZoneId.of(zoneId);
-            var dateTime = MyDateTime.toLocalDateTime(this.from, zone);
+            var dateTime = MyDateTime.toLocalDateTime(this.from);
             return dateTime.toLocalTime();
         } catch (Exception ignored) {
         }
@@ -47,8 +50,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
     @JsonIgnore
     public LocalDate getToDate() {
         try {
-            var zone = ZoneId.of(zoneId);
-            var dateTime = MyDateTime.toLocalDateTime(this.to, zone);
+            var dateTime = MyDateTime.toLocalDateTime(this.to);
             return dateTime.toLocalDate();
         } catch (Exception ignored) {
         }
@@ -58,8 +60,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
     @JsonIgnore
     public LocalTime getToTime() {
         try {
-            var zone = ZoneId.of(zoneId);
-            var dateTime = MyDateTime.toLocalDateTime(this.to, zone);
+            var dateTime = MyDateTime.toLocalDateTime(this.to);
             return dateTime.toLocalTime();
         } catch (Exception ignored) {
         }
@@ -67,38 +68,30 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
     }
 
     @JsonIgnore
-    public LocalDateTime getFrom(String zoneId) {
-        ZoneId zone = null;
+    public LocalDateTime getFrom() {
         try {
-            zone = ZoneId.of(zoneId);
-        } catch (Exception ex) {
-            log.debug(ex.getMessage());
-            zone = ZoneId.systemDefault();
-        }
-        return MyDateTime.toLocalDateTime(this.from, zone);
+            return MyDateTime.toLocalDateTime(this.from);
+        } catch (Exception ignored) {}
+        return null;
     }
 
     @JsonIgnore
-    public LocalDateTime getTo(String zoneId) {
-        ZoneId zone = null;
+    public LocalDateTime getTo() {
         try {
-            zone = ZoneId.of(zoneId);
-        } catch (Exception ex) {
-            log.debug(ex.getMessage());
-            zone = ZoneId.systemDefault();
-        }
-        return MyDateTime.toLocalDateTime(this.to, zone);
+            return MyDateTime.toLocalDateTime(this.to);
+        } catch (Exception ignored) {}
+        return null;
     }
 
     @Override
-    public boolean isValidForInsert(String zoneId) {
+    public boolean isValidForInsert() {
         try {
             if (MyString.isEmptyOrNull(name)) {// 策略名称可以重复
                 log.debug("策略名字非法");
                 return false;
             }
-            var from = this.getFrom(zoneId);
-            var to = this.getTo(zoneId);
+            var from = this.getFrom();
+            var to = this.getTo();
             if (to.isBefore(LocalDateTime.now())) {
                 log.debug("指定的截止日期[" + MyDateTime.toString(to, MyDateTime.FORMAT4) + "]为过去日期");
                 return false;

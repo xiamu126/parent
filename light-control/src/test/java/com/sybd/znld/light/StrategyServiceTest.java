@@ -157,4 +157,22 @@ public class StrategyServiceTest {
     public void test12() {
         this.strategyService.processPendingStrategy("88cc4ad365d9493f85db160b336c8414");
     }
+
+    // 测试下发立即执行照明灯策略
+    @Test
+    public void test13() {
+        var strategy = new LampStrategy();
+        var strategyTarget = new StrategyTarget();
+        strategyTarget.ids = List.of("10bb23399d3611e995980242c0a8b008", "3a991b715c3911e98edc0242ac110007", "3acb80545c3911e98edc0242ac110007");
+        strategyTarget.target = Target.SINGLE;
+        strategy.targets = List.of(strategyTarget);
+        strategy.name = "照明灯策略测试20191205";
+        strategy.from = MyDateTime.toTimestamp("2019-01-01 17:00:00", MyDateTime.FORMAT1);
+        strategy.to = MyDateTime.toTimestamp("2020-01-10 06:00:00", MyDateTime.FORMAT1);
+        strategy.brightness = 100;
+        strategy.userId = "f1182e182aac4beb818559b5f47c176a";
+        strategy.organId = "88cc4ad365d9493f85db160b336c8414";
+        var map = this.strategyService.newLampStrategy(strategy);
+        Assert.assertNotNull(map);
+    }
 }

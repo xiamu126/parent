@@ -1,5 +1,5 @@
 package com.sybd.znld.model;
 
-public interface IValidForDBInsert {
+public interface IValidForDbInsert {
     boolean isValidForInsert();
 }

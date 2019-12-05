@@ -1,9 +1,7 @@
 package com.sybd.znld.light.service;
 
 import com.sybd.znld.light.controller.dto.*;
-import com.sybd.znld.model.Pair;
-import com.sybd.znld.model.Status;
-import com.sybd.znld.model.StrategyStatus;
+import com.sybd.znld.model.*;
 import com.sybd.znld.model.lamp.Target;
 import com.sybd.znld.model.onenet.dto.BaseResult;
 
@@ -13,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 public interface IStrategyService {
+    // 终止某个待执行的策略
+    void terminateStrategy(String id);
     // 下发照明灯策略并保存记录
-    Map<Target, ArrayList<Pair<String, BaseResult>>> newLampStrategy(LampStrategy strategy);
+    ApiResult newLampStrategy(LampStrategy strategy);
     // 获取某个组织下的所有照明灯策略
     List<LampStrategy> getLampStrategies(String organId);
     // 获取某个组织下的特定状态的所有照明灯策略

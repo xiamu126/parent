@@ -1,12 +1,12 @@
 package com.sybd.znld.model.rbac;
 
-import com.sybd.znld.model.IValidForDBInsert;
+import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.model.Status;
 import com.sybd.znld.util.MyString;
 
 import java.util.UUID;
 
-public class OperationModel implements IValidForDBInsert {
+public class OperationModel implements IValidForDbInsert {
     public String id = UUID.randomUUID().toString().replace("-","");
     public String name;
     public String path;

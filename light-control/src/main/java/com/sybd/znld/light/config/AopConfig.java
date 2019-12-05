@@ -46,7 +46,6 @@ public class AopConfig {
                 if(!MyString.isEmptyOrNull(this.projectConfig.zoneId) &&
                         ZoneId.getAvailableZoneIds().contains(this.projectConfig.zoneId)){
                     var s = (BaseStrategy) arg;
-                    s.zoneId = this.projectConfig.zoneId;
                 }
             }
         }

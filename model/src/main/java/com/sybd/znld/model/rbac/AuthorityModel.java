@@ -1,13 +1,13 @@
 package com.sybd.znld.model.rbac;
 
-import com.sybd.znld.model.IValidForDBInsert;
+import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.model.Status;
 import com.sybd.znld.util.MyString;
 
 import java.io.Serializable;
 import java.util.UUID;
 
-public class AuthorityModel implements Serializable, IValidForDBInsert {
+public class AuthorityModel implements Serializable, IValidForDbInsert {
     public String id = UUID.randomUUID().toString().replace("-","");
     public String name;
     public String organizationId;

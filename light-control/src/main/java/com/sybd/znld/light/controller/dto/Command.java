@@ -3,7 +3,7 @@ package com.sybd.znld.light.controller.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sybd.znld.model.IEnum;
-import com.sybd.znld.model.IValidForDBInsert;
+import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.model.lamp.IStrategyMessage;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 @Slf4j
-public abstract class Command implements IValidForDBInsert, IStrategyMessage {
+public abstract class Command implements IValidForDbInsert, IStrategyMessage {
     public List<StrategyTarget> targets; // 这个target可以是区域的集合或者单个设备的集合，至于是照明灯的id还是配电箱的id，由继承类决定
     @JsonProperty("user_id")
     public String userId; // 是谁新建这个策略的

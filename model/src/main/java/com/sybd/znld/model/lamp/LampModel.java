@@ -1,6 +1,6 @@
 package com.sybd.znld.model.lamp;
 
-import com.sybd.znld.model.IValidForDBInsert;
+import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 @Getter @Setter @ToString
-public class LampModel implements Serializable, IValidForDBInsert {
+public class LampModel implements Serializable, IValidForDbInsert {
     public String id = UUID.randomUUID().toString().replace("-","");
     public String apiKey;
     public Integer deviceId;

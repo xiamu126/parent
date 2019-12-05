@@ -6,6 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.environment.RealTimeData;
+import com.sybd.znld.model.lamp.LampBasicDataModel;
 import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
 import com.sybd.znld.onenet.websocket.handler.AngleHandler;
@@ -415,5 +416,12 @@ public class DataPushController {
         log.info("test");
         //this.jmsTemplate.convertAndSend("mailbox", "hello");
         return "ok";
+    }
+
+    public LampBasicDataModel rece(String body) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        body = body.replaceAll("'","\"");
+        LampBasicDataModel lpbd = mapper.readValue(body, LampBasicDataModel.class);
+        return lpbd;
     }
 }

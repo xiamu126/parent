@@ -1,7 +1,7 @@
 package com.sybd.znld.light;
 
 import com.sybd.znld.mapper.lamp.StrategyMapper;
-import com.sybd.znld.model.Status;
+import com.sybd.znld.model.StrategyStatus;
 import com.sybd.znld.model.lamp.StrategyModel;
 import com.sybd.znld.model.lamp.Strategy;
 import com.sybd.znld.model.onenet.OneNetKey;
@@ -109,7 +109,21 @@ public class StrategyMapperTest {
     @Test
     public void test8(){
         var id = "88cc4ad365d9493f85db160b336c8414";
-        var list = this.strategyMapper.selectByOrganIdTypeNotStatus(id, Strategy.LAMP, Status.LAMP_STRATEGY_EXPIRED);
+        var list = this.strategyMapper.selectByOrganIdTypeNotStatus(id, Strategy.LAMP, StrategyStatus.EXPIRED);
         Assert.assertNotNull(list);
+    }
+
+    @Test
+    public void test9() {
+        var ret = this.strategyMapper.selectByOrganIdTypeStatus("88cc4ad365d9493f85db160b336c8414", Strategy.LAMP, StrategyStatus.READY);
+        Assert.assertNotNull(ret);
+    }
+
+    @Test
+    public void test10() {
+        var begin = LocalDate.of(2019,1,1);
+        var end = LocalDate.of(2019,11,30);
+        var ret = this.strategyMapper.selectByOrganIdTypeStatusBetween("88cc4ad365d9493f85db160b336c8414", Strategy.LAMP, StrategyStatus.READY, begin, end);
+        Assert.assertNotNull(ret);
     }
 }

@@ -152,4 +152,9 @@ public class StrategyServiceTest {
                 "123b93dd012142ee82deb3558d8df055"), "d4db3d36cbb843ca863b46153954b8d0");
         Assert.assertTrue(ret);
     }
+
+    @Test
+    public void test12() {
+        this.strategyService.processPendingStrategy("88cc4ad365d9493f85db160b336c8414");
+    }
 }

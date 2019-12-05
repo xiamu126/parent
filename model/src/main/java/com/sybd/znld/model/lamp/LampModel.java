@@ -1,7 +1,7 @@
 package com.sybd.znld.model.lamp;
 
 import com.sybd.znld.model.IValidForDBInsert;
-import com.sybd.znld.model.Status;
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
@@ -20,7 +20,7 @@ public class LampModel implements Serializable, IValidForDBInsert {
     public String deviceName;
     public String longitude = "";
     public String latitude = "";
-    public Status status = Status.LAMP_OK;
+    public DeviceStatus status = DeviceStatus.OK;
     public Float xAngle = 0.0f;
     public Float yAngle = 0.0f;
     public Integer linkTo = 0;

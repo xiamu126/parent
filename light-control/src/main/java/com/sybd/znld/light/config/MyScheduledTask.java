@@ -31,7 +31,7 @@ public class MyScheduledTask {
     }
 
     @Async("TaskThreadPool")
-    @Scheduled(cron = "0 47 8 * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     public void test() {
         var lock = this.redissonClient.getLock(this.getClass().getName());
         if(lock.tryLock()) {
@@ -41,6 +41,8 @@ public class MyScheduledTask {
             }finally {
                 lock.forceUnlock();
             }
+        }else {
+            log.debug("获取锁失败");
         }
     }
 }

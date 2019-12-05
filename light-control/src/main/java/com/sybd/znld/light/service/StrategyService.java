@@ -7,6 +7,7 @@ import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.Pair;
+import com.sybd.znld.model.StrategyStatus;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.BaseResult;
@@ -14,6 +15,7 @@ import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.service.rbac.IUserService;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -148,12 +147,29 @@ public class StrategyService implements IStrategyService {
     @Override
     public List<LampStrategy> getLampStrategies(String organId) {
         var strategies = this.strategyMapper.selectByOrganIdType(organId, Strategy.LAMP);
+        return this.getLampStrategies(strategies);
+    }
+
+    @Override
+    public List<LampStrategy> getLampStrategies(String organId, StrategyStatus status) {
+        var strategies = this.strategyMapper.selectByOrganIdTypeStatus(organId, Strategy.LAMP, status);
+        return this.getLampStrategies(strategies);
+    }
+
+    @Override
+    public List<LampStrategy> getLampStrategies(String organId, StrategyStatus status, LocalDate begin, LocalDate end) {
+        var strategies = this.strategyMapper.selectByOrganIdTypeStatusBetween(organId, Strategy.LAMP, status, begin, end);
+        return this.getLampStrategies(strategies);
+    }
+
+    private  ArrayList<LampStrategy> getLampStrategies(List<StrategyModel> strategies) {
         if (strategies == null || strategies.isEmpty()) return null;
         var list = new ArrayList<LampStrategy>(strategies.size());
         for (var s : strategies) {
             var targets = this.strategyTargetMapper.selectByStrategyId(s.id); // 这个对象集合里头可能包含单个对象或者区域（街道）
             if (targets == null || targets.isEmpty()) continue;
             var tmp = new LampStrategy();
+            tmp.id = s.id;
             tmp.targets = new ArrayList<>();
             tmp.name = s.name;
             tmp.userId = s.userId;
@@ -513,6 +529,33 @@ public class StrategyService implements IStrategyService {
             log.error(ex.getMessage());
             log.error(ExceptionUtils.getStackTrace(ex));
             return null;
+        }
+    }
+
+    @Override
+    public void processPendingStrategy(String organId) {
+        ZoneId zone = ZoneId.systemDefault();
+        if(!MyString.isEmptyOrNull(this.projectConfig.zoneId)) {
+            zone = ZoneId.of(this.projectConfig.zoneId);
+        }
+        var strategies = this.getLampStrategies(organId, StrategyStatus.READY);
+        var now = LocalDate.now(zone);
+        for(var strategy : strategies) {
+            var model = this.strategyMapper.selectById(strategy.id);
+            if(model.toDate.isBefore(now)) {
+                log.debug("这个id["+strategy.id+"]的策略已经过期，关闭");
+                model.status = StrategyStatus.EXPIRED; // 已经过期关闭这条记录
+                this.strategyMapper.update(model);
+            }
+            //log.debug(Period.between(model.fromDate, now).getDays());
+            if(Period.between(model.fromDate, now).getDays() <= 1) { // 如果开始日期距离现在小于等于1天，是时候发送到硬件了
+                log.debug("这个id["+strategy.id+"]的策略距离开始日期小于等于1天，将策略下发到硬件，并更新策略状态");
+                // 通过onenet发送
+                this.sendToLamp(strategy);
+                // 把状态更新为正在运行
+                model.status = StrategyStatus.RUNNING;
+                this.strategyMapper.update(model);
+            }
         }
     }
 }

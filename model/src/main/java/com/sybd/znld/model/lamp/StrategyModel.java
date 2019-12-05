@@ -1,7 +1,6 @@
 package com.sybd.znld.model.lamp;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sybd.znld.model.Status;
+import com.sybd.znld.model.StrategyStatus;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,5 +17,5 @@ public class StrategyModel {
     public Strategy type;
     public String organizationId;
     public String userId;
-    public Status status = Status.LAMP_STRATEGY_READY;
+    public StrategyStatus status = StrategyStatus.READY;
 }

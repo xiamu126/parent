@@ -1,5 +1,6 @@
 package com.sybd.znld.model.lamp;
 
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.model.IValidForDBInsert;
 import com.sybd.znld.model.Status;
 import com.sybd.znld.util.MyNumber;
@@ -17,7 +18,7 @@ public class ElectricityDispositionBoxModel implements IValidForDBInsert {
     public Double rawLatitude;
     public Double lng;
     public Double lat;
-    public Status status = Status.OK;
+    public DeviceStatus status = DeviceStatus.OK;
 
     @Override
     public boolean isValidForInsert() {

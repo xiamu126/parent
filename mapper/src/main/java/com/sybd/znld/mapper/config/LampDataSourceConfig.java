@@ -1,7 +1,9 @@
 package com.sybd.znld.mapper.config;
 
 import com.sybd.znld.mapper.MyEnumTypeHandler;
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.model.Status;
+import com.sybd.znld.model.StrategyStatus;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -44,6 +46,8 @@ public class LampDataSourceConfig {
         bean.getConfiguration().setMapUnderscoreToCamelCase(true);
         var typeHandlerRegistry = bean.getConfiguration().getTypeHandlerRegistry();
         typeHandlerRegistry.register(Status.class, MyEnumTypeHandler.class);
+        typeHandlerRegistry.register(DeviceStatus.class, MyEnumTypeHandler.class);
+        typeHandlerRegistry.register(StrategyStatus.class, MyEnumTypeHandler.class);
         typeHandlerRegistry.setDefaultEnumTypeHandler(MyEnumTypeHandler.class);
         return bean;
     }

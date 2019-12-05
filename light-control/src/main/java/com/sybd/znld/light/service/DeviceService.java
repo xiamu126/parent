@@ -3,7 +3,9 @@ package com.sybd.znld.light.service;
 import com.sybd.znld.light.controller.dto.RegionBoxLamp;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.model.lamp.ElectricityDispositionBoxLampModel;
+import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
 import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.lamp.LampRegionModel;
 import com.sybd.znld.util.MyNumber;
@@ -86,13 +88,13 @@ public class DeviceService implements IDeviceService {
                 tmpBox.lat = MyNumber.getDouble(map.get("百度纬度"));
             }
             switch (box.status) {
-                case LAMP_OK:
+                case OK:
                     tmpBox.status = "正常";
                     break;
-                case LAMP_ERROR:
+                case ERROR:
                     tmpBox.status = "发生故障";
                     break;
-                case LAMP_DEAD:
+                case DEAD:
                     tmpBox.status = "报废了";
                     break;
                 default:
@@ -111,13 +113,13 @@ public class DeviceService implements IDeviceService {
                         tmpLamp.lat = MyNumber.getDouble(map.get("百度纬度"));
                     }
                     switch (lamp.status) {
-                        case LAMP_OK:
+                        case OK:
                             tmpBox.status = "正常";
                             break;
-                        case LAMP_ERROR:
+                        case ERROR:
                             tmpBox.status = "发生故障";
                             break;
-                        case LAMP_DEAD:
+                        case DEAD:
                             tmpBox.status = "报废了";
                             break;
                         default:
@@ -219,6 +221,11 @@ public class DeviceService implements IDeviceService {
         }
     }
 
+    @Override
+    public boolean insertAndAddBoxesToRegion(List<ElectricityDispositionBoxModel> boxes, String regionId) {
+        return false;
+    }
+
     @Transactional(transactionManager = "znldTransactionManager")
     @Override
     public boolean addLampsToRegion(List<String> ids, String regionId) {
@@ -261,6 +268,11 @@ public class DeviceService implements IDeviceService {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return false;
         }
+    }
+
+    @Override
+    public boolean addBoxesToRegion(List<String> ids, String regionId) {
+        return false;
     }
 
     @Override

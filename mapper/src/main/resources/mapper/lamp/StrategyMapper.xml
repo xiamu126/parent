@@ -23,6 +23,13 @@
     <select id="selectByOrganIdType" resultType="com.sybd.znld.model.lamp.StrategyModel">
         select * from strategy where organization_id = #{id} and type=#{type}
     </select>
+    <select id="selectByOrganIdTypeStatus" resultType="com.sybd.znld.model.lamp.StrategyModel">
+        select * from strategy where organization_id = #{id} and type=#{type} and status = #{status}
+    </select>
+    <select id="selectByOrganIdTypeStatusBetween" resultType="com.sybd.znld.model.lamp.StrategyModel">
+        select * from strategy
+        where organization_id = #{id} and type=#{type} and status = #{status} and from_date >= #{begin} and to_date <![CDATA[ <= ]]> #{end}
+    </select>
     <select id="selectByOrganIdTypeNotStatus" resultType="com.sybd.znld.model.lamp.StrategyModel">
         select * from strategy where organization_id = #{id} and type=#{type} and status != #{status}
     </select>

@@ -17,6 +17,7 @@ public abstract class BaseStrategy extends Command implements IValidForDbInsertW
     public String name; // 策略的名称
     public Long from; // 时间统一以时间戳，这个时间戳里包含日和时
     public Long to;
+    public String id;
 
     @JsonIgnore
     public String zoneId = ZoneId.systemDefault().getId(); // aop会将配置文件中定义的时区覆盖这个默认值

@@ -15,7 +15,6 @@ public class CommandParams{
     public OneNetKey oneNetKey;
     public Integer timeout;
     public String command;
-    public LocalDateTime expiredTime = LocalDateTime.now().plusMinutes(5); // 默认为5分钟后过期；
 
     public CommandParams(String imei, OneNetKey oneNetKey, String command){
         this.imei = imei;
@@ -34,12 +33,6 @@ public class CommandParams{
         if(timeout != null && timeout > 0){
             tmp = tmp +"&timeout="+this.timeout;
         }
-        return tmp;
-    }
-
-    public String toOfflineUrlString(){
-        var tmp = this.toUrlString();
-        tmp += "&expired_time=" + MyDateTime.format(expiredTime, MyDateTime.ISO8601);
         return tmp;
     }
 }

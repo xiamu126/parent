@@ -7,8 +7,8 @@ import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.ApiResult;
-import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.Pair;
+import com.sybd.znld.model.StrategyFailedStatus;
 import com.sybd.znld.model.StrategyStatus;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.onenet.OneNetKey;
@@ -49,6 +49,7 @@ public class StrategyService implements IStrategyService {
     private final OneNetResourceMapper oneNetResourceMapper;
     private final OrganizationMapper organizationMapper;
     private final UserMapper userMapper;
+    private final StrategyFailedMapper strategyFailedMapper;
 
     @Autowired
     public StrategyService(IUserService userService,
@@ -63,7 +64,8 @@ public class StrategyService implements IStrategyService {
                            IOneNetService oneNetService,
                            OneNetResourceMapper oneNetResourceMapper,
                            OrganizationMapper organizationMapper,
-                           UserMapper userMapper) {
+                           UserMapper userMapper,
+                           StrategyFailedMapper strategyFailedMapper) {
         this.userService = userService;
         this.strategyMapper = strategyMapper;
         this.strategyTargetMapper = strategyTargetMapper;
@@ -77,6 +79,7 @@ public class StrategyService implements IStrategyService {
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.organizationMapper = organizationMapper;
         this.userMapper = userMapper;
+        this.strategyFailedMapper = strategyFailedMapper;
     }
 
     @Override
@@ -164,6 +167,18 @@ public class StrategyService implements IStrategyService {
                         }
                     }
                     // 针对部分成功部分失败的处理
+                    for(var e : map.entrySet()) {
+                        var v = e.getValue();
+                        if(v != null) {
+                            v.forEach( p -> {
+                                log.debug("将失败的结果保存数据库，策略id为["+s.id+"]，路灯id为["+p.one+"]");
+                                var strategyFailedModel = new StrategyFailedModel();
+                                strategyFailedModel.strategyId = s.id;
+                                strategyFailedModel.targetId = p.one;
+                                this.strategyFailedMapper.insert(strategyFailedModel);
+                            });
+                        }
+                    }
                 }
                 return ApiResult.success("", map);
             }
@@ -441,7 +456,7 @@ public class StrategyService implements IStrategyService {
     @Override
     public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManual(ManualStrategy strategy) {
         try {
-            if (this.isLampParamError(strategy)) {
+            if (this.isCmdError(strategy)) {
                 return null;
             }
             // 直接发送到onenet
@@ -456,7 +471,7 @@ public class StrategyService implements IStrategyService {
     @Override
     public Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxManual(ManualStrategy strategy) {
         try {
-            if (this.isBoxParamError(strategy)) {
+            if (this.isCmdError(strategy)) {
                 return null;
             }
             // 直接发送到onenet
@@ -468,12 +483,12 @@ public class StrategyService implements IStrategyService {
         }
     }
 
-    private boolean isBoxParamError(Command cmd) {
+    private boolean isBoxParamError(BaseStrategy cmd) {
         if (cmd == null) {
             log.debug("传参为空");
             return true;
         }
-        if (!cmd.isValidForInsert()) {
+        if (!cmd.isValid()) {
             return true;
         }
         for (var t : cmd.targets) {
@@ -508,12 +523,20 @@ public class StrategyService implements IStrategyService {
         return false;
     }
 
-    private boolean isLampParamError(Command cmd) {
+    private boolean isCmdError(Command cmd) {
         if (cmd == null) {
             log.debug("传参为空");
             return true;
         }
-        if (!cmd.isValidForInsert()) {
+        return !cmd.isValid();
+    }
+
+    private boolean isLampParamError(BaseStrategy cmd) {
+        if (cmd == null) {
+            log.debug("传参为空");
+            return true;
+        }
+        if (!cmd.isValid()) {
             return true;
         }
         for (var t : cmd.targets) {
@@ -549,9 +572,9 @@ public class StrategyService implements IStrategyService {
     }
 
     @Override
-    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManualBrightness(ManualBrightnessStrategy strategy) {
+    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManualBrightness(ManualStrategy strategy) {
         try {
-            if (this.isLampParamError(strategy)) {
+            if (this.isCmdError(strategy)) {
                 return null;
             }
             // 直接发送到onenet
@@ -564,13 +587,11 @@ public class StrategyService implements IStrategyService {
     }
 
     @Override
-    public void processPendingStrategy(String organId) {
-        ZoneId zone = ZoneId.systemDefault();
-        if (!MyString.isEmptyOrNull(this.projectConfig.zoneId)) {
-            zone = ZoneId.of(this.projectConfig.zoneId);
-        }
+    public void processPendingStrategies(String organId) {
+        if(!MyString.isUuid(organId)) return;
         var strategies = this.getLampStrategies(organId, StrategyStatus.READY);
-        var now = LocalDate.now(zone);
+        if(strategies == null || strategies.isEmpty()) return;
+        var now = LocalDate.now();
         for (var strategy : strategies) {
             var model = this.strategyMapper.selectById(strategy.id);
             if (model.toDate.isBefore(now)) {
@@ -587,6 +608,44 @@ public class StrategyService implements IStrategyService {
                 model.status = StrategyStatus.RUNNING;
                 this.strategyMapper.update(model);
             }
+        }
+    }
+
+    @Override
+    public void processPendingStrategies() {
+        var organs = this.organizationMapper.selectAll();
+        if(organs != null && !organs.isEmpty()) {
+            var ids = organs.stream().map(o -> o.id).distinct().collect(Collectors.toList());
+            for(var id : ids) {
+                this.processPendingStrategies(id);
+            }
+        }
+    }
+
+    @Override
+    public void processFailedLamps(String organId) {
+        var s = this.strategyFailedMapper.selectByStatus(StrategyFailedStatus.TRYING);
+        if(s == null || s.isEmpty()) return;
+        var target = new StrategyTarget();
+        target.target = Target.SINGLE;
+        target.ids = s.stream().map(t -> t.targetId).collect(Collectors.toList());
+        for(var t : s) {
+            if(t.count >= 5) {
+                t.status = StrategyFailedStatus.TRYING_MAX_QUIT;
+                this.strategyFailedMapper.update(t);
+                continue;
+            }
+            var strategy = this.strategyMapper.selectById(t.strategyId);
+            var cmd = new LampStrategy();
+            cmd.userId = strategy.userId;
+            cmd.organId = strategy.organizationId;
+            cmd.from = MyDateTime.toTimestamp(LocalDateTime.of(strategy.fromDate, strategy.fromTime));
+            cmd.to = MyDateTime.toTimestamp(LocalDateTime.of(strategy.toDate, strategy.toTime));
+            cmd.name = strategy.name;
+            cmd.targets = List.of(target);
+            var ret = this.sendToLamp(cmd);
+            t.count = t.count + 1; // 更重试次数
+            this.strategyFailedMapper.update(t);
         }
     }
 }

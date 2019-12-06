@@ -50,6 +50,11 @@ public class DataPushController {
     private static String token = "abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
     private static String aeskey = "whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
 
+    private static final String REDIS_REALTIME_PREFIX = "com.sybd.znld.onenet.realtime.";
+    private String getRedisRealtimeKey(String imei) {
+        return REDIS_REALTIME_PREFIX + imei;
+    }
+
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     public DataPushController(JmsTemplate jmsTemplate,
@@ -119,7 +124,7 @@ public class DataPushController {
     }
 
     private void onOff(RawData rawData, String name) {
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
+        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -148,7 +153,7 @@ public class DataPushController {
             data.value = rawData.value;
             data.at = rawData.at;
             this.dataLocationMapper.insert(data); // 保存入数据库*/
-            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
+            var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
             var realTimeData = new RealTimeData();
             realTimeData.describe = name;
             realTimeData.value = rawData.value;
@@ -229,7 +234,7 @@ public class DataPushController {
         data.value = rawData.value;
         data.at = rawData.at;
         this.dataAngleMapper.insert(data); // 保存入数据库*/
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
+        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -257,7 +262,7 @@ public class DataPushController {
         data.at = rawData.at;
         this.dataEnvironmentMapper.insert(data); // // 环境数据需要保存入数据库
 
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
+        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -320,7 +325,7 @@ public class DataPushController {
                         log.debug("未知的设备状态");
                     }
                     if (rawData.deviceId != null) {
-                        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + rawData.deviceId);
+                        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
                         map.put("status", status);
                     }
                 }

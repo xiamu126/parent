@@ -9,6 +9,7 @@ public class RegionBoxLamp {
     public List<Box> boxes = new ArrayList<>();
 
     public static class Box {
+        public String id;
         public String imei; // 配电箱的imei
         public String name; // 配电箱的名称
         public Double lng; // 经度
@@ -17,6 +18,7 @@ public class RegionBoxLamp {
         public List<Lamp> lamps = new ArrayList<>();
 
         public static class Lamp {
+            public String id;
             public String imei; // 路灯的imei
             public String name; // 路灯的名称
             public Double lng; // 经度

@@ -2,13 +2,19 @@ package com.sybd.znld.light.controller;
 
 import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.model.BaseApiResult;
+import com.sybd.znld.model.Pair;
+import com.sybd.znld.model.lamp.Target;
+import com.sybd.znld.model.onenet.dto.BaseResult;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface ILightController {
     // 下发照明灯策略
@@ -20,11 +26,11 @@ public interface ILightController {
 
     // 手动打开关闭照明灯
     @PostMapping(value = "strategy/manual/lamp", produces = {MediaType.APPLICATION_JSON_VALUE})
-    BaseApiResult manualLampStrategy(@RequestBody ManualStrategy strategy);
+    Map<Target, List<OperationResult>> manualLampStrategy(@RequestBody ManualStrategy strategy);
 
     // 手动调整照明灯亮度
     @PostMapping(value = "strategy/manual/lamp/brightness", produces = {MediaType.APPLICATION_JSON_VALUE})
-    BaseApiResult manualLampBrightnessStrategy(@RequestBody ManualBrightnessStrategy strategy);
+    Map<Target, List<OperationResult>> manualLampBrightnessStrategy(@RequestBody ManualStrategy strategy);
 
     // 下发配电箱策略
     @PostMapping(value = "strategy/box", produces = {MediaType.APPLICATION_JSON_VALUE})

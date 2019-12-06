@@ -15,6 +15,7 @@ public interface OrganizationMapper {
     int insert(OrganizationModel model);
     OrganizationModel selectByName(String name);
     OrganizationModel selectById(String id);
+    List<OrganizationModel> selectAll();
     int updateById(OrganizationModel model);
     int deleteById(String id);
     List<CityAndCode> selectAllCityAndCode();

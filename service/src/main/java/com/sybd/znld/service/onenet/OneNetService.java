@@ -330,7 +330,7 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
-    public OfflineExecuteResult offlineExecute(CommandParams params) {
+    public OfflineExecuteResult offlineExecute(OfflineCommandParams params) {
         try {
             if(params == null){
                 log.error("传入的参数为空");
@@ -358,7 +358,7 @@ public class OneNetService implements IOneNetService {
             var jsonBody = objectMapper.writeValueAsString(executeEntity);
             var httpEntity = getHttpEntity(params.imei, MediaType.parseMediaType("application/json; charset=UTF-8"), jsonBody);
             var url = this.offlineExecuteUrl;
-            url = url + params.toOfflineUrlString();
+            url = url + params.toUrlString();
             log.debug(url);
             var responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, OfflineExecuteResult.class);
             return responseEntity.getBody();

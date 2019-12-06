@@ -1,6 +1,7 @@
 package com.sybd.znld.light.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sybd.znld.model.IValidForDbInsert;
 import com.sybd.znld.model.IValidForDbInsertWithZoneId;
 import com.sybd.znld.model.lamp.IStrategyMessage;
@@ -16,9 +17,15 @@ import java.time.*;
 @ToString
 public abstract class BaseStrategy extends Command {
     public String name; // 策略的名称
+    public String id;
+    @JsonProperty("user_id")
+    public String userId; // 是谁新建这个策略的
+    @JsonProperty("organ_id")
+    public String organId;
+    public String status; // 策略状态，新建策略的时候不需要，只在查询策略的时候会返回
+
     public Long from; // 时间统一以时间戳，这个时间戳里包含日和时
     public Long to;
-    public String id;
 
     @JsonIgnore
     public Boolean isImmediate() {
@@ -84,26 +91,29 @@ public abstract class BaseStrategy extends Command {
     }
 
     @Override
-    public boolean isValidForInsert() {
-        try {
-            if (MyString.isEmptyOrNull(name)) {// 策略名称可以重复
-                log.debug("策略名字非法");
-                return false;
-            }
-            var from = this.getFrom();
-            var to = this.getTo();
-            if (to.isBefore(LocalDateTime.now())) {
-                log.debug("指定的截止日期[" + MyDateTime.toString(to, MyDateTime.FORMAT4) + "]为过去日期");
-                return false;
-            }
-            if (to.isBefore(from)) {
-                log.debug("指定的截止日期[" + MyDateTime.toString(to, MyDateTime.FORMAT1) + "]在开始时间[" + MyDateTime.toString(from, MyDateTime.FORMAT1) + "]后面");
-                return false;
-            }
-        } catch (Exception ex) {
-            log.debug(ex.getMessage());
+    public boolean isValid() {
+        if (!MyString.isUuid(userId)) {
+            log.debug("非法的用户id[" + this.userId + "]");
             return false;
         }
-        return super.isValidForInsert();
+        if (!MyString.isUuid(this.organId)) {
+            log.debug("非法的组织id[" + this.organId + "]");
+            return false;
+        }
+        if (MyString.isEmptyOrNull(name)) {// 策略名称可以重复
+            log.debug("策略名字非法");
+            return false;
+        }
+        var from = this.getFrom();
+        var to = this.getTo();
+        if (to.isBefore(LocalDateTime.now())) {
+            log.debug("指定的截止日期[" + MyDateTime.toString(to, MyDateTime.FORMAT4) + "]为过去日期");
+            return false;
+        }
+        if (to.isBefore(from)) {
+            log.debug("指定的截止日期[" + MyDateTime.toString(to, MyDateTime.FORMAT1) + "]在开始时间[" + MyDateTime.toString(from, MyDateTime.FORMAT1) + "]后面");
+            return false;
+        }
+        return super.isValid();
     }
 }

@@ -16,7 +16,7 @@ public interface IOneNetService {
     String getApiKeyByImei(String imei);
     Future<BaseResult> executeAsync(CommandParams params);
     BaseResult execute(CommandParams params);
-    OfflineExecuteResult offlineExecute(CommandParams params);
+    OfflineExecuteResult offlineExecute(OfflineCommandParams params);
     Map<String, String> getResourceMapByDeviceId(Integer deviceId);
     GetDeviceResult getDeviceById(Integer deviceId);
     GetLastDataStreamsResult getLastDataStream(Integer deviceId);

@@ -30,8 +30,12 @@ public interface IStrategyService {
     // 手动开关配电箱
     Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxManual(ManualStrategy strategy);
     //手动调节照明灯亮度
-    Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManualBrightness(ManualBrightnessStrategy strategy);
+    Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManualBrightness(ManualStrategy strategy);
 
     // 定期检查待处理的策略
-    void processPendingStrategy(String organId);
+    void processPendingStrategies(String organId);
+    void processPendingStrategies();
+
+    // 定期检查发送失败的
+    void processFailedLamps(String organId);
 }

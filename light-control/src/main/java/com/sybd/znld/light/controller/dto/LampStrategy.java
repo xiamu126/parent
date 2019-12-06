@@ -22,8 +22,6 @@ public class LampStrategy extends BaseStrategy {
     public List<Section> sections;
     public Integer brightness; // 这个亮度值是用来指定开灯时的初始亮度
 
-    public String status; // 策略状态，新建策略的时候不需要，只在查询策略的时候会返回
-
     @Override
     public Message toMessage() {
         var list = new ArrayList<Message.Pair>();
@@ -53,7 +51,7 @@ public class LampStrategy extends BaseStrategy {
     }
 
     @Override
-    public boolean isValidForInsert() {
+    public boolean isValid() {
         var theBeginTime = this.getFromTime();
         var theEndTime = this.getToTime();
         if (theBeginTime == null || theEndTime == null) return false;
@@ -108,7 +106,7 @@ public class LampStrategy extends BaseStrategy {
                 }
             }
         }
-        return super.isValidForInsert();
+        return super.isValid();
     }
 
     @NoArgsConstructor

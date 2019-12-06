@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.StrategyFailedMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.StrategyFailedModel">
+        insert into strategy_failed
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id, strategy_id, target_id, count, status
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{id}, #{strategyId}, #{targetId}, #{count}, #{status}
+        </trim>
+    </insert>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.StrategyFailedModel">
+        select * from strategy_failed where id = #{id};
+    </select>
+    <select id="selectByStrategyId" resultType="com.sybd.znld.model.lamp.StrategyFailedModel">
+        select * from strategy_failed where strategy_id = #{id};
+    </select>
+    <select id="selectByStatus" resultType="com.sybd.znld.model.lamp.StrategyFailedModel">
+        select * from strategy_failed where status = #{status};
+    </select>
+    <update id="update">
+        update strategy_failed
+        set
+        <trim suffixOverrides=",">
+            <if test=" targetId != null and targetId != '' ">target_id=#{targetId},</if>
+            <if test=" count != null ">count=#{count},</if>
+            <if test=" status != null ">status=#{status},</if>
+            <if test=" strategyId != null ">strategy_id=#{strategyId},</if>
+        </trim>
+        where id=#{id};
+    </update>
+</mapper>

@@ -1,5 +1,6 @@
 package com.sybd.znld.light.service;
 
+import com.sybd.znld.light.controller.dto.OperationParams;
 import com.sybd.znld.light.controller.dto.RegionBoxLamp;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
@@ -8,6 +9,7 @@ import com.sybd.znld.model.lamp.ElectricityDispositionBoxLampModel;
 import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
 import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.lamp.LampRegionModel;
+import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -54,6 +57,16 @@ public class DeviceService implements IDeviceService {
     }
 
     @Override
+    public Map<String, BaseResult> operateDevice(OperationParams operationParams) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getDevicePowerStatus(List<String> imeis, List<String> names) {
+        return null;
+    }
+
+    @Override
     public RegionBoxLamp getLamps(String organId, String regionId) {
         if (!MyString.isUuid(organId)) {
             log.error("传入的组织id[" + organId + "]错误");
@@ -81,6 +94,7 @@ public class DeviceService implements IDeviceService {
             if (box == null) continue;
             var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + box.deviceId);
             var tmpBox = new RegionBoxLamp.Box();
+            tmpBox.id = box.id;
             tmpBox.imei = box.imei;
             tmpBox.name = box.name;
             if (map != null) {
@@ -106,6 +120,7 @@ public class DeviceService implements IDeviceService {
                     if (lamp == null) continue;
                     map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + lamp.deviceId);
                     var tmpLamp = new RegionBoxLamp.Box.Lamp();
+                    tmpLamp.id = lamp.id;
                     tmpLamp.imei = lamp.imei;
                     tmpLamp.name = lamp.deviceName;
                     if (map != null) {
@@ -114,16 +129,16 @@ public class DeviceService implements IDeviceService {
                     }
                     switch (lamp.status) {
                         case OK:
-                            tmpBox.status = "正常";
+                            tmpLamp.status = "正常";
                             break;
                         case ERROR:
-                            tmpBox.status = "发生故障";
+                            tmpLamp.status = "发生故障";
                             break;
                         case DEAD:
-                            tmpBox.status = "报废了";
+                            tmpLamp.status = "报废了";
                             break;
                         default:
-                            tmpBox.status = "未知";
+                            tmpLamp.status = "未知";
                     }
                     var modules = this.lampModuleMapper.selectModulesByLampId(lamp.id);
                     if (modules != null && !modules.isEmpty()) {

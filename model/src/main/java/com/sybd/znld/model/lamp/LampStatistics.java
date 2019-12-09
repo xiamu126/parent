@@ -6,8 +6,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter @Setter
-public class LampBasicDataModel {
+public class LampStatistics {
     public float V ; //电压
     public List<Float> I; //电流
     public List<Float> P; //功率

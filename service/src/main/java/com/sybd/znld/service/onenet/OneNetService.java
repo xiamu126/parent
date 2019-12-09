@@ -6,6 +6,7 @@ import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
 import com.sybd.znld.model.onenet.dto.*;
+import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
@@ -277,7 +278,20 @@ public class OneNetService implements IOneNetService {
     }
 
     @Override
+    public Boolean isDeviceOnline(String imei) {
+        if(MyString.isEmptyOrNull(imei)) return null;
+        var model = this.lampMapper.selectByImei(imei);
+        if(model == null) return null;
+        var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/json; charset=UTF-8"));
+        var url = this.getDeviceUrl(model.deviceId);
+        var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Object.class);
+        var obj = responseEntity.getBody();
+        return JsonPath.parse(obj).read("$.data.online", Boolean.class);
+    }
+
+    @Override
     public Boolean isDeviceOnline(Integer deviceId) {
+        if(!MyNumber.isPositive(deviceId)) return null;
         var model = this.lampMapper.selectByDeviceId(deviceId);
         if(model == null) return null;
         var httpEntity = getHttpEntity(model.imei, MediaType.parseMediaType("application/json; charset=UTF-8"));

@@ -26,11 +26,4 @@ import org.springframework.web.context.WebApplicationContext;
 public class ZzTest {
     @Autowired
     private DataPushController dataPushController;
-
-    @Test
-    public void test11() throws Exception {
-        String body = "{'V':220,'HZ':50,'I':[1000,1100,1200],'PF':[400,500,600],'KWH':[3,3100,3200]}";
-        var lpdt = dataPushController.rece(body);
-        log.debug(new String(String.valueOf(lpdt)));
-    }
 }

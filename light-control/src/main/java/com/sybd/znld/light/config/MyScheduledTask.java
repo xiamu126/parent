@@ -6,21 +6,20 @@ import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 @Slf4j
-@Configuration
-@EnableScheduling
 public class MyScheduledTask {
     private final ILampService lampService;
     private final RedissonClient redissonClient;
     private final IOneNetService oneNetService;
     private final IStrategyService strategyService;
 
-    @Autowired
     public MyScheduledTask(ILampService lampService, RedissonClient redissonClient, IOneNetService oneNetService, IStrategyService strategyService) {
         this.lampService = lampService;
         this.redissonClient = redissonClient;

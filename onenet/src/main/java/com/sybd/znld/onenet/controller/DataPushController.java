@@ -6,7 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.environment.RealTimeData;
-import com.sybd.znld.model.lamp.LampBasicDataModel;
+import com.sybd.znld.model.lamp.LampStatisticsModel;
 import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
 import com.sybd.znld.onenet.websocket.handler.AngleHandler;
@@ -14,6 +14,7 @@ import com.sybd.znld.onenet.websocket.handler.EnvironmentHandler;
 import com.sybd.znld.onenet.controller.dto.News;
 import com.sybd.znld.onenet.websocket.handler.OnOffHandler;
 import com.sybd.znld.onenet.websocket.handler.PositionHandler;
+import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import com.sybd.znld.model.onenet.Config;
+
 @Slf4j
 @Controller
 public class DataPushController {
@@ -46,14 +49,10 @@ public class DataPushController {
     private final RestTemplate restTemplate;
     @Value("${baidu-ak}")
     private String baiduAK;
+    private final IOneNetService oneNetService;
 
     private static String token = "abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
     private static String aeskey = "whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
-
-    private static final String REDIS_REALTIME_PREFIX = "com.sybd.znld.onenet.realtime.";
-    private String getRedisRealtimeKey(String imei) {
-        return REDIS_REALTIME_PREFIX + imei;
-    }
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -65,7 +64,7 @@ public class DataPushController {
                               DataAngleMapper dataAngleMapper,
                               RedissonClient redissonClient,
                               ObjectMapper objectMapper,
-                              RestTemplate restTemplate) {
+                              RestTemplate restTemplate, IOneNetService oneNetService) {
         this.jmsTemplate = jmsTemplate;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.dataEnvironmentMapper = dataEnvironmentMapper;
@@ -75,6 +74,7 @@ public class DataPushController {
         this.redissonClient = redissonClient;
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
+        this.oneNetService = oneNetService;
     }
 
     private Integer getMsgType(String body) {
@@ -124,7 +124,7 @@ public class DataPushController {
     }
 
     private void onOff(RawData rawData, String name) {
-        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -145,15 +145,7 @@ public class DataPushController {
     private void position(RawData rawData, String name) {
         var tmp = MyNumber.getDouble(rawData.value.toString());
         if (tmp != null && tmp != 0.0) {
-            /*var data = new DataPushModel();
-            data.deviceId = rawData.deviceId;
-            data.imei = rawData.imei;
-            data.datastreamId = rawData.ds;
-            data.name = name;
-            data.value = rawData.value;
-            data.at = rawData.at;
-            this.dataLocationMapper.insert(data); // 保存入数据库*/
-            var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
+            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
             var realTimeData = new RealTimeData();
             realTimeData.describe = name;
             realTimeData.value = rawData.value;
@@ -226,15 +218,7 @@ public class DataPushController {
     }
 
     private void angle(RawData rawData, String name) {
-        /*var data = new DataPushModel();
-        data.deviceId = rawData.deviceId;
-        data.imei = rawData.imei;
-        data.datastreamId = rawData.ds;
-        data.name = name;
-        data.value = rawData.value;
-        data.at = rawData.at;
-        this.dataAngleMapper.insert(data); // 保存入数据库*/
-        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -262,7 +246,7 @@ public class DataPushController {
         data.at = rawData.at;
         this.dataEnvironmentMapper.insert(data); // // 环境数据需要保存入数据库
 
-        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
         var realTimeData = new RealTimeData();
         realTimeData.describe = name;
         realTimeData.value = rawData.value;
@@ -324,8 +308,8 @@ public class DataPushController {
                     } else {
                         log.debug("未知的设备状态");
                     }
-                    if (rawData.deviceId != null) {
-                        var map = this.redissonClient.getMap(getRedisRealtimeKey(rawData.imei));
+                    if (rawData.imei != null) {
+                        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
                         map.put("status", status);
                     }
                 }
@@ -369,12 +353,9 @@ public class DataPushController {
                 this.angle(rawData, name);
             } else if (name.contains("时间戳")) {
                 log.debug("跳过时间戳");
-            } else if (name.contains("单灯下发")) {
+            } else if (name.contains("单灯")) {
                 log.debug("收到单灯数据"+":"+rawData.value);
-                // 首先把数据存入redis
-                // 接着判断这一次的数据更新时间是否接近整点
-                // 是则更新整点数据到数据库
-                // 一旦完成了整点数据的更新，则接下来（直到下个整点）的数据都只更新redis中的数据，不再写入数据库
+                this.statistics(rawData, name);
             } else {
                 this.environment(rawData, name);
             }
@@ -427,10 +408,27 @@ public class DataPushController {
         return "ok";
     }
 
-    public LampBasicDataModel rece(String body) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        body = body.replaceAll("'","\"");
-        LampBasicDataModel lpbd = mapper.readValue(body, LampBasicDataModel.class);
-        return lpbd;
+    private void statistics(RawData rawData, String name) {
+        var msg = rawData.value.toString().replaceAll("'","\"");
+        // 首先把数据存入redis
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
+        var lastData = (RealTimeData)map.get(name); // 上一次的数据
+        var realTimeData = new RealTimeData();
+        realTimeData.describe = name;
+        realTimeData.value = rawData.value;
+        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
+        map.put(name, realTimeData); // 更新实时缓存
+        if(lastData == null) {
+            // 如果没有上一次的数据，则直接更新数据库数据
+            var model = new LampStatisticsModel();
+        } else {
+            // 否则，看上一次的更新时间，到现在有没有达到一个小时（至少）
+            var lastTime = MyDateTime.toLocalDateTime(lastData.at);
+            var now = LocalDateTime.now();
+            var hours = Duration.between(lastTime, now).abs().toHours();
+            if(hours >= 1) {
+                // 更新数据库
+            }
+        }
     }
 }

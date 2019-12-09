@@ -27,5 +27,6 @@ public interface IOneNetService {
     double getWeightedData(Integer deviceId, String dataStreamId, LocalDateTime start, LocalDateTime end);
     OneNetExecuteResult getValue(Integer deviceId, OneNetKey oneNetKey);
     BaseResult setValue(Integer deviceId, OneNetKey oneNetKey, Object value);
+    Boolean isDeviceOnline(String imei);
     Boolean isDeviceOnline(Integer deviceId);
 }

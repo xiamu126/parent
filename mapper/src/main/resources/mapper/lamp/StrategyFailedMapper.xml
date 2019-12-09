@@ -4,11 +4,11 @@
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.StrategyFailedModel">
         insert into strategy_failed
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            id, strategy_id, target_id, count, status
+            id, strategy_id, target_id, count, last_time, status
         </trim>
         values
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            #{id}, #{strategyId}, #{targetId}, #{count}, #{status}
+            #{id}, #{strategyId}, #{targetId}, #{count}, #{lastTime}, #{status}
         </trim>
     </insert>
     <select id="selectById" resultType="com.sybd.znld.model.lamp.StrategyFailedModel">
@@ -26,6 +26,7 @@
         <trim suffixOverrides=",">
             <if test=" targetId != null and targetId != '' ">target_id=#{targetId},</if>
             <if test=" count != null ">count=#{count},</if>
+            <if test=" lastTime != null ">last_time=#{lastTime},</if>
             <if test=" status != null ">status=#{status},</if>
             <if test=" strategyId != null ">strategy_id=#{strategyId},</if>
         </trim>

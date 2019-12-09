@@ -24,7 +24,9 @@ public abstract class BaseStrategy extends Command {
     public String organId;
     public String status; // 策略状态，新建策略的时候不需要，只在查询策略的时候会返回
 
+    @JsonProperty("from")
     public Long from; // 时间统一以时间戳，这个时间戳里包含日和时
+    @JsonProperty("to")
     public Long to;
 
     @JsonIgnore

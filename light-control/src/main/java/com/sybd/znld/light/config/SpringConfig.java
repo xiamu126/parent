@@ -18,7 +18,7 @@ public class SpringConfig {
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
         return jacksonObjectMapperBuilder -> {
-            jacksonObjectMapperBuilder.failOnUnknownProperties(false);
+            jacksonObjectMapperBuilder.failOnUnknownProperties(true);
         };
     }
 

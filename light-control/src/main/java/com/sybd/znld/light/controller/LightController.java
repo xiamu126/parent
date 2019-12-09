@@ -1,18 +1,17 @@
 package com.sybd.znld.light.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.model.BaseApiResult;
-import com.sybd.znld.model.Pair;
 import com.sybd.znld.model.lamp.Target;
-import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,15 +22,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/light")
 public class LightController implements ILightController {
     private final IStrategyService strategyService;
+    private final ObjectMapper objectMapper;
 
-    public LightController(IStrategyService strategyService) {
+    @Autowired
+    public LightController(IStrategyService strategyService, ObjectMapper objectMapper) {
         this.strategyService = strategyService;
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public BaseApiResult newLampStrategy(LampStrategy strategy) {
         try{
-            if(this.strategyService.newLampStrategy(strategy) != null){
+            var ret = this.strategyService.newLampStrategy(strategy);
+            if(ret != null && ret.isOk()){
                 return BaseApiResult.success("");
             }
         }catch (Exception ex){

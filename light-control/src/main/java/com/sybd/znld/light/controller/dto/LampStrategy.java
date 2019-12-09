@@ -20,7 +20,7 @@ import java.util.List;
 public class LampStrategy extends BaseStrategy {
     public List<Point> points;
     public List<Section> sections;
-    public Integer brightness; // 这个亮度值是用来指定开灯时的初始亮度
+    public Integer brightness = 100; // 这个亮度值是用来指定开灯时的初始亮度
 
     @Override
     public Message toMessage() {

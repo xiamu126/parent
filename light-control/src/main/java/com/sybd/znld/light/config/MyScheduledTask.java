@@ -29,13 +29,14 @@ public class MyScheduledTask {
     }
 
     @Async("TaskThreadPool")
-    @Scheduled(cron = "${scheduled.cron}")
+    @Scheduled(fixedDelay = 3000)
     public void test() {
         var lock = this.redissonClient.getLock(this.getClass().getName());
         if(lock.tryLock()) {
             try {
                 lock.lock();
                 this.strategyService.processPendingStrategies();
+                this.strategyService.processFailedLamps();
             }finally {
                 lock.forceUnlock();
             }

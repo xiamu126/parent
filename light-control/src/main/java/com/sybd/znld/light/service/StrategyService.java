@@ -21,6 +21,7 @@ import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class StrategyService implements IStrategyService {
+    @Value("${max-try}")
+    private Integer maxTry;
     private final IUserService userService;
     private final StrategyMapper strategyMapper;
     private final StrategyTargetMapper strategyTargetMapper;
@@ -624,14 +627,13 @@ public class StrategyService implements IStrategyService {
 
     @Override
     public void processFailedLamps(String organId) {
+        if(!MyString.isUuid(organId)) return;
         var s = this.strategyFailedMapper.selectByStatus(StrategyFailedStatus.TRYING);
         if(s == null || s.isEmpty()) return;
-        var target = new StrategyTarget();
-        target.target = Target.SINGLE;
-        target.ids = s.stream().map(t -> t.targetId).collect(Collectors.toList());
         for(var t : s) {
-            if(t.count >= 5) {
+            if(t.count >= this.maxTry) {
                 t.status = StrategyFailedStatus.TRYING_MAX_QUIT;
+                t.lastTime = LocalDateTime.now();
                 this.strategyFailedMapper.update(t);
                 continue;
             }
@@ -642,10 +644,42 @@ public class StrategyService implements IStrategyService {
             cmd.from = MyDateTime.toTimestamp(LocalDateTime.of(strategy.fromDate, strategy.fromTime));
             cmd.to = MyDateTime.toTimestamp(LocalDateTime.of(strategy.toDate, strategy.toTime));
             cmd.name = strategy.name;
+            var target = new StrategyTarget();
+            target.target = Target.SINGLE;
+            target.ids = List.of(t.targetId);
             cmd.targets = List.of(target);
             var ret = this.sendToLamp(cmd);
             t.count = t.count + 1; // 更重试次数
+            if(ret == null || ret.isEmpty()) {
+                t.status = StrategyFailedStatus.TRYING;
+            }else {
+                var result = ret.get(Target.SINGLE);
+                if(result == null || result.isEmpty()) {
+                    t.status = StrategyFailedStatus.TRYING;
+                } else {
+                    var tmp = result.get(0);
+                    if(tmp.two.errno == 0) {
+                        t.status = StrategyFailedStatus.SUCCESS;
+                    } else {
+                        if(t.count >= this.maxTry) {
+                            t.status = StrategyFailedStatus.TRYING_MAX_QUIT;
+                        }
+                    }
+                }
+            }
+            t.lastTime = LocalDateTime.now();
             this.strategyFailedMapper.update(t);
+        }
+    }
+
+    @Override
+    public void processFailedLamps() {
+        var organs = this.organizationMapper.selectAll();
+        if(organs != null && !organs.isEmpty()) {
+            var ids = organs.stream().map(o -> o.id).distinct().collect(Collectors.toList());
+            for(var id : ids) {
+                this.processFailedLamps(id);
+            }
         }
     }
 }

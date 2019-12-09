@@ -370,7 +370,11 @@ public class DataPushController {
             } else if (name.contains("时间戳")) {
                 log.debug("跳过时间戳");
             } else if (name.contains("单灯下发")) {
-
+                log.debug("收到单灯数据"+":"+rawData.value);
+                // 首先把数据存入redis
+                // 接着判断这一次的数据更新时间是否接近整点
+                // 是则更新整点数据到数据库
+                // 一旦完成了整点数据的更新，则接下来（直到下个整点）的数据都只更新redis中的数据，不再写入数据库
             } else {
                 this.environment(rawData, name);
             }

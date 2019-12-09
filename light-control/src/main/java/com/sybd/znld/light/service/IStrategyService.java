@@ -38,4 +38,5 @@ public interface IStrategyService {
 
     // 定期检查发送失败的
     void processFailedLamps(String organId);
+    void processFailedLamps();
 }

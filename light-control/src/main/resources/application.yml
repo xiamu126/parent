@@ -9,7 +9,7 @@ spring:
     banner-mode: "off"
   profiles:
     include: onenet
-    active: prod
+    active: dev
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:
@@ -18,3 +18,4 @@ scheduled:
   cron: "0 */1 * * * ?"
 baidu-ak: x1ySji2AxajkmThvd8weGwOQ
 zone-id : Asia/Shanghai
+max-try: 10

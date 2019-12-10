@@ -9,6 +9,7 @@ import com.sybd.znld.model.lamp.ElectricityDispositionBoxLampModel;
 import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
 import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.lamp.LampRegionModel;
+import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
@@ -92,7 +93,8 @@ public class DeviceService implements IDeviceService {
         if (boxes == null || boxes.isEmpty()) return null;
         for (var box : boxes) {
             if (box == null) continue;
-            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + box.deviceId);
+            var key = Config.getRedisRealtimeKey(box.imei);
+            var map = this.redissonClient.getMap(key);
             var tmpBox = new RegionBoxLamp.Box();
             tmpBox.id = box.id;
             tmpBox.imei = box.imei;
@@ -118,7 +120,8 @@ public class DeviceService implements IDeviceService {
             if (lamps != null && !lamps.isEmpty()) {
                 for (var lamp : lamps) {
                     if (lamp == null) continue;
-                    map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + lamp.deviceId);
+                    key = Config.getRedisRealtimeKey(lamp.imei);
+                    map = this.redissonClient.getMap(key);
                     var tmpLamp = new RegionBoxLamp.Box.Lamp();
                     tmpLamp.id = lamp.id;
                     tmpLamp.imei = lamp.imei;

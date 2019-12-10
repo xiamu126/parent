@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampStatisticsMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStatisticsModel">
+        insert lamp_statistics(id, lamp_id, region_id, organ_id, online, fault, light, electricity, update_time)
+        values
+        (#{id}, #{lampId}, #{regionId}, #{organId}, #{online}, #{fault}, #{light}, #{electricity}, #{updateTime});
+    </insert>
+</mapper>

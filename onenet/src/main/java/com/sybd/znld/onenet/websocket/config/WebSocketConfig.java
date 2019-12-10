@@ -1,10 +1,7 @@
 package com.sybd.znld.onenet.websocket.config;
 
 import com.sybd.znld.onenet.websocket.MyHandshakeInterceptor;
-import com.sybd.znld.onenet.websocket.handler.AngleHandler;
-import com.sybd.znld.onenet.websocket.handler.EnvironmentHandler;
-import com.sybd.znld.onenet.websocket.handler.OnOffHandler;
-import com.sybd.znld.onenet.websocket.handler.PositionHandler;
+import com.sybd.znld.onenet.websocket.handler.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
@@ -32,5 +29,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
         registry.addHandler(new OnOffHandler(),"/data/news/onoff")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
+        registry.addHandler(new LampStatisticsHandler(),"/data/news/lamp/statistics")
+                .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
     }
 }

@@ -1,7 +1,9 @@
 package com.sybd.znld.light;
 
+import com.sybd.znld.mapper.lamp.LampStatisticsMapper;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.model.lamp.LampStatisticsModel;
 import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,9 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.time.LocalDateTime;
+import java.util.Random;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -44,5 +49,25 @@ public class UserMapperTest {
         var map = this.redissonClient.getMap(key);
         log.debug(map.getName());
         log.debug(String.valueOf(this.oneNetService.isDeviceOnline("868194030012126")));
+    }
+
+    @Autowired
+    private LampStatisticsMapper lampStatisticsMapper;
+
+    @Test
+    public void test3() {
+        var rand = new Random();
+        for(var i = 0; i < 10; i++) {
+            var model = new LampStatisticsModel();
+            model.lampId = "156effb2466e4c68b27d269726beb7e6";
+            model.regionId = "d4db3d36cbb843ca863b46153954b8d0";
+            model.organId = "88cc4ad365d9493f85db160b336c8414";
+            model.updateTime = LocalDateTime.now().minusHours(i);
+            model.online = rand.nextBoolean();
+            model.fault = rand.nextBoolean();
+            model.light = rand.nextBoolean();
+            model.electricity = rand.nextInt(100);
+            this.lampStatisticsMapper.insert(model);
+        }
     }
 }

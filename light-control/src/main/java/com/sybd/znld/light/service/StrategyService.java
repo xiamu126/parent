@@ -318,7 +318,7 @@ public class StrategyService implements IStrategyService {
     private Map<Target, ArrayList<Pair<String, BaseResult>>> sendToLamp(Command cmd) {
         try {
             var msg = cmd.toMessage(); // 得到硬件能识别的指令
-            var resource = this.oneNetResourceMapper.selectByResourceName("单灯");
+            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
             if (resource == null) {
                 log.error("在oneNetResource找不到单灯下发的id");
                 return null;

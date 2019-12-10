@@ -6,14 +6,13 @@ import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.environment.RealTimeData;
+import com.sybd.znld.model.lamp.dto.LampStatistic;
+import com.sybd.znld.model.lamp.dto.LampStatistics;
 import com.sybd.znld.model.lamp.LampStatisticsModel;
 import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
-import com.sybd.znld.onenet.websocket.handler.AngleHandler;
-import com.sybd.znld.onenet.websocket.handler.EnvironmentHandler;
+import com.sybd.znld.onenet.websocket.handler.*;
 import com.sybd.znld.onenet.controller.dto.News;
-import com.sybd.znld.onenet.websocket.handler.OnOffHandler;
-import com.sybd.znld.onenet.websocket.handler.PositionHandler;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
@@ -359,6 +358,26 @@ public class DataPushController {
             } else {
                 this.environment(rawData, name);
             }
+            // 发点假的数据给前端
+            log.debug("准备发送统计数据");
+            try {
+                var statistics = new LampStatistic();
+                var msg = new LampStatistic.Message();
+                msg.id = "156effb2466e4c68b27d269726beb7e6";
+                msg.voltage = 10.0;
+                msg.brightness = 80.0;
+                msg.electricity = 66.0;
+                msg.energy = 30.0;
+                msg.power = 12.0;
+                msg.powerFactor = 23.0;
+                msg.rate = 99.0;
+                msg.updateTime = MyDateTime.toTimestamp(LocalDateTime.now());
+                statistics.message = msg;
+                var json = this.objectMapper.writeValueAsString(statistics);
+                LampStatisticsHandler.sendAll(json);
+                log.debug("发送统计数据结束,"+json);
+            } catch (Exception ignored) {
+            }
             return "ok";
         }
         // 加密模式
@@ -375,6 +394,7 @@ public class DataPushController {
 //        }else {
 //            log.info("data receive: body empty error" );
 //        }
+
         return "ok";
     }
 
@@ -418,9 +438,20 @@ public class DataPushController {
         realTimeData.value = rawData.value;
         realTimeData.at = MyDateTime.toTimestamp(rawData.at);
         map.put(name, realTimeData); // 更新实时缓存
+        LampStatistics obj = null;
+        try {
+            obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
+        } catch (Exception ignored) {
+        }
+        if(obj == null) {
+            log.error("获取设备统计信息，返回空；原始字符串为[" + rawData.value.toString()+"]");
+            return;
+        }
         if(lastData == null) {
             // 如果没有上一次的数据，则直接更新数据库数据
             var model = new LampStatisticsModel();
+            model.online = this.oneNetService.isDeviceOnline(rawData.imei);
+
         } else {
             // 否则，看上一次的更新时间，到现在有没有达到一个小时（至少）
             var lastTime = MyDateTime.toLocalDateTime(lastData.at);

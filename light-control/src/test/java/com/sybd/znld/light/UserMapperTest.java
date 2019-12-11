@@ -59,10 +59,10 @@ public class UserMapperTest {
         var rand = new Random();
         for(var i = 0; i < 10; i++) {
             var model = new LampStatisticsModel();
-            model.lampId = "156effb2466e4c68b27d269726beb7e6";
+            model.lampId = "123b93dd012142ee82deb3558d8df055";
             model.regionId = "d4db3d36cbb843ca863b46153954b8d0";
             model.organId = "88cc4ad365d9493f85db160b336c8414";
-            model.updateTime = LocalDateTime.now().minusHours(i);
+            model.updateTime = LocalDateTime.now().minusDays(2);
             model.online = rand.nextBoolean();
             model.fault = rand.nextBoolean();
             model.light = rand.nextBoolean();

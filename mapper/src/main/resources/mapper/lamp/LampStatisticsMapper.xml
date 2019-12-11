@@ -6,4 +6,109 @@
         values
         (#{id}, #{lampId}, #{regionId}, #{organId}, #{online}, #{fault}, #{light}, #{electricity}, #{updateTime});
     </insert>
+    <update id="update"  parameterType="com.sybd.znld.model.lamp.LampStatisticsModel">
+        update lamp_statistics
+        set
+        <trim suffixOverrides=",">
+            <if test=" lampId != null and lampId != '' ">lamp_id=#{lampId},</if>
+            <if test=" regionId != null and regionId != '' ">region_id=#{regionId},</if>
+            <if test=" organId != null and organId != '' ">organ_id=#{organId},</if>
+            <if test=" online != null ">online=#{online},</if>
+            <if test=" fault != null ">fault=#{fault},</if>
+            <if test=" light != null ">light=#{light},</if>
+            <if test=" electricity != null ">electricity=#{electricity},</if>
+            <if test=" update_time != null">update_time=#{updateTime},</if>
+        </trim>
+        where id=#{id};
+    </update>
+    <select id="selectById" parameterType="com.sybd.znld.model.lamp.LampStatisticsModel">
+        select * from lamp_statistics where id = #{id}
+    </select>
+    <select id="selectLastDayLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where date_format(update_time,'%Y-%m-%d 00:00:00') = date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval 1 day)
+        and region_id = #{id}
+        group by lamp_id;
+    </select>
+    <select id="selectLastDayRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select region_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where date_format(update_time,'%Y-%m-%d 00:00:00') = date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval 1 day)
+        and organ_id = #{id}
+        group by region_id;
+    </select>
+    <select id="selectLastDayByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select organ_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where date_format(update_time,'%Y-%m-%d 00:00:00') = date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval 1 day)
+        and organ_id = #{id}
+        group by organ_id;
+    </select>
+    <select id="selectThisWeekLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where yearweek(update_time) = yearweek(now()) and region_id = #{id}
+        group by lamp_id;
+    </select>
+    <select id="selectThisWeekRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select region_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where yearweek(update_time) = yearweek(now()) and organ_id = #{id}
+        group by region_id;
+    </select>
+    <select id="selectThisWeekByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select organ_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where yearweek(update_time) = yearweek(now()) and organ_id = #{id}
+        group by organ_id;
+    </select>
+    <select id="selectThisMonthLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where date_format(update_time,'%Y-%m')=date_format(now(),'%Y-%m') and region_id = #{id}
+        group by lamp_id;
+    </select>
+    <select id="selectThisMonthRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select region_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where date_format(update_time,'%Y-%m')=date_format(now(),'%Y-%m') and organ_id = #{id}
+        group by region_id;
+    </select>
+    <select id="selectThisMonthByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select organ_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where date_format(update_time,'%Y-%m')=date_format(now(),'%Y-%m') and organ_id = #{id}
+        group by organ_id;
+    </select>
+    <select id="selectThisYearLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where year(update_time)=year(now()) and region_id = #{id}
+        group by lamp_id;
+    </select>
+    <select id="selectThisYearRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select region_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where year(update_time)=year(now()) and organ_id = #{id}
+        group by region_id;
+    </select>
+    <select id="selectThisYearByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select organ_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where year(update_time)=year(now()) and organ_id = #{id}
+        group by organ_i
+    </select>
+    <select id="selectLampsByRegionIdBetween" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and region_id = #{id}
+        group by lamp_id;
+    </select>
+    <select id="selectByOrganIdBetween" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select organ_id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
+        from lamp_statistics
+        where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and organ_id = #{id}
+        group by organ_id;
+    </select>
 </mapper>

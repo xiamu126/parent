@@ -13,8 +13,36 @@ import java.util.List;
 @DbSource("znld")
 public interface LampStatisticsMapper {
     int insert(LampStatisticsModel model);
-    //int update(LampStatisticsModel model);
-    //LampStatisticsModel selectById(String id);
-    //List<LampStatisticsModel> selectByLampId(String id);
-    //List<LampStatisticsModel> selectByLampIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+    int update(LampStatisticsModel model);
+    LampStatisticsModel selectById(String id);
+    // 获取昨天的某条街上的每盏路灯的统计情况
+    List<Statistic> selectLastDayLampsByRegionId(String id);
+    // 获取昨天的某个分平台下的每条街的统计情况
+    List<Statistic> selectLastDayRegionsByOrganId(String id);
+    // 获取昨天的某个分平台的统计情况
+    List<Statistic> selectLastDayByOrganId(String id);
+    // 获取本周的某条街上的每盏路灯的统计情况
+    List<Statistic> selectThisWeekLampsByRegionId(String id);
+    // 获取本周的某个分平台的每条街的统计情况
+    List<Statistic> selectThisWeekRegionsByOrganId(String id);
+    // 获取本周的某个分平台的统计情况
+    List<Statistic> selectThisWeekByOrganId(String id);
+    // 获取本月的某个条街下的每盏路灯的统计情况
+    List<Statistic> selectThisMonthLampsByRegionId(String id);
+    // 获取本月的某个分平台的每条街的统计情况
+    List<Statistic> selectThisMonthRegionsByOrganId(String id);
+    // 获取本月的某个分平台的统计情况
+    List<Statistic> selectThisMonthByOrganId(String id);
+    // 获取今年的某个街道下的每盏路灯的统计情况
+    List<Statistic> selectThisYearLampsByRegionId(String id);
+    // 获取今年的某个分平台的每条街的统计情况
+    List<Statistic> selectThisYearRegionsByOrganId(String id);
+    // 获取今年的某个分平台的统计情况
+    List<Statistic> selectThisYearByOrganId(String id);
+    // 获取某条街上的每盏路灯的统计情况，指定时间区间
+    List<Statistic> selectLampsByRegionIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+    // 获取某个分平台的每条街的统计情况，指定时间区间
+    List<Statistic> selectRegionsByOrganIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+    // 获取某个分平台的统计情况，指定时间区间
+    List<Statistic> selectByOrganIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
 }

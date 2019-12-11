@@ -45,4 +45,10 @@ public interface LampStatisticsMapper {
     List<Statistic> selectRegionsByOrganIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     // 获取某个分平台的统计情况，指定时间区间
     List<Statistic> selectByOrganIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+    // 获取本周的某个分平台的统计情况，按天分组
+    List<Statistic> selectThisWeekGroupDayByOrganId(String id);
+    // 获取本月的某个分平台的统计情况，按天分组
+    List<Statistic> selectThisMonthGroupDayByOrganId(String id);
+    // 获取今年的某个分平台的统计情况，按月分组
+    List<Statistic> selectThisYearGroupDayByOrganId(String id);
 }

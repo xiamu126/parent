@@ -6,6 +6,13 @@
         values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status});
     </insert>
 
+    <select id="selectLampRegionOrganIdByImei" resultType="com.sybd.znld.model.lamp.dto.LampRegionOrganId">
+        select a.id as LampId, c.id as regionId, c.organization_id as organId from lamp as a
+        left join lamp_region as b on b.lamp_id = a.id
+        left join region as c on c.id = b.region_id
+        where imei = #{imei};
+    </select>
+
     <select id="selectLampSummary" resultType="com.sybd.znld.model.lamp.dto.LampSummary">
         select d.id as organId, d.name as organName, count(*) as lampCount
         from lamp as a

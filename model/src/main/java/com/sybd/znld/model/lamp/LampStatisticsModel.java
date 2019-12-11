@@ -11,6 +11,6 @@ public class LampStatisticsModel {
     public Boolean online;
     public Boolean fault;
     public Boolean light;
-    public Integer electricity;
+    public Double electricity;
     public LocalDateTime updateTime;
 }

@@ -49,6 +49,8 @@ public class DataPushController {
     @Value("${baidu-ak}")
     private String baiduAK;
     private final IOneNetService oneNetService;
+    private final LampMapper lampMapper;
+    private final LampStatisticsMapper lampStatisticsMapper;
 
     private static String token = "abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
     private static String aeskey = "whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
@@ -63,7 +65,10 @@ public class DataPushController {
                               DataAngleMapper dataAngleMapper,
                               RedissonClient redissonClient,
                               ObjectMapper objectMapper,
-                              RestTemplate restTemplate, IOneNetService oneNetService) {
+                              RestTemplate restTemplate,
+                              IOneNetService oneNetService,
+                              LampMapper lampMapper,
+                              LampStatisticsMapper lampStatisticsMapper) {
         this.jmsTemplate = jmsTemplate;
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.dataEnvironmentMapper = dataEnvironmentMapper;
@@ -74,6 +79,8 @@ public class DataPushController {
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
         this.oneNetService = oneNetService;
+        this.lampMapper = lampMapper;
+        this.lampStatisticsMapper = lampStatisticsMapper;
     }
 
     private Integer getMsgType(String body) {
@@ -296,7 +303,7 @@ public class DataPushController {
                 log.debug("设备上下线消息");
                 Integer status = null;
                 try {
-                    status = JsonPath.read(body, "$.msg.type");
+                    status = JsonPath.read(body, "$.msg.status");
                 } catch (Exception ignored) {
                 }
                 if (status != null) {
@@ -358,26 +365,6 @@ public class DataPushController {
             } else {
                 this.environment(rawData, name);
             }
-            // 发点假的数据给前端
-            log.debug("准备发送统计数据");
-            try {
-                var statistics = new LampStatistic();
-                var msg = new LampStatistic.Message();
-                msg.id = "156effb2466e4c68b27d269726beb7e6";
-                msg.voltage = 10.0;
-                msg.brightness = 80.0;
-                msg.electricity = 66.0;
-                msg.energy = 30.0;
-                msg.power = 12.0;
-                msg.powerFactor = 23.0;
-                msg.rate = 99.0;
-                msg.updateTime = MyDateTime.toTimestamp(LocalDateTime.now());
-                statistics.message = msg;
-                var json = this.objectMapper.writeValueAsString(statistics);
-                LampStatisticsHandler.sendAll(json);
-                log.debug("发送统计数据结束,"+json);
-            } catch (Exception ignored) {
-            }
             return "ok";
         }
         // 加密模式
@@ -429,37 +416,82 @@ public class DataPushController {
     }
 
     private void statistics(RawData rawData, String name) {
-        var msg = rawData.value.toString().replaceAll("'","\"");
-        // 首先把数据存入redis
-        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
-        var lastData = (RealTimeData)map.get(name); // 上一次的数据
-        var realTimeData = new RealTimeData();
-        realTimeData.describe = name;
-        realTimeData.value = rawData.value;
-        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
-        map.put(name, realTimeData); // 更新实时缓存
-        LampStatistics obj = null;
         try {
-            obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
-        } catch (Exception ignored) {
-        }
-        if(obj == null) {
-            log.error("获取设备统计信息，返回空；原始字符串为[" + rawData.value.toString()+"]");
-            return;
-        }
-        if(lastData == null) {
-            // 如果没有上一次的数据，则直接更新数据库数据
-            var model = new LampStatisticsModel();
-            model.online = this.oneNetService.isDeviceOnline(rawData.imei);
-
-        } else {
-            // 否则，看上一次的更新时间，到现在有没有达到一个小时（至少）
-            var lastTime = MyDateTime.toLocalDateTime(lastData.at);
-            var now = LocalDateTime.now();
-            var hours = Duration.between(lastTime, now).abs().toHours();
-            if(hours >= 1) {
-                // 更新数据库
+            rawData.value = rawData.value.toString().replaceAll("'","\"");
+            // 首先把数据存入redis
+            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
+            var lastData = (RealTimeData)map.get(name); // 上一次的数据
+            var realTimeData = new RealTimeData();
+            realTimeData.describe = name;
+            realTimeData.value = rawData.value;
+            realTimeData.at = MyDateTime.toTimestamp(rawData.at);
+            map.put(name, realTimeData); // 更新实时缓存
+            var obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
+            var electricity = (Double) map.get("electricity"); // 上一次累计的电量
+            if (electricity != null) {
+                electricity = electricity + obj.EP.get(1); // 把这一次的数据累计上去
+            } else {
+                electricity = obj.EP.get(1);
             }
+            map.put("electricity", electricity);
+            var status = (Integer) map.get("status");
+            if(status == null) { // 如果设备的在线状态未知，则手动刷新下
+                status = this.oneNetService.isDeviceOnline(rawData.imei) ? 1 : 0;
+                map.put("status", status);
+            }
+            var ids = this.lampMapper.selectLampRegionOrganIdByImei(rawData.imei);
+            var lastUpdateStatisticsTime = (Long) map.get("lastUpdateStatisticsTime"); // 上次更新数据库的时间
+            if(lastUpdateStatisticsTime == null) {
+                // 更新数据库
+                var model = new LampStatisticsModel();
+                model.lampId = ids.lampId;
+                model.regionId = ids.regionId;
+                model.organId = ids.organId;
+                model.online = (status == 1);
+                model.light =  obj.B > 0;
+                model.fault = false; // 故障暂时不做判断
+                model.electricity = electricity; // 到目前为止累计电能
+                model.updateTime = rawData.at;
+                this.lampStatisticsMapper.insert(model);
+                map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
+            } else {
+                // 存在上一次的更新时间，则看上一次的更新时间，到现在有没有达到一个小时（至少）
+                var lastTime = MyDateTime.toLocalDateTime(lastUpdateStatisticsTime);
+                var now = LocalDateTime.now();
+                var hours = Duration.between(lastTime, now).abs().toHours();
+                if(hours >= 1) {
+                    // 更新数据库
+                    var model = new LampStatisticsModel();
+                    model.lampId = ids.lampId;
+                    model.regionId = ids.regionId;
+                    model.organId = ids.organId;
+                    model.online = (status == 1);
+                    model.light =  obj.B > 0;
+                    model.fault = false; // 故障暂时不做判断
+                    model.electricity = electricity; // 到目前为止累计电能
+                    model.updateTime = rawData.at;
+                    this.lampStatisticsMapper.insert(model);
+                    map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
+                }
+            }
+            // 最后将收到的数据推送到页面
+            var statistics = new LampStatistic();
+            var msg = new LampStatistic.Message();
+            msg.id = ids.lampId;
+            msg.voltage = obj.V;
+            msg.brightness = obj.B;
+            msg.electricity = obj.I.get(1);
+            msg.energy = obj.EP.get(1);
+            msg.power = obj.PP.get(1);
+            msg.powerFactor = obj.PP.get(1) / obj.PS.get(1);
+            msg.rate = obj.HZ;
+            msg.updateTime = MyDateTime.toTimestamp(rawData.at);
+            statistics.message = msg;
+            var json = this.objectMapper.writeValueAsString(statistics);
+            LampStatisticsHandler.sendAll(json);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
         }
     }
 }

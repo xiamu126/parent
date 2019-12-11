@@ -44,4 +44,6 @@ public interface LampMapper {
     LampAndCamera selectActiveCameraByDeviceId(Integer deviceId);
     LampAndCamera selectActiveCameraByLampId(String lampId);
     RegionModel selectRegionByLampId(String lampId);
+    // 通过imei获取相应的路灯id、区域id、组织id
+    LampRegionOrganId selectLampRegionOrganIdByImei(String imei);
 }

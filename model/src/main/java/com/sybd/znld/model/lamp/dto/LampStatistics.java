@@ -8,7 +8,7 @@ import java.util.List;
 
 public class LampStatistics {
     public Long T; // 时间戳
-    public Double B; // 亮度
+    public Integer B; // 亮度
     public Double V ; // 电压
     public List<Double> I; // 电流，电流1总电流，电流2单灯电流，电流3电子屏电流
     public List<Double> PP; // 有功功率
@@ -22,5 +22,5 @@ public class LampStatistics {
     public Double HU; // 湿度
     public Double X; // X倾斜角度
     public Double Y; // Y倾斜角度
-    public List<Integer> RL; // 继电器开关，0代表关，1代表关
+    public List<Integer> JDQ; // 继电器开关，0代表关，1代表关
 }

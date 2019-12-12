@@ -24,6 +24,10 @@
     <select id="selectById" parameterType="com.sybd.znld.model.lamp.LampStatisticsModel">
         select * from lamp_statistics where id = #{id}
     </select>
+    <select id="selectBetweenByOrganId" resultType="com.sybd.znld.model.lamp.LampStatisticsModel">
+        select * from lamp_statistics
+        where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and organ_id = #{id}
+    </select>
     <select id="selectLastDayLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select lamp_id as id, avg(online) as online, avg(fault) as fault, avg(light) as light, sum(electricity) as electricity, max(update_time) as update_time
         from lamp_statistics

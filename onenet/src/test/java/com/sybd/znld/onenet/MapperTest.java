@@ -1,7 +1,11 @@
 package com.sybd.znld.onenet;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.mapper.lamp.*;
+import com.sybd.znld.model.lamp.dto.LampStatistic;
 import com.sybd.znld.model.onenet.DataPushModel;
+import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -82,5 +86,24 @@ public class MapperTest {
     public void test11(){
         var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime." + 528130535);
         Assert.assertNotNull(map);
+    }
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Test
+    public void test12() throws JsonProcessingException {
+        var statistics = new LampStatistic();
+        var msg = new LampStatistic.Message();
+        msg.id = "23123";
+        msg.voltage =  new LampStatistic.Message.ValueError<>(0.0, false);
+        msg.brightness = new LampStatistic.Message.ValueError<>(0, false);
+        msg.electricity = new LampStatistic.Message.ValueError<>(0.0, false);
+        msg.energy = new LampStatistic.Message.ValueError<>(0.0, false);
+        msg.power = new LampStatistic.Message.ValueError<>(0.0, false);
+        msg.powerFactor = new LampStatistic.Message.ValueError<>(0.0, true);
+        msg.rate = new LampStatistic.Message.ValueError<>(0.0, true);
+        msg.updateTime = MyDateTime.toTimestamp(LocalDateTime.now());
+        statistics.message = msg;
+        var json = this.objectMapper.writeValueAsString(statistics);
+        log.debug(json);
     }
 }

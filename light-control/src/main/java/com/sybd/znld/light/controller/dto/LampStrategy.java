@@ -1,9 +1,7 @@
 package com.sybd.znld.light.controller.dto;
 
-import com.sybd.znld.model.lamp.IStrategyMessage;
 import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.util.MyDateTime;
-import com.sybd.znld.util.MyString;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -11,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,31 +20,31 @@ public class LampStrategy extends BaseStrategy {
     public Integer brightness = 100; // 这个亮度值是用来指定开灯时的初始亮度
 
     @Override
-    public Message toMessage() {
-        var list = new ArrayList<Message.Pair>();
+    public Message<Message.Bundle> toMessage() {
+        var list = new ArrayList<Message.Bundle>();
         var fromTime = this.getFromTime();
         var toTime = this.getToTime();
         if (fromTime == null || toTime == null) return null;
         var seconds = Duration.between(LocalTime.of(0, 0, 0), fromTime).getSeconds();
-        list.add(new Message.Pair(this.brightness, seconds)); // 这个时间点以这个亮度点亮照明灯
+        list.add(new Message.Bundle(seconds, this.brightness)); // 这个时间点以这个亮度点亮照明灯
         seconds = Duration.between(LocalTime.of(0, 0, 0), toTime).getSeconds();
-        list.add(new Message.Pair(Action.CLOSE.getValue(), seconds)); // 这个时间点关闭照明灯
+        list.add(new Message.Bundle(seconds, Action.CLOSE.getValue())); // 这个时间点关闭照明灯
         // 以上添加了开关灯时间点，下面继续添加时间点亮度和时间区间亮度
         if (this.points != null) {
             for (var p : this.points) {
                 var time = MyDateTime.toLocalDateTime(p.time).toLocalTime();
                 seconds = Duration.between(LocalTime.of(0, 0, 0), time).getSeconds();
-                list.add(new Message.Pair(p.brightness, seconds)); // 这个时间点照明灯的亮度为这个
+                list.add(new Message.Bundle(seconds, p.brightness)); // 这个时间点照明灯的亮度为这个
             }
         }
         if (this.sections != null) {
             for (var s : this.sections) {
                 var time = MyDateTime.toLocalDateTime(s.from).toLocalTime();
                 seconds = Duration.between(LocalTime.of(0, 0, 0), time).getSeconds();
-                list.add(new Message.Pair(s.brightness, seconds)); // 这个时间点照明灯的亮度为这个
+                list.add(new Message.Bundle(seconds, s.brightness)); // 这个时间点照明灯的亮度为这个
             }
         }
-        return new Message(Message.Model.STRATEGY, list);
+        return new Message<>(Message.Address.LAMP, Message.Model.STRATEGY, list);
     }
 
     @Override

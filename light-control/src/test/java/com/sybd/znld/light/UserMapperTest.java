@@ -54,11 +54,13 @@ public class UserMapperTest {
     public void test2() {
         var key = Config.getRedisRealtimeKey("868194030013223");
         var map = this.redissonClient.getMap(key);
-        var lastData = (RealTimeData)map.get("单灯下发"); // 上一次的数据
-        var lastTime = MyDateTime.toLocalDateTime(lastData.at);
+        var electricity = map.get("electricity");
+        var lastUpdateStatisticsTime = (Long) map.get("lastUpdateStatisticsTime"); // 上次更新数据库的时间
+        var lastTime = MyDateTime.toLocalDateTime(lastUpdateStatisticsTime);
         var now = LocalDateTime.now();
         var hours = Duration.between(lastTime, now).abs().toHours();
-        log.debug(String.valueOf(this.oneNetService.isDeviceOnline("868194030012126")));
+        log.debug(String.valueOf(hours));
+        log.debug(String.valueOf(electricity));
     }
 
     @Autowired

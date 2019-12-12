@@ -42,4 +42,11 @@ public interface ILightController {
     // 手动打开关闭配电箱
     @PostMapping(value = "strategy/manual/box", produces = {MediaType.APPLICATION_JSON_VALUE})
     BaseApiResult manualBoxStrategy(@RequestBody ManualStrategy strategy);
+
+    // 获取本周的统计，包括电量，上线率，亮灯率，故障率
+    /*@GetMapping(value = "report/{type}/{organId}/{begin}/{end}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    void getReportThisWeek(@PathVariable("type") String type,
+                           @PathVariable(name = "organId") String organId,
+                           @PathVariable(name = "begin", required = false) Long begin,
+                           @PathVariable(name = "end", required = false) Long end);*/
 }

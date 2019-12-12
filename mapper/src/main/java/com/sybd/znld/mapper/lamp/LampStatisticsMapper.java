@@ -15,6 +15,7 @@ public interface LampStatisticsMapper {
     int insert(LampStatisticsModel model);
     int update(LampStatisticsModel model);
     LampStatisticsModel selectById(String id);
+    List<LampStatisticsModel> selectBetweenByOrganId(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     // 获取昨天的某条街上的每盏路灯的统计情况
     List<Statistic> selectLastDayLampsByRegionId(String id);
     // 获取昨天的某个分平台下的每条街的统计情况

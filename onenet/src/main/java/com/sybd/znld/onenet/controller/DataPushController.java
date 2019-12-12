@@ -427,12 +427,20 @@ public class DataPushController {
             realTimeData.at = MyDateTime.toTimestamp(rawData.at);
             map.put(name, realTimeData); // 更新实时缓存
             var obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
-            var electricity = (Double) map.get("electricity"); // 上一次累计的电量
-            if (electricity != null) {
-                electricity = electricity + obj.EP.get(1); // 把这一次的数据累计上去
-            } else {
-                electricity = obj.EP.get(1);
+            var electricity = MyNumber.getDouble(map.get("electricity")); // 上一次累计的电量
+            var ep = obj.EP.get(1);
+            if(electricity == null) {
+                if(ep == null || ep <= 0) {
+                    electricity = 0.0;
+                } else {
+                    electricity = ep; // 把这一次的数据累计上去
+                }
+            }else {
+                if(ep != null && ep > 0) {
+                    electricity = electricity + ep; // 把这一次的数据累计上去
+                }
             }
+
             map.put("electricity", electricity);
             var status = (Integer) map.get("status");
             if(status == null) { // 如果设备的在线状态未知，则手动刷新下
@@ -447,13 +455,14 @@ public class DataPushController {
                 model.lampId = ids.lampId;
                 model.regionId = ids.regionId;
                 model.organId = ids.organId;
-                model.online = (status == 1);
+                model.online = this.oneNetService.isDeviceOnline(rawData.imei);
                 model.light =  obj.B > 0;
                 model.fault = false; // 故障暂时不做判断
                 model.electricity = electricity; // 到目前为止累计电能
                 model.updateTime = rawData.at;
                 this.lampStatisticsMapper.insert(model);
                 map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
+                map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
             } else {
                 // 存在上一次的更新时间，则看上一次的更新时间，到现在有没有达到一个小时（至少）
                 var lastTime = MyDateTime.toLocalDateTime(lastUpdateStatisticsTime);
@@ -465,26 +474,33 @@ public class DataPushController {
                     model.lampId = ids.lampId;
                     model.regionId = ids.regionId;
                     model.organId = ids.organId;
-                    model.online = (status == 1);
+                    model.online = this.oneNetService.isDeviceOnline(rawData.imei);
                     model.light =  obj.B > 0;
                     model.fault = false; // 故障暂时不做判断
                     model.electricity = electricity; // 到目前为止累计电能
                     model.updateTime = rawData.at;
                     this.lampStatisticsMapper.insert(model);
                     map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
+                    map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
                 }
             }
             // 最后将收到的数据推送到页面
             var statistics = new LampStatistic();
             var msg = new LampStatistic.Message();
             msg.id = ids.lampId;
-            msg.voltage = obj.V;
-            msg.brightness = obj.B;
-            msg.electricity = obj.I.get(1);
-            msg.energy = obj.EP.get(1);
-            msg.power = obj.PP.get(1);
-            msg.powerFactor = obj.PP.get(1) / obj.PS.get(1);
-            msg.rate = obj.HZ;
+            msg.voltage =  new LampStatistic.Message.ValueError<>(obj.V, obj.V != null && obj.V <= 0.1);
+            msg.brightness = new LampStatistic.Message.ValueError<>(obj.B, obj.B != null && obj.B >= 0 && obj.B <= 100);
+            msg.electricity = new LampStatistic.Message.ValueError<>(obj.I.get(1), obj.I.get(1) != null && obj.I.get(1) <= 0.1);
+            msg.energy = new LampStatistic.Message.ValueError<>(obj.EP.get(1), obj.EP.get(1) != null && obj.EP.get(1) <= 1.5);
+            msg.power = new LampStatistic.Message.ValueError<>(obj.PP.get(1), obj.PP.get(1) != null && obj.EP.get(1) <= 1.5);
+            var pp = obj.PP.get(1);
+            var ps = obj.PS.get(1);
+            if(ps == null || ps <= 0) {
+                msg.powerFactor = new LampStatistic.Message.ValueError<>(0.0, true);
+            } else {
+                msg.powerFactor = new LampStatistic.Message.ValueError<>(pp / ps, false);
+            }
+            msg.rate = new LampStatistic.Message.ValueError<>(obj.HZ, obj.HZ != null && obj.HZ <= 60);
             msg.updateTime = MyDateTime.toTimestamp(rawData.at);
             statistics.message = msg;
             var json = this.objectMapper.writeValueAsString(statistics);

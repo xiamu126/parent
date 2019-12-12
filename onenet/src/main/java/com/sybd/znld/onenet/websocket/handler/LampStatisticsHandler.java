@@ -17,6 +17,13 @@ public class LampStatisticsHandler implements WebSocketHandler {
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message){
+        try {
+            var msg = message.getPayload().toString();
+            if(msg.equals("ping")) {
+                session.sendMessage(new TextMessage("pong"));
+            }
+        } catch (IOException ignored) {
+        }
     }
 
     @Override

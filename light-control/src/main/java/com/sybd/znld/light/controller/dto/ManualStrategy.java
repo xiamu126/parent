@@ -1,6 +1,5 @@
 package com.sybd.znld.light.controller.dto;
 
-import com.sybd.znld.model.IValid;
 import com.sybd.znld.model.lamp.dto.Message;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -22,15 +21,15 @@ public class ManualStrategy extends Command {
     }
 
     @Override
-    public Message toMessage() {
-        var list = new ArrayList<Message.Pair>();
+    public Message<Message.Bundle> toMessage() {
+        var list = new ArrayList<Message.Bundle>();
         if(action == Action.OPEN) {
-            list.add(new Message.Pair(100, 0));
+            list.add(new Message.Bundle(0, action.getValue()));
         } else if(action == Action.CLOSE) {
-            list.add(new Message.Pair(0, 0));
+            list.add(new Message.Bundle(0, 0));
         } else {
-            list.add(new Message.Pair(this.value, 0));
+            list.add(new Message.Bundle(this.value, 0));
         }
-        return new Message(Message.Model.MANUAL, list);
+        return new Message<>(Message.Address.LAMP, Message.Model.MANUAL, list);
     }
 }

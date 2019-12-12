@@ -22,5 +22,5 @@ public class LampStatistics {
     public Double HU; // 湿度
     public Double X; // X倾斜角度
     public Double Y; // Y倾斜角度
-    public List<Integer> JDQ; // 继电器开关，0代表关，1代表关
+    public List<Integer> RL; // 继电器开关，0代表关，1代表关
 }

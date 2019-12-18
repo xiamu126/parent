@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.StrategyMapper">
-    <insert id="insert" parameterType="com.sybd.znld.model.lamp.StrategyModel">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStrategyModel">
         insert into strategy
         <trim prefix="(" suffix=")" suffixOverrides=",">
             id, name, from_date, to_date, from_time, to_time, auto_generate_time, type, organization_id, user_id, status,
@@ -11,27 +11,30 @@
             #{id}, #{name}, #{fromDate}, #{toDate}, #{fromTime}, #{toTime}, #{autoGenerateTime}, #{type}, #{organizationId}, #{userId}, #{status}
         </trim>
     </insert>
-    <select id="selectById" resultType="com.sybd.znld.model.lamp.StrategyModel">
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from strategy where id = #{id};
     </select>
-    <select id="selectByName" resultType="com.sybd.znld.model.lamp.StrategyModel">
+    <select id="selectByName" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from strategy where name = #{name};
     </select>
-    <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.StrategyModel">
+    <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from strategy where organization_id = #{id}
     </select>
-    <select id="selectByOrganIdType" resultType="com.sybd.znld.model.lamp.StrategyModel">
-        select * from strategy where organization_id = #{id} and type=#{type}
+    <select id="selectByOrganIdType" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select * from strategy where organization_id = #{id} and type=#{type} order by trigger_time desc
     </select>
-    <select id="selectByOrganIdTypeStatus" resultType="com.sybd.znld.model.lamp.StrategyModel">
+    <select id="selectByOrganIdTypeStatus" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from strategy where organization_id = #{id} and type=#{type} and status = #{status}
+        order by trigger_time desc
     </select>
-    <select id="selectByOrganIdTypeStatusBetween" resultType="com.sybd.znld.model.lamp.StrategyModel">
+    <select id="selectByOrganIdTypeStatusBetween" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from strategy
         where organization_id = #{id} and type=#{type} and status = #{status} and from_date >= #{begin} and to_date <![CDATA[ <= ]]> #{end}
+        order by trigger_time desc
     </select>
-    <select id="selectByOrganIdTypeNotStatus" resultType="com.sybd.znld.model.lamp.StrategyModel">
+    <select id="selectByOrganIdTypeNotStatus" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from strategy where organization_id = #{id} and type=#{type} and status != #{status}
+        order by trigger_time desc
     </select>
     <update id="update">
         update strategy
@@ -50,4 +53,11 @@
         </trim>
         where id=#{id};
     </update>
+    <select id="selectByOrganIdTypeNotInStatusAndToDateLessThan" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select a.* from strategy as a
+        left join strategy_target as b on b.strategy_id = a.id
+        where a.organization_id = #{id} and a.to_date <![CDATA[ > ]]> #{toDate} and
+              status not in (#{status1}, #{status2}, #{status3}) and
+              a.type=#{type} and b.target_id=#{targetId} and b.target_type = #{targetType};
+    </select>
 </mapper>

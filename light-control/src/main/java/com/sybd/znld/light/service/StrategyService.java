@@ -7,10 +7,9 @@ import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.ApiResult;
-import com.sybd.znld.model.Pair;
-import com.sybd.znld.model.StrategyFailedStatus;
-import com.sybd.znld.model.StrategyStatus;
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.*;
+import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.model.onenet.dto.CommandParams;
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.*;
 import java.util.ArrayList;
@@ -40,9 +38,8 @@ public class StrategyService implements IStrategyService {
     @Value("${max-try}")
     private Integer maxTry;
     private final IUserService userService;
-    private final StrategyMapper strategyMapper;
-    private final StrategyTargetMapper strategyTargetMapper;
-    private final StrategyPointMapper strategyPointMapper;
+    private final LampExecutionMapper lampExecutionMapper;
+    private final LampStrategyMapper lampStrategyMapper;
     private final LampMapper lampMapper;
     private final RegionMapper regionMapper;
     private final ElectricityDispositionBoxMapper electricityDispositionBoxMapper;
@@ -52,13 +49,11 @@ public class StrategyService implements IStrategyService {
     private final OneNetResourceMapper oneNetResourceMapper;
     private final OrganizationMapper organizationMapper;
     private final UserMapper userMapper;
-    private final StrategyFailedMapper strategyFailedMapper;
+    private final LampStrategyWaitingMapper lampStrategyWaitingMapper;
 
     @Autowired
     public StrategyService(IUserService userService,
-                           StrategyMapper strategyMapper,
-                           StrategyTargetMapper strategyTargetMapper,
-                           StrategyPointMapper strategyPointMapper,
+                           LampStrategyMapper lampStrategyMapper,
                            LampMapper lampMapper,
                            RegionMapper regionMapper,
                            ElectricityDispositionBoxMapper electricityDispositionBoxMapper,
@@ -68,11 +63,11 @@ public class StrategyService implements IStrategyService {
                            OneNetResourceMapper oneNetResourceMapper,
                            OrganizationMapper organizationMapper,
                            UserMapper userMapper,
-                           StrategyFailedMapper strategyFailedMapper) {
+                           LampExecutionMapper lampExecutionMapper,
+                           LampStrategyWaitingMapper lampStrategyWaitingMapper) {
         this.userService = userService;
-        this.strategyMapper = strategyMapper;
-        this.strategyTargetMapper = strategyTargetMapper;
-        this.strategyPointMapper = strategyPointMapper;
+        this.lampStrategyMapper = lampStrategyMapper;
+        this.lampExecutionMapper = lampExecutionMapper;
         this.lampMapper = lampMapper;
         this.regionMapper = regionMapper;
         this.electricityDispositionBoxMapper = electricityDispositionBoxMapper;
@@ -82,28 +77,38 @@ public class StrategyService implements IStrategyService {
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.organizationMapper = organizationMapper;
         this.userMapper = userMapper;
-        this.strategyFailedMapper = strategyFailedMapper;
+        this.lampStrategyWaitingMapper = lampStrategyWaitingMapper;
+    }
+
+    @Override
+    public Boolean isLampStrategyOverlapping(LampStrategy strategy) {
+        return null;
     }
 
     @Override
     public void terminateStrategy(String id) {
-        try {
-            if (!MyString.isUuid(id)) return;
-            var s = this.strategyMapper.selectById(id);
-            if (s == null) return;
-            if(s.status == StrategyStatus.READY) { // 已经发送到硬件那里的策略是不能终止的
-                s.status = StrategyStatus.TERMINATED;
-                this.strategyMapper.update(s);
-            }
-        } catch (Exception ignored) {}
     }
 
     @Transactional(transactionManager = "znldTransactionManager")
     @Override
     public ApiResult newLampStrategy(LampStrategy strategy) {
         try {
-            if (this.isLampParamError(strategy)) {
-                return ApiResult.fail("参数错误");
+            if(!strategy.isValid()) {
+                return ApiResult.fail();
+            }
+            var organ = this.organizationMapper.selectById(strategy.organId);
+            if (organ == null) {
+                log.error("组织不存在");
+                return ApiResult.fail();
+            }
+            var user = this.userMapper.selectById(strategy.userId);
+            if (user == null) {
+                log.error("用户不存在");
+                return ApiResult.fail();
+            }
+            if (!user.organizationId.equals(organ.id)) {
+                log.error("指定的组织id[" + strategy.organId + "]和用户id[" + strategy.userId + "]不符");
+                return ApiResult.fail();
             }
             // 判断下指定的开始结束时间是否和已有的策略有冲突；所谓冲突，即开始时间不能一样
             var from = strategy.getFrom();
@@ -113,572 +118,391 @@ public class StrategyService implements IStrategyService {
             var toDate = to.toLocalDate();
             var toTime = to.toLocalTime();
             // 首先，保存策略
-            var s = new StrategyModel();
+            var s = new LampStrategyModel();
             s.name = strategy.name;
             s.fromDate = fromDate;
             s.toDate = toDate;
             s.fromTime = fromTime;
             s.toTime = toTime;
             s.autoGenerateTime = false;
-            s.type = Strategy.LAMP;
             s.userId = strategy.userId;
-            s.organizationId = strategy.organId;
-            if (this.strategyMapper.insert(s) > 0) { // 保存策略
-                for (var target : strategy.targets) { // 保存策略关联的对象
-                    for (var id : target.ids) {
-                        var lampStrategyTarget = new StrategyTargetModel();
-                        lampStrategyTarget.targetId = id;
-                        lampStrategyTarget.strategyId = s.id;
-                        lampStrategyTarget.targetType = target.target;
-                        if (this.strategyTargetMapper.insert(lampStrategyTarget) <= 0) {
-                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return ApiResult.fail("发生错误");
-                        }
+            s.organId = strategy.organId;
+            s.initBrightness = strategy.initBrightness;
+            // 关联时间点，如果存在，之前已经检查了参数
+            if (strategy.points != null && strategy.points.size() > 0) {
+                for (var i = 0; i < strategy.points.size(); i++) {
+                    var p = strategy.points.get(i);
+                    var dateTime = MyDateTime.toLocalDateTime(p.time);
+                    if(dateTime == null) {
+                        return ApiResult.fail("发生错误");
                     }
-                }
-                // 关联时间点，如果存在，之前已经检查了参数
-                if (strategy.points != null && strategy.points.size() > 0) {
-                    for (var p : strategy.points) {
-                        var dateTime = MyDateTime.toLocalDateTime(p.time);
-                        var time = dateTime.toLocalTime();
-                        var lampStrategyPoint = new StrategyPointModel();
-                        lampStrategyPoint.strategyId = s.id;
-                        lampStrategyPoint.brightness = p.brightness;
-                        lampStrategyPoint.at = time;
-                        if (this.strategyPointMapper.insert(lampStrategyPoint) <= 0) { // 保存策略关联的时间点
-                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return ApiResult.fail("发生错误");
-                        }
+                    var time = dateTime.toLocalTime();
+                    if(i == 0) {
+                        s.at1 = time;
+                        s.brightness1 = p.brightness;
+                    }
+                    if(i == 1) {
+                        s.at2 = time;
+                        s.brightness2 = p.brightness;
+                    }
+                    if(i == 2) {
+                        s.at3 = time;
+                        s.brightness3 = p.brightness;
+                    }
+                    if(i == 3) {
+                        s.at4 = time;
+                        s.brightness4 = p.brightness;
+                    }
+                    if(i == 4) {
+                        s.at5 = time;
+                        s.brightness5 = p.brightness;
                     }
                 }
             }
-            // 如果是即时命令，直接下面onenet
-            var isImmediate = strategy.isImmediate();
-            if(isImmediate != null && isImmediate) {
-                var map = this.sendToLamp(strategy); // 发送到硬件失败不触发事务回滚
-                // 把失败的过滤出来
-                if(map != null) {
-                    for(var e : map.entrySet()) {
-                        var v = e.getValue();
-                        if(v != null) {
-                            v.removeIf(p -> {
-                                if(p.two.errno == 0) {
-                                    log.debug("从结果集中删除成功的结果，策略对象类型为["+e.getKey()+"]，路灯id为["+p.one+"]");
-                                }
-                                return p.two.errno == 0;
-                            });
-                        }
-                    }
-                    // 针对部分成功部分失败的处理
-                    for(var e : map.entrySet()) {
-                        var v = e.getValue();
-                        if(v != null) {
-                            v.forEach( p -> {
-                                log.debug("将失败的结果保存数据库，策略id为["+s.id+"]，路灯id为["+p.one+"]");
-                                var strategyFailedModel = new StrategyFailedModel();
-                                strategyFailedModel.strategyId = s.id;
-                                strategyFailedModel.targetId = p.one;
-                                this.strategyFailedMapper.insert(strategyFailedModel);
-                            });
-                        }
-                    }
-                }
-                return ApiResult.success("", map);
-            }
-            return ApiResult.success("");
+            this.lampStrategyMapper.insert(s);
+            return ApiResult.success();
         } catch (Exception ex) {
+            log.error(ex.getMessage());
             log.error(ExceptionUtils.getStackTrace(ex));
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ApiResult.fail("发生错误");
         }
     }
 
     @Override
-    public List<LampStrategy> getLampStrategies(String organId) {
-        var strategies = this.strategyMapper.selectByOrganIdType(organId, Strategy.LAMP);
-        return this.getLampStrategies(strategies);
-    }
-
-    @Override
-    public List<LampStrategy> getLampStrategies(String organId, StrategyStatus status) {
-        var strategies = this.strategyMapper.selectByOrganIdTypeStatus(organId, Strategy.LAMP, status);
-        return this.getLampStrategies(strategies);
-    }
-
-    @Override
-    public List<LampStrategy> getLampStrategies(String organId, StrategyStatus status, LocalDate begin, LocalDate end) {
-        var strategies = this.strategyMapper.selectByOrganIdTypeStatusBetween(organId, Strategy.LAMP, status, begin, end);
-        return this.getLampStrategies(strategies);
-    }
-
-    private ArrayList<LampStrategy> getLampStrategies(List<StrategyModel> strategies) {
-        if (strategies == null || strategies.isEmpty()) return null;
-        var list = new ArrayList<LampStrategy>(strategies.size());
-        for (var s : strategies) {
-            var targets = this.strategyTargetMapper.selectByStrategyId(s.id); // 这个对象集合里头可能包含单个对象或者区域（街道）
-            if (targets == null || targets.isEmpty()) continue;
-            var tmp = new LampStrategy();
-            tmp.id = s.id;
-            tmp.targets = new ArrayList<>();
-            tmp.name = s.name;
-            tmp.userId = s.userId;
-            tmp.organId = s.organizationId;
-            tmp.from = MyDateTime.toTimestamp(LocalDateTime.of(s.fromDate, s.fromTime));
-            tmp.to = MyDateTime.toTimestamp(LocalDateTime.of(s.toDate, s.toTime));
-            var singleTarget = new StrategyTarget();
-            singleTarget.target = Target.SINGLE;
-            singleTarget.ids = new ArrayList<>();
-            var regionTarget = new StrategyTarget();
-            regionTarget.target = Target.REGION;
-            regionTarget.ids = new ArrayList<>();
-            for (var target : targets) {
-                if (target.targetType == Target.REGION) { // 这是区域的id
-                    regionTarget.ids.add(target.targetId);
-                } else { // 否则就是单个设备的id，这里这个设备就是路灯
-                    singleTarget.ids.add(target.targetId);
-                }
-            }
-            // 现在已经将区域和单个设备分开了
-            if (!singleTarget.ids.isEmpty()) tmp.targets.add(singleTarget);
-            if (!regionTarget.ids.isEmpty()) tmp.targets.add(regionTarget);
-            // 把照明灯策略关联的时间点加上去
-            var points = this.strategyPointMapper.selectByStrategyId(s.id);
-            tmp.points = points.stream().map(p -> {
-                ZoneId zoneId = null;
-                try {
-                    zoneId = ZoneId.of(this.projectConfig.zoneId);
-                } catch (Exception ex) {
-                    log.debug(ex.getMessage());
-                    zoneId = ZoneId.systemDefault();
-                }
-                var zoneOffset = Instant.now().atZone(zoneId).getOffset();
-                var localDateTime = LocalDateTime.of(LocalDate.now(), p.at); // 为了转换方便，加了LocalDate.now()，前端收到这个后应该忽略date部分
-                var timestamp = localDateTime.toInstant(zoneOffset).toEpochMilli();
-                return new LampStrategy.Point(timestamp, p.brightness);
-            }).collect(Collectors.toList());
-            // 把这个策略的具体情况加入到结果集合中
-            list.add(tmp);
-        }
-        return list;
-    }
-
-    private Map<Target, ArrayList<Pair<String, BaseResult>>> sendToBox(Command cmd) {
-        try {
-            var msg = cmd.toMessage(); // 得到硬件能识别的指令
-            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
-            if (resource == null) {
-                log.error("在oneNetResource找不到单灯下发的id");
-                return null;
-            }
-            var singleResults = new ArrayList<Pair<String, Future<BaseResult>>>();
-            var regionResults = new ArrayList<Pair<String, Future<BaseResult>>>();
-            for (var t : cmd.targets) {
-                if (t.target == Target.SINGLE) {
-                    for (var id : t.ids) {
-                        var box = this.electricityDispositionBoxMapper.selectById(id);
-                        var params = new CommandParams(box.imei,
-                                OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
-                                this.objectMapper.writeValueAsString(msg));
-                        singleResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
-                        log.debug("json为" + this.objectMapper.writeValueAsString(msg));
-                    }
-                } else { // 是针对街道区域的
-                    for (var id : t.ids) {
-                        var boxes = this.regionMapper.selectBoxesByRegionId(id);
-                        if (boxes == null || boxes.isEmpty()) continue;
-                        for (var box : boxes) {
-                            var params = new CommandParams(box.imei,
-                                    OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
-                                    this.objectMapper.writeValueAsString(msg));
-                            regionResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
-                            log.debug("json为" + this.objectMapper.writeValueAsString(msg));
-                        }
-                    }
-                }
-            }
-            var singles = new ArrayList<Pair<String, BaseResult>>();
-            var regions = new ArrayList<Pair<String, BaseResult>>();
-            for (var pair : singleResults) {
-                singles.add(new Pair<>(pair.one, pair.two.get()));
-            }
-            for (var pair : regionResults) {
-                regions.add(new Pair<>(pair.one, pair.two.get()));
-            }
-            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
-            map.put(Target.SINGLE, singles);
-            map.put(Target.REGION, regions);
-            return map;
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
-        }
-        return null;
-    }
-
-    private Map<Target, ArrayList<Pair<String, BaseResult>>> sendToLamp(Command cmd) {
-        try {
-            var msg = cmd.toMessage(); // 得到硬件能识别的指令
-            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
-            if (resource == null) {
-                log.error("在oneNetResource找不到单灯下发的id");
-                return null;
-            }
-            var singleResults = new ArrayList<Pair<String, Future<BaseResult>>>();
-            var regionResults = new ArrayList<Pair<String, Future<BaseResult>>>();
-            for (var t : cmd.targets) {
-                if (t.target == Target.SINGLE) {
-                    for (var id : t.ids) {
-                        var lamp = this.lampMapper.selectById(id);
-                        var params = new CommandParams(lamp.imei,
-                                OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
-                                this.objectMapper.writeValueAsString(msg));
-                        singleResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
-                        log.debug("json为" + this.objectMapper.writeValueAsString(msg));
-                    }
-                } else { // 是针对街道区域的
-                    for (var id : t.ids) {
-                        var lamps = this.regionMapper.selectLampsByRegionId(id);
-                        if (lamps == null || lamps.isEmpty()) continue;
-                        for (var lamp : lamps) {
-                            var params = new CommandParams(lamp.imei,
-                                    OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
-                                    this.objectMapper.writeValueAsString(msg));
-                            regionResults.add(new Pair<>(id, this.oneNetService.executeAsync(params)));
-                            log.debug("json为" + this.objectMapper.writeValueAsString(msg));
-                        }
-                    }
-                }
-            }
-            var singles = new ArrayList<Pair<String, BaseResult>>();
-            var regions = new ArrayList<Pair<String, BaseResult>>();
-            for (var pair : singleResults) {
-                singles.add(new Pair<>(pair.one, pair.two.get()));
-            }
-            for (var pair : regionResults) {
-                regions.add(new Pair<>(pair.one, pair.two.get()));
-            }
-            var map = new HashMap<Target, ArrayList<Pair<String, BaseResult>>>();
-            map.put(Target.SINGLE, singles);
-            map.put(Target.REGION, regions);
-            return map;
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
+    public Map<String, BaseApiResult> executeLampStrategy(LampStrategyCmd cmd) {
+        if(!cmd.isValid()) {
+            log.error("参数错误");
             return null;
         }
-    }
-
-    @Override
-    public Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxStrategy(BoxStrategy strategy) {
-        try {
-            if (this.isBoxParamError(strategy)) {
-                return null;
-            }
-            var from = strategy.getFrom();
-            var to = strategy.getTo();
-            var fromDate = from.toLocalDate();
-            var fromTime = from.toLocalTime();
-            var toDate = to.toLocalDate();
-            var toTime = to.toLocalTime();
-            // 保存下发记录
-            var s = new StrategyModel();
-            s.name = strategy.name;
-            s.fromDate = fromDate;
-            s.toDate = toDate;
-            s.fromTime = fromTime;
-            s.toTime = toTime;
-            s.autoGenerateTime = false;
-            s.type = Strategy.ELECTRICITY_DISPOSITION_BOX;
-            s.userId = strategy.userId;
-            s.organizationId = strategy.organId;
-            if (this.strategyMapper.insert(s) > 0) { // 保存策略
-                for (var target : strategy.targets) { // 保存策略关联的对象
-                    for (var id : target.ids) {
-                        var lampStrategyTarget = new StrategyTargetModel();
-                        lampStrategyTarget.targetId = id;
-                        lampStrategyTarget.strategyId = s.id;
-                        lampStrategyTarget.targetType = target.target;
-                        if (this.strategyTargetMapper.insert(lampStrategyTarget) <= 0) {
-                            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                            return null;
-                        }
-                    }
-                }
-            }
-            // 发送到onenet
-            var map = this.sendToLamp(strategy);
-            if (map == null) {
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            }
-            return map;
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        var lampStrategy = this.lampStrategyMapper.selectById(cmd.lampStrategyId);
+        if(lampStrategy == null) {
+            log.error("指定的策略id["+cmd.lampStrategyId+"]不存在");
             return null;
         }
-    }
-
-    @Override
-    public List<BoxStrategy> getBoxStrategies(String organId) {
-        var strategies = this.strategyMapper.selectByOrganIdType(organId, Strategy.ELECTRICITY_DISPOSITION_BOX);
-        if (strategies == null || strategies.isEmpty()) return null;
-        var list = new ArrayList<BoxStrategy>(strategies.size());
-        for (var s : strategies) {
-            var targets = this.strategyTargetMapper.selectByStrategyId(s.id); // 这个对象集合里头可能包含单个对象或者区域（街道）
-            if (targets == null || targets.isEmpty()) continue;
-            var tmp = new BoxStrategy();
-            tmp.targets = new ArrayList<>();
-            tmp.name = s.name;
-            tmp.userId = s.userId;
-            tmp.organId = s.organizationId;
-            tmp.from = MyDateTime.toTimestamp(LocalDateTime.of(s.fromDate, s.fromTime));
-            tmp.to = MyDateTime.toTimestamp(LocalDateTime.of(s.toDate, s.toTime));
-            var singleTarget = new StrategyTarget();
-            singleTarget.target = Target.SINGLE;
-            singleTarget.ids = new ArrayList<>();
-            var regionTarget = new StrategyTarget();
-            regionTarget.target = Target.REGION;
-            regionTarget.ids = new ArrayList<>();
-            for (var target : targets) {
-                if (target.targetType == Target.REGION) { // 这是区域的id
-                    regionTarget.ids.add(target.targetId);
-                } else { // 否则就是单个设备的id，这里这个设备就是路灯
-                    singleTarget.ids.add(target.targetId);
-                }
-            }
-            // 现在已经将区域和单个设备分开了
-            if (!singleTarget.ids.isEmpty()) tmp.targets.add(singleTarget);
-            if (!regionTarget.ids.isEmpty()) tmp.targets.add(regionTarget);
-            // 把这个策略的具体情况加入到结果集合中
-            list.add(tmp);
-        }
-        return list;
-    }
-
-    @Override
-    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManual(ManualStrategy strategy) {
-        try {
-            if (this.isCmdError(strategy)) {
+        var lamps = new ArrayList<LampModel>();
+        for(var t : cmd.targets) {
+            var lamp = this.lampMapper.selectById(t);
+            if(lamp == null) {
+                log.error("指定的路灯id["+t+"]不存在");
                 return null;
             }
-            // 直接发送到onenet
-            return this.sendToLamp(strategy);
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
-            return null;
+            lamps.add(lamp);
         }
-    }
-
-    @Override
-    public Map<Target, ArrayList<Pair<String, BaseResult>>> newBoxManual(ManualStrategy strategy) {
-        try {
-            if (this.isCmdError(strategy)) {
-                return null;
-            }
-            // 直接发送到onenet
-            return this.sendToBox(strategy);
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
-            return null;
-        }
-    }
-
-    private boolean isBoxParamError(BaseStrategy cmd) {
-        if (cmd == null) {
-            log.debug("传参为空");
-            return true;
-        }
-        if (!cmd.isValid()) {
-            return true;
-        }
-        for (var t : cmd.targets) {
-            for (var id : t.ids) {
-                if (t.target == Target.REGION) {
-                    if (this.regionMapper.selectById(id) == null) {
-                        log.debug("target中的id集合，指定的类型为区域（街道），但其中id[" + id + "]在区域表中不存在");
-                        return true;
-                    }
-                } else {
-                    if (this.electricityDispositionBoxMapper.selectById(id) == null) {
-                        log.debug("target中的id集合，指定的类型为非区域（街道）即单个配电箱，但其中id[" + id + "]在配电箱表中不存在");
-                        return true;
-                    }
+        var results = new HashMap<String, BaseApiResult>();
+        for(var lamp : lamps) {
+            // 在这里不会查看这个策略的开始时间是否快到了，而是把这个策略放到等待列表中
+            var lampStrategyWaitingModel = new LampStrategyWaitingModel();
+            lampStrategyWaitingModel.organId = lampStrategy.organId;
+            lampStrategyWaitingModel.lampId = lamp.id;
+            lampStrategyWaitingModel.lampStrategyId = lampStrategy.id;
+            var waitingModels = this.lampStrategyWaitingMapper.selectByLampIdStatus(lamp.id, LampStrategyWaitingModel.Status.UNUSED);
+            if(waitingModels != null && !waitingModels.isEmpty()) {
+                if(waitingModels.stream().anyMatch(w -> w.lampStrategyId.equals(lampStrategy.id))) {
+                    // 这盏路灯上已经有这个策略在等待
+                    var baseApiResult = new BaseApiResult();
+                    baseApiResult.code = 1;
+                    baseApiResult.msg = "这个策略已经在目标对象的等待列表中";
+                    results.put(lamp.id, baseApiResult);
+                    continue;
                 }
             }
-        }
-        var organ = this.organizationMapper.selectById(cmd.organId);
-        if (organ == null) {
-            log.error("组织不存在");
-            return true;
-        }
-        var user = this.userMapper.selectById(cmd.userId);
-        if (user == null) {
-            log.error("用户不存在");
-            return true;
-        }
-        if (!user.organizationId.equals(organ.id)) {
-            log.error("指定的组织id[" + cmd.organId + "]和用户id[" + cmd.userId + "]不符");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isCmdError(Command cmd) {
-        if (cmd == null) {
-            log.debug("传参为空");
-            return true;
-        }
-        return !cmd.isValid();
-    }
-
-    private boolean isLampParamError(BaseStrategy cmd) {
-        if (cmd == null) {
-            log.debug("传参为空");
-            return true;
-        }
-        if (!cmd.isValid()) {
-            return true;
-        }
-        for (var t : cmd.targets) {
-            for (var id : t.ids) {
-                if (t.target == Target.REGION) {
-                    if (this.regionMapper.selectById(id) == null) {
-                        log.debug("target中的id集合，指定的类型为区域（街道），但其中id[" + id + "]在区域表中不存在");
-                        return true;
-                    }
-                } else {
-                    if (this.lampMapper.selectById(id) == null) {
-                        log.debug("target中的id集合，指定的类型为非区域（街道）即单个路灯，但其中id[" + id + "]在路灯表中不存在");
-                        return true;
-                    }
-                }
-            }
-        }
-        var organ = this.organizationMapper.selectById(cmd.organId);
-        if (organ == null) {
-            log.error("组织不存在");
-            return true;
-        }
-        var user = this.userMapper.selectById(cmd.userId);
-        if (user == null) {
-            log.error("用户不存在");
-            return true;
-        }
-        if (!user.organizationId.equals(organ.id)) {
-            log.error("指定的组织id[" + cmd.organId + "]和用户id[" + cmd.userId + "]不符");
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public Map<Target, ArrayList<Pair<String, BaseResult>>> newLampManualBrightness(ManualStrategy strategy) {
-        try {
-            if (this.isCmdError(strategy)) {
-                return null;
-            }
-            // 直接发送到onenet
-            return this.sendToLamp(strategy);
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
-            return null;
-        }
-    }
-
-    @Override
-    public void processPendingStrategies(String organId) {
-        if(!MyString.isUuid(organId)) return;
-        var strategies = this.getLampStrategies(organId, StrategyStatus.READY);
-        if(strategies == null || strategies.isEmpty()) return;
-        var now = LocalDate.now();
-        for (var strategy : strategies) {
-            var model = this.strategyMapper.selectById(strategy.id);
-            if (model.toDate.isBefore(now)) {
-                log.debug("这个id[" + strategy.id + "]的策略已经过期，关闭");
-                model.status = StrategyStatus.EXPIRED; // 已经过期关闭这条记录
-                this.strategyMapper.update(model);
-            }
-            var days = Period.between(model.fromDate, now).getDays();
-            if (Math.abs(days) <= 1) { // 如果开始日期距离现在小于等于1天（可能超过1天了也可能还差1天），是时候发送到硬件了
-                log.debug("这个id[" + strategy.id + "]的策略距离开始日期小于等于1天，将策略下发到硬件，并更新策略状态");
-                // 通过onenet发送
-                this.sendToLamp(strategy);
-                // 把状态更新为正在运行
-                model.status = StrategyStatus.RUNNING;
-                this.strategyMapper.update(model);
-            }
-        }
-    }
-
-    @Override
-    public void processPendingStrategies() {
-        var organs = this.organizationMapper.selectAll();
-        if(organs != null && !organs.isEmpty()) {
-            var ids = organs.stream().map(o -> o.id).distinct().collect(Collectors.toList());
-            for(var id : ids) {
-                this.processPendingStrategies(id);
-            }
-        }
-    }
-
-    @Override
-    public void processFailedLamps(String organId) {
-        if(!MyString.isUuid(organId)) return;
-        var s = this.strategyFailedMapper.selectByStatus(StrategyFailedStatus.TRYING);
-        if(s == null || s.isEmpty()) return;
-        for(var t : s) {
-            if(t.count >= this.maxTry) {
-                t.status = StrategyFailedStatus.TRYING_MAX_QUIT;
-                t.lastTime = LocalDateTime.now();
-                this.strategyFailedMapper.update(t);
-                continue;
-            }
-            var strategy = this.strategyMapper.selectById(t.strategyId);
-            var cmd = new LampStrategy();
-            cmd.userId = strategy.userId;
-            cmd.organId = strategy.organizationId;
-            cmd.from = MyDateTime.toTimestamp(LocalDateTime.of(strategy.fromDate, strategy.fromTime));
-            cmd.to = MyDateTime.toTimestamp(LocalDateTime.of(strategy.toDate, strategy.toTime));
-            cmd.name = strategy.name;
-            var target = new StrategyTarget();
-            target.target = Target.SINGLE;
-            target.ids = List.of(t.targetId);
-            cmd.targets = List.of(target);
-            var ret = this.sendToLamp(cmd);
-            t.count = t.count + 1; // 更重试次数
-            if(ret == null || ret.isEmpty()) {
-                t.status = StrategyFailedStatus.TRYING;
+            var ret = this.lampStrategyWaitingMapper.insert(lampStrategyWaitingModel);
+            var baseApiResult = new BaseApiResult();
+            if(ret > 0) {
+                baseApiResult.code = 0;
+                baseApiResult.msg = "";
             }else {
-                var result = ret.get(Target.SINGLE);
-                if(result == null || result.isEmpty()) {
-                    t.status = StrategyFailedStatus.TRYING;
-                } else {
-                    var tmp = result.get(0);
-                    if(tmp.two.errno == 0) {
-                        t.status = StrategyFailedStatus.SUCCESS;
-                    } else {
-                        if(t.count >= this.maxTry) {
-                            t.status = StrategyFailedStatus.TRYING_MAX_QUIT;
-                        }
+                baseApiResult.code = 1;
+                baseApiResult.msg = "无法将此策略添加到目标对象的等待列表中";
+            }
+            results.put(lamp.id, baseApiResult);
+        }
+        return results;
+    }
+
+    @Override
+    public Map<String, BaseApiResult> executeLampStrategy(LampManualCmd cmd) {
+        if(!cmd.isValid()) {
+            log.error("参数错误");
+            return null;
+        }
+        var lamps = new ArrayList<LampModel>();
+        for(var t : cmd.targets) {
+            var lamp = this.lampMapper.selectById(t);
+            if(lamp == null) {
+                log.error("指定的路灯id["+t+"]不存在");
+                return null;
+            }
+            lamps.add(lamp);
+        }
+        var list = cmd.toBundleList();
+        if(list == null) {
+            return null;
+        }
+        try {
+            var msg = new Message<>(Message.Address.LAMP, Message.Model.MANUAL, list);
+            var json = this.objectMapper.writeValueAsString(msg);
+            log.debug("准备下发到硬件的json为" + json);
+            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
+            if (resource == null) {
+                log.error("在oneNetResource找不到单灯下发的id");
+                return null;
+            }
+            var results = new HashMap<String, BaseApiResult>();
+            for(var lamp : lamps) {
+                var params = new CommandParams(lamp.imei,
+                        OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
+                        json);
+                var future = this.oneNetService.executeAsync(params);
+                var result = future.get();
+                results.put(lamp.id, new BaseApiResult(result.errno, ""));
+                var tmp = this.lampExecutionMapper.selectByLampId(lamp.id);
+                if(tmp == null) {
+                    // 如果没有这个路灯的运行状态，新增
+                    var model = new LampExecutionModel();
+                    model.lampId = lamp.id;
+                    model.mode = LampExecutionModel.Mode.MANUAL;
+                    model.lampStrategyId = "";
+                    if(!result.isOk()) {
+                        model.status = LampExecutionModel.Status.FAILED;
+                    }else {
+                        model.status = LampExecutionModel.Status.SUCCESS;
                     }
+                    this.lampExecutionMapper.insert(model);
+                } else {
+                    // 如果已经有了这个路灯的运行状态，则修改
+                    tmp.mode = LampExecutionModel.Mode.MANUAL;
+                    tmp.lampStrategyId = "";
+                    if(!result.isOk()) {
+                        tmp.status = LampExecutionModel.Status.FAILED;
+                    }else {
+                        tmp.status = LampExecutionModel.Status.SUCCESS;
+                    }
+                    tmp.tryingCount = 0; // 重置，手动模式没有重试的概念
+                    tmp.lastTryingTime = LocalDateTime.of(1973,1,1,0,0,0); // 重置，手动模式没有重试的概念
+                    this.lampExecutionMapper.update(tmp);
                 }
             }
-            t.lastTime = LocalDateTime.now();
-            this.strategyFailedMapper.update(t);
+            return results;
+        }catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            return null;
+        }
+    }
+
+    @Override
+    public List<LampStrategy> getLampStrategies(String organId) {
+        var strategies = this.lampStrategyMapper.selectByOrganIdStatus(organId, LampStrategyModel.Status.OK);
+        return this.getLampStrategies(strategies);
+    }
+
+    @Override
+    public List<LampStrategy> getLampStrategies(String organId, LampStrategyModel.Status status) {
+        var strategies = this.lampStrategyMapper.selectByOrganIdStatus(organId, status);
+        return this.getLampStrategies(strategies);
+    }
+
+    private List<LampStrategy> getLampStrategies(List<LampStrategyModel> strategies) {
+        if (strategies == null || strategies.isEmpty()) return null;
+        return strategies.stream().map(s -> {
+            var model = new LampStrategy();
+            model.organId = s.organId;
+            model.userId = s.userId;
+            model.from = MyDateTime.toTimestamp(LocalDateTime.of(s.fromDate, s.fromTime));
+            model.to = MyDateTime.toTimestamp(LocalDateTime.of(s.toDate, s.toTime));
+            model.initBrightness = s.initBrightness;
+            model.name = s.name;
+            var points = new ArrayList<LampStrategy.Point>();
+            if(s.brightness1 >= 0 && s.brightness1 <= 100) {
+                points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at1), s.brightness1)); // 这个时间点以这个亮度亮灯
+            }
+            if(s.brightness2 >= 0 && s.brightness2 <= 100) {
+                points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at2), s.brightness2)); // 这个时间点以这个亮度亮灯
+            }
+            if(s.brightness3 >= 0 && s.brightness3 <= 100) {
+                points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at3), s.brightness3)); // 这个时间点以这个亮度亮灯
+            }
+            if(s.brightness4 >= 0 && s.brightness4 <= 100) {
+                points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at4), s.brightness4)); // 这个时间点以这个亮度亮灯
+            }
+            if(s.brightness5 >= 0 && s.brightness5 <= 100) {
+                points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at5), s.brightness5)); // 这个时间点以这个亮度亮灯
+            }
+            model.points = points;
+            return model;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void processWaitingStrategies() {
+        var waitingModels = this.lampStrategyWaitingMapper.selectByStatus(LampStrategyWaitingModel.Status.UNUSED);
+        if(waitingModels != null && !waitingModels.isEmpty()) {
+            for(var w : waitingModels) {
+                var lampStrategy = this.lampStrategyMapper.selectById(w.lampStrategyId);
+                if(lampStrategy == null) {
+                    continue;
+                }
+                if(lampStrategy.toDate.isBefore(LocalDate.now())) {
+                    // 这条策略已经过期了
+                    continue;
+                }
+                var result = this.executeLampStrategyForWaiting(w.lampId, w.lampStrategyId);
+                if(result.isOk()) {
+                    // 处理成功，关闭这条等待策略
+                    w.status = LampStrategyWaitingModel.Status.USED;
+                    this.lampStrategyWaitingMapper.update(w);
+                }
+            }
+        }
+    }
+
+    // 专门针对错误重试的策略执行
+    private BaseApiResult executeLampStrategyForFailed(String lampId, String lampStrategyId) {
+        if(!MyString.isUuid(lampId) || !MyString.isUuid(lampStrategyId)) {
+            log.error("参数错误");
+            return BaseApiResult.fail("参数错误");
+        }
+        var lampStrategy = this.lampStrategyMapper.selectById(lampStrategyId);
+        if(lampStrategy == null) {
+            log.error("指定的策略id["+lampStrategyId+"]不存在");
+            return BaseApiResult.fail("参数错误");
+        }
+        if(lampStrategy.fromDate == null || lampStrategy.toDate == null) {
+            log.error("参数错误");
+            return BaseApiResult.fail("参数错误");
+        }
+        var lamp = this.lampMapper.selectById(lampId);
+        if(lamp == null) {
+            log.error("指定的路灯id["+lampId+"]不存在");
+            return BaseApiResult.fail("参数错误");
+        }
+        var lampExecutionModel = this.lampExecutionMapper.selectByLampId(lamp.id);
+        var list = lampStrategy.toBundleList();
+        if(list == null) {
+            return BaseApiResult.fail("错误");
+        }
+        try {
+            var msg = new Message<>(Message.Address.LAMP, Message.Model.STRATEGY, list);
+            var json = this.objectMapper.writeValueAsString(msg);
+            log.debug("处理等待任务，准备下发到硬件的json为" + json);
+            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
+            if (resource == null) {
+                log.error("在oneNetResource找不到单灯下发的id");
+                return BaseApiResult.fail("错误");
+            }
+            var params = new CommandParams(lamp.imei,
+                    OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
+                    json);
+            var future = this.oneNetService.executeAsync(params);
+            var result = future.get();
+            if (!result.isOk()) {
+                lampExecutionModel.status = LampExecutionModel.Status.TRYING;
+            } else {
+                lampExecutionModel.status = LampExecutionModel.Status.TRYING_SUCCESS;
+            }
+            if(lampExecutionModel.tryingCount >= this.maxTry) {
+                // 达到重试上限
+                lampExecutionModel.status = LampExecutionModel.Status.TRYING_FAILED;
+                this.lampExecutionMapper.update(lampExecutionModel);
+                return BaseApiResult.success();
+            }
+            lampExecutionModel.tryingCount = lampExecutionModel.tryingCount + 1;
+            lampExecutionModel.lastTryingTime = LocalDateTime.now();
+            this.lampExecutionMapper.update(lampExecutionModel);
+            return BaseApiResult.success();
+        }catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            return BaseApiResult.fail("");
+        }
+    }
+
+    // 不考虑重试的情况，也就是这个执行策略是针对从等待列表中获取并执行的情况
+    private BaseApiResult executeLampStrategyForWaiting(String lampId, String lampStrategyId) {
+        if(!MyString.isUuid(lampId) || !MyString.isUuid(lampStrategyId)) {
+            log.error("参数错误");
+            return BaseApiResult.fail("参数错误");
+        }
+        var lampStrategy = this.lampStrategyMapper.selectById(lampStrategyId);
+        if(lampStrategy == null) {
+            log.error("指定的策略id["+lampStrategyId+"]不存在");
+            return BaseApiResult.fail("参数错误");
+        }
+        if(lampStrategy.fromDate == null || lampStrategy.toDate == null) {
+            log.error("参数错误");
+            return BaseApiResult.fail("参数错误");
+        }
+        var lamp = this.lampMapper.selectById(lampId);
+        if(lamp == null) {
+            log.error("指定的路灯id["+lampId+"]不存在");
+            return BaseApiResult.fail("参数错误");
+        }
+        var lampExecutionModel = this.lampExecutionMapper.selectByLampId(lamp.id);
+        var list = lampStrategy.toBundleList();
+        if(list == null) {
+            return BaseApiResult.fail("错误");
+        }
+        try {
+            var msg = new Message<>(Message.Address.LAMP, Message.Model.STRATEGY, list);
+            var json = this.objectMapper.writeValueAsString(msg);
+            log.debug("处理等待任务，准备下发到硬件的json为" + json);
+            var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
+            if (resource == null) {
+                log.error("在oneNetResource找不到单灯下发的id");
+                return BaseApiResult.fail("错误");
+            }
+            var params = new CommandParams(lamp.imei,
+                    OneNetKey.from(resource.objId, resource.objInstId, resource.resId),
+                    json);
+            var future = this.oneNetService.executeAsync(params);
+            var result = future.get();
+            if (lampExecutionModel == null) {
+                // 如果没有这个路灯的运行状态，新增
+                var model = new LampExecutionModel();
+                model.lampId = lamp.id;
+                model.mode = LampExecutionModel.Mode.STRATEGY;
+                model.lampStrategyId = lampStrategyId;
+                if (!result.isOk()) {
+                    model.status = LampExecutionModel.Status.FAILED;
+                } else {
+                    model.status = LampExecutionModel.Status.SUCCESS;
+                }
+                this.lampExecutionMapper.insert(model);
+            } else {
+                // 如果已经有了这个路灯的运行状态
+                // 不管是从手动模式进入策略模式，还是从一个策略变成另一个策略
+                lampExecutionModel.mode = LampExecutionModel.Mode.STRATEGY;
+                lampExecutionModel.lampStrategyId = lampStrategyId;
+                if (!result.isOk()) {
+                    lampExecutionModel.status = LampExecutionModel.Status.FAILED;
+                } else {
+                    lampExecutionModel.status = LampExecutionModel.Status.SUCCESS;
+                }
+                lampExecutionModel.tryingCount = 0;
+                lampExecutionModel.lastTryingTime = LocalDateTime.of(1973,1,1,0,0,0);
+                this.lampExecutionMapper.update(lampExecutionModel);
+            }
+            return BaseApiResult.success();
+        }catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+            return BaseApiResult.fail("");
         }
     }
 
     @Override
     public void processFailedLamps() {
-        var organs = this.organizationMapper.selectAll();
-        if(organs != null && !organs.isEmpty()) {
-            var ids = organs.stream().map(o -> o.id).distinct().collect(Collectors.toList());
-            for(var id : ids) {
-                this.processFailedLamps(id);
+        var failedModels = this.lampExecutionMapper.selectByStatus(LampExecutionModel.Status.FAILED);
+        if(failedModels != null && !failedModels.isEmpty()) {
+            for(var f : failedModels) {
+                this.executeLampStrategyForFailed(f.lampId, f.lampStrategyId);
+            }
+        }
+        var tryingFailedModels = this.lampExecutionMapper.selectByStatus(LampExecutionModel.Status.TRYING);
+        if(tryingFailedModels != null && !tryingFailedModels.isEmpty()) {
+            for(var t : tryingFailedModels) {
+                this.executeLampStrategyForFailed(t.lampId, t.lampStrategyId);
             }
         }
     }

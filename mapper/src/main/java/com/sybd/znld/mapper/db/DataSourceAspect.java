@@ -13,32 +13,15 @@ import org.springframework.stereotype.Component;
 @Order(1)
 @Component
 public class DataSourceAspect {
-    //@Pointcut("@annotation(com.sybd.znld.mapper.db.DbSource)|| within(com.sybd.znld.video.service..*)") //within针对class级别的注解
     @Pointcut("@within(com.sybd.znld.mapper.db.DbSource)") //within针对class级别的注解
     public void dataSourcePointCut() {}
 
     @Around("dataSourcePointCut()")
     public Object around(ProceedingJoinPoint point) throws Throwable {
-        var signature = (MethodSignature) point.getSignature();
-        var method = signature.getMethod();
-        DbSource ds = null;
-
-        // 优先处理方法上的注解 // 不再支持方法上注解
-        /*ds = method.getAnnotation(DbSource.class);
-        if(ds != null){// 方法上的注解
-            // 通过判断DataSource中的值来判断当前方法应用哪个数据源
-            DynamicDataSource.setDataSource(ds.value());
-            try {
-                return point.proceed();
-            } finally {
-                DynamicDataSource.clearDataSource();
-            }
-        }*/
-
-        // 其次处理Mapper上的注解
+        // 处理Mapper上的注解
         var interfaces = point.getTarget().getClass().getInterfaces(); // 如果是代理类，即其所实现了的所有接口
         for(var i: interfaces){// 如果是Mapper
-            ds = i.getAnnotation(DbSource.class);
+            var ds = i.getAnnotation(DbSource.class);
             if(ds != null){
                 DynamicDataSource.setDataSource(ds.value());
                 try {
@@ -48,17 +31,6 @@ public class DataSourceAspect {
                 }
             }
         }
-
-        // 最后才是类上的注解 // 不再支持类上的注解
-        /*ds = point.getTarget().getClass().getAnnotation(DbSource.class);
-        if(ds != null){// 类上的注解（包括接口）
-            DynamicDataSource.setDataSource(ds.value());
-            try {
-                return point.proceed();
-            } finally {
-                DynamicDataSource.clearDataSource();
-            }
-        }*/
         return point.proceed();
     }
 }

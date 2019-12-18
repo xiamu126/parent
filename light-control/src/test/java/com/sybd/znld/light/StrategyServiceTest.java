@@ -4,6 +4,7 @@ import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.light.service.IDeviceService;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.model.lamp.Target;
+import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -28,40 +29,11 @@ public class StrategyServiceTest {
     // 新增照明灯策略
     @Test
     public void test() {
-        var strategy = new LampStrategy();
-        strategy.name = "照明灯策略测试";
-        strategy.userId = "a6b354d551f111e9804a0242ac110007";
-        var t = new StrategyTarget();
-        t.ids = List.of("123b93dd012142ee82deb3558d8df055");
-        t.target = Target.SINGLE;
-        strategy.targets = List.of(t);
-        strategy.from = MyDateTime.toTimestamp(LocalDateTime.of(2019, 11, 28, 17, 0, 0));
-        strategy.to = MyDateTime.toTimestamp(LocalDateTime.of(2019, 12, 28, 6, 0, 0));
-        var point1 = new LampStrategy.Point();
-        point1.time = MyDateTime.toTimestamp(LocalDateTime.of(2019, 12, 28, 4, 0, 0));
-        point1.brightness = 80;
-        var point2 = new LampStrategy.Point();
-        point2.time = MyDateTime.toTimestamp(LocalDateTime.of(2019, 12, 28, 5, 0, 0));
-        point2.brightness = 70;
-        strategy.points = List.of(point1, point2);
-        var ret = this.strategyService.newLampStrategy(strategy);
-        Assert.assertNotNull(ret);
     }
 
     // 新增配电箱策略
     @Test
     public void test2() {
-        var strategy = new BoxStrategy();
-        strategy.name = "配电箱策略测试";
-        strategy.userId = "a6b354d551f111e9804a0242ac110007";
-        var t = new StrategyTarget();
-        t.ids = List.of("0e88236629de4bf4b97225b95d3f8f9f");
-        t.target = Target.SINGLE;
-        strategy.targets = List.of(t);
-        strategy.from = MyDateTime.toTimestamp(LocalDateTime.of(2019, 11, 28, 17, 0, 0));
-        strategy.to = MyDateTime.toTimestamp(LocalDateTime.of(2019, 12, 28, 6, 0, 0));
-        var ret = this.strategyService.newBoxStrategy(strategy);
-        Assert.assertNotNull(ret);
     }
 
     // 获取某个组织下的所有照明灯策略的具体情况
@@ -75,52 +47,11 @@ public class StrategyServiceTest {
     // 获取某个组织下的所有配电箱策略的具体情况
     @Test
     public void test4() {
-        var ret = this.strategyService.getBoxStrategies("88cc4ad365d9493f85db160b336c8414");
-        Assert.assertNotNull(ret);
-        Assert.assertFalse(ret.isEmpty());
     }
 
     // 测试下发照明灯指令
     @Test
     public void test5() {
-        var strategy = new LampStrategy();
-        var strategyTarget = new StrategyTarget();
-        strategyTarget.ids = List.of("10bb23399d3611e995980242c0a8b008", "3a991b715c3911e98edc0242ac110007", "3acb80545c3911e98edc0242ac110007");
-        strategyTarget.target = Target.SINGLE;
-        strategy.targets = List.of(strategyTarget);
-        strategy.name = "照明灯策略测试20191203";
-        strategy.from = MyDateTime.toTimestamp("2020-01-01 17:00:00", MyDateTime.FORMAT1);
-        strategy.to = MyDateTime.toTimestamp("2020-01-10 06:00:00", MyDateTime.FORMAT1);
-        strategy.brightness = 100;
-        strategy.userId = "f1182e182aac4beb818559b5f47c176a";
-        strategy.organId = "88cc4ad365d9493f85db160b336c8414";
-        var map = this.strategyService.newLampStrategy(strategy);
-        log.debug(map.toString());
-    }
-
-    @Test
-    public void test6() {
-        var strategy = new ManualStrategy();
-        var strategyTarget = new StrategyTarget();
-        strategyTarget.ids = List.of("10bb23399d3611e995980242c0a8b008", "3a991b715c3911e98edc0242ac110007", "3acb80545c3911e98edc0242ac110007");
-        strategyTarget.target = Target.SINGLE;
-        strategy.targets = List.of(strategyTarget);
-        strategy.action = Command.Action.OPEN;
-        var map = this.strategyService.newLampManual(strategy);
-        log.debug(map.toString());
-    }
-
-    @Test
-    public void test7() {
-        var strategy = new ManualStrategy();
-        var strategyTarget = new StrategyTarget();
-        strategyTarget.ids = List.of("10bb23399d3611e995980242c0a8b008", "3a991b715c3911e98edc0242ac110007", "3acb80545c3911e98edc0242ac110007");
-        strategyTarget.target = Target.SINGLE;
-        strategy.targets = List.of(strategyTarget);
-        strategy.action = Command.Action.CHANGE_BRIGHTNESS;
-        strategy.value = 80;
-        var map = this.strategyService.newLampManualBrightness(strategy);
-        log.debug(map.toString());
     }
 
     @Test
@@ -150,26 +81,12 @@ public class StrategyServiceTest {
         Assert.assertTrue(ret);
     }
 
-    @Test
-    public void test12() {
-        this.strategyService.processPendingStrategies("88cc4ad365d9493f85db160b336c8414");
-    }
-
     // 测试下发立即执行照明灯策略
     @Test
     public void test13() {
-        var strategy = new LampStrategy();
-        var strategyTarget = new StrategyTarget();
-        strategyTarget.ids = List.of("10bb23399d3611e995980242c0a8b008", "3a991b715c3911e98edc0242ac110007", "3acb80545c3911e98edc0242ac110007");
-        strategyTarget.target = Target.SINGLE;
-        strategy.targets = List.of(strategyTarget);
-        strategy.name = "照明灯策略测试20191206";
-        strategy.from = MyDateTime.toTimestamp("2019-01-01 17:00:00", MyDateTime.FORMAT1);
-        strategy.to = MyDateTime.toTimestamp("2020-01-10 06:00:00", MyDateTime.FORMAT1);
-        strategy.brightness = 100;
-        strategy.userId = "f1182e182aac4beb818559b5f47c176a";
-        strategy.organId = "88cc4ad365d9493f85db160b336c8414";
-        var map = this.strategyService.newLampStrategy(strategy);
-        Assert.assertNotNull(map);
+    }
+
+    @Test
+    public void test14() {
     }
 }

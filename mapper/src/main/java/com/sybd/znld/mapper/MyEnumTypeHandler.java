@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MyEnumTypeHandler<E extends Enum & IEnum> extends BaseTypeHandler<E> {
+public class MyEnumTypeHandler<E extends Enum<?> & IEnum> extends BaseTypeHandler<E> {
     private Class<E> enumClass;
     public MyEnumTypeHandler(Class<E> enumClass){
         this.enumClass = enumClass;

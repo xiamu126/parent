@@ -1,52 +1,51 @@
 package com.sybd.znld.light.controller;
 
 import com.sybd.znld.light.controller.dto.*;
+import com.sybd.znld.light.service.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
-import com.sybd.znld.model.Pair;
-import com.sybd.znld.model.lamp.Target;
-import com.sybd.znld.model.onenet.dto.BaseResult;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public interface ILightController {
-    // 下发照明灯策略
+    @PostMapping(value = "strategy/lamp/check", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Boolean isLampStrategyOverlapping(@RequestBody LampStrategy strategy);
+
+    // 新建照明灯策略
     @PostMapping(value = "strategy/lamp", produces = {MediaType.APPLICATION_JSON_VALUE})
     BaseApiResult newLampStrategy(@RequestBody LampStrategy strategy);
+    // 对目标对象执行照明灯策略添加
+    @PostMapping(value = "strategy/lamp/schedule", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Map<String, BaseApiResult> executeLampStrategy(@RequestBody LampStrategyCmd cmd);
+    // 对目标对象（照明灯）执行手动控制
+    @PostMapping(value = "manual/lamp", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Map<String, BaseApiResult> executeLampManualCommand(@RequestBody LampManualCmd cmd);
 
+    // 获取某个分平台下的照明灯策略
     @GetMapping(value = "strategy/lamp/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
     List<LampStrategy> getLampStrategies(@PathVariable(name = "organId") String organId);
 
-    // 手动打开关闭照明灯
-    @PostMapping(value = "strategy/manual/lamp", produces = {MediaType.APPLICATION_JSON_VALUE})
-    Map<Target, List<OperationResult>> manualLampStrategy(@RequestBody ManualStrategy strategy);
-
-    // 手动调整照明灯亮度
-    @PostMapping(value = "strategy/manual/lamp/brightness", produces = {MediaType.APPLICATION_JSON_VALUE})
-    Map<Target, List<OperationResult>> manualLampBrightnessStrategy(@RequestBody ManualStrategy strategy);
-
-    // 下发配电箱策略
-    @PostMapping(value = "strategy/box", produces = {MediaType.APPLICATION_JSON_VALUE})
-    BaseApiResult newBoxStrategy(@RequestBody BoxStrategy strategy);
-
-    @GetMapping(value = "strategy/box/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    List<BoxStrategy> getBoxStrategies(@PathVariable(name = "organId") String organId);
-
-    // 手动打开关闭配电箱
-    @PostMapping(value = "strategy/manual/box", produces = {MediaType.APPLICATION_JSON_VALUE})
-    BaseApiResult manualBoxStrategy(@RequestBody ManualStrategy strategy);
 
     // 获取本周的统计，包括电量，上线率，亮灯率，故障率
-    /*@GetMapping(value = "report/{type}/{organId}/{begin}/{end}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    void getReportThisWeek(@PathVariable("type") String type,
-                           @PathVariable(name = "organId") String organId,
-                           @PathVariable(name = "begin", required = false) Long begin,
-                           @PathVariable(name = "end", required = false) Long end);*/
+    @GetMapping(value = "report/week/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportThisWeek(@PathVariable(name = "organId") String organId);
+
+    // 获取本月的统计，包括电量，上线率，亮灯率，故障率
+    @GetMapping(value = "report/month/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportThisMonth(@PathVariable(name = "organId") String organId);
+
+    // 获取本年的统计，包括电量，上线率，亮灯率，故障率
+    @GetMapping(value = "report/year/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportThisYear(@PathVariable(name = "organId") String organId);
+
+    // 获取某个时间区间内的统计，包括电量，上线率，亮灯率，故障率
+    @GetMapping(value = "report/year/{organId:^[0-9a-f]{32}$}/{begin}/{end}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportBetween(@PathVariable(name = "organId") String organId,
+                            @PathVariable(name = "begin") Long beginTimestamp,
+                            @PathVariable(name = "end") Long endTimestamp);
 }

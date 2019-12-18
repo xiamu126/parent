@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampStrategyWaitingMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+        insert lamp_strategy_waiting(id, lamp_id, lamp_strategy_id, organ_id, trigger_time, status)
+        values
+        (#{id}, #{lampId}, #{lampStrategyId}, #{organId}, #{triggerTime}, #{status,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler});
+    </insert>
+    <update id="update"  parameterType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+        update lamp_strategy_waiting
+        set
+        <trim suffixOverrides=",">
+            <if test=" lampId != null and lampId != '' ">lamp_id=#{lampId},</if>
+            <if test=" lampStrategyId != null and lampId != '' ">lamp_strategy_id=#{lampStrategyId},</if>
+            <if test=" organId != null and organId != '' ">organ_id=#{organId},</if>
+            <if test=" triggerTime != null ">trigger_time=#{triggerTime},</if>
+            <if test=" status != null ">status=#{status},</if>
+        </trim>
+        where id=#{id};
+    </update>
+    <select id="selectById" parameterType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+        select * from lamp_strategy_waiting where id = #{id}
+    </select>
+    <select id="selectByOrganIdStatus" resultType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+        select * from lamp_strategy_waiting
+        where organ_id = #{organId} and status = #{status}
+        order by trigger_time desc
+    </select>
+    <select id="selectByLampIdStatus" resultType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+        select * from lamp_strategy_waiting
+        where lamp_id =#{lampId} and status = #{status}
+        order by trigger_time desc
+    </select>
+    <select id="selectByStatus" resultType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+        select * from lamp_strategy_waiting
+        where status = #{status}
+        order by trigger_time desc
+    </select>
+</mapper>

@@ -2,9 +2,11 @@ package com.sybd.znld.light.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.controller.dto.*;
+import com.sybd.znld.light.service.IReportService;
 import com.sybd.znld.light.service.IStrategyService;
+import com.sybd.znld.light.service.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
-import com.sybd.znld.model.lamp.Target;
+import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -12,22 +14,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/light")
 public class LightController implements ILightController {
     private final IStrategyService strategyService;
+    private final IReportService reportService;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public LightController(IStrategyService strategyService, ObjectMapper objectMapper) {
+    public LightController(IStrategyService strategyService, IReportService reportService, ObjectMapper objectMapper) {
         this.strategyService = strategyService;
+        this.reportService = reportService;
         this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public Boolean isLampStrategyOverlapping(LampStrategy strategy) {
+        return this.strategyService.isLampStrategyOverlapping(strategy);
     }
 
     @Override
@@ -45,6 +52,11 @@ public class LightController implements ILightController {
     }
 
     @Override
+    public Map<String, BaseApiResult> executeLampStrategy(LampStrategyCmd cmd) {
+        return this.strategyService.executeLampStrategy(cmd);
+    }
+
+    @Override
     public List<LampStrategy> getLampStrategies(String organId) {
         if(MyString.isEmptyOrNull(organId)){
             return null;
@@ -59,75 +71,34 @@ public class LightController implements ILightController {
     }
 
     @Override
-    public Map<Target, List<OperationResult>> manualLampStrategy(ManualStrategy strategy) {
-        if(!strategy.isValid()) return null;
+    public Map<String, BaseApiResult> executeLampManualCommand(LampManualCmd cmd) {
+        if(!cmd.isValid()) return null;
         // 执行下发
-        var map = this.strategyService.newLampManual(strategy);
-        if(map == null || map.isEmpty()) return null;
-        var ret = new HashMap<Target, List<OperationResult>>();
-        for(var e : map.entrySet()) {
-            var tmpList = e.getValue().stream().map(p -> {
-                var tmp = new OperationResult();
-                tmp.id = p.one;
-                tmp.code = p.two.errno;
-                return tmp;
-            }).collect(Collectors.toList());
-            ret.put(e.getKey(), tmpList);
-        }
-        return ret;
+        return this.strategyService.executeLampStrategy(cmd);
     }
 
     @Override
-    public Map<Target, List<OperationResult>> manualLampBrightnessStrategy(ManualStrategy strategy) {
-        if(!strategy.isValid()) return null;
-        // 执行下发
-        var map = this.strategyService.newLampManualBrightness(strategy);
-        if(map == null || map.isEmpty()) return null;
-        var ret = new HashMap<Target, List<OperationResult>>();
-        for(var e : map.entrySet()) {
-            var tmpList = e.getValue().stream().map(p -> {
-                var tmp = new OperationResult();
-                tmp.id = p.one;
-                tmp.code = p.two.errno;
-                return tmp;
-            }).collect(Collectors.toList());
-            ret.put(e.getKey(), tmpList);
-        }
-        return ret;
+    public Report getReportThisWeek(String organId) {
+        return this.reportService.getReport(organId, Report.TimeType.WEEK);
     }
 
     @Override
-    public BaseApiResult newBoxStrategy(BoxStrategy strategy) {
-        try{
-            if(this.strategyService.newBoxStrategy(strategy) != null){
-                return BaseApiResult.success("");
-            }
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
-        }
-
-        return BaseApiResult.fail("");
+    public Report getReportThisMonth(String organId) {
+        return this.reportService.getReport(organId, Report.TimeType.MONTH);
     }
 
     @Override
-    public List<BoxStrategy> getBoxStrategies(String organId) {
-        if(MyString.isEmptyOrNull(organId)){
-            return null;
-        }
-        try{
-            return this.strategyService.getBoxStrategies(organId);
-        }catch (Exception ex){
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
-        }
-        return null;
+    public Report getReportThisYear(String organId) {
+        return this.reportService.getReport(organId, Report.TimeType.YEAR);
     }
 
     @Override
-    public BaseApiResult manualBoxStrategy(ManualStrategy strategy) {
-        if(!strategy.isValid()) return BaseApiResult.fail("");
-        // 执行下发
+    public Report getReportBetween(String organId, Long beginTimestamp, Long endTimestamp) {
+        var begin = MyDateTime.toLocalDateTime(beginTimestamp);
+        var end = MyDateTime.toLocalDateTime(endTimestamp);
+        if(begin != null && end != null) {
+            return this.reportService.getReport(organId, Report.TimeType.YEAR, begin, end);
+        }
         return null;
     }
 }

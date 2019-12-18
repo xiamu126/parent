@@ -1,8 +1,8 @@
 package com.sybd.znld.light.controller;
 
 import com.sybd.znld.light.controller.dto.Command;
-import com.sybd.znld.light.controller.dto.DeviceAction;
 import com.sybd.znld.light.controller.dto.RegionBoxLamp;
+import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.model.lamp.dto.OpResult;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +16,7 @@ public interface IDeviceController {
     @PutMapping(value = "status/{imei}/{data_stream}/{action}", produces = {MediaType.APPLICATION_JSON_VALUE})
     OpResult operateDevice(@PathVariable("imei") String imei,
                            @PathVariable(name = "data_stream") String dataStream,
-                           @PathVariable("action") DeviceAction action);
+                           @PathVariable("action") Message.CommonAction action);
 
     // 查询设备开关状态
 

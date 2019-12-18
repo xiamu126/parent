@@ -1,27 +1,21 @@
 package com.sybd.znld.light.controller.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sybd.znld.model.IEnum;
 import com.sybd.znld.model.IValid;
-import com.sybd.znld.model.IValidForDbInsert;
-import com.sybd.znld.model.lamp.IStrategyMessage;
-import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Slf4j
-public abstract class Command implements IValid, IStrategyMessage {
-    public List<String> targets; // 设备id集合，至于是照明灯的id还是配电箱的id，由继承类决定
+public class LampStrategyCmd implements IValid {
+    public List<String> targets; // 路灯的id集合
+    @JsonProperty("lamp_strategy_id")
+    public String lampStrategyId;
 
-    @JsonIgnore
     @Override
     public boolean isValid() {
+        if(!MyString.isUuid(this.lampStrategyId)) return false;
         if (this.targets == null || this.targets.isEmpty()) {
             log.debug("目标集合targets为空");
             return false;

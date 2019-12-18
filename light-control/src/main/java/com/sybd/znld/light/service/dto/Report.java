@@ -1,6 +1,7 @@
 package com.sybd.znld.light.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sybd.znld.model.IEnum;
 
 import java.util.List;
 
@@ -24,8 +25,17 @@ public class Report {
         public Double electricity;
         @JsonProperty("full_electricity")
         public Double fullElectricity;
-        public Integer online;
-        public Integer fault;
-        public Integer light;
+    }
+
+    public enum TimeType implements IEnum {
+        WEEK(0), MONTH(1), YEAR(2);
+        TimeType(int v){
+            this.value = v;
+        }
+        private int value;
+        @Override
+        public int getValue() {
+            return this.value;
+        }
     }
 }

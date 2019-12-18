@@ -1,13 +1,16 @@
 package com.sybd.znld.model;
 
-public enum StrategyStatus implements IEnum {
+@MyEnum
+public enum LampStrategyStatus implements IEnum {
     READY(0),
     RUNNING(1),
     EXPIRED(2),
     TERMINATED(3),
-    PARTIALLY_RUNNING(4);
+    PARTIALLY_RUNNING(4),
+    OVERLAPPED(5)
+    ;
 
-    StrategyStatus(int v){
+    LampStrategyStatus(int v){
         this.value = v;
     }
     private int value;

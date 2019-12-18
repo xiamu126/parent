@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampStrategyMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStrategyModel">
+        insert lamp_strategy(id, code, version, name,
+                             from_date, to_date, from_time, to_time,
+                             auto_generate_time,
+                             organ_id, user_id, init_brightness,
+                             at1, brightness1,
+                             at2, brightness2,
+                             at3, brightness3,
+                             at4, brightness4,
+                             at5, brightness5,
+                             status)
+        values
+        (#{id}, #{code}, #{version}, #{name},
+         #{fromDate}, #{toDate}, #{fromTime}, #{toTime},
+         #{autoGenerateTime},
+         #{organId}, #{userId}, #{initBrightness},
+         #{at1}, #{brightness1},
+         #{at2}, #{brightness2},
+         #{at3}, #{brightness3},
+         #{at4}, #{brightness4},
+         #{at5}, #{brightness5},
+         #{status,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler});
+    </insert>
+    <update id="update"  parameterType="com.sybd.znld.model.lamp.LampStrategyModel">
+        update lamp_strategy
+        set
+        <trim suffixOverrides=",">
+            <if test=" code != null and code != '' ">code=#{code},</if>
+            <if test=" version != null">version=#{version},</if>
+            <if test=" name != null and name != '' ">name=#{name},</if>
+            <if test=" fromDate != null ">from_date=#{fromDate},</if>
+            <if test=" toDate != null ">to_date=#{toDate},</if>
+            <if test=" fromTime != null ">from_time=#{fromTime},</if>
+            <if test=" toTime != null ">to_time=#{toTime},</if>
+            <if test=" autoGenerateTime != null">auto_generate_time=#{autoGenerateTime},</if>
+            <if test=" organId != null ">organ_id=#{organId},</if>
+            <if test=" userId != null ">user_id=#{userId},</if>
+            <if test=" initBrightness != null ">init_brightness=#{initBrightness},</if>
+            <if test=" at1 != null ">at1=#{at1},</if>
+            <if test=" brightness1 != null ">brightness1=#{brightness1},</if>
+            <if test=" at2 != null ">at2=#{at2},</if>
+            <if test=" brightness2 != null ">brightness2=#{brightness2},</if>
+            <if test=" at3 != null ">at3=#{at3},</if>
+            <if test=" brightness3 != null ">brightness3=#{brightness3},</if>
+            <if test=" at4 != null ">at4=#{at4},</if>
+            <if test=" brightness4 != null ">brightness4=#{brightness4},</if>
+            <if test=" at5 != null ">at5=#{at5},</if>
+            <if test=" brightness5 != null ">brightness5=#{brightness5},</if>
+            <if test=" status != null ">status=#{status},</if>
+        </trim>
+        where id=#{id};
+    </update>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select * from lamp_strategy where id = #{id}
+    </select>
+    <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select * from lamp_strategy where organ_id = #{id}
+    </select>
+    <select id="selectByOrganIdStatus" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select * from lamp_strategy where organ_id = #{id} and status = #{status}
+    </select>
+    <select id="selectByCode" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
+        select * from lamp_strategy where code = #{code}
+    </select>
+</mapper>

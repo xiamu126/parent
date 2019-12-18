@@ -1,5 +1,6 @@
 package com.sybd.znld.model;
 
+@MyEnum
 public enum DeviceStatus implements IEnum {
     OK(0),
     ERROR(1),

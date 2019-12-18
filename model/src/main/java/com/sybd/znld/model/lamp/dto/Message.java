@@ -21,12 +21,39 @@ public class Message <T> {
         public int v;
     }
 
+    public  static class LampManualBundle extends Bundle {
+        public LampManualBundle(LampManualAction action) {
+            this.t = 0;
+            this.v = action.getValue();
+        }
+        public LampManualBundle(Integer brightness) {
+            this.t = 0;
+            this.v = brightness;
+        }
+    }
     public static class LampBundle extends Bundle {
-
+        public LampBundle(Long seconds, Integer brightness) {
+            this.t = seconds;
+            this.v = brightness;
+        }
+        public LampBundle(Long seconds, LampManualAction action) {
+            this.t = seconds;
+            this.v = action.getValue();
+        }
     }
 
-    public static class BoxBundle extends Bundle {
+    public static class CommonManualBundle extends Bundle {
+        public CommonManualBundle(CommonAction action) {
+            this.t = 0;
+            this.v = action.getValue();
+        }
+    }
 
+    public static class  CommonBundle extends Bundle {
+        public CommonBundle(Long seconds, CommonAction action) {
+            this.t = seconds;
+            this.v = action.getValue();
+        }
     }
 
     public static class MiniStarBundle extends Bundle {
@@ -70,6 +97,30 @@ public class Message <T> {
     public enum MiniStarType implements IEnum {
         BREATHING(1), FLICKERING(2), RUNNING(3);
         MiniStarType(int v){
+            this.value = v;
+        }
+        private int value;
+        @Override
+        public int getValue() {
+            return this.value;
+        }
+    }
+
+    public enum CommonAction implements IEnum {
+        OPEN(1), CLOSE(0);
+        CommonAction(int v){
+            this.value = v;
+        }
+        private int value;
+        @Override
+        public int getValue() {
+            return this.value;
+        }
+    }
+
+    public enum LampManualAction implements IEnum {
+        OPEN(100), CLOSE(0), CHANGE_BRIGHTNESS(100);
+        LampManualAction(int v){
             this.value = v;
         }
         private int value;

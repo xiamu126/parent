@@ -35,4 +35,7 @@ public class BaseApiResult implements Serializable{
     public static BaseApiResult success(String msg) {
         return new BaseApiResult(0, msg);
     }
+    public static BaseApiResult success() {
+        return new BaseApiResult(0, "");
+    }
 }

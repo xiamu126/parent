@@ -51,5 +51,5 @@ public interface LampStatisticsMapper {
     // 获取本月的某个分平台的统计情况，按天分组
     List<Statistic> selectThisMonthGroupDayByOrganId(String id);
     // 获取今年的某个分平台的统计情况，按月分组
-    List<Statistic> selectThisYearGroupDayByOrganId(String id);
+    List<Statistic> selectThisYearGroupMonthByOrganId(String id);
 }

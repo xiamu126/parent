@@ -20,6 +20,9 @@
     <select id="selectByStatus" resultType="com.sybd.znld.model.lamp.StrategyFailedModel">
         select * from strategy_failed where status = #{status};
     </select>
+    <select id="selectByStrategyIdStatus" resultType="com.sybd.znld.model.lamp.StrategyFailedModel">
+        select * from strategy_failed where  strategy_id = #{id} and status = #{status};
+    </select>
     <update id="update">
         update strategy_failed
         set

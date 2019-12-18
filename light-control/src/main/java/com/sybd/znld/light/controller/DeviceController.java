@@ -1,9 +1,9 @@
 package com.sybd.znld.light.controller;
 
 import com.sybd.znld.light.controller.dto.Command;
-import com.sybd.znld.light.controller.dto.DeviceAction;
 import com.sybd.znld.light.controller.dto.RegionBoxLamp;
 import com.sybd.znld.light.service.IDeviceService;
+import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.model.lamp.dto.OpResult;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.CommandParams;
@@ -31,12 +31,12 @@ public class DeviceController implements IDeviceController {
     }
 
     @Override
-    public OpResult operateDevice( String imei, String dataStream, DeviceAction action) {
+    public OpResult operateDevice(String imei, String dataStream, Message.CommonAction action) {
         try {
             var cmd = new CommandParams();
             cmd.imei = imei;
             cmd.oneNetKey = OneNetKey.from(dataStream);
-            cmd.command = action.getValue().toString();
+            cmd.command = String.valueOf(action.getValue());
             var result = this.oneNetService.executeAsync(cmd);
             var r = result.get();
             var opResult = new OpResult();

@@ -22,6 +22,9 @@ public final class MyDateTime {
     public static LocalDateTime toLocalDateTime(String value, String format){
         return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(format));
     }
+    public static LocalDate toLocalDate(String value){
+        return LocalDate.parse(value, DateTimeFormatter.ofPattern(FORMAT4));
+    }
 
     public static String format(LocalDateTime dateTime, String formatString){
         return dateTime.format(DateTimeFormatter.ofPattern(formatString));
@@ -34,9 +37,10 @@ public final class MyDateTime {
         return timestamp <= max && timestamp >= min;
     }
 
-    public static boolean isBefore(Long timestamp1, Long timestamp2){
+    public static Boolean isBefore(Long timestamp1, Long timestamp2){
         var a = toLocalDateTime(timestamp1);
         var b = toLocalDateTime(timestamp2);
+        if(a == null || b == null) return null;
         return a.isBefore(b);
     }
     public static boolean isBefore(Long timestamp1, Long timestamp2, ZoneOffset zoneOffset){
@@ -44,9 +48,10 @@ public final class MyDateTime {
         var b = toLocalDateTime(timestamp2, zoneOffset);
         return a.isBefore(b);
     }
-    public static boolean isAfter(Long timestamp1, Long timestamp2){
+    public static Boolean isAfter(Long timestamp1, Long timestamp2){
         var a = toLocalDateTime(timestamp1);
         var b = toLocalDateTime(timestamp2);
+        if(a == null || b == null) return null;
         return a.isAfter(b);
     }
     public static boolean isAfter(Long timestamp1, Long timestamp2, ZoneOffset zoneOffset){
@@ -90,9 +95,12 @@ public final class MyDateTime {
 
     // 时间戳转换为本地时间
     public static LocalDateTime toLocalDateTime(Long timestamp){
-        var instant = Instant.ofEpochMilli(timestamp);
-        var zoneId = ZoneId.systemDefault();
-        return LocalDateTime.ofInstant(instant, zoneId);
+        try {
+            var instant = Instant.ofEpochMilli(timestamp);
+            var zoneId = ZoneId.systemDefault();
+            return LocalDateTime.ofInstant(instant, zoneId);
+        } catch (Exception ignored) {}
+        return null;
     }
 
     public static LocalDateTime toLocalDateTime(Long timestamp, ZoneOffset zoneOffset){
@@ -121,8 +129,9 @@ public final class MyDateTime {
     }
 
     // 测试是否为未来时间
-    public static boolean isFuture(Long timestamp){
+    public static Boolean isFuture(Long timestamp){
         var it = toLocalDateTime(timestamp);
+        if(it == null) return null;
         return it.isAfter(LocalDateTime.now());
     }
     public static boolean isFuture(Long timestamp, ZoneOffset zoneOffset){
@@ -144,10 +153,12 @@ public final class MyDateTime {
         }
         return false;
     }
-    public static boolean isAnyFuture(Long ...its){
+    public static Boolean isAnyFuture(Long ...its){
         var now = LocalDateTime.now();
         for(var it: its){
-            if(toLocalDateTime(it).isAfter(now)) return true;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isAfter(now)) return true;
         }
         return false;
     }
@@ -158,10 +169,12 @@ public final class MyDateTime {
         }
         return false;
     }
-    public static boolean isAnyFuture(ZoneOffset zoneOffset, Long ...its){
+    public static Boolean isAnyFuture(ZoneOffset zoneOffset, Long ...its){
         var now = LocalDateTime.now(zoneOffset);
         for(var it: its){
-            if(toLocalDateTime(it).isAfter(now)) return true;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isAfter(now)) return true;
         }
         return false;
     }
@@ -172,10 +185,12 @@ public final class MyDateTime {
         }
         return true;
     }
-    public static boolean isAllFuture(Long ...its){
+    public static Boolean isAllFuture(Long ...its){
         var now = LocalDateTime.now();
         for(var it: its){
-            if(toLocalDateTime(it).isBefore(now)) return false;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isBefore(now)) return false;
         }
         return true;
     }
@@ -186,10 +201,12 @@ public final class MyDateTime {
         }
         return true;
     }
-    public static boolean isAllFuture(ZoneOffset zoneOffset, Long ...its){
+    public static Boolean isAllFuture(ZoneOffset zoneOffset, Long ...its){
         var now = LocalDateTime.now(zoneOffset);
         for(var it: its){
-            if(toLocalDateTime(it).isBefore(now)) return false;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isBefore(now)) return false;
         }
         return true;
     }
@@ -203,14 +220,16 @@ public final class MyDateTime {
         var now = LocalDateTime.now();
         return now.isBefore(its[0]);
     }
-    public static boolean isAllFutureAndStrict(Long ...its){
+    public static Boolean isAllFutureAndStrict(Long ...its){
         for(var i = 0; i < its.length-1; i++){
             var tmp1 = toLocalDateTime(its[i]);
             var tmp2 = toLocalDateTime(its[i+1]);
+            if(tmp1 == null || tmp2 == null) return null;
             if(tmp2.isBefore(tmp1) || tmp2.isEqual(tmp1)) return false;
         }
         var now = LocalDateTime.now();
         var tmp = toLocalDateTime(its[0]);
+        if(tmp == null) return null;
         return now.isBefore(tmp);
     }
     public static boolean isAllFutureAndStrict(ZoneOffset zoneOffset, LocalDateTime ...its){
@@ -222,22 +241,25 @@ public final class MyDateTime {
         var now = LocalDateTime.now(zoneOffset);
         return now.isBefore(its[0]);
     }
-    public static boolean isAllFutureAndStrict(ZoneOffset zoneOffset, Long ...its){
+    public static Boolean isAllFutureAndStrict(ZoneOffset zoneOffset, Long ...its){
         for(var i = 0; i < its.length-1; i++){
             var tmp1 = toLocalDateTime(its[i]);
             var tmp2 = toLocalDateTime(its[i+1]);
+            if(tmp1 == null || tmp2 == null) return null;
             if(tmp2.isBefore(tmp1) || tmp2.isEqual(tmp1)) return false;
         }
         var now = LocalDateTime.now(zoneOffset);
         var tmp = toLocalDateTime(its[0]);
+        if(tmp == null) return null;
         return now.isBefore(tmp);
     }
     // 测试是否为过去时间
     public static boolean isPast(LocalDateTime it){
         return it.isBefore(LocalDateTime.now());
     }
-    public static boolean isPast(Long timestamp){
+    public static Boolean isPast(Long timestamp){
         var it = toLocalDateTime(timestamp);
+        if(it == null) return null;
         return it.isBefore(LocalDateTime.now());
     }
     public static boolean isPast(Long it, ZoneOffset zoneOffset){
@@ -256,10 +278,12 @@ public final class MyDateTime {
         }
         return false;
     }
-    public static boolean isAnyPast(Long ...its){
+    public static Boolean isAnyPast(Long ...its){
         var now = LocalDateTime.now();
         for(var it: its){
-            if(toLocalDateTime(it).isBefore(now)) return true;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isBefore(now)) return true;
         }
         return false;
     }
@@ -270,10 +294,12 @@ public final class MyDateTime {
         }
         return false;
     }
-    public static boolean isAnyPast(ZoneOffset zoneOffset, Long ...its){
+    public static Boolean isAnyPast(ZoneOffset zoneOffset, Long ...its){
         var now = LocalDateTime.now(zoneOffset);
         for(var it: its){
-            if(toLocalDateTime(it).isBefore(now)) return true;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isBefore(now)) return true;
         }
         return false;
     }
@@ -284,10 +310,12 @@ public final class MyDateTime {
         }
         return true;
     }
-    public static boolean isAllPast(Long ...its){
+    public static Boolean isAllPast(Long ...its){
         var now = LocalDateTime.now();
         for(var it: its){
-            if(toLocalDateTime(it).isAfter(now)) return false;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isAfter(now)) return false;
         }
         return true;
     }
@@ -298,10 +326,12 @@ public final class MyDateTime {
         }
         return true;
     }
-    public static boolean isAllPast(ZoneOffset zoneOffset, Long ...its){
+    public static Boolean isAllPast(ZoneOffset zoneOffset, Long ...its){
         var now = LocalDateTime.now(zoneOffset);
         for(var it: its){
-            if(toLocalDateTime(it).isAfter(now)) return false;
+            var tmp = toLocalDateTime(it);
+            if(tmp == null) return null;
+            if(tmp.isAfter(now)) return false;
         }
         return true;
     }
@@ -313,14 +343,16 @@ public final class MyDateTime {
         var now = LocalDateTime.now();
         return now.isAfter(its[its.length-1]);
     }
-    public static boolean isAllPastAndStrict(Long ...its){
+    public static Boolean isAllPastAndStrict(Long ...its){
         for(var i = 0; i < its.length-1; i++){
             var tmp1 = toLocalDateTime(its[i]);
             var tmp2 = toLocalDateTime(its[i+1]);
+            if(tmp1 == null || tmp2 == null) return null;
             if(tmp1.isAfter(tmp2) || tmp1.isEqual(tmp2)) return false;
         }
         var now = LocalDateTime.now();
         var tmp = toLocalDateTime(its[its.length-1]);
+        if(tmp == null) return null;
         return now.isAfter(tmp);
     }
     public static boolean isAllPastAndStrict(ZoneOffset zoneOffset, LocalDateTime ...its){
@@ -330,13 +362,17 @@ public final class MyDateTime {
         var now = LocalDateTime.now(zoneOffset);
         return now.isAfter(its[its.length-1]);
     }
-    public static boolean isAllPastAndStrict(ZoneOffset zoneOffset, Long ...its){
+    public static Boolean isAllPastAndStrict(ZoneOffset zoneOffset, Long ...its){
         for(var i = 0; i < its.length-1; i++){
-            if(toLocalDateTime(its[i]).isAfter(toLocalDateTime(its[i+1])) ||
-               toLocalDateTime(its[i]).isEqual(toLocalDateTime(its[i+1]))) return false;
+            var tmp1 = toLocalDateTime(its[i]);
+            var tmp2 = toLocalDateTime(its[i+1]);
+            if(tmp1 == null || tmp2 == null) return null;
+            if(tmp1.isAfter(tmp2) || tmp1.isEqual(tmp2)) return false;
         }
         var now = LocalDateTime.now(zoneOffset);
-        return now.isAfter(toLocalDateTime(its[its.length-1]));
+        var tmp = toLocalDateTime(its[its.length-1]);
+        if(tmp == null) return null;
+        return now.isAfter(tmp);
     }
 
     public static boolean isBeforeOrEqual(Long a, Long b, ZoneOffset zoneOffset){

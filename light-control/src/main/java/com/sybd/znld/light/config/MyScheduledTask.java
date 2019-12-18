@@ -5,12 +5,7 @@ import com.sybd.znld.service.lamp.ILampService;
 import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 @Slf4j
@@ -34,7 +29,8 @@ public class MyScheduledTask {
         if(lock.tryLock()) {
             try {
                 lock.lock();
-                this.strategyService.processPendingStrategies();
+                log.debug("定时任务执行——");
+                this.strategyService.processWaitingStrategies();
                 this.strategyService.processFailedLamps();
             }finally {
                 lock.forceUnlock();

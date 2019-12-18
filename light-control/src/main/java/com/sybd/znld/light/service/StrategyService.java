@@ -292,41 +292,42 @@ public class StrategyService implements IStrategyService {
     }
 
     @Override
-    public List<LampStrategy> getLampStrategies(String organId) {
+    public List<LampStrategyOutput> getLampStrategies(String organId) {
         var strategies = this.lampStrategyMapper.selectByOrganIdStatus(organId, LampStrategyModel.Status.OK);
         return this.getLampStrategies(strategies);
     }
 
     @Override
-    public List<LampStrategy> getLampStrategies(String organId, LampStrategyModel.Status status) {
+    public List<LampStrategyOutput> getLampStrategies(String organId, LampStrategyModel.Status status) {
         var strategies = this.lampStrategyMapper.selectByOrganIdStatus(organId, status);
         return this.getLampStrategies(strategies);
     }
 
-    private List<LampStrategy> getLampStrategies(List<LampStrategyModel> strategies) {
+    private List<LampStrategyOutput> getLampStrategies(List<LampStrategyModel> strategies) {
         if (strategies == null || strategies.isEmpty()) return null;
         return strategies.stream().map(s -> {
-            var model = new LampStrategy();
+            var model = new LampStrategyOutput();
             model.organId = s.organId;
             model.userId = s.userId;
             model.from = MyDateTime.toTimestamp(LocalDateTime.of(s.fromDate, s.fromTime));
             model.to = MyDateTime.toTimestamp(LocalDateTime.of(s.toDate, s.toTime));
             model.initBrightness = s.initBrightness;
             model.name = s.name;
+            model.id = s.id;
             var points = new ArrayList<LampStrategy.Point>();
-            if(s.brightness1 >= 0 && s.brightness1 <= 100) {
+            if(s.brightness1 != null && s.brightness1 >= 0 && s.brightness1 <= 100) {
                 points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at1), s.brightness1)); // 这个时间点以这个亮度亮灯
             }
-            if(s.brightness2 >= 0 && s.brightness2 <= 100) {
+            if(s.brightness2 != null && s.brightness2 >= 0 && s.brightness2 <= 100) {
                 points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at2), s.brightness2)); // 这个时间点以这个亮度亮灯
             }
-            if(s.brightness3 >= 0 && s.brightness3 <= 100) {
+            if(s.brightness3 != null && s.brightness3 >= 0 && s.brightness3 <= 100) {
                 points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at3), s.brightness3)); // 这个时间点以这个亮度亮灯
             }
-            if(s.brightness4 >= 0 && s.brightness4 <= 100) {
+            if(s.brightness4 != null && s.brightness4 >= 0 && s.brightness4 <= 100) {
                 points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at4), s.brightness4)); // 这个时间点以这个亮度亮灯
             }
-            if(s.brightness5 >= 0 && s.brightness5 <= 100) {
+            if(s.brightness5 != null && s.brightness5 >= 0 && s.brightness5 <= 100) {
                 points.add(new LampStrategy.Point(MyDateTime.toTimestamp(s.fromDate, s.at5), s.brightness5)); // 这个时间点以这个亮度亮灯
             }
             model.points = points;

@@ -57,7 +57,7 @@ public class LightController implements ILightController {
     }
 
     @Override
-    public List<LampStrategy> getLampStrategies(String organId) {
+    public List<LampStrategyOutput> getLampStrategies(String organId) {
         if(MyString.isEmptyOrNull(organId)){
             return null;
         }

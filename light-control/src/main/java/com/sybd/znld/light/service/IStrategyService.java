@@ -19,9 +19,9 @@ public interface IStrategyService {
     // 针对目标对象，只是实时控制
     Map<String, BaseApiResult> executeLampStrategy(LampManualCmd cmd);
     // 获取某个组织下的所有照明灯策略
-    List<LampStrategy> getLampStrategies(String organId);
+    List<LampStrategyOutput> getLampStrategies(String organId);
     // 获取某个组织下的特定状态的所有照明灯策略
-    List<LampStrategy> getLampStrategies(String organId, LampStrategyModel.Status status);
+    List<LampStrategyOutput> getLampStrategies(String organId, LampStrategyModel.Status status);
     // 定期检查待处理的策略
     void processWaitingStrategies();
     // 定期检查发送失败的

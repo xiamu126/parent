@@ -60,7 +60,7 @@
         select * from lamp_strategy where organ_id = #{id}
     </select>
     <select id="selectByOrganIdStatus" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
-        select * from lamp_strategy where organ_id = #{id} and status = #{status}
+        select * from lamp_strategy where organ_id = #{organId} and status = #{status}
     </select>
     <select id="selectByCode" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from lamp_strategy where code = #{code}

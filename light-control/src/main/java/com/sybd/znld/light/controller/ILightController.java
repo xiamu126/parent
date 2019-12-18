@@ -28,7 +28,7 @@ public interface ILightController {
 
     // 获取某个分平台下的照明灯策略
     @GetMapping(value = "strategy/lamp/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    List<LampStrategy> getLampStrategies(@PathVariable(name = "organId") String organId);
+    List<LampStrategyOutput> getLampStrategies(@PathVariable(name = "organId") String organId);
 
 
     // 获取本周的统计，包括电量，上线率，亮灯率，故障率

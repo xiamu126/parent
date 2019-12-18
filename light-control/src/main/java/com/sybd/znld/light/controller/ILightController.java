@@ -19,7 +19,7 @@ public interface ILightController {
     // 新建照明灯策略
     @PostMapping(value = "strategy/lamp", produces = {MediaType.APPLICATION_JSON_VALUE})
     BaseApiResult newLampStrategy(@RequestBody LampStrategy strategy);
-    // 对目标对象执行照明灯策略添加
+    // 对目标对象执行照明灯策略计划
     @PostMapping(value = "strategy/lamp/schedule", produces = {MediaType.APPLICATION_JSON_VALUE})
     Map<String, BaseApiResult> executeLampStrategy(@RequestBody LampStrategyCmd cmd);
     // 对目标对象（照明灯）执行手动控制

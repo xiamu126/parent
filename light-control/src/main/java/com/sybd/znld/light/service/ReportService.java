@@ -1,8 +1,12 @@
 package com.sybd.znld.light.service;
 
+import com.sybd.znld.light.controller.dto.LampAlarmOutput;
 import com.sybd.znld.light.service.dto.Report;
+import com.sybd.znld.mapper.lamp.LampAlarmMapper;
 import com.sybd.znld.mapper.lamp.LampStatisticsMapper;
+import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.util.MyDateTime;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
@@ -18,10 +23,13 @@ import java.util.stream.Collectors;
 @Service
 public class ReportService implements IReportService {
     private final LampStatisticsMapper lampStatisticsMapper;
+    private final LampAlarmMapper lampAlarmMapper;
 
     @Autowired
-    public ReportService(LampStatisticsMapper lampStatisticsMapper) {
+    public ReportService(LampStatisticsMapper lampStatisticsMapper,
+                         LampAlarmMapper lampAlarmMapper) {
         this.lampStatisticsMapper = lampStatisticsMapper;
+        this.lampAlarmMapper = lampAlarmMapper;
     }
 
     @Override
@@ -178,5 +186,24 @@ public class ReportService implements IReportService {
             return obj;
         }
         return null;
+    }
+
+    @Override
+    public List<LampAlarmOutput> getAlarmList(String organId) {
+        if(!MyString.isUuid(organId)) return null;
+        var models = this.lampAlarmMapper.selectByOrganId(organId);
+        if(models == null || models.isEmpty()) return null;
+        return models.stream().map(m -> {
+            var tmp = new LampAlarmOutput();
+            tmp.id = m.id;
+            tmp.at = MyDateTime.toTimestamp(m.at);
+            tmp.content = m.content;
+            tmp.lampId = m.lampId;
+            tmp.lampName = m.lampName;
+            tmp.regionName = m.regionName;
+            tmp.status = m.status.getDescribe();
+            tmp.type = m.type.getDescribe();
+            return tmp;
+        }).collect(Collectors.toList());
     }
 }

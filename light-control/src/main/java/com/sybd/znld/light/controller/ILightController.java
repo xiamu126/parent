@@ -3,6 +3,7 @@ package com.sybd.znld.light.controller;
 import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.light.service.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
+import com.sybd.znld.model.lamp.LampAlarmModel;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,4 +49,8 @@ public interface ILightController {
     Report getReportBetween(@PathVariable(name = "organId") String organId,
                             @PathVariable(name = "begin") Long beginTimestamp,
                             @PathVariable(name = "end") Long endTimestamp);
+
+    // 获取某个分平台的报警数据
+    @GetMapping(value = "alarm/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    List<LampAlarmOutput> getAlarmList(@PathVariable(name = "organId") String organId);
 }

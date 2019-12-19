@@ -115,10 +115,10 @@ public abstract class BaseStrategy implements IValid {
             }
         } else {
             // 如果不是1973年，意味着必须是完整的年月日
-            if(from.isBefore(LocalDateTime.now())) {
+            /*if(from.isBefore(LocalDateTime.now())) {
                 log.debug("指定的开始日期[" + MyDateTime.toString(from, MyDateTime.FORMAT4) + "]为过去日期");
                 return false;
-            }
+            }*/
             if (to.isBefore(LocalDateTime.now())) {
                 log.debug("指定的截止日期[" + MyDateTime.toString(to, MyDateTime.FORMAT4) + "]为过去日期");
                 return false;

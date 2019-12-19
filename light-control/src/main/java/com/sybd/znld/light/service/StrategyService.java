@@ -11,7 +11,6 @@ import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.model.onenet.OneNetKey;
-import com.sybd.znld.model.onenet.dto.BaseResult;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.service.rbac.IUserService;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -189,31 +187,65 @@ public class StrategyService implements IStrategyService {
             lamps.add(lamp);
         }
         var results = new HashMap<String, BaseApiResult>();
+        // 如果指定策略的截止日期为过去时间
+        if(lampStrategy.toDate.isBefore(LocalDate.now())) {
+            var baseApiResult = new BaseApiResult();
+            baseApiResult.code = 1;
+            baseApiResult.msg = "指定的策略截止日期为过去日期";
+            for(var lamp : lamps) {
+                results.put(lamp.id, baseApiResult);
+            }
+            return results;
+        }
         for(var lamp : lamps) {
             // 在这里不会查看这个策略的开始时间是否快到了，而是把这个策略放到等待列表中
             var lampStrategyWaitingModel = new LampStrategyWaitingModel();
             lampStrategyWaitingModel.organId = lampStrategy.organId;
             lampStrategyWaitingModel.lampId = lamp.id;
             lampStrategyWaitingModel.lampStrategyId = lampStrategy.id;
-            var waitingModels = this.lampStrategyWaitingMapper.selectByLampIdStatus(lamp.id, LampStrategyWaitingModel.Status.UNUSED);
-            if(waitingModels != null && !waitingModels.isEmpty()) {
-                if(waitingModels.stream().anyMatch(w -> w.lampStrategyId.equals(lampStrategy.id))) {
-                    // 这盏路灯上已经有这个策略在等待
-                    var baseApiResult = new BaseApiResult();
+            var waitingModel = this.lampStrategyWaitingMapper.selectByLampId(lamp.id);
+            if(waitingModel == null) {
+                // 如果没有等待中的策略
+                var ret = this.lampStrategyWaitingMapper.insert(lampStrategyWaitingModel);
+                var baseApiResult = new BaseApiResult();
+                if(ret > 0) {
+                    baseApiResult.code = 0;
+                    baseApiResult.msg = "";
+                }else {
                     baseApiResult.code = 1;
-                    baseApiResult.msg = "这个策略已经在目标对象的等待列表中";
-                    results.put(lamp.id, baseApiResult);
-                    continue;
+                    baseApiResult.msg = "无法将此策略添加到目标对象的等待列表中";
                 }
+                results.put(lamp.id, baseApiResult);
+                continue;
             }
-            var ret = this.lampStrategyWaitingMapper.insert(lampStrategyWaitingModel);
+
+            // 意味着有等待中的策略
+            if(waitingModel.lampStrategyId.equals(lampStrategy.id)){
+                // 如果等待中的策略和这个要执行的策略是同一个策略
+                var baseApiResult = new BaseApiResult();
+                baseApiResult.code = 1;
+                baseApiResult.msg = "这个策略已经在目标对象的等待列表中";
+                results.put(lamp.id, baseApiResult);
+                continue;
+            }
+            // 另一种情况，等待中的策略和要执行的策略不是同一个策略，直接覆盖
+            String msg = "";
+            if(waitingModel.status == LampStrategyWaitingModel.Status.UNUSED) {
+                msg = "新策略覆盖了旧的还未下发到硬件的策略";
+            }else {
+                msg = "新策略覆盖了旧的已经下发到硬件的策略";
+            }
+            waitingModel.lampStrategyId = lampStrategy.id;
+            waitingModel.status = LampStrategyWaitingModel.Status.UNUSED;
+            waitingModel.triggerTime = LocalDateTime.now();
+            var ret =this.lampStrategyWaitingMapper.update(waitingModel);
             var baseApiResult = new BaseApiResult();
             if(ret > 0) {
                 baseApiResult.code = 0;
-                baseApiResult.msg = "";
+                baseApiResult.msg = msg;
             }else {
                 baseApiResult.code = 1;
-                baseApiResult.msg = "无法将此策略添加到目标对象的等待列表中";
+                baseApiResult.msg = "无法更新目标对象的策略列表";
             }
             results.put(lamp.id, baseApiResult);
         }
@@ -348,11 +380,14 @@ public class StrategyService implements IStrategyService {
                     // 这条策略已经过期了
                     continue;
                 }
-                var result = this.executeLampStrategyForWaiting(w.lampId, w.lampStrategyId);
-                if(result.isOk()) {
-                    // 处理成功，关闭这条等待策略
-                    w.status = LampStrategyWaitingModel.Status.USED;
-                    this.lampStrategyWaitingMapper.update(w);
+                var days = Period.between(lampStrategy.fromDate, LocalDate.now()).getDays();
+                if(days <= 1) {
+                    var result = this.executeLampStrategyForWaiting(w.lampId, w.lampStrategyId);
+                    if(result.isOk()) {
+                        // 处理成功，关闭这条等待策略
+                        w.status = LampStrategyWaitingModel.Status.USED;
+                        this.lampStrategyWaitingMapper.update(w);
+                    }
                 }
             }
         }
@@ -379,6 +414,17 @@ public class StrategyService implements IStrategyService {
             return BaseApiResult.fail("参数错误");
         }
         var lampExecutionModel = this.lampExecutionMapper.selectByLampId(lamp.id);
+        if(lampExecutionModel == null) {
+            return BaseApiResult.fail("参数错误");
+        }
+        if(lampExecutionModel.status == LampExecutionModel.Status.TRYING) {
+            // 不是首次重试，那么下一次重试的时间为上一次的重试时间+当前重试次数*分钟
+            var nextTime = lampExecutionModel.lastTryingTime.plusMinutes(lampExecutionModel.tryingCount);
+            if(nextTime.isAfter(LocalDateTime.now())) {
+                log.debug("下次重试时间为"+nextTime.toString());
+                return BaseApiResult.fail("下次重试时间为"+nextTime.toString());
+            }
+        }
         var list = lampStrategy.toBundleList();
         if(list == null) {
             return BaseApiResult.fail("错误");

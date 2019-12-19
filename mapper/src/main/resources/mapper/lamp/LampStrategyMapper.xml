@@ -11,7 +11,7 @@
                              at3, brightness3,
                              at4, brightness4,
                              at5, brightness5,
-                             status)
+                             status, trigger_time)
         values
         (#{id}, #{code}, #{version}, #{name},
          #{fromDate}, #{toDate}, #{fromTime}, #{toTime},
@@ -22,7 +22,7 @@
          #{at3}, #{brightness3},
          #{at4}, #{brightness4},
          #{at5}, #{brightness5},
-         #{status,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler});
+         #{status,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler}, #{triggerTime});
     </insert>
     <update id="update"  parameterType="com.sybd.znld.model.lamp.LampStrategyModel">
         update lamp_strategy
@@ -50,6 +50,7 @@
             <if test=" at5 != null ">at5=#{at5},</if>
             <if test=" brightness5 != null ">brightness5=#{brightness5},</if>
             <if test=" status != null ">status=#{status},</if>
+            <if test=" triggerTime != null ">trigger_time=#{triggerTime},</if>
         </trim>
         where id=#{id};
     </update>
@@ -57,10 +58,10 @@
         select * from lamp_strategy where id = #{id}
     </select>
     <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
-        select * from lamp_strategy where organ_id = #{id}
+        select * from lamp_strategy where organ_id = #{id} order by trigger_time desc
     </select>
     <select id="selectByOrganIdStatus" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
-        select * from lamp_strategy where organ_id = #{organId} and status = #{status}
+        select * from lamp_strategy where organ_id = #{organId} and status = #{status}  order by trigger_time desc
     </select>
     <select id="selectByCode" resultType="com.sybd.znld.model.lamp.LampStrategyModel">
         select * from lamp_strategy where code = #{code}

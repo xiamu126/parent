@@ -6,6 +6,7 @@ import com.sybd.znld.light.service.IReportService;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.light.service.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
+import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +74,7 @@ public class LightController implements ILightController {
     @Override
     public Map<String, BaseApiResult> executeLampManualCommand(LampManualCmd cmd) {
         if(!cmd.isValid()) return null;
+        // 如果设备已经有策略在运行或等待，则返回一个告警
         // 执行下发
         return this.strategyService.executeLampStrategy(cmd);
     }
@@ -100,5 +102,10 @@ public class LightController implements ILightController {
             return this.reportService.getReport(organId, Report.TimeType.YEAR, begin, end);
         }
         return null;
+    }
+
+    @Override
+    public List<LampAlarmOutput> getAlarmList(String organId) {
+        return this.reportService.getAlarmList(organId);
     }
 }

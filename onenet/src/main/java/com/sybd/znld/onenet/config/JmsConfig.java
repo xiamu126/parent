@@ -11,10 +11,10 @@ import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 import javax.jms.ConnectionFactory;
 
-@Configuration
-@EnableJms
+//@Configuration
+//@EnableJms
 public class JmsConfig {
-    @Bean
+   /* @Bean
     public JmsListenerContainerFactory myFactory(ConnectionFactory connectionFactory,
                                                     DefaultJmsListenerContainerFactoryConfigurer configurer) {
         var factory = new DefaultJmsListenerContainerFactory();
@@ -22,13 +22,13 @@ public class JmsConfig {
         configurer.configure(factory, connectionFactory);
         // You could still override some of Boot's default if necessary.
         return factory;
-    }
+    }*/
 
-    @Bean // Serialize message content to json using TextMessage
+    /*@Bean // Serialize message content to json using TextMessage
     public MessageConverter jacksonJmsMessageConverter() {
         var converter = new MappingJackson2MessageConverter();
         converter.setTargetType(MessageType.TEXT);
         converter.setTypeIdPropertyName("_type");
         return converter;
-    }
+    }*/
 }

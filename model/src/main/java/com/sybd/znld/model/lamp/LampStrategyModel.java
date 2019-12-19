@@ -6,6 +6,7 @@ import com.sybd.znld.model.lamp.dto.Message;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class LampStrategyModel {
     public LocalTime at5 = LocalTime.NOON; // 特定时间点
     public Integer brightness5 = EMPTY_BRIGHTNESS; // 特定亮度
     public Status status = Status.OK;
+    public LocalDateTime triggerTime = LocalDateTime.now();
 
     public static final int EMPTY_BRIGHTNESS = -1;
 

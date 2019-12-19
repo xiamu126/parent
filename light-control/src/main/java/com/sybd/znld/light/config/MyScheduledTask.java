@@ -23,7 +23,7 @@ public class MyScheduledTask {
     }
 
     @Async("TaskThreadPool")
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelayString = "${schedule.fixed-delay}")
     public void test() {
         var lock = this.redissonClient.getLock(this.getClass().getName());
         if(lock.tryLock()) {

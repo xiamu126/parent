@@ -11,6 +11,7 @@ import com.sybd.znld.model.lamp.dto.LampStatistics;
 import com.sybd.znld.model.lamp.LampStatisticsModel;
 import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
+import com.sybd.znld.onenet.config.RabbitMqConfig;
 import com.sybd.znld.onenet.websocket.handler.*;
 import com.sybd.znld.onenet.controller.dto.News;
 import com.sybd.znld.service.onenet.IOneNetService;
@@ -19,6 +20,7 @@ import com.sybd.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -46,6 +48,7 @@ public class DataPushController {
     private final RedissonClient redissonClient;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+    private final RabbitTemplate rabbitTemplate;
     @Value("${baidu-ak}")
     private String baiduAK;
     private final IOneNetService oneNetService;
@@ -66,7 +69,7 @@ public class DataPushController {
                               RedissonClient redissonClient,
                               ObjectMapper objectMapper,
                               RestTemplate restTemplate,
-                              IOneNetService oneNetService,
+                              RabbitTemplate rabbitTemplate, IOneNetService oneNetService,
                               LampMapper lampMapper,
                               LampStatisticsMapper lampStatisticsMapper) {
         this.jmsTemplate = jmsTemplate;
@@ -78,6 +81,7 @@ public class DataPushController {
         this.redissonClient = redissonClient;
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
+        this.rabbitTemplate = rabbitTemplate;
         this.oneNetService = oneNetService;
         this.lampMapper = lampMapper;
         this.lampStatisticsMapper = lampStatisticsMapper;
@@ -301,6 +305,7 @@ public class DataPushController {
         if (type != null) {
             if (type == 2) {
                 log.debug("设备上下线消息");
+                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ONLINE_ROUTING_KEY, body);
                 Integer status = null;
                 try {
                     status = JsonPath.read(body, "$.msg.status");
@@ -352,17 +357,22 @@ public class DataPushController {
                 return "";
             }
             if (name.contains("开关")) {
+                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ONOFF_ROUTING_KEY, body);
                 this.onOff(rawData, name);
             } else if (name.contains("经度") || name.contains("纬度")) {
+                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_POSITION_ROUTING_KEY, body);
                 this.position(rawData, name);
             } else if (name.contains("angle")) {
+                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ANGLE_ROUTING_KEY, body);
                 this.angle(rawData, name);
             } else if (name.contains("时间戳")) {
                 log.debug("跳过时间戳");
             } else if (name.contains("单灯")) {
+                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_LIGHT_ROUTING_KEY, body);
                 log.debug("收到单灯数据"+":"+rawData.value);
                 this.statistics(rawData, name);
             } else {
+                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ENVIRONMENT_ROUTING_KEY, body);
                 this.environment(rawData, name);
             }
             return "ok";
@@ -407,14 +417,6 @@ public class DataPushController {
         }
     }
 
-    @RequestMapping(value = "/test", method = RequestMethod.GET)
-    @ResponseBody
-    public String test() {
-        log.info("test");
-        //this.jmsTemplate.convertAndSend("mailbox", "hello");
-        return "ok";
-    }
-
     private void statistics(RawData rawData, String name) {
         try {
             rawData.value = rawData.value.toString().replaceAll("'","\"");
@@ -441,11 +443,13 @@ public class DataPushController {
                 }
             }
 
+            map.put("light", obj.B > 0); // 当前灯的亮度状态
+            map.put("fault", false); // 当前灯的故障状态
             map.put("electricity", electricity);
             var status = (Integer) map.get("status");
             if(status == null) { // 如果设备的在线状态未知，则手动刷新下
                 status = this.oneNetService.isDeviceOnline(rawData.imei) ? 1 : 0;
-                map.put("status", status);
+                map.put("status", status); // 如果设备的在线状态为空，则更新设备的在线状态
             }
             var ids = this.lampMapper.selectLampRegionOrganIdByImei(rawData.imei);
             var lastUpdateStatisticsTime = (Long) map.get("lastUpdateStatisticsTime"); // 上次更新数据库的时间
@@ -462,26 +466,28 @@ public class DataPushController {
                 model.updateTime = rawData.at;
                 this.lampStatisticsMapper.insert(model);
                 map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
-                map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
+                map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的电量，下个周期从0开始重新计算
             } else {
                 // 存在上一次的更新时间，则看上一次的更新时间，到现在有没有达到一个小时（至少）
                 var lastTime = MyDateTime.toLocalDateTime(lastUpdateStatisticsTime);
-                var now = LocalDateTime.now();
-                var hours = Duration.between(lastTime, now).abs().toHours();
-                if(hours >= 1) {
-                    // 更新数据库
-                    var model = new LampStatisticsModel();
-                    model.lampId = ids.lampId;
-                    model.regionId = ids.regionId;
-                    model.organId = ids.organId;
-                    model.online = this.oneNetService.isDeviceOnline(rawData.imei);
-                    model.light =  obj.B > 0;
-                    model.fault = false; // 故障暂时不做判断
-                    model.electricity = electricity; // 到目前为止累计电能
-                    model.updateTime = rawData.at;
-                    this.lampStatisticsMapper.insert(model);
-                    map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
-                    map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
+                if(lastTime != null) {
+                    var now = LocalDateTime.now();
+                    var hours = Duration.between(lastTime, now).abs().toHours();
+                    if(hours >= 1) {
+                        // 更新数据库
+                        var model = new LampStatisticsModel();
+                        model.lampId = ids.lampId;
+                        model.regionId = ids.regionId;
+                        model.organId = ids.organId;
+                        model.online = this.oneNetService.isDeviceOnline(rawData.imei);
+                        model.light =  obj.B > 0;
+                        model.fault = false; // 故障暂时不做判断
+                        model.electricity = electricity; // 到目前为止累计电能
+                        model.updateTime = rawData.at;
+                        this.lampStatisticsMapper.insert(model);
+                        map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
+                        map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
+                    }
                 }
             }
             // 最后将收到的数据推送到页面

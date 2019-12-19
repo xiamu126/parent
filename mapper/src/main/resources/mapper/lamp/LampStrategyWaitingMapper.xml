@@ -18,8 +18,11 @@
         </trim>
         where id=#{id};
     </update>
-    <select id="selectById" parameterType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
         select * from lamp_strategy_waiting where id = #{id}
+    </select>
+    <select id="selectByLampId" resultType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
+        select * from lamp_strategy_waiting where lamp_id = #{id}
     </select>
     <select id="selectByOrganIdStatus" resultType="com.sybd.znld.model.lamp.LampStrategyWaitingModel">
         select * from lamp_strategy_waiting

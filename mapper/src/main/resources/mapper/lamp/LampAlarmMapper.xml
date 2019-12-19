@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sybd.znld.mapper.lamp.LampAlarmMapper">
+    <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampAlarmModel">
+        insert lamp_alarm(id, lamp_id, lamp_name, content, at, status, type, region_id, region_name, organ_id)
+        values
+        (#{id}, #{lampId}, #{lampName}, #{content}, #{at},
+         #{status,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler},
+         #{type,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler},
+         #{regionId}, #{regionName}, #{organId});
+    </insert>
+    <update id="update"  parameterType="com.sybd.znld.model.lamp.LampAlarmModel">
+        update lamp_alarm
+        set
+        <trim suffixOverrides=",">
+            <if test=" lampId != null and lampId != '' ">lamp_id=#{lampId},</if>
+            <if test=" lampName != null and lampName != '' ">lamp_name=#{lampName},</if>
+            <if test=" content != null and content != '' ">content=#{content},</if>
+            <if test=" at != null ">at=#{at},</if>
+            <if test=" status != null ">status=#{status},</if>
+            <if test=" type != null ">type=#{status},</if>
+            <if test=" regionId != null and regionId != '' ">region_id=#{regionId},</if>
+            <if test=" regionName != null and regionName != '' ">region_name=#{regionName},</if>
+            <if test=" organId != null and organId != '' ">organ_id=#{organId},</if>
+        </trim>
+        where id=#{id};
+    </update>
+    <select id="selectById" resultType="com.sybd.znld.model.lamp.LampAlarmModel">
+        select * from lamp_alarm where id = #{id}
+    </select>
+    <select id="selectByOrganId" resultType="com.sybd.znld.model.lamp.LampAlarmModel">
+        select * from lamp_alarm where organ_id = #{organId} order by at desc
+    </select>
+</mapper>

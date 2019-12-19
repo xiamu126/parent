@@ -14,4 +14,5 @@ public interface LampExecutionMapper {
     LampExecutionModel selectById(String id);
     LampExecutionModel selectByLampId(String id);
     List<LampExecutionModel> selectByStatus(LampExecutionModel.Status status);
+    List<LampExecutionModel> selectByOrganId(String id);
 }

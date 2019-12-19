@@ -1,11 +1,11 @@
 db-server: 192.168.11.101:8307
 
 spring:
-  activemq:
-    broker-url: tcp://192.168.11.101:61616
-    user: admin
-    password: admin
-    in-memory: false
+  rabbitmq:
+    addresses: 192.168.11.101
+    port: 5672
+    username: admin
+    password: admin123
   datasource:
     oauth:
       pool-name: HikariPool-oauth

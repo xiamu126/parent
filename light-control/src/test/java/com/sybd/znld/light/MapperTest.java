@@ -7,10 +7,7 @@ import com.sybd.znld.light.service.dto.Report;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
-import com.sybd.znld.model.lamp.LampStatisticsModel;
-import com.sybd.znld.model.lamp.LampExecutionModel;
-import com.sybd.znld.model.lamp.LampStrategyModel;
-import com.sybd.znld.model.lamp.LampStrategyWaitingModel;
+import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.LampStatistics;
 import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.service.onenet.IOneNetService;
@@ -181,6 +178,30 @@ public class MapperTest {
         log.debug(YearMonth.of(1973,3).atEndOfMonth().toString());
         model.organId = "88cc4ad365d9493f85db160b336c8414";
         var ret = this.lampStrategyWaitingMapper.insert(model);
+        Assert.assertTrue(ret > 0);
+    }
+
+    @Autowired
+    private LampAlarmMapper lampAlarmMapper;
+
+    @Test
+    public void test12() {
+        var model = new LampAlarmModel();
+        model.at = LocalDateTime.now();
+        model.content = "测试报警内容";
+        model.lampId = "156effb2466e4c68b27d269726beb7e6";
+        model.lampName = "小岗村路灯01";
+        model.organId = "88cc4ad365d9493f85db160b336c8414";
+        model.regionId = "d4db3d36cbb843ca863b46153954b8d0";
+        model.regionName = "小岗村某某路";
+        model.status = LampAlarmModel.Status.UNCONFIRMED;
+        model.type = LampAlarmModel.AlarmType.COMMON;
+        var ret = this.lampAlarmMapper.insert(model);
+        Assert.assertTrue(ret > 0);
+
+        model = this.lampAlarmMapper.selectById("0ad28d8656b847c29136d63ecf536797");
+        model.content = model.content+"123";
+        ret = this.lampAlarmMapper.update(model);
         Assert.assertTrue(ret > 0);
     }
 }

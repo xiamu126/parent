@@ -12,9 +12,10 @@ import java.util.List;
 public interface LampStrategyWaitingMapper {
     int insert(LampStrategyWaitingModel model);
     int update(LampStrategyWaitingModel model);
-    List<LampStrategyWaitingModel> selectLampIdByOrganIdStatus(@Param("organId") String organId,
-                                                               @Param("status") LampStrategyWaitingModel.Status status);
-    List<LampStrategyWaitingModel> selectByLampIdStatus(@Param("lampId") String lampId,
-                                                        @Param("status") LampStrategyWaitingModel.Status status);
+    List<LampStrategyWaitingModel> selectByOrganIdStatus(@Param("organId") String organId,
+                                                         @Param("status") LampStrategyWaitingModel.Status status);
+    LampStrategyWaitingModel selectByLampIdStatus(@Param("lampId") String lampId,
+                                                  @Param("status") LampStrategyWaitingModel.Status status);
+    LampStrategyWaitingModel selectByLampId(String id);
     List<LampStrategyWaitingModel> selectByStatus(LampStrategyWaitingModel.Status status);
 }

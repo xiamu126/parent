@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class SpringConfig {
     @Bean
-    @ConditionalOnProperty(value = "jobs.enabled", matchIfMissing = true, havingValue = "true")
+    @ConditionalOnProperty(value = "schedule.enabled", matchIfMissing = true, havingValue = "true")
     public MyScheduledTask scheduledJob(ILampService lampService,
                                         RedissonClient redissonClient,
                                         IOneNetService oneNetService,

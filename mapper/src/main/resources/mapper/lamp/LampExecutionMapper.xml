@@ -2,20 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.LampExecutionMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampExecutionModel">
-        insert lamp_execution(id, lamp_id, mode, lamp_strategy_id, status, trying_count, last_trying_time)
+        insert lamp_execution(id, lamp_id, mode, lamp_strategy_id, status, trying_count, last_trying_time, last_update_time, organ_id)
         values (#{id}, #{lampId}, #{mode,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler},
-                #{lampStrategyId},#{status,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler}, #{tryingCount}, #{lastTryingTime});
+                #{lampStrategyId},#{status,typeHandler=com.sybd.znld.mapper.MyEnumTypeHandler},
+                #{tryingCount}, #{lastTryingTime}, #{lastUpdateTime}, #{organId});
     </insert>
     <update id="update"  parameterType="com.sybd.znld.model.lamp.LampExecutionModel">
         update lamp_execution
         set
         <trim suffixOverrides=",">
             <if test=" lampId != null and lampId != '' ">lamp_id=#{lampId},</if>
+            <if test=" organId != null and organId != '' ">organ_id=#{organId},</if>
             <if test=" mode != null">mode=#{mode},</if>
             <if test=" lampStrategyId != null and lampStrategyId != '' ">lamp_strategy_id=#{lampStrategyId},</if>
             <if test=" status != null ">status=#{status},</if>
             <if test=" tryingCount != null ">trying_count=#{tryingCount},</if>
             <if test=" lastTryingTime != null ">last_trying_time=#{lastTryingTime},</if>
+            <if test=" lastUpdateTime != null ">last_update_time=#{lastUpdateTime},</if>
         </trim>
         where id=#{id};
     </update>

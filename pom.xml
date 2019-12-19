@@ -277,6 +277,11 @@
                 <artifactId>netty-all</artifactId>
                 <version>${nettyVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
+                <version>${springVersion}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.sybd.znld</groupId>

@@ -1,276 +1,94 @@
 package com.sybd.znld.onenet.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.*;
-import com.sybd.znld.model.environment.RawData;
-import com.sybd.znld.model.environment.RealTimeData;
-import com.sybd.znld.model.lamp.dto.LampStatistic;
-import com.sybd.znld.model.lamp.dto.LampStatistics;
-import com.sybd.znld.model.lamp.LampStatisticsModel;
-import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.onenet.Util;
-import com.sybd.znld.onenet.config.RabbitMqConfig;
-import com.sybd.znld.onenet.websocket.handler.*;
-import com.sybd.znld.onenet.controller.dto.News;
+import com.sybd.znld.onenet.service.IMessageService;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
-import com.sybd.znld.util.MyNumber;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-
-import com.sybd.znld.model.onenet.Config;
 
 @Slf4j
 @Controller
 public class DataPushController {
-    private final JmsTemplate jmsTemplate;
     private final OneNetResourceMapper oneNetResourceMapper;
-    private final DataEnvironmentMapper dataEnvironmentMapper;
-    private final DataDeviceOnOffMapper dataDeviceOnOffMapper;
-    private final DataLocationMapper dataLocationMapper;
-    private final DataAngleMapper dataAngleMapper;
-    private final RedissonClient redissonClient;
-    private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate;
     private final RabbitTemplate rabbitTemplate;
-    @Value("${baidu-ak}")
-    private String baiduAK;
-    private final IOneNetService oneNetService;
-    private final LampMapper lampMapper;
-    private final LampStatisticsMapper lampStatisticsMapper;
+    private final IMessageService messageService;
 
-    private static String token = "abcdefghijkmlnopqrstuvwxyz";//用户自定义token和OneNet第三方平台配置里的token一致
-    private static String aeskey = "whBx2ZwAU5LOHVimPj1MPx56QRe3OsGGWRe4dr17crV";//aeskey和OneNet第三方平台配置里的token一致
+    private static String token = "sybd";//用户自定义token和OneNet第三方平台配置里的token一致
+    private static String aeskey = "ZHKi9o3I9ot0v1rcwCcffgZdyEMa3db45j1r6Pt3bNC";//aeskey和OneNet第三方平台配置里的token一致
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public DataPushController(JmsTemplate jmsTemplate,
-                              OneNetResourceMapper oneNetResourceMapper,
-                              DataEnvironmentMapper dataEnvironmentMapper,
-                              DataDeviceOnOffMapper dataDeviceOnOffMapper,
-                              DataLocationMapper dataLocationMapper,
-                              DataAngleMapper dataAngleMapper,
-                              RedissonClient redissonClient,
-                              ObjectMapper objectMapper,
-                              RestTemplate restTemplate,
-                              RabbitTemplate rabbitTemplate, IOneNetService oneNetService,
-                              LampMapper lampMapper,
-                              LampStatisticsMapper lampStatisticsMapper) {
-        this.jmsTemplate = jmsTemplate;
+    public DataPushController(OneNetResourceMapper oneNetResourceMapper,
+                              RabbitTemplate rabbitTemplate,
+                              IMessageService messageService) {
         this.oneNetResourceMapper = oneNetResourceMapper;
-        this.dataEnvironmentMapper = dataEnvironmentMapper;
-        this.dataDeviceOnOffMapper = dataDeviceOnOffMapper;
-        this.dataLocationMapper = dataLocationMapper;
-        this.dataAngleMapper = dataAngleMapper;
-        this.redissonClient = redissonClient;
-        this.objectMapper = objectMapper;
-        this.restTemplate = restTemplate;
         this.rabbitTemplate = rabbitTemplate;
-        this.oneNetService = oneNetService;
-        this.lampMapper = lampMapper;
-        this.lampStatisticsMapper = lampStatisticsMapper;
+        this.messageService = messageService;
     }
 
-    private Integer getMsgType(String body) {
-        Integer type = null;
-        try {
-            type = JsonPath.read(body, "$.msg.type");
-        } catch (Exception ignored) {
-        }
-        return type;
-    }
-
-    private RawData extract(String body) {
-        String ds = null;
-        try {
-            ds = JsonPath.read(body, "$.msg.ds_id");
-        } catch (Exception ignored) {
-        }
-        Object value = null;
-        try {
-            value = JsonPath.read(body, "$.msg.value");
-        } catch (Exception ignored) {
-        }
-        LocalDateTime at = null;
-        try {
-            Long tmp = JsonPath.read(body, "$.msg.at");
-            var zoneId = ZoneId.of("Asia/Shanghai");
-            at = MyDateTime.toLocalDateTime(tmp, zoneId);
-        } catch (Exception ignored) {
-        }
-        Integer deviceId = null;
-        try {
-            deviceId = JsonPath.read(body, "$.msg.dev_id");
-        } catch (Exception ignored) {
-        }
-        String imei = null;
-        try {
-            imei = JsonPath.read(body, "$.msg.imei");
-        } catch (Exception ignored) {
-        }
-        var rawData = new RawData();
-        rawData.ds = ds;
-        rawData.value = value;
-        rawData.at = at;
-        rawData.deviceId = deviceId;
-        rawData.imei = imei;
-        return rawData;
-    }
-
-    private void onOff(RawData rawData, String name) {
-        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
-        var realTimeData = new RealTimeData();
-        realTimeData.describe = name;
-        realTimeData.value = rawData.value;
-        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
-        map.put(name, realTimeData); // 更新实时缓存
-
-        var news = new News();
-        news.deviceId = rawData.deviceId;
-        news.name = name;
-        news.value = rawData.value;
-        news.at = MyDateTime.toTimestamp(rawData.at);
-        try {
-            OnOffHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-        } catch (JsonProcessingException ignored) {
-        }
-    }
-
-    private void position(RawData rawData, String name) {
-        var tmp = MyNumber.getDouble(rawData.value.toString());
-        if (tmp != null && tmp != 0.0) {
-            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
-            var realTimeData = new RealTimeData();
-            realTimeData.describe = name;
-            realTimeData.value = rawData.value;
-            realTimeData.at = MyDateTime.toTimestamp(rawData.at);
-            map.put(name, realTimeData); // 更新实时缓存
-            // 经度和纬度是分开传过来的，所以再发送实时数据的时候，必须要保证经度和纬度的数据都存在时才发送
-            // 判断经度和纬度的数据是否为同一批数据，看这两个数据的时差，如果是30秒内的，就是同一批数据
-            Object lng = null;
-            Object lat = null;
-            LocalDateTime at = null;
-            if (name.contains("经度")) {
-                // 是经度数据，那么就从缓存里查纬度数据
-                realTimeData = (RealTimeData) map.get(name.replace("经", "纬"));
-                if (realTimeData != null) {
-                    lng = rawData.value;
-                    lat = realTimeData.value;
-                    at = MyDateTime.toLocalDateTime(realTimeData.at);
-                }
+    private void processMsg(String msg) {
+        var rawData = this.messageService.extractUpMsg(msg);
+        var type = this.messageService.getUpMsgType(msg);
+        if (type != null) {
+            if (type == 2) {
+                log.debug("设备上下线消息");
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ONLINE_ROUTING_KEY, msg);
+            } else if (type == 1) {
+                //log.debug("设备上传数据点消息");
+            } else if (type == 7) {
+                //log.debug("缓存命令下发后结果上报");
             } else {
-                realTimeData = (RealTimeData) map.get(name.replace("纬", "经"));
-                if (realTimeData != null) {
-                    lng = realTimeData.value;
-                    lat = rawData.value;
-                    at = MyDateTime.toLocalDateTime(realTimeData.at);
-                }
-
+                log.debug("未知的信息类型");
             }
-            if (at == null) {
+        }
+        if (rawData.ds != null) { // 为空时可能是其它数据，如登入
+            var ids = rawData.getIds();
+            if (ids == null || ids.isEmpty()) {
+                log.debug("不能解析DataStreamId：" + rawData.ds);
                 return;
             }
-            if (lng != null && lat != null) {
-                try {
-                    var builder = UriComponentsBuilder
-                            .fromHttpUrl("http://api.map.baidu.com/geoconv/v1/")
-                            .queryParam("coords", lng + "," + lat)
-                            .queryParam("from", 1)
-                            .queryParam("to", 5)
-                            .queryParam("ak", this.baiduAK);
-                    var converted = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, null, Object.class);
-                    var body = converted.getBody();
-                    if (body != null) {
-                        int status = JsonPath.read(body, "$.status");
-                        if (status == 0) {
-                            var baiduLng = JsonPath.read(body, "$.result[0].x");
-                            var baiduLat = JsonPath.read(body, "$.result[0].y");
-                            map.put("百度经度", new RealTimeData(baiduLng, MyDateTime.toTimestamp(at)));
-                            map.put("百度纬度", new RealTimeData(baiduLat, MyDateTime.toTimestamp(at)));
-                        }
-                    }
-                } catch (Exception ex) {
-                    log.error(ex.getMessage());
-                    log.error(ExceptionUtils.getStackTrace(ex));
-                }
-                var seconds = Duration.between(at, rawData.at).getSeconds();
-                if (Math.abs(seconds) <= 30) { // 是同一批的经纬度
-                    try {
-                        var news = new News();
-                        news.deviceId = rawData.deviceId;
-                        news.name = name;
-                        news.value = lng + "," + lat;
-                        news.at = MyDateTime.toTimestamp(rawData.at);
-                        PositionHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-                    } catch (JsonProcessingException ignored) {
-                    }
-                }
+            var name = this.oneNetResourceMapper.selectNameByDataStreamId(ids.get(0), ids.get(1), ids.get(2));
+            if (name == null) { // 有些DataStreamId是没有定义的，如北斗定位的误差之类
+                log.debug("通过DataStreamId获取相应的资源名称为空：" + rawData.ds);
+                return;
             }
-        } else {
-            log.debug("经纬度不合法");
-        }
-    }
-
-    private void angle(RawData rawData, String name) {
-        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
-        var realTimeData = new RealTimeData();
-        realTimeData.describe = name;
-        realTimeData.value = rawData.value;
-        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
-        map.put(name, realTimeData); // 更新实时缓存
-
-        var news = new News();
-        news.deviceId = rawData.deviceId;
-        news.name = name;
-        news.value = rawData.value;
-        news.at = MyDateTime.toTimestamp(rawData.at);
-        try {
-            AngleHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-        } catch (JsonProcessingException ignored) {
-        }
-    }
-
-    private void environment(RawData rawData, String name) {
-        var data = new DataPushModel();
-        data.deviceId = rawData.deviceId;
-        data.imei = rawData.imei;
-        data.datastreamId = rawData.ds;
-        data.name = name;
-        data.value = rawData.value;
-        data.at = rawData.at;
-        this.dataEnvironmentMapper.insert(data); // // 环境数据需要保存入数据库
-
-        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
-        var realTimeData = new RealTimeData();
-        realTimeData.describe = name;
-        realTimeData.value = rawData.value;
-        realTimeData.at = MyDateTime.toTimestamp(rawData.at);
-        map.put(name, realTimeData); // 更新实时缓存
-
-        var news = new News();
-        news.deviceId = rawData.deviceId;
-        news.name = name;
-        news.value = rawData.value;
-        news.at = MyDateTime.toTimestamp(rawData.at);
-        try {
-            EnvironmentHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
-        } catch (JsonProcessingException ignored) {
+            if (rawData.value == null) {
+                log.debug("onenet推送过来的这个资源[" + name + "]的值为空");
+                return;
+            }
+            if (rawData.at == null) {
+                log.debug("onenet推送过来的这个资源[" + name + "]的更新时间为空");
+                return;
+            }
+            log.debug("onenet推送过来的这个资源[" + name + "]的值为" + rawData.value + "，更新时间为" + MyDateTime.toString(rawData.at, MyDateTime.FORMAT1));
+            if (rawData.deviceId == null) {
+                log.debug("onenet推送过来的这个资源[" + name + "]的deviceId为空");
+                return;
+            }
+            if (name.contains("开关")) {
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ONOFF_ROUTING_KEY, msg);
+            } else if (name.contains("经度") || name.contains("纬度")) {
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_POSITION_ROUTING_KEY, msg);
+            } else if (name.contains("angle")) {
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ANGLE_ROUTING_KEY, msg);
+            } else if (name.contains("时间戳")) {
+                log.debug("跳过时间戳");
+            } else if (name.contains("单灯")) {
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_LIGHT_ROUTING_KEY, msg);
+                //log.debug("收到单灯数据" + ":" + rawData.value);
+            } else {
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ENVIRONMENT_ROUTING_KEY, msg);
+            }
         }
     }
 
@@ -289,7 +107,7 @@ public class DataPushController {
     @ResponseBody
     public String receive(@RequestBody String body) {
         // 明文模式
-        var obj = Util.resolveBody(body, false); // 解析数据
+        /*var obj = Util.resolveBody(body, false); // 解析数据
         if (obj == null) {
             log.debug("收到onenet推送的数据，但解析结果为空");
             return "";
@@ -300,98 +118,27 @@ public class DataPushController {
             log.debug("对解析的数据做签名验证失败");
             return "";
         }
-        var rawData = this.extract(body);
-        var type = this.getMsgType(body);
-        if (type != null) {
-            if (type == 2) {
-                log.debug("设备上下线消息");
-                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ONLINE_ROUTING_KEY, body);
-                Integer status = null;
-                try {
-                    status = JsonPath.read(body, "$.msg.status");
-                } catch (Exception ignored) {
-                }
-                if (status != null) {
-                    if (status == 0) {
-                        log.debug("设备下线了");
-                    } else if (status == 1) {
-                        log.debug("设备上线了");
-                    } else {
-                        log.debug("未知的设备状态");
-                    }
-                    if (rawData.imei != null) {
-                        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
-                        map.put("status", status);
-                    }
-                }
-            } else if (type == 1) {
-                log.debug("设备上传数据点消息");
-            } else if (type == 7) {
-                log.debug("缓存命令下发后结果上报");
-            } else {
-                log.debug("位置的信息类型");
-            }
-        }
-        if (rawData.ds != null) { // 为空时可能是其它数据，如登入
-            var ids = rawData.ds.split("_");
-            if (ids.length != 3) {
-                log.debug("不能解析DataStreamId：" + rawData.ds);
-                return "";
-            }
-            var name = this.oneNetResourceMapper.selectNameByDataStreamId(ids[0], ids[1], ids[2]);
-            if (name == null) { // 有些DataStreamId是没有定义的，如北斗定位的误差之类
-                log.debug("通过DataStreamId获取相应的资源名称为空：" + rawData.ds);
-                return "";
-            }
-            if (rawData.value == null) {
-                log.debug("onenet推送过来的这个资源[" + name + "]的值为空");
-                return "";
-            }
-            if (rawData.at == null) {
-                log.debug("onenet推送过来的这个资源[" + name + "]的更新时间为空");
-                return "";
-            }
-            log.debug("onenet推送过来的这个资源[" + name + "]的值为" + rawData.value + "，更新时间为" + MyDateTime.toString(rawData.at, MyDateTime.FORMAT1));
-            if (rawData.deviceId == null) {
-                log.debug("onenet推送过来的这个资源[" + name + "]的deviceId为空");
-                return "";
-            }
-            if (name.contains("开关")) {
-                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ONOFF_ROUTING_KEY, body);
-                this.onOff(rawData, name);
-            } else if (name.contains("经度") || name.contains("纬度")) {
-                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_POSITION_ROUTING_KEY, body);
-                this.position(rawData, name);
-            } else if (name.contains("angle")) {
-                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ANGLE_ROUTING_KEY, body);
-                this.angle(rawData, name);
-            } else if (name.contains("时间戳")) {
-                log.debug("跳过时间戳");
-            } else if (name.contains("单灯")) {
-                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_LIGHT_ROUTING_KEY, body);
-                log.debug("收到单灯数据"+":"+rawData.value);
-                this.statistics(rawData, name);
-            } else {
-                this.rabbitTemplate.convertAndSend(RabbitMqConfig.ONENET_TOPIC_EXCHANGE, RabbitMqConfig.ONENET_UP_MSG_ENVIRONMENT_ROUTING_KEY, body);
-                this.environment(rawData, name);
-            }
-            return "ok";
-        }
+        return "ok";*/
         // 加密模式
-//        var obj1 = com.sybd.znld.web.Util.resolveBody(body, true);
-//        log.info("data receive:  body Object--- " +obj1);
-//        if (obj1 != null){
-//            var dataRight1 = com.sybd.znld.web.Util.checkSignature(obj1, token);
-//            if (dataRight1){
-//                var msg = com.sybd.znld.web.Util.decryptMsg(obj1, aeskey);
-//                log.info("data receive: content" + msg);
-//            }else {
-//                log.info("data receive:  signature error " );
-//            }
-//        }else {
-//            log.info("data receive: body empty error" );
-//        }
-
+        try {
+            var obj = Util.resolveBody(body, true);
+            //log.info("data receive:  body Object--- " +obj);
+            if (obj != null){
+                var dataRight = Util.checkSignature(obj, token);
+                if (dataRight){
+                    var msg = Util.decryptMsg(obj, aeskey);
+                    this.processMsg(msg);
+                    log.info("data receive: content" + msg);
+                }else {
+                    log.info("data receive:  signature error " );
+                }
+            }else {
+                log.info("data receive: body empty error" );
+            }
+        }catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+        }
         return "ok";
     }
 
@@ -414,106 +161,6 @@ public class DataPushController {
             return msg;
         } else {
             return "error";
-        }
-    }
-
-    private void statistics(RawData rawData, String name) {
-        try {
-            rawData.value = rawData.value.toString().replaceAll("'","\"");
-            // 首先把数据存入redis
-            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(rawData.imei));
-            var lastData = (RealTimeData)map.get(name); // 上一次的数据
-            var realTimeData = new RealTimeData();
-            realTimeData.describe = name;
-            realTimeData.value = rawData.value;
-            realTimeData.at = MyDateTime.toTimestamp(rawData.at);
-            map.put(name, realTimeData); // 更新实时缓存
-            var obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
-            var electricity = MyNumber.getDouble(map.get("electricity")); // 上一次累计的电量
-            var ep = obj.EP.get(1);
-            if(electricity == null) {
-                if(ep == null || ep <= 0) {
-                    electricity = 0.0;
-                } else {
-                    electricity = ep; // 把这一次的数据累计上去
-                }
-            }else {
-                if(ep != null && ep > 0) {
-                    electricity = electricity + ep; // 把这一次的数据累计上去
-                }
-            }
-
-            map.put("light", obj.B > 0); // 当前灯的亮度状态
-            map.put("fault", false); // 当前灯的故障状态
-            map.put("electricity", electricity);
-            var status = (Integer) map.get("status");
-            if(status == null) { // 如果设备的在线状态未知，则手动刷新下
-                status = this.oneNetService.isDeviceOnline(rawData.imei) ? 1 : 0;
-                map.put("status", status); // 如果设备的在线状态为空，则更新设备的在线状态
-            }
-            var ids = this.lampMapper.selectLampRegionOrganIdByImei(rawData.imei);
-            var lastUpdateStatisticsTime = (Long) map.get("lastUpdateStatisticsTime"); // 上次更新数据库的时间
-            if(lastUpdateStatisticsTime == null) {
-                // 更新数据库
-                var model = new LampStatisticsModel();
-                model.lampId = ids.lampId;
-                model.regionId = ids.regionId;
-                model.organId = ids.organId;
-                model.online = this.oneNetService.isDeviceOnline(rawData.imei);
-                model.light =  obj.B > 0;
-                model.fault = false; // 故障暂时不做判断
-                model.electricity = electricity; // 到目前为止累计电能
-                model.updateTime = rawData.at;
-                this.lampStatisticsMapper.insert(model);
-                map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
-                map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的电量，下个周期从0开始重新计算
-            } else {
-                // 存在上一次的更新时间，则看上一次的更新时间，到现在有没有达到一个小时（至少）
-                var lastTime = MyDateTime.toLocalDateTime(lastUpdateStatisticsTime);
-                if(lastTime != null) {
-                    var now = LocalDateTime.now();
-                    var hours = Duration.between(lastTime, now).abs().toHours();
-                    if(hours >= 1) {
-                        // 更新数据库
-                        var model = new LampStatisticsModel();
-                        model.lampId = ids.lampId;
-                        model.regionId = ids.regionId;
-                        model.organId = ids.organId;
-                        model.online = this.oneNetService.isDeviceOnline(rawData.imei);
-                        model.light =  obj.B > 0;
-                        model.fault = false; // 故障暂时不做判断
-                        model.electricity = electricity; // 到目前为止累计电能
-                        model.updateTime = rawData.at;
-                        this.lampStatisticsMapper.insert(model);
-                        map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
-                        map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
-                    }
-                }
-            }
-            // 最后将收到的数据推送到页面
-            var statistics = new LampStatistic();
-            var msg = new LampStatistic.Message();
-            msg.id = ids.lampId;
-            msg.voltage =  new LampStatistic.Message.ValueError<>(obj.V, obj.V != null && obj.V <= 0.1);
-            msg.brightness = new LampStatistic.Message.ValueError<>(obj.B, obj.B != null && obj.B >= 0 && obj.B <= 100);
-            msg.electricity = new LampStatistic.Message.ValueError<>(obj.I.get(1), obj.I.get(1) != null && obj.I.get(1) <= 0.1);
-            msg.energy = new LampStatistic.Message.ValueError<>(obj.EP.get(1), obj.EP.get(1) != null && obj.EP.get(1) <= 1.5);
-            msg.power = new LampStatistic.Message.ValueError<>(obj.PP.get(1), obj.PP.get(1) != null && obj.EP.get(1) <= 1.5);
-            var pp = obj.PP.get(1);
-            var ps = obj.PS.get(1);
-            if(ps == null || ps <= 0) {
-                msg.powerFactor = new LampStatistic.Message.ValueError<>(0.0, true);
-            } else {
-                msg.powerFactor = new LampStatistic.Message.ValueError<>(pp / ps, false);
-            }
-            msg.rate = new LampStatistic.Message.ValueError<>(obj.HZ, obj.HZ != null && obj.HZ <= 60);
-            msg.updateTime = MyDateTime.toTimestamp(rawData.at);
-            statistics.message = msg;
-            var json = this.objectMapper.writeValueAsString(statistics);
-            LampStatisticsHandler.sendAll(json);
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            log.error(ExceptionUtils.getStackTrace(ex));
         }
     }
 }

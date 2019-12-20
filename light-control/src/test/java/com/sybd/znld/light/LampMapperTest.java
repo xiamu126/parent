@@ -2,6 +2,7 @@ package com.sybd.znld.light;
 
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.model.lamp.LampModel;
+import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,5 +27,20 @@ public class LampMapperTest {
         lamp.imei = "imei 3";
         var ret = this.lampMapper.insert(lamp);
         Assert.assertTrue(ret > 0);
+    }
+
+    @Test
+    public void test2() {
+        var model = this.lampMapper.selectByImei("868194030013173");
+        log.debug(model.apiKey);
+    }
+
+    @Autowired
+    private IOneNetService oneNetService;
+
+    @Test
+    public void test3() {
+        var ret = this.oneNetService.isDeviceOnline("868194030013173");
+        log.debug(String.valueOf(ret));
     }
 }

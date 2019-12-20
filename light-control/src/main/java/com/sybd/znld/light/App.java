@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class App {
     public static void main(String[] args) {
         var context = SpringApplication.run(App.class, args);
-        var beanDefinitionNames = context.getBeanDefinitionNames();
-        //Arrays.stream(beanDefinitionNames).forEach(System.out::println);
+        /*var beanDefinitionNames = context.getBeanDefinitionNames();
+        Arrays.stream(beanDefinitionNames).forEach(System.out::println);*/
     }
 }

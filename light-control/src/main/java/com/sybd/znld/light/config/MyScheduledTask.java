@@ -23,14 +23,28 @@ public class MyScheduledTask {
     }
 
     @Async("TaskThreadPool")
-    @Scheduled(fixedDelayString = "${schedule.fixed-delay}")
-    public void test() {
+    @Scheduled(fixedDelayString = "${schedule.fixed-delay-waiting}")
+    public void processWaitingStrategies() {
         var lock = this.redissonClient.getLock(this.getClass().getName());
         if(lock.tryLock()) {
             try {
                 lock.lock();
-                log.debug("定时任务执行——");
                 this.strategyService.processWaitingStrategies();
+            }finally {
+                lock.forceUnlock();
+            }
+        }else {
+            log.debug("获取锁失败");
+        }
+    }
+
+    @Async("TaskThreadPool")
+    @Scheduled(fixedDelayString = "${schedule.fixed-delay-failed}")
+    public void processFailedLamps() {
+        var lock = this.redissonClient.getLock(this.getClass().getName());
+        if(lock.tryLock()) {
+            try {
+                lock.lock();
                 this.strategyService.processFailedLamps();
             }finally {
                 lock.forceUnlock();

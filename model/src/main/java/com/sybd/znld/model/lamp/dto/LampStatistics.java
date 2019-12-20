@@ -23,4 +23,18 @@ public class LampStatistics {
     public Double X; // X倾斜角度
     public Double Y; // Y倾斜角度
     public List<Integer> RL; // 继电器开关，0代表关，1代表关
+    public Double Ta; // 大气温度
+    public Double Ua; // 大气湿度
+    public Double PM25;
+    public Double PM10;
+    public Double CO;
+    public Double NO2;
+    public Double SO2;
+    public Double O3;
+    public Double lat; // 纬度
+    public Double lon; // 经度
+    public Double hgt; // 高度
+    public Double spd; // 速度
+    public Integer stn; // 卫星数量
+    public Double hddp; // 水平位置相对精度
 }

@@ -1,5 +1,7 @@
 package com.sybd.znld.service.onenet;
 
+import com.sybd.znld.model.environment.RawData;
+import com.sybd.znld.model.lamp.dto.LampStatistic;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
 import com.sybd.znld.model.onenet.dto.*;
@@ -10,6 +12,20 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 public interface IOneNetService {
+    String ONENET_UP_MSG_ONLINE_QUEUE = "ONENET_UP_MSG_ONLINE_QUEUE";
+    String ONENET_UP_MSG_ONOFF_QUEUE = "ONENET_UP_MSG_ONOFF_QUEUE";
+    String ONENET_UP_MSG_POSITION_QUEUE = "ONENET_UP_MSG_POSITION_QUEUE";
+    String ONENET_UP_MSG_ANGLE_QUEUE = "ONENET_UP_MSG_ANGLE_QUEUE";
+    String ONENET_UP_MSG_ENVIRONMENT_QUEUE = "ONENET_UP_MSG_ENVIRONMENT_QUEUE";
+    String ONENET_UP_MSG_LIGHT_QUEUE = "ONENET_UP_MSG_LIGHT_QUEUE";
+    String ONENET_TOPIC_EXCHANGE = "ONENET_TOPIC_EXCHANGE";
+    String ONENET_UP_MSG_ONLINE_ROUTING_KEY = "ONENET.UPMSG.ONLINE";
+    String ONENET_UP_MSG_ONOFF_ROUTING_KEY = "ONENET.UPMSG.ONOFF";
+    String ONENET_UP_MSG_POSITION_ROUTING_KEY = "ONENET.UPMSG.POSITION";
+    String ONENET_UP_MSG_ANGLE_ROUTING_KEY = "ONENET.UPMSG.ANGLE";
+    String ONENET_UP_MSG_ENVIRONMENT_ROUTING_KEY = "ONENET.UPMSG.ENVIRONMENT";
+    String ONENET_UP_MSG_LIGHT_ROUTING_KEY = "ONENET.UPMSG.LIGHT";
+
     List<DeviceIdAndImei> getDeviceIdAndImei();
     String getDataStreamId(OneNetKey oneNetKey);
     String getImeiByDeviceId(Integer deviceId);

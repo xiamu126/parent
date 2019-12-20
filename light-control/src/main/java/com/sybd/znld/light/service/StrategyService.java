@@ -10,6 +10,7 @@ import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.Message;
+import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.service.onenet.IOneNetService;
@@ -18,6 +19,7 @@ import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,7 @@ public class StrategyService implements IStrategyService {
     private final OrganizationMapper organizationMapper;
     private final UserMapper userMapper;
     private final LampStrategyWaitingMapper lampStrategyWaitingMapper;
+    private final RedissonClient redissonClient;
 
     @Autowired
     public StrategyService(IUserService userService,
@@ -62,7 +65,8 @@ public class StrategyService implements IStrategyService {
                            OrganizationMapper organizationMapper,
                            UserMapper userMapper,
                            LampExecutionMapper lampExecutionMapper,
-                           LampStrategyWaitingMapper lampStrategyWaitingMapper) {
+                           LampStrategyWaitingMapper lampStrategyWaitingMapper,
+                           RedissonClient redissonClient) {
         this.userService = userService;
         this.lampStrategyMapper = lampStrategyMapper;
         this.lampExecutionMapper = lampExecutionMapper;
@@ -76,6 +80,7 @@ public class StrategyService implements IStrategyService {
         this.organizationMapper = organizationMapper;
         this.userMapper = userMapper;
         this.lampStrategyWaitingMapper = lampStrategyWaitingMapper;
+        this.redissonClient = redissonClient;
     }
 
     @Override
@@ -289,6 +294,12 @@ public class StrategyService implements IStrategyService {
                 var result = future.get();
                 results.put(lamp.id, new BaseApiResult(result.errno, ""));
                 var tmp = this.lampExecutionMapper.selectByLampId(lamp.id);
+                if(result.isOk()) {
+                    var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
+                    if(map != null) {
+                        map.put("executionMode", LampExecutionModel.Mode.MANUAL);
+                    }
+                }
                 if(tmp == null) {
                     // 如果没有这个路灯的运行状态，新增
                     var model = new LampExecutionModel();
@@ -369,6 +380,7 @@ public class StrategyService implements IStrategyService {
 
     @Override
     public void processWaitingStrategies() {
+        log.debug("开始执行等待任务");
         var waitingModels = this.lampStrategyWaitingMapper.selectByStatus(LampStrategyWaitingModel.Status.UNUSED);
         if(waitingModels != null && !waitingModels.isEmpty()) {
             for(var w : waitingModels) {
@@ -378,18 +390,24 @@ public class StrategyService implements IStrategyService {
                 }
                 if(lampStrategy.toDate.isBefore(LocalDate.now())) {
                     // 这条策略已经过期了
+                    log.debug("这条等待中的策略已经过期");
                     continue;
                 }
                 var days = Period.between(lampStrategy.fromDate, LocalDate.now()).getDays();
-                if(days <= 1) {
+                if(days >= -1) { // 正数意味着，fromDate为过去时间，0即当天，负数意味着fromDate为未来时间，-1即明天
                     var result = this.executeLampStrategyForWaiting(w.lampId, w.lampStrategyId);
                     if(result.isOk()) {
                         // 处理成功，关闭这条等待策略
                         w.status = LampStrategyWaitingModel.Status.USED;
                         this.lampStrategyWaitingMapper.update(w);
+                        log.debug("执行等待任务成功");
+                    }else {
+                        log.debug("执行等待任务失败，"+result.code);
                     }
                 }
             }
+        } else {
+            log.debug("等待列表为空");
         }
     }
 
@@ -416,6 +434,12 @@ public class StrategyService implements IStrategyService {
         var lampExecutionModel = this.lampExecutionMapper.selectByLampId(lamp.id);
         if(lampExecutionModel == null) {
             return BaseApiResult.fail("参数错误");
+        }
+        // 查看当前路灯运行的模式，如果已经进入手动模式则不执行重试，并且终止重试
+        if(lampExecutionModel.mode == LampExecutionModel.Mode.MANUAL) {
+            lampExecutionModel.status = LampExecutionModel.Status.TRYING_INTERRUPTED;
+            this.lampExecutionMapper.update(lampExecutionModel);
+            return BaseApiResult.fail("已经进入手动模式，终止重试");
         }
         if(lampExecutionModel.status == LampExecutionModel.Status.TRYING) {
             // 不是首次重试，那么下一次重试的时间为上一次的重试时间+当前重试次数*分钟
@@ -504,6 +528,12 @@ public class StrategyService implements IStrategyService {
                     json);
             var future = this.oneNetService.executeAsync(params);
             var result = future.get();
+            if(result.isOk()) {
+                var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
+                if(map != null) {
+                    map.put("executionMode", LampExecutionModel.Mode.STRATEGY);
+                }
+            }
             if (lampExecutionModel == null) {
                 // 如果没有这个路灯的运行状态，新增
                 var model = new LampExecutionModel();
@@ -540,6 +570,7 @@ public class StrategyService implements IStrategyService {
 
     @Override
     public void processFailedLamps() {
+        log.debug("开始重试失败任务");
         var failedModels = this.lampExecutionMapper.selectByStatus(LampExecutionModel.Status.FAILED);
         if(failedModels != null && !failedModels.isEmpty()) {
             for(var f : failedModels) {

@@ -1,16 +1,14 @@
 package com.sybd.znld.light.service;
 
+import com.sybd.znld.light.controller.dto.LampStrategy;
 import com.sybd.znld.light.controller.dto.OperationParams;
 import com.sybd.znld.light.controller.dto.RegionBoxLamp;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
-import com.sybd.znld.model.DeviceStatus;
-import com.sybd.znld.model.lamp.ElectricityDispositionBoxLampModel;
-import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
-import com.sybd.znld.model.lamp.LampModel;
-import com.sybd.znld.model.lamp.LampRegionModel;
+import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.model.onenet.dto.BaseResult;
+import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,8 @@ public class DeviceService implements IDeviceService {
     private final LampModuleMapper lampModuleMapper;
     private final OrganizationMapper organizationMapper;
     private final LampRegionMapper lampRegionMapper;
+    private final LampExecutionMapper lampExecutionMapper;
+    private final LampStrategyMapper lampStrategyMapper;
 
     @Autowired
     public DeviceService(RegionMapper regionMapper,
@@ -46,7 +47,9 @@ public class DeviceService implements IDeviceService {
                          ElectricityDispositionBoxLampMapper boxLampMapper,
                          LampModuleMapper lampModuleMapper,
                          OrganizationMapper organizationMapper,
-                         LampRegionMapper lampRegionMapper) {
+                         LampRegionMapper lampRegionMapper,
+                         LampExecutionMapper lampExecutionMapper,
+                         LampStrategyMapper lampStrategyMapper) {
         this.regionMapper = regionMapper;
         this.lampMapper = lampMapper;
         this.redissonClient = redissonClient;
@@ -55,6 +58,8 @@ public class DeviceService implements IDeviceService {
         this.lampModuleMapper = lampModuleMapper;
         this.organizationMapper = organizationMapper;
         this.lampRegionMapper = lampRegionMapper;
+        this.lampExecutionMapper = lampExecutionMapper;
+        this.lampStrategyMapper = lampStrategyMapper;
     }
 
     @Override
@@ -126,9 +131,53 @@ public class DeviceService implements IDeviceService {
                     tmpLamp.id = lamp.id;
                     tmpLamp.imei = lamp.imei;
                     tmpLamp.name = lamp.deviceName;
+                    tmpLamp.regionName = region.name;
                     if (map != null) {
                         tmpLamp.lng = MyNumber.getDouble(map.get("百度经度"));
                         tmpLamp.lat = MyNumber.getDouble(map.get("百度纬度"));
+                        tmpLamp.brightness = (Integer) map.get("brightness");
+                        tmpLamp.isOnline = (Boolean) map.get("isOnline");
+                        var mode = (LampExecutionModel.Mode) map.get("executionMode");
+                        tmpLamp.executionMode = (mode == LampExecutionModel.Mode.STRATEGY ? "策略" : "手动");
+                        if(mode == LampExecutionModel.Mode.STRATEGY) {
+                            var lampExecution = this.lampExecutionMapper.selectByLampId(tmpLamp.id);
+                            var lampStrategy = this.lampStrategyMapper.selectById(lampExecution.lampStrategyId);
+                            tmpLamp.strategyName = lampStrategy.name;
+                            tmpLamp.from = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.fromTime));
+                            tmpLamp.to = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.toDate, lampStrategy.toTime));
+                            var points = new ArrayList<LampStrategy.Point>();
+                            if(lampStrategy.brightness1 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                                var point = new LampStrategy.Point();
+                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at1));
+                                point.brightness = lampStrategy.brightness1;
+                                points.add(point);
+                            }
+                            if(lampStrategy.brightness2 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                                var point = new LampStrategy.Point();
+                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at2));
+                                point.brightness = lampStrategy.brightness2;
+                                points.add(point);
+                            }
+                            if(lampStrategy.brightness3 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                                var point = new LampStrategy.Point();
+                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at3));
+                                point.brightness = lampStrategy.brightness3;
+                                points.add(point);
+                            }
+                            if(lampStrategy.brightness4 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                                var point = new LampStrategy.Point();
+                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at4));
+                                point.brightness = lampStrategy.brightness4;
+                                points.add(point);
+                            }
+                            if(lampStrategy.brightness5 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                                var point = new LampStrategy.Point();
+                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at5));
+                                point.brightness = lampStrategy.brightness5;
+                                points.add(point);
+                            }
+                            tmpLamp.points = points;
+                        }
                     }
                     switch (lamp.status) {
                         case OK:

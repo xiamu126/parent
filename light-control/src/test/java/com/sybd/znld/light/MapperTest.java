@@ -13,6 +13,7 @@ import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -203,5 +204,19 @@ public class MapperTest {
         model.content = model.content+"123";
         ret = this.lampAlarmMapper.update(model);
         Assert.assertTrue(ret > 0);
+    }
+
+    @Test
+    public void test13() {
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey("868194030013173"));
+        if(map != null) {
+            log.debug("map.size()");
+        }
+    }
+
+    @Test
+    public void test14() {
+        var days = Period.between(LocalDate.of(2019, 12,26), LocalDate.now()).getDays();
+        log.debug(String.valueOf(days));
     }
 }

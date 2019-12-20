@@ -31,5 +31,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
         registry.addHandler(new LampStatisticsHandler(),"/data/news/lamp/statistics")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
+        registry.addHandler(new LampStatisticsHandler(),"/data/news/lamp/onoffline")
+                .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
     }
 }

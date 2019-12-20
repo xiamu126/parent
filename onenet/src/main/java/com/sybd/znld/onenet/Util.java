@@ -3,10 +3,9 @@ package com.sybd.znld.onenet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONObject;
-
+import java.util.Base64;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -46,7 +45,7 @@ public class Util {
         System.arraycopy(token.getBytes(), 0, paramB, 0, token.length());
         System.arraycopy(nonce.getBytes(), 0, paramB, token.length(), 8);
         System.arraycopy(msg.getBytes(), 0, paramB, token.length() + 8, msg.length());
-        var sig = Base64.encodeBase64String(mdInst.digest(paramB));
+        var sig = Base64.getEncoder().encodeToString(mdInst.digest(paramB));
         log.info("url&token validation: result {},  detail receive:{} calculate:{}", sig.equals(signature.replace(' ','+')),signature,sig);
         return sig.equals(signature.replace(' ','+'));
     }
@@ -65,8 +64,8 @@ public class Util {
         System.arraycopy(token.getBytes(), 0, signature, 0, token.length());
         System.arraycopy(obj.getNonce().getBytes(), 0, signature, token.length(), 8);
         System.arraycopy(obj.getMsg().toString().getBytes(), 0, signature, token.length() + 8, obj.getMsg().toString().length());
-        var calSig = Base64.encodeBase64String(mdInst.digest(signature));
-        log.info("check signature: result:{}  receive sig:{},calculate sig: {}",calSig.equals(obj.getMsgSignature()),obj.getMsgSignature(),calSig);
+        var calSig = Base64.getEncoder().encodeToString(mdInst.digest(signature));
+        //log.info("check signature: result:{}  receive sig:{},calculate sig: {}",calSig.equals(obj.getMsgSignature()),obj.getMsgSignature(),calSig);
         return calSig.equals(obj.getMsgSignature());
     }
 
@@ -76,11 +75,11 @@ public class Util {
      * @param encodeKey OneNet平台第三方平台配置页面为用户生成的AES的BASE64编码格式秘钥
      */
     public static String decryptMsg(BodyObj obj, String encodeKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        var encMsg = Base64.decodeBase64(obj.getMsg().toString());
-        var aeskey = Base64.decodeBase64(encodeKey + "=");
-        SecretKey secretKey = new SecretKeySpec(aeskey, 0, 32, "AES");
-        Cipher cipher = null;
-        cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+        var encMsg = Base64.getDecoder().decode(obj.getMsg().toString());
+        var str = encodeKey + "=";
+        var aeskey = Base64.getDecoder().decode(str.getBytes());
+        var secretKey = new SecretKeySpec(aeskey, 0, 32, "AES");
+        var cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(aeskey, 0, 16));
         var allmsg = cipher.doFinal(encMsg);
         var msgLenBytes = new byte[4];

@@ -20,7 +20,7 @@ public class LampExecutionModel {
 
     @MyEnum
     public enum Status implements IEnum {
-        SUCCESS(0), FAILED(1), TRYING(2), TRYING_FAILED(3), TRYING_SUCCESS(4), EXPIRED_FAILED(5)
+        SUCCESS(0), FAILED(1), TRYING(2), TRYING_FAILED(3), TRYING_SUCCESS(4), EXPIRED_FAILED(5), TRYING_INTERRUPTED(6)
         ;
         Status(int v) {
             this.value = v;

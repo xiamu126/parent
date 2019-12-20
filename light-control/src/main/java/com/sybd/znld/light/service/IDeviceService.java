@@ -33,4 +33,5 @@ public interface IDeviceService {
     boolean addBoxesToRegion(List<String> ids, String regionId);
     // 把某个区域下的路灯关联到某个配电箱下面
     boolean addLampsOfRegionToBox(String regionId, String boxId);
+
 }

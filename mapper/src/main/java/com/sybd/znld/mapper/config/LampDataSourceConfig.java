@@ -1,6 +1,8 @@
 package com.sybd.znld.mapper.config;
 
 import com.sybd.znld.mapper.MyEnumTypeHandler;
+import com.sybd.znld.model.DeviceStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -16,6 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
+@Slf4j
 @Configuration
 @MapperScan(basePackages = "com.sybd.znld.mapper.lamp", sqlSessionFactoryRef="znldSqlSessionFactory")
 public class LampDataSourceConfig {

@@ -2,17 +2,30 @@ package com.sybd.znld.service.onenet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.sybd.znld.mapper.lamp.DataEnvironmentMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
+import com.sybd.znld.mapper.lamp.LampStatisticsMapper;
+import com.sybd.znld.mapper.lamp.OneNetResourceMapper;
+import com.sybd.znld.model.environment.RawData;
+import com.sybd.znld.model.environment.RealTimeData;
+import com.sybd.znld.model.lamp.LampStatisticsModel;
+import com.sybd.znld.model.lamp.dto.LampStatistic;
+import com.sybd.znld.model.lamp.dto.LampStatistics;
+import com.sybd.znld.model.onenet.Config;
+import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.lamp.dto.DeviceIdAndImei;
 import com.sybd.znld.model.onenet.dto.*;
+import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +35,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,6 +55,13 @@ public class OneNetService implements IOneNetService {
     private final LampMapper lampMapper;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+    private final RedissonClient redissonClient;
+    private final OneNetResourceMapper oneNetResourceMapper;
+    private final DataEnvironmentMapper dataEnvironmentMapper;
+    private final LampStatisticsMapper lampStatisticsMapper;
+
+    @Value("${baidu-ak}")
+    private String baiduAK;
 
     @Getter @Setter public String getHistoryDataStreamUrl;
     @Getter @Setter public String postExecuteUrl;
@@ -51,10 +75,20 @@ public class OneNetService implements IOneNetService {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public OneNetService(LampMapper lampMapper, ObjectMapper objectMapper, RestTemplate restTemplate) {
+    public OneNetService(LampMapper lampMapper,
+                         ObjectMapper objectMapper,
+                         RestTemplate restTemplate,
+                         RedissonClient redissonClient,
+                         OneNetResourceMapper oneNetResourceMapper,
+                         DataEnvironmentMapper dataEnvironmentMapper,
+                         LampStatisticsMapper lampStatisticsMapper) {
         this.lampMapper = lampMapper;
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
+        this.redissonClient = redissonClient;
+        this.oneNetResourceMapper = oneNetResourceMapper;
+        this.dataEnvironmentMapper = dataEnvironmentMapper;
+        this.lampStatisticsMapper = lampStatisticsMapper;
     }
 
     @Override

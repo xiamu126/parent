@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 @Slf4j
-public class LampStatisticsHandler implements WebSocketHandler {
+public class LampWarningsHandler implements WebSocketHandler {
     private static final ArrayList<WebSocketSession> sessions = new ArrayList<>();
 
     @Override
@@ -48,7 +48,7 @@ public class LampStatisticsHandler implements WebSocketHandler {
         for(var session : sessions){
             var message = new TextMessage(msg);
             try {
-                synchronized (LampStatisticsHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
+                synchronized (LampWarningsHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
                     session.sendMessage(message);
                 }
             } catch (IOException ex) {

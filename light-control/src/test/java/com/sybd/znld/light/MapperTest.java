@@ -219,4 +219,12 @@ public class MapperTest {
         var days = Period.between(LocalDate.of(2019, 12,26), LocalDate.now()).getDays();
         log.debug(String.valueOf(days));
     }
+
+    @Autowired
+    private RegionMapper regionMapper;
+    @Test
+    public void test15() {
+        var ret = this.regionMapper.selectByLampId("156effb2466e4c68b27d269726beb7e6");
+        Assert.assertEquals("156effb2466e4c68b27d269726beb7e6", ret.id);
+    }
 }

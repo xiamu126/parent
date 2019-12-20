@@ -1,4 +1,4 @@
-package com.sybd.znld.light.controller.dto;
+package com.sybd.znld.model.lamp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

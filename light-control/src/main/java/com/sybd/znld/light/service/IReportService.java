@@ -1,9 +1,9 @@
 package com.sybd.znld.light.service;
 
-import com.sybd.znld.light.controller.dto.LampAlarmOutput;
 import com.sybd.znld.light.service.dto.Report;
 import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.lamp.LampAlarmModel;
+import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -7,6 +7,7 @@ import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.light.service.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.LampAlarmModel;
+import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;

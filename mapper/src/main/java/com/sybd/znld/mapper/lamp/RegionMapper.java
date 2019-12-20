@@ -17,6 +17,7 @@ import java.util.Map;
 @DbSource("znld")
 public interface RegionMapper {
     int insert(RegionModel model);
+    RegionModel selectByLampId(String id);
     RegionModel selectById(String id);
     RegionModel selectByName(String name);
     RegionModel selectByRegionIdAndOrganId(@Param("regionId") String regionId, String organId);

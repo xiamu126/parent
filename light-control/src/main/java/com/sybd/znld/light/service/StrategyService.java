@@ -3,12 +3,15 @@ package com.sybd.znld.light.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.config.ProjectConfig;
 import com.sybd.znld.light.controller.dto.*;
+import com.sybd.znld.light.websocket.handler.LampWarningsHandler;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.*;
+import com.sybd.znld.model.lamp.dto.LampAlarm;
+import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
 import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.model.onenet.OneNetKey;
@@ -476,6 +479,19 @@ public class StrategyService implements IStrategyService {
                 // 达到重试上限
                 lampExecutionModel.status = LampExecutionModel.Status.TRYING_FAILED;
                 this.lampExecutionMapper.update(lampExecutionModel);
+                // 发出告警
+                var lampAlarm = new LampAlarm();
+                var lampAlarmOutput = new LampAlarmOutput();
+                lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
+                lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
+                lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
+                lampAlarmOutput.content = "失败重试达到上限";
+                lampAlarmOutput.lampId = lampId;
+                lampAlarmOutput.lampName = lamp.deviceName;
+                var region = this.regionMapper.selectByLampId(lampId);
+                lampAlarmOutput.regionName = region.name;
+                lampAlarm.message = lampAlarmOutput;
+                LampWarningsHandler.sendAll(this.objectMapper.writeValueAsString(lampAlarmOutput));
                 return BaseApiResult.success();
             }
             lampExecutionModel.tryingCount = lampExecutionModel.tryingCount + 1;

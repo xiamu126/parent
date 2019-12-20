@@ -9,7 +9,7 @@ spring:
     banner-mode: "off"
   profiles:
     include: onenet
-    active: prod
+    active: dev
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:

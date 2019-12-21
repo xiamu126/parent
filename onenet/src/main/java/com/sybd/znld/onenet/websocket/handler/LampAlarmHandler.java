@@ -1,4 +1,4 @@
-package com.sybd.znld.light.websocket.handler;
+package com.sybd.znld.onenet.websocket.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.*;
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 @Slf4j
-public class LampWarningsHandler implements WebSocketHandler {
+public class LampAlarmHandler implements WebSocketHandler {
     private static final ArrayList<WebSocketSession> sessions = new ArrayList<>();
 
     @Override
@@ -48,7 +48,7 @@ public class LampWarningsHandler implements WebSocketHandler {
         for(var session : sessions){
             var message = new TextMessage(msg);
             try {
-                synchronized (LampWarningsHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
+                synchronized (LampAlarmHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
                     session.sendMessage(message);
                 }
             } catch (IOException ex) {

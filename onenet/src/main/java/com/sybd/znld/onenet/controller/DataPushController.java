@@ -85,7 +85,6 @@ public class DataPushController {
                 log.debug("跳过时间戳");
             } else if (name.contains("单灯")) {
                 this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_LIGHT_ROUTING_KEY, msg);
-                //log.debug("收到单灯数据" + ":" + rawData.value);
             } else {
                 this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ENVIRONMENT_ROUTING_KEY, msg);
             }
@@ -106,19 +105,6 @@ public class DataPushController {
     @RequestMapping(value = "/receive", method = RequestMethod.POST)
     @ResponseBody
     public String receive(@RequestBody String body) {
-        // 明文模式
-        /*var obj = Util.resolveBody(body, false); // 解析数据
-        if (obj == null) {
-            log.debug("收到onenet推送的数据，但解析结果为空");
-            return "";
-        }
-        log.debug("收到onenet推送的数据，解析结果为：" + obj);
-        var dataRight = Util.checkSignature(obj, token);
-        if (!dataRight) {
-            log.debug("对解析的数据做签名验证失败");
-            return "";
-        }
-        return "ok";*/
         // 加密模式
         try {
             var obj = Util.resolveBody(body, true);

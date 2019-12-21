@@ -2,7 +2,6 @@ package com.sybd.znld.light.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.service.dto.Report;
-import com.sybd.znld.light.websocket.handler.LampWarningsHandler;
 import com.sybd.znld.mapper.lamp.LampAlarmMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.LampStatisticsMapper;
@@ -326,7 +325,6 @@ public class ReportService implements IReportService {
             msg.updateTime = MyDateTime.toTimestamp(rawData.at);
             statistics.message = msg;
             var json = this.objectMapper.writeValueAsString(statistics);
-            LampWarningsHandler.sendAll(json);
         } catch (Exception ex) {
             log.error(ex.getMessage());
             log.error(ExceptionUtils.getStackTrace(ex));

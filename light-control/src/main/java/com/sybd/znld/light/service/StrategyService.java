@@ -3,7 +3,6 @@ package com.sybd.znld.light.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.config.ProjectConfig;
 import com.sybd.znld.light.controller.dto.*;
-import com.sybd.znld.light.websocket.handler.LampWarningsHandler;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
@@ -23,6 +22,7 @@ import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -54,6 +54,8 @@ public class StrategyService implements IStrategyService {
     private final UserMapper userMapper;
     private final LampStrategyWaitingMapper lampStrategyWaitingMapper;
     private final RedissonClient redissonClient;
+    private final RabbitTemplate rabbitTemplate;
+    private final LampAlarmMapper lampAlarmMapper;
 
     @Autowired
     public StrategyService(IUserService userService,
@@ -69,7 +71,9 @@ public class StrategyService implements IStrategyService {
                            UserMapper userMapper,
                            LampExecutionMapper lampExecutionMapper,
                            LampStrategyWaitingMapper lampStrategyWaitingMapper,
-                           RedissonClient redissonClient) {
+                           RedissonClient redissonClient,
+                           RabbitTemplate rabbitTemplate,
+                           LampAlarmMapper lampAlarmMapper) {
         this.userService = userService;
         this.lampStrategyMapper = lampStrategyMapper;
         this.lampExecutionMapper = lampExecutionMapper;
@@ -84,6 +88,8 @@ public class StrategyService implements IStrategyService {
         this.userMapper = userMapper;
         this.lampStrategyWaitingMapper = lampStrategyWaitingMapper;
         this.redissonClient = redissonClient;
+        this.rabbitTemplate = rabbitTemplate;
+        this.lampAlarmMapper = lampAlarmMapper;
     }
 
     @Override
@@ -211,7 +217,7 @@ public class StrategyService implements IStrategyService {
             lampStrategyWaitingModel.organId = lampStrategy.organId;
             lampStrategyWaitingModel.lampId = lamp.id;
             lampStrategyWaitingModel.lampStrategyId = lampStrategy.id;
-            var waitingModel = this.lampStrategyWaitingMapper.selectByLampId(lamp.id);
+            var waitingModel = this.lampStrategyWaitingMapper.selectByLampIdStatus(lamp.id, LampStrategyWaitingModel.Status.UNUSED);
             if(waitingModel == null) {
                 // 如果没有等待中的策略
                 var ret = this.lampStrategyWaitingMapper.insert(lampStrategyWaitingModel);
@@ -480,19 +486,34 @@ public class StrategyService implements IStrategyService {
                 lampExecutionModel.status = LampExecutionModel.Status.TRYING_FAILED;
                 this.lampExecutionMapper.update(lampExecutionModel);
                 // 发出告警
-                var lampAlarm = new LampAlarm();
-                var lampAlarmOutput = new LampAlarmOutput();
-                lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
-                lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
-                lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
-                lampAlarmOutput.content = "失败重试达到上限";
-                lampAlarmOutput.lampId = lampId;
-                lampAlarmOutput.lampName = lamp.deviceName;
                 var region = this.regionMapper.selectByLampId(lampId);
-                lampAlarmOutput.regionName = region.name;
-                lampAlarm.message = lampAlarmOutput;
-                LampWarningsHandler.sendAll(this.objectMapper.writeValueAsString(lampAlarmOutput));
-                return BaseApiResult.success();
+                var lampAlarmModel = new LampAlarmModel();
+                lampAlarmModel.at = LocalDateTime.now();
+                lampAlarmModel.content = "失败重试达到上限";
+                lampAlarmModel.lampId = lampId;
+                lampAlarmModel.lampName = lamp.deviceName;
+                lampAlarmModel.organId = region.organizationId;
+                lampAlarmModel.regionId = region.id;
+                lampAlarmModel.regionName = region.name;
+                lampAlarmModel.type = LampAlarmModel.AlarmType.COMMON;
+                lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
+                if(this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
+                    var lampAlarm = new LampAlarm();
+                    var lampAlarmOutput = new LampAlarmOutput();
+                    lampAlarmOutput.id = lampAlarmModel.id;
+                    lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
+                    lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
+                    lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
+                    lampAlarmOutput.content = "失败重试达到上限";
+                    lampAlarmOutput.lampId = lampId;
+                    lampAlarmOutput.lampName = lamp.deviceName;
+                    lampAlarmOutput.regionName = region.name;
+                    lampAlarm.message = lampAlarmOutput;
+                    var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
+                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY, alarmMsg);
+                    return BaseApiResult.success();
+                }
+                return BaseApiResult.fail("无法完成告警记录");
             }
             lampExecutionModel.tryingCount = lampExecutionModel.tryingCount + 1;
             lampExecutionModel.lastTryingTime = LocalDateTime.now();
@@ -544,7 +565,7 @@ public class StrategyService implements IStrategyService {
                     json);
             var future = this.oneNetService.executeAsync(params);
             var result = future.get();
-            if(result.isOk()) {
+            if(result.isOk()) { // 策略成功执行，即下发到硬件，则更新这盏灯的状态
                 var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
                 if(map != null) {
                     map.put("executionMode", LampExecutionModel.Mode.STRATEGY);
@@ -574,6 +595,7 @@ public class StrategyService implements IStrategyService {
                 }
                 lampExecutionModel.tryingCount = 0;
                 lampExecutionModel.lastTryingTime = LocalDateTime.of(1973,1,1,0,0,0);
+                lampExecutionModel.lastUpdateTime = LocalDateTime.now();
                 this.lampExecutionMapper.update(lampExecutionModel);
             }
             return BaseApiResult.success();

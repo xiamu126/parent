@@ -34,14 +34,16 @@ public class RabbitMqConfig {
         var angleQueue = new Queue(IOneNetService.ONENET_UP_MSG_ANGLE_QUEUE, true);
         var environmentQueue = new Queue(IOneNetService.ONENET_UP_MSG_ENVIRONMENT_QUEUE, true);
         var lightQueue = new Queue(IOneNetService.ONENET_UP_MSG_LIGHT_QUEUE, true);
+        var alarmQueue = new Queue(IOneNetService.ONENET_ALARM_MSG_LIGHT_QUEUE, true);
         return new Declarables(topicExchange,
-                onlineQueue, onOffQueue, positionQueue, angleQueue, environmentQueue, lightQueue,
+                onlineQueue, onOffQueue, positionQueue, angleQueue, environmentQueue, lightQueue,alarmQueue,
                 BindingBuilder.bind(onlineQueue).to(topicExchange).with(IOneNetService.ONENET_UP_MSG_ONLINE_ROUTING_KEY),
                 BindingBuilder.bind(onOffQueue).to(topicExchange).with(IOneNetService.ONENET_UP_MSG_ONOFF_ROUTING_KEY),
                 BindingBuilder.bind(positionQueue).to(topicExchange).with(IOneNetService.ONENET_UP_MSG_POSITION_ROUTING_KEY),
                 BindingBuilder.bind(angleQueue).to(topicExchange).with(IOneNetService.ONENET_UP_MSG_ANGLE_ROUTING_KEY),
                 BindingBuilder.bind(environmentQueue).to(topicExchange).with(IOneNetService.ONENET_UP_MSG_ENVIRONMENT_ROUTING_KEY),
-                BindingBuilder.bind(lightQueue).to(topicExchange).with(IOneNetService.ONENET_UP_MSG_LIGHT_ROUTING_KEY)
+                BindingBuilder.bind(lightQueue).to(topicExchange).with(IOneNetService.ONENET_UP_MSG_LIGHT_ROUTING_KEY),
+                BindingBuilder.bind(alarmQueue).to(topicExchange).with(IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY)
         );
     }
 
@@ -115,5 +117,13 @@ public class RabbitMqConfig {
                 LampStatisticsHandler.sendAll(this.objectMapper.writeValueAsString(statistics)); // 推送消息
             } catch (JsonProcessingException ignored) { }
         }
+    }
+
+    @RabbitListener(queues = IOneNetService.ONENET_ALARM_MSG_LIGHT_QUEUE)
+    public void receiveAlarmMessage(Message message) {
+        var body = message.getBody();
+        var msg = new String(body);
+        log.info("收到报警消息: {}", msg);
+        LampAlarmHandler.sendAll(msg); // 推送消息
     }
 }

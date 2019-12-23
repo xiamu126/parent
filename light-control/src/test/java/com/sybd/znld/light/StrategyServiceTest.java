@@ -1,15 +1,22 @@
 package com.sybd.znld.light;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.light.service.IDeviceService;
 import com.sybd.znld.light.service.IStrategyService;
+import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.model.lamp.Target;
+import com.sybd.znld.model.lamp.dto.LampAlarm;
+import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
 import com.sybd.znld.model.lamp.dto.Message;
+import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -86,7 +93,24 @@ public class StrategyServiceTest {
     public void test13() {
     }
 
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
     @Test
-    public void test14() {
+    public void test14() throws JsonProcessingException {
+        var lampAlarm = new LampAlarm();
+        var lampAlarmOutput = new LampAlarmOutput();
+        lampAlarmOutput.id = "5d8040865f494830826c5c944bfda609";
+        lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
+        lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
+        lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
+        lampAlarmOutput.content = "失败重试达到上限";
+        lampAlarmOutput.lampId = "156effb2466e4c68b27d269726beb7e6";
+        lampAlarmOutput.lampName = "小岗村路灯01";
+        lampAlarmOutput.regionName = "小岗村某某路";
+        lampAlarm.message = lampAlarmOutput;
+        var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
+        this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY, alarmMsg);
     }
 }

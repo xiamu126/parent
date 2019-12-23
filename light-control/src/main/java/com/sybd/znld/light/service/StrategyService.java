@@ -306,7 +306,7 @@ public class StrategyService implements IStrategyService {
                 if(result.isOk()) {
                     var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
                     if(map != null) {
-                        map.put("executionMode", LampExecutionModel.Mode.MANUAL);
+                        map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.MANUAL);
                     }
                 }
                 if(tmp == null) {
@@ -485,6 +485,9 @@ public class StrategyService implements IStrategyService {
                 // 达到重试上限
                 lampExecutionModel.status = LampExecutionModel.Status.TRYING_FAILED;
                 this.lampExecutionMapper.update(lampExecutionModel);
+                // 更新缓存中的故障状态
+                var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
+                map.put(Config.REDIS_MAP_KEY_IS_FAULT, true);
                 // 发出告警
                 var region = this.regionMapper.selectByLampId(lampId);
                 var lampAlarmModel = new LampAlarmModel();
@@ -568,7 +571,7 @@ public class StrategyService implements IStrategyService {
             if(result.isOk()) { // 策略成功执行，即下发到硬件，则更新这盏灯的状态
                 var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
                 if(map != null) {
-                    map.put("executionMode", LampExecutionModel.Mode.STRATEGY);
+                    map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.STRATEGY);
                 }
             }
             if (lampExecutionModel == null) {

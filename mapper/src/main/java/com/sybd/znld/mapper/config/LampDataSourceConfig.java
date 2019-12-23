@@ -50,7 +50,7 @@ public class LampDataSourceConfig {
         }
         //typeHandlerRegistry.register(LampStrategyModel.Status.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.register(Status.class, MyEnumTypeHandler.class);
-        //typeHandlerRegistry.register(DeviceStatus.class, MyEnumTypeHandler.class);
+        typeHandlerRegistry.register(DeviceStatus.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.register(StrategyFailedStatus.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.register(StrategyStatus.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.setDefaultEnumTypeHandler(MyEnumTypeHandler.class);

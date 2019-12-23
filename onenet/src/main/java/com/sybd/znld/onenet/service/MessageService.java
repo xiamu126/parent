@@ -215,7 +215,7 @@ public class MessageService implements IMessageService {
             }
             if (imei != null) {
                 var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(imei));
-                map.put("isOnline", news.isOnline);
+                map.put(Config.REDIS_MAP_KEY_IS_ONLINE, news.isOnline);
             }
         }
         return news;
@@ -286,8 +286,8 @@ public class MessageService implements IMessageService {
                         if (status == 0) {
                             var baiduLng = JsonPath.read(repoBody, "$.result[0].x");
                             var baiduLat = JsonPath.read(repoBody, "$.result[0].y");
-                            map.put("百度经度", new RealTimeData(baiduLng, MyDateTime.toTimestamp(at)));
-                            map.put("百度纬度", new RealTimeData(baiduLat, MyDateTime.toTimestamp(at)));
+                            map.put(Config.REDIS_MAP_KEY_BAIDU_LNG, new RealTimeData(baiduLng, MyDateTime.toTimestamp(at)));
+                            map.put(Config.REDIS_MAP_KEY_BAIDU_LAT, new RealTimeData(baiduLat, MyDateTime.toTimestamp(at)));
                         }
                     }
                 } catch (Exception ex) {
@@ -405,7 +405,7 @@ public class MessageService implements IMessageService {
             realTimeData.at = MyDateTime.toTimestamp(rawData.at);
             map.put(name, realTimeData); // 更新实时缓存
             var obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
-            var electricity = MyNumber.getDouble(map.get("electricity")); // 上一次累计的电量
+            var electricity = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_ELECTRICITY)); // 上一次累计的电量
             var ep = obj.EP.get(1);
             if(electricity == null) {
                 if(ep == null || ep <= 0) {
@@ -419,17 +419,17 @@ public class MessageService implements IMessageService {
                 }
             }
 
-            map.put("light", obj.B > 0); // 当前灯的亮度状态
-            map.put("brightness", obj.B); // 当前的亮度值
-            map.put("fault", false); // 当前灯的故障状态
-            map.put("electricity", electricity);
-            var isOnline = (Boolean) map.get("isOnline");
+            map.put(Config.REDIS_MAP_KEY_IS_LIGHT, obj.B > 0); // 当前灯的亮度状态
+            map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, obj.B); // 当前的亮度值
+            map.put(Config.REDIS_MAP_KEY_IS_FAULT, false); // 当前灯的故障状态
+            map.put(Config.REDIS_MAP_KEY_ELECTRICITY, electricity); // 这里存放的是上一次清零到目前为止的累计电量
+            var isOnline = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_ONLINE);
             if(isOnline == null) { // 如果设备的在线状态未知，则手动刷新下
                 isOnline = this.oneNetService.isDeviceOnline(rawData.imei);
-                map.put("isOnline", isOnline); // 如果设备的在线状态为空，则更新设备的在线状态
+                map.put(Config.REDIS_MAP_KEY_IS_ONLINE, isOnline); // 如果设备的在线状态为空，则更新设备的在线状态
             }
             var lampRegionOrganId = this.lampMapper.selectLampRegionOrganIdByImei(rawData.imei);
-            var lastUpdateStatisticsTime = (Long) map.get("lastUpdateStatisticsTime"); // 上次更新数据库的时间
+            var lastUpdateStatisticsTime = (Long) map.get(Config.REDIS_MAP_KEY_LAST_STATISTICS_UPDATE_TIME); // 上次更新数据库的时间
             if(lastUpdateStatisticsTime == null) {
                 // 更新数据库
                 var model = new LampStatisticsModel();
@@ -442,8 +442,8 @@ public class MessageService implements IMessageService {
                 model.electricity = electricity; // 到目前为止累计电能
                 model.updateTime = rawData.at;
                 this.lampStatisticsMapper.insert(model);
-                map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
-                map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的电量，下个周期从0开始重新计算
+                map.put(Config.REDIS_MAP_KEY_LAST_STATISTICS_UPDATE_TIME, MyDateTime.toTimestamp(LocalDateTime.now()));
+                map.put(Config.REDIS_MAP_KEY_ELECTRICITY, 0); // 清空累计，也就是我只保存这一个小时的电量，下个周期从0开始重新计算
             } else {
                 // 存在上一次的更新时间，则看上一次的更新时间，到现在有没有达到一个小时（至少）
                 var lastTime = MyDateTime.toLocalDateTime(lastUpdateStatisticsTime);
@@ -462,8 +462,8 @@ public class MessageService implements IMessageService {
                         model.electricity = electricity; // 到目前为止累计电能
                         model.updateTime = rawData.at;
                         this.lampStatisticsMapper.insert(model);
-                        map.put("lastUpdateStatisticsTime", MyDateTime.toTimestamp(LocalDateTime.now()));
-                        map.put("electricity", 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
+                        map.put(Config.REDIS_MAP_KEY_LAST_STATISTICS_UPDATE_TIME, MyDateTime.toTimestamp(LocalDateTime.now()));
+                        map.put(Config.REDIS_MAP_KEY_ELECTRICITY, 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
                     }
                 }
             }

@@ -105,8 +105,8 @@ public class DeviceService implements IDeviceService {
             tmpBox.imei = box.imei;
             tmpBox.name = box.name;
             if (map != null) {
-                tmpBox.lng = MyNumber.getDouble(map.get("百度经度"));
-                tmpBox.lat = MyNumber.getDouble(map.get("百度纬度"));
+                tmpBox.lng = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LNG));
+                tmpBox.lat = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LAT));
             }
             switch (box.status) {
                 case OK:
@@ -133,11 +133,11 @@ public class DeviceService implements IDeviceService {
                     tmpLamp.name = lamp.deviceName;
                     tmpLamp.regionName = region.name;
                     if (map != null) {
-                        tmpLamp.lng = MyNumber.getDouble(map.get("百度经度"));
-                        tmpLamp.lat = MyNumber.getDouble(map.get("百度纬度"));
-                        tmpLamp.brightness = (Integer) map.get("brightness");
-                        tmpLamp.isOnline = (Boolean) map.get("isOnline");
-                        var mode = (LampExecutionModel.Mode) map.get("executionMode");
+                        tmpLamp.lng = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LNG));
+                        tmpLamp.lat = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LAT));
+                        tmpLamp.brightness = (Integer) map.get(Config.REDIS_MAP_KEY_BRIGHTNESS);
+                        tmpLamp.isOnline = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_ONLINE);
+                        var mode = (LampExecutionModel.Mode) map.get(Config.REDIS_MAP_KET_EXECUTION_MODE);
                         tmpLamp.executionMode = (mode == LampExecutionModel.Mode.STRATEGY ? "策略" : "手动");
                         if(mode == LampExecutionModel.Mode.STRATEGY) {
                             var lampExecution = this.lampExecutionMapper.selectByLampId(tmpLamp.id);

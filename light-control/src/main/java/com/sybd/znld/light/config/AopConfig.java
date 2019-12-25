@@ -1,6 +1,6 @@
 package com.sybd.znld.light.config;
 
-import com.sybd.znld.light.controller.dto.BaseStrategy;
+import com.sybd.znld.model.lamp.dto.BaseStrategy;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;

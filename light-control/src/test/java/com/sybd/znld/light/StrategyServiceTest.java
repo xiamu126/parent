@@ -2,14 +2,11 @@ package com.sybd.znld.light;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.light.service.IDeviceService;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.model.lamp.LampAlarmModel;
-import com.sybd.znld.model.lamp.Target;
 import com.sybd.znld.model.lamp.dto.LampAlarm;
 import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
-import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
@@ -111,12 +108,12 @@ public class StrategyServiceTest {
         lampAlarmOutput.regionName = "小岗村某某路";
         lampAlarm.message = lampAlarmOutput;
         var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-        this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY, alarmMsg);
+        this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
     }
 
     @Test
     public void test15() {
         var statisticsMsg = "{\"at\":1577166899426,\"imei\":\"868194030013173\",\"type\":1,\"ds_id\":\"3300_0_5751\",\"value\":\"{'T':1577166943,'V':232.522,'HZ':49.985,'I':[0,3.319,0],'TE':4.549,'PP':[0,747.436,0],'PQ':[0,-9.626,0],'PS':[0,747.531,0],'EP':[0,0.067,0],'EQ':[0,0.001,0],'ES':[0,0.067,0],'TP':19,'HU':53,'RL':[1,0,1,0,0,0],'X':5.800,'Y':2.200,'B':100,'Ta':31.100,'Ua':59.500,'PM25':8.100,'PM10':16.500,'CO':0.389,'NO2':0.046,'SO2':0.073,'O3':0.079}\",\"dev_id\":575064769}\n";
-        this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_LIGHT_ROUTING_KEY, statisticsMsg);
+        this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_UP_ROUTING_KEY, statisticsMsg);
     }
 }

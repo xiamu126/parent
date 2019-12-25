@@ -28,7 +28,7 @@ public class AngleMqHandler {
     }
 
     @Async("MqThreadPool")
-    @RabbitListener(queues = IOneNetService.ONENET_UP_MSG_ANGLE_QUEUE)
+    @RabbitListener(queues = IOneNetService.ONENET_ANGLE_UP_QUEUE)
     public void handler(Channel channel, Message message) {
         try {
             var body = message.getBody();

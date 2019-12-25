@@ -1,7 +1,7 @@
 package com.sybd.znld.light.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sybd.znld.light.service.dto.Report;
+import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.mapper.lamp.LampAlarmMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.LampStatisticsMapper;

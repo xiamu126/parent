@@ -29,11 +29,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
         registry.addHandler(new OnOffPowerWsHandler(),"/data/news/onoff")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new LampStatisticsWsHandler(),"/data/news/lamp/statistics")
+        registry.addHandler(new LampStatisticsWsHandler(),"/data/news/lamp")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
         registry.addHandler(new LampStatisticsWsHandler(),"/data/news/lamp/onoffline")
-                .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new LampAlarmWsHandler(),"/data/news/lamp/alarm")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
     }
 }

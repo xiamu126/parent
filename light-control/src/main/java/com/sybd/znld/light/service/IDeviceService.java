@@ -1,10 +1,10 @@
 package com.sybd.znld.light.service;
 
-import com.sybd.znld.light.controller.dto.OperationParams;
-import com.sybd.znld.light.controller.dto.RegionBoxLamp;
+import com.sybd.znld.model.lamp.dto.LampStatistic;
+import com.sybd.znld.model.lamp.dto.OperationParams;
+import com.sybd.znld.model.lamp.dto.RegionBoxLamp;
 import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
 import com.sybd.znld.model.lamp.LampModel;
-import com.sybd.znld.model.lamp.dto.OpResult;
 import com.sybd.znld.model.onenet.dto.BaseResult;
 
 import java.util.List;
@@ -33,5 +33,8 @@ public interface IDeviceService {
     boolean addBoxesToRegion(List<String> ids, String regionId);
     // 把某个区域下的路灯关联到某个配电箱下面
     boolean addLampsOfRegionToBox(String regionId, String boxId);
+    // 获取单盏路灯的状态信息
+    RegionBoxLamp.Box.Lamp getLamp(String lampId);
 
+    LampStatistic getStatistics(String lampId);
 }

@@ -428,4 +428,102 @@ public class OneNetService implements IOneNetService {
         var responseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, GetDeviceResult.class);
         return responseEntity.getBody();
     }
+
+    @Override
+    public RawData extractUpMsg(String body) {
+        String ds = null;
+        try {
+            ds = JsonPath.read(body, "$.ds_id");
+        } catch (Exception ignored) {
+        }
+        Object value = null;
+        try {
+            value = JsonPath.read(body, "$.value");
+        } catch (Exception ignored) {
+        }
+        LocalDateTime at = null;
+        try {
+            Long tmp = JsonPath.read(body, "$.at");
+            var zoneId = ZoneId.of("Asia/Shanghai");
+            at = MyDateTime.toLocalDateTime(tmp, zoneId);
+        } catch (Exception ignored) {
+        }
+        Integer deviceId = null;
+        try {
+            deviceId = JsonPath.read(body, "$.dev_id");
+        } catch (Exception ignored) {
+        }
+        String imei = null;
+        try {
+            imei = JsonPath.read(body, "$.imei");
+        } catch (Exception ignored) {
+        }
+        var rawData = new RawData();
+        rawData.ds = ds;
+        rawData.value = value;
+        rawData.at = at;
+        rawData.deviceId = deviceId;
+        rawData.imei = imei;
+        return rawData;
+    }
+
+    @Override
+    public Integer getUpMsgType(String body) {
+        Integer type = null;
+        try {
+            type = JsonPath.read(body, "$.type");
+        } catch (Exception ignored) { }
+        return type;
+    }
+
+    @Override
+    public Integer getUpMsgStatus(String body) {
+        Integer status = null;
+        try {
+            status = JsonPath.read(body, "$.status");
+        } catch (Exception ignored) { }
+        return status;
+    }
+
+    @Override
+    public List<String> getUpMsgIds(String body) {
+        try {
+            String ds = JsonPath.read(body, "$.ds_id");
+            var ids = ds.split("_");
+            if (ids.length != 3) {
+                return null;
+            }
+            return Arrays.stream(ids).collect(Collectors.toList());
+        } catch (Exception ignored) { }
+        return null;
+    }
+
+    @Override
+    public String getUpMsgImei(String body) {
+        String imei = null;
+        try {
+            imei = JsonPath.read(body, "$.imei");
+        } catch (Exception ignored) { }
+        return imei;
+    }
+
+    @Override
+    public Integer getUpMsgDeviceId(String body) {
+        Integer deviceId = null;
+        try {
+            deviceId = JsonPath.read(body, "$.dev_id");
+        } catch (Exception ignored) {
+        }
+        return deviceId;
+    }
+
+    @Override
+    public Long getUpMsgAt(String body) {
+        Long at = null;
+        try {
+            at = JsonPath.read(body, "$.at");
+        } catch (Exception ignored) {
+        }
+        return at;
+    }
 }

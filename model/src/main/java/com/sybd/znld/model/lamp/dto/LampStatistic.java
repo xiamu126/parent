@@ -66,6 +66,13 @@ public class LampStatistic {
         public Integer stn; // 卫星数量
         public Double hddp; // 水平位置相对精度
 
+        @JsonProperty("is_fault")
+        public Boolean isFault;
+        @JsonProperty("is_light")
+        public Boolean isLight;
+        @JsonProperty("is_online")
+        public Boolean isOnline;
+
         @NoArgsConstructor @AllArgsConstructor
         public static class ValueError <T> {
             public T value;

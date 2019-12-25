@@ -28,7 +28,7 @@ public class EnvironmentMqHandler {
     }
 
     @Async("MqThreadPool")
-    @RabbitListener(queues = IOneNetService.ONENET_UP_MSG_ENVIRONMENT_QUEUE)
+    @RabbitListener(queues = IOneNetService.ONENET_ENVIRONMENT_UP_QUEUE)
     public void handler(Channel channel, Message message) {
         try {
             var body = message.getBody();

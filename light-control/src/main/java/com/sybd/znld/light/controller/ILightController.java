@@ -1,10 +1,8 @@
 package com.sybd.znld.light.controller;
 
-import com.sybd.znld.light.controller.dto.*;
-import com.sybd.znld.light.service.dto.Report;
+import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
-import com.sybd.znld.model.lamp.LampAlarmModel;
-import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
+import com.sybd.znld.model.lamp.dto.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

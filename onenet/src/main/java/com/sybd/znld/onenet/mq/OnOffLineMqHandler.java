@@ -29,7 +29,7 @@ public class OnOffLineMqHandler {
     }
 
     @Async("MqThreadPool")
-    @RabbitListener(queues = IOneNetService.ONENET_UP_MSG_ONLINE_QUEUE)
+    @RabbitListener(queues = IOneNetService.ONENET_ONLINE_UP_QUEUE)
     public void handler(Channel channel, Message message) {
         try {
             var body = message.getBody();

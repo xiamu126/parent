@@ -1,6 +1,5 @@
 package com.sybd.znld.onenet.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.onenet.Util;
 import com.sybd.znld.onenet.service.IMessageService;
@@ -8,14 +7,10 @@ import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.redisson.api.RedissonClient;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Controller
@@ -43,7 +38,7 @@ public class DataPushController {
         if (type != null) {
             if (type == 2) {
                 log.debug("设备上下线消息");
-                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ONLINE_ROUTING_KEY, msg);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ONLINE_UP_ROUTING_KEY, msg);
             } else if (type == 1) {
                 //log.debug("设备上传数据点消息");
             } else if (type == 7) {
@@ -77,17 +72,17 @@ public class DataPushController {
                 return;
             }
             if (name.contains("开关")) {
-                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ONOFF_ROUTING_KEY, msg);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ONOFF_UP_ROUTING_KEY, msg);
             } else if (name.contains("经度") || name.contains("纬度")) {
-                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_POSITION_ROUTING_KEY, msg);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_POSITION_UP_ROUTING_KEY, msg);
             } else if (name.contains("angle")) {
-                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ANGLE_ROUTING_KEY, msg);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ANGLE_UP_ROUTING_KEY, msg);
             } else if (name.contains("时间戳")) {
                 log.debug("跳过时间戳");
             } else if (name.contains("单灯")) {
-                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_LIGHT_ROUTING_KEY, msg);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_UP_ROUTING_KEY, msg);
             } else {
-                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_UP_MSG_ENVIRONMENT_ROUTING_KEY, msg);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ENVIRONMENT_UP_ROUTING_KEY, msg);
             }
         }
     }

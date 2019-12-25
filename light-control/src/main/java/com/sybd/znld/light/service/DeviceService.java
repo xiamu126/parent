@@ -1,13 +1,13 @@
 package com.sybd.znld.light.service;
 
-import com.sybd.znld.light.controller.dto.LampStrategy;
-import com.sybd.znld.light.controller.dto.OperationParams;
-import com.sybd.znld.light.controller.dto.RegionBoxLamp;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.model.onenet.dto.BaseResult;
+import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
@@ -38,6 +38,9 @@ public class DeviceService implements IDeviceService {
     private final LampRegionMapper lampRegionMapper;
     private final LampExecutionMapper lampExecutionMapper;
     private final LampStrategyMapper lampStrategyMapper;
+    private final ObjectMapper objectMapper;
+    private final IOneNetService oneNetService;
+    private final OneNetResourceMapper oneNetResourceMapper;
 
     @Autowired
     public DeviceService(RegionMapper regionMapper,
@@ -49,7 +52,10 @@ public class DeviceService implements IDeviceService {
                          OrganizationMapper organizationMapper,
                          LampRegionMapper lampRegionMapper,
                          LampExecutionMapper lampExecutionMapper,
-                         LampStrategyMapper lampStrategyMapper) {
+                         LampStrategyMapper lampStrategyMapper,
+                         ObjectMapper objectMapper,
+                         IOneNetService oneNetService,
+                         OneNetResourceMapper oneNetResourceMapper) {
         this.regionMapper = regionMapper;
         this.lampMapper = lampMapper;
         this.redissonClient = redissonClient;
@@ -60,6 +66,9 @@ public class DeviceService implements IDeviceService {
         this.lampRegionMapper = lampRegionMapper;
         this.lampExecutionMapper = lampExecutionMapper;
         this.lampStrategyMapper = lampStrategyMapper;
+        this.objectMapper = objectMapper;
+        this.oneNetService = oneNetService;
+        this.oneNetResourceMapper = oneNetResourceMapper;
     }
 
     @Override
@@ -124,79 +133,11 @@ public class DeviceService implements IDeviceService {
             var lamps = this.boxMapper.selectLampsByBoxId(box.id);
             if (lamps != null && !lamps.isEmpty()) {
                 for (var lamp : lamps) {
-                    if (lamp == null) continue;
-                    key = Config.getRedisRealtimeKey(lamp.imei);
-                    map = this.redissonClient.getMap(key);
-                    var tmpLamp = new RegionBoxLamp.Box.Lamp();
-                    tmpLamp.id = lamp.id;
-                    tmpLamp.imei = lamp.imei;
-                    tmpLamp.name = lamp.deviceName;
-                    tmpLamp.regionName = region.name;
-                    if (map != null) {
-                        tmpLamp.lng = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LNG));
-                        tmpLamp.lat = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LAT));
-                        tmpLamp.brightness = (Integer) map.get(Config.REDIS_MAP_KEY_BRIGHTNESS);
-                        tmpLamp.isOnline = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_ONLINE);
-                        tmpLamp.isLight = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_LIGHT);
-                        tmpLamp.isFault = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_FAULT);
-                        var mode = (LampExecutionModel.Mode) map.get(Config.REDIS_MAP_KET_EXECUTION_MODE);
-                        tmpLamp.executionMode = (mode == LampExecutionModel.Mode.STRATEGY ? "策略" : "手动");
-                        if(mode == LampExecutionModel.Mode.STRATEGY) {
-                            var lampExecution = this.lampExecutionMapper.selectByLampId(tmpLamp.id);
-                            var lampStrategy = this.lampStrategyMapper.selectById(lampExecution.lampStrategyId);
-                            tmpLamp.strategyName = lampStrategy.name;
-                            tmpLamp.from = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.fromTime));
-                            tmpLamp.to = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.toDate, lampStrategy.toTime));
-                            var points = new ArrayList<LampStrategy.Point>();
-                            if(lampStrategy.brightness1 != LampStrategyModel.EMPTY_BRIGHTNESS) {
-                                var point = new LampStrategy.Point();
-                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at1));
-                                point.brightness = lampStrategy.brightness1;
-                                points.add(point);
-                            }
-                            if(lampStrategy.brightness2 != LampStrategyModel.EMPTY_BRIGHTNESS) {
-                                var point = new LampStrategy.Point();
-                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at2));
-                                point.brightness = lampStrategy.brightness2;
-                                points.add(point);
-                            }
-                            if(lampStrategy.brightness3 != LampStrategyModel.EMPTY_BRIGHTNESS) {
-                                var point = new LampStrategy.Point();
-                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at3));
-                                point.brightness = lampStrategy.brightness3;
-                                points.add(point);
-                            }
-                            if(lampStrategy.brightness4 != LampStrategyModel.EMPTY_BRIGHTNESS) {
-                                var point = new LampStrategy.Point();
-                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at4));
-                                point.brightness = lampStrategy.brightness4;
-                                points.add(point);
-                            }
-                            if(lampStrategy.brightness5 != LampStrategyModel.EMPTY_BRIGHTNESS) {
-                                var point = new LampStrategy.Point();
-                                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at5));
-                                point.brightness = lampStrategy.brightness5;
-                                points.add(point);
-                            }
-                            tmpLamp.points = points;
-                        }
-                    }
-                    switch (lamp.status) {
-                        case OK:
-                            tmpLamp.status = "正常";
-                            break;
-                        case ERROR:
-                            tmpLamp.status = "发生故障";
-                            break;
-                        case DEAD:
-                            tmpLamp.status = "报废了";
-                            break;
-                        default:
-                            tmpLamp.status = "未知";
-                    }
-                    var modules = this.lampModuleMapper.selectModulesByLampId(lamp.id);
-                    if (modules != null && !modules.isEmpty()) {
-                        tmpLamp.modules = modules.stream().map(m -> m.name).collect(Collectors.toList());
+                    if(lamp == null) continue;
+                    var tmpLamp = this.getLamp(lamp.id);
+                    if(tmpLamp == null) {
+                        log.error("无法获取路灯["+lamp.id+"]的状态信息");
+                        continue;
                     }
                     tmpBox.lamps.add(tmpLamp);
                 }
@@ -372,5 +313,184 @@ public class DeviceService implements IDeviceService {
             }
         }
         return true;
+    }
+
+    @Override
+    public RegionBoxLamp.Box.Lamp getLamp(String lampId) {
+        if(MyString.isEmptyOrNull(lampId)) {
+            log.error("参数错误");
+            return null;
+        }
+        var lamp = this.lampMapper.selectById(lampId);
+        if(lamp == null) {
+            log.error("参数错误");
+            return null;
+        }
+        var key = Config.getRedisRealtimeKey(lamp.imei);
+        var map = this.redissonClient.getMap(key);
+        if(map == null) {
+            log.error("获取缓存对象为空");
+            return null;
+        }
+        var region = this.regionMapper.selectByLampId(lampId);
+        var tmpLamp = new RegionBoxLamp.Box.Lamp();
+        tmpLamp.id = lamp.id;
+        tmpLamp.imei = lamp.imei;
+        tmpLamp.name = lamp.deviceName;
+        tmpLamp.regionName = region.name;
+        tmpLamp.lng = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LNG));
+        tmpLamp.lat = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LAT));
+        tmpLamp.brightness = (Integer) map.get(Config.REDIS_MAP_KEY_BRIGHTNESS);
+        tmpLamp.isOnline = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_ONLINE);
+        tmpLamp.isLight = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_LIGHT);
+        tmpLamp.isFault = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_FAULT);
+        var mode = (LampExecutionModel.Mode) map.get(Config.REDIS_MAP_KET_EXECUTION_MODE);
+        tmpLamp.executionMode = (mode == LampExecutionModel.Mode.STRATEGY ? "策略" : "手动");
+        if(mode == LampExecutionModel.Mode.STRATEGY) {
+            var lampExecution = this.lampExecutionMapper.selectByLampId(tmpLamp.id);
+            var lampStrategy = this.lampStrategyMapper.selectById(lampExecution.lampStrategyId);
+            tmpLamp.strategyName = lampStrategy.name;
+            tmpLamp.from = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.fromTime));
+            tmpLamp.to = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.toDate, lampStrategy.toTime));
+            var points = new ArrayList<LampStrategy.Point>();
+            if(lampStrategy.brightness1 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                var point = new LampStrategy.Point();
+                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at1));
+                point.brightness = lampStrategy.brightness1;
+                points.add(point);
+            }
+            if(lampStrategy.brightness2 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                var point = new LampStrategy.Point();
+                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at2));
+                point.brightness = lampStrategy.brightness2;
+                points.add(point);
+            }
+            if(lampStrategy.brightness3 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                var point = new LampStrategy.Point();
+                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at3));
+                point.brightness = lampStrategy.brightness3;
+                points.add(point);
+            }
+            if(lampStrategy.brightness4 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                var point = new LampStrategy.Point();
+                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at4));
+                point.brightness = lampStrategy.brightness4;
+                points.add(point);
+            }
+            if(lampStrategy.brightness5 != LampStrategyModel.EMPTY_BRIGHTNESS) {
+                var point = new LampStrategy.Point();
+                point.time = MyDateTime.toTimestamp(LocalDateTime.of(lampStrategy.fromDate, lampStrategy.at5));
+                point.brightness = lampStrategy.brightness5;
+                points.add(point);
+            }
+            tmpLamp.points = points;
+        }
+        switch (lamp.status) {
+            case OK:
+                tmpLamp.status = "正常";
+                break;
+            case ERROR:
+                tmpLamp.status = "发生故障";
+                break;
+            case DEAD:
+                tmpLamp.status = "报废了";
+                break;
+            default:
+                tmpLamp.status = "未知";
+        }
+        var modules = this.lampModuleMapper.selectModulesByLampId(lamp.id);
+        if (modules != null && !modules.isEmpty()) {
+            tmpLamp.modules = modules.stream().map(m -> m.name).collect(Collectors.toList());
+        }
+        return tmpLamp;
+    }
+
+    @Override
+    public LampStatistic getStatistics(String lampId){
+        if(MyString.isEmptyOrNull(lampId)) {
+            log.error("错误的参数");
+            return null;
+        }
+        var lamp = this.lampMapper.selectById(lampId);
+        if(lamp == null) {
+            log.error("指定的路灯id["+lampId+"]不存在");
+            return null;
+        }
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
+        if(map == null) {
+            log.error("获取缓存对象为空");
+            return null;
+        }
+        var onenetUpmsg = map.get(Config.REDIS_MAP_KEY_ONENET_UP_MSG);
+        var rawData = this.oneNetService.extractUpMsg(onenetUpmsg.toString());
+        if(rawData == null) {
+            log.error("获取上一次路灯上传的数据为空");
+            return null;
+        }
+        var ids = rawData.getIds();
+        if (ids == null || ids.isEmpty()) {
+            log.error("不能解析DataStreamId：" + rawData.ds);
+            return null;
+        }
+        var name = this.oneNetResourceMapper.selectNameByDataStreamId(ids.get(0), ids.get(1), ids.get(2));
+        if (name == null) { // 有些DataStreamId是没有定义的，如北斗定位的误差之类
+            log.error("通过DataStreamId获取相应的资源名称为空：" + rawData.ds);
+            return null;
+        }
+        try {
+            rawData.value = rawData.value.toString().replaceAll("'","\"");
+            var obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
+            // 最后将收到的数据推送到页面
+            var statistics = new LampStatistic();
+            var msg = new LampStatistic.Message();
+            msg.id = lamp.id;
+            msg.voltage =  new LampStatistic.Message.ValueError<>(obj.V, LampStatistic.Message.isVoltageError(obj.V));
+            msg.brightness = new LampStatistic.Message.ValueError<>(obj.B, obj.B == null || obj.B < 0 || obj.B > 100);
+            msg.electricity = new LampStatistic.Message.ValueError<>(obj.I.get(1), LampStatistic.Message.isElectricityError(obj.I.get(1)));
+            msg.energy = new LampStatistic.Message.ValueError<>(obj.EP.get(1), false);
+            msg.power = new LampStatistic.Message.ValueError<>(obj.PP.get(1), false);
+            var pp = obj.PP.get(1);
+            var ps = obj.PS.get(1);
+            if(ps == null || ps <= 0) {
+                msg.powerFactor = new LampStatistic.Message.ValueError<>(0.0, true);
+            } else {
+                msg.powerFactor = new LampStatistic.Message.ValueError<>(pp / ps, false);
+            }
+            msg.rate = new LampStatistic.Message.ValueError<>(obj.HZ, LampStatistic.Message.isRateError(obj.HZ));
+            msg.updateTime = MyDateTime.toTimestamp(rawData.at);
+            msg.angleX = obj.X;
+            msg.angleY = obj.Y;
+            msg.co = obj.CO;
+            msg.deviceId = rawData.deviceId;
+            msg.hddp = obj.hddp;
+            msg.hgt = obj.hgt;
+            msg.humidity = obj.Ua;
+            msg.temperature = obj.Ta;
+            msg.imei = rawData.imei;
+            msg.innerHumidity = obj.HU;
+            msg.innerTemperature = obj.TP;
+            msg.lat = obj.lat;
+            msg.lon = obj.lon;
+            msg.no2 = obj.NO2;
+            msg.o3 = obj.O3;
+            msg.pm10 = obj.PM10;
+            msg.pm25 = obj.PM25;
+            msg.isSwitchOn = obj.RL.stream().map(t -> t == 1).collect(Collectors.toList());
+            msg.so2 = obj.SO2;
+            msg.spd = obj.spd;
+            msg.stn = obj.stn;
+            msg.totalEnergy = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_TOTAL_ENERGY));
+            var isFault = msg.voltage.isError || msg.electricity.isError || msg.rate.isError;
+            var isLight = obj.B != null && obj.B > 0 && obj.B < 100;
+            msg.isOnline = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_ONLINE);;
+            msg.isFault = isFault;
+            msg.isLight = isLight;
+            statistics.message = msg;
+            return statistics;
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+        }
+        return null;
     }
 }

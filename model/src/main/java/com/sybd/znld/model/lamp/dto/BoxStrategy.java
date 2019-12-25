@@ -1,6 +1,5 @@
-package com.sybd.znld.light.controller.dto;
+package com.sybd.znld.model.lamp.dto;
 
-import com.sybd.znld.model.lamp.dto.Message;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 

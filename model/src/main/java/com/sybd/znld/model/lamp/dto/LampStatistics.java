@@ -37,4 +37,5 @@ public class LampStatistics {
     public Double spd; // 速度
     public Integer stn; // 卫星数量
     public Double hddp; // 水平位置相对精度
+    public Double TE;
 }

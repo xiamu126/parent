@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.sybd.znld.onenet.service.IMessageService;
 import com.sybd.znld.onenet.websocket.handler.LampAlarmWsHandler;
+import com.sybd.znld.onenet.websocket.handler.LampStatisticsWsHandler;
 import com.sybd.znld.service.onenet.IOneNetService;
+import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.amqp.core.Message;
@@ -17,24 +19,26 @@ import java.io.IOException;
 
 @Slf4j
 @Component
-public class AlarmMqHandler {
+public class LampAlarmMqHandler {
     private final ObjectMapper objectMapper;
     private final IMessageService messageService;
 
     @Autowired
-    public AlarmMqHandler(ObjectMapper objectMapper, IMessageService messageService) {
+    public LampAlarmMqHandler(ObjectMapper objectMapper, IMessageService messageService) {
         this.objectMapper = objectMapper;
         this.messageService = messageService;
     }
 
     @Async("MqThreadPool")
-    @RabbitListener(queues = IOneNetService.ONENET_ALARM_MSG_LIGHT_QUEUE)
+    @RabbitListener(queues = IOneNetService.ONENET_LIGHT_ALARM_QUEUE)
     public void handler(Channel channel, Message message) {
         try {
             var body = message.getBody();
             var msg = new String(body);
             log.info("收到报警消息: {}", msg);
-            LampAlarmWsHandler.sendAll(msg); // 推送消息
+            if(!MyString.isEmptyOrNull(msg)) {
+                LampStatisticsWsHandler.sendAll(msg); // 推送消息
+            }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false); // 手动确认
         } catch (Exception ex) {
             log.error(ex.getMessage());

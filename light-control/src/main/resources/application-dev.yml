@@ -13,10 +13,7 @@ security:
       id: znld-web
 spring:
   rabbitmq:
-    addresses: 192.168.11.101
-    port: 5672
-    username: admin
-    password: admin123
+    addresses: 192.168.11.101:5672
   datasource:
     oauth:
       pool-name: HikariPool-oauth

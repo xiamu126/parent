@@ -1,4 +1,4 @@
-package com.sybd.znld.light.controller.dto;
+package com.sybd.znld.model.lamp.dto;
 
 import com.sybd.znld.model.IEnum;
 import com.sybd.znld.model.IValid;

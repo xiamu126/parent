@@ -1,20 +1,14 @@
-package com.sybd.znld.light.controller.dto;
+package com.sybd.znld.model.lamp.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sybd.znld.model.IValid;
-import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.util.MyDateTime;
-import com.sybd.znld.util.MyString;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j

@@ -1,8 +1,11 @@
 package com.sybd.znld.light.service;
 
-import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.model.*;
 import com.sybd.znld.model.lamp.LampStrategyModel;
+import com.sybd.znld.model.lamp.dto.LampManualCmd;
+import com.sybd.znld.model.lamp.dto.LampStrategy;
+import com.sybd.znld.model.lamp.dto.LampStrategyCmd;
+import com.sybd.znld.model.lamp.dto.LampStrategyOutput;
 
 import java.util.List;
 import java.util.Map;

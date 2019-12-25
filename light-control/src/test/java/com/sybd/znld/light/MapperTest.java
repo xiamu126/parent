@@ -3,7 +3,7 @@ package com.sybd.znld.light;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.service.IReportService;
-import com.sybd.znld.light.service.dto.Report;
+import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;

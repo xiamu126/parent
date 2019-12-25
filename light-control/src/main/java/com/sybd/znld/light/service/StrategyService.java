@@ -2,16 +2,13 @@ package com.sybd.znld.light.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.config.ProjectConfig;
-import com.sybd.znld.light.controller.dto.*;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.*;
-import com.sybd.znld.model.lamp.dto.LampAlarm;
-import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
-import com.sybd.znld.model.lamp.dto.Message;
+import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.CommandParams;
@@ -56,6 +53,7 @@ public class StrategyService implements IStrategyService {
     private final RedissonClient redissonClient;
     private final RabbitTemplate rabbitTemplate;
     private final LampAlarmMapper lampAlarmMapper;
+    private final IDeviceService deviceService;
 
     @Autowired
     public StrategyService(IUserService userService,
@@ -73,7 +71,8 @@ public class StrategyService implements IStrategyService {
                            LampStrategyWaitingMapper lampStrategyWaitingMapper,
                            RedissonClient redissonClient,
                            RabbitTemplate rabbitTemplate,
-                           LampAlarmMapper lampAlarmMapper) {
+                           LampAlarmMapper lampAlarmMapper,
+                           IDeviceService deviceService) {
         this.userService = userService;
         this.lampStrategyMapper = lampStrategyMapper;
         this.lampExecutionMapper = lampExecutionMapper;
@@ -90,6 +89,7 @@ public class StrategyService implements IStrategyService {
         this.redissonClient = redissonClient;
         this.rabbitTemplate = rabbitTemplate;
         this.lampAlarmMapper = lampAlarmMapper;
+        this.deviceService = deviceService;
     }
 
     @Override
@@ -303,23 +303,24 @@ public class StrategyService implements IStrategyService {
                 var result = future.get();
                 results.put(lamp.id, new BaseApiResult(result.errno, ""));
                 var tmp = this.lampExecutionMapper.selectByLampId(lamp.id);
-                if(result.isOk()) {
-                    // 更新缓存中的状态
-                    var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
-                    if(map != null) {
-                        map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.MANUAL); // 更新缓存中的执行模式
-                        // 如果是实时开关灯指令，则需要更新缓存中的亮灯状态；如果是调节实时亮度的，则更新亮度值
-                        if(cmd.action == Message.LampManualAction.OPEN) {
-                            map.put(Config.REDIS_MAP_KEY_IS_LIGHT, true);
-                        } else if(cmd.action == Message.LampManualAction.CLOSE) {
-                            map.put(Config.REDIS_MAP_KEY_IS_LIGHT, false);
-                        } else if(cmd.action == Message.LampManualAction.CHANGE_BRIGHTNESS) {
-                            map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, cmd.value);
-                        }
-                    }
-                    // 更新数据库中的状态
-
+                var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
+                if(map == null) {
+                    log.error("获取缓存对象为空，无法完成命令的执行");
+                    continue;
                 }
+                // 更新缓存中的状态
+                if(result.isOk()) {
+                    map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.MANUAL); // 更新缓存中的执行模式
+                    // 如果是实时开关灯指令，则需要更新缓存中的亮灯状态；如果是调节实时亮度的，则更新亮度值
+                    if(cmd.action == Message.LampManualAction.OPEN) {
+                        map.put(Config.REDIS_MAP_KEY_IS_LIGHT, true);
+                    } else if(cmd.action == Message.LampManualAction.CLOSE) {
+                        map.put(Config.REDIS_MAP_KEY_IS_LIGHT, false);
+                    } else if(cmd.action == Message.LampManualAction.CHANGE_BRIGHTNESS) {
+                        map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, cmd.value);
+                    }
+                }
+                // 以下更新数据库中的状态
                 if(tmp == null) {
                     // 如果没有这个路灯的运行状态，新增
                     var model = new LampExecutionModel();
@@ -346,6 +347,24 @@ public class StrategyService implements IStrategyService {
                     tmp.lastUpdateTime = LocalDateTime.now();
                     this.lampExecutionMapper.update(tmp);
                 }
+                // 最后推送路灯的状态给前端
+                var tmpLamp = this.deviceService.getLamp(lamp.id);
+                var lampExecution = new LampExecution();
+                var lampExecutionMessage = new LampExecution.Message();
+                lampExecutionMessage.lampId = lamp.id;
+                lampExecutionMessage.isLight = tmpLamp.isLight;
+                lampExecutionMessage.isFault = tmpLamp.isFault;
+                lampExecutionMessage.isOnline = tmpLamp.isOnline;
+                lampExecutionMessage.executionMode = tmpLamp.executionMode;
+                lampExecutionMessage.brightness = tmpLamp.brightness;
+                lampExecutionMessage.strategyName = tmpLamp.strategyName;
+                lampExecutionMessage.from = tmpLamp.from;
+                lampExecutionMessage.to = tmpLamp.to;
+                lampExecutionMessage.points = tmpLamp.points;
+                lampExecutionMessage.regionName = tmpLamp.regionName;
+                lampExecution.message = lampExecutionMessage;
+                var jsonMsg = this.objectMapper.writeValueAsString(lampExecution);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_EXECUTION_ROUTING_KEY, jsonMsg);
             }
             return results;
         }catch (Exception ex) {
@@ -525,7 +544,7 @@ public class StrategyService implements IStrategyService {
                     lampAlarmOutput.regionName = region.name;
                     lampAlarm.message = lampAlarmOutput;
                     var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY, alarmMsg);
+                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
                     return BaseApiResult.success();
                 }
                 return BaseApiResult.fail("无法完成告警记录");
@@ -580,12 +599,16 @@ public class StrategyService implements IStrategyService {
                     json);
             var future = this.oneNetService.executeAsync(params);
             var result = future.get();
-            if(result.isOk()) { // 策略成功执行，即下发到硬件，则更新这盏灯的状态
-                var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
-                if(map != null) {
-                    map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.STRATEGY);
-                }
+            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
+            if(map == null) {
+                log.error("获取缓存对象为空，无法执行策略");
+                return null;
             }
+            // 更新缓存状态
+            if(result.isOk()) { // 策略成功执行，即下发到硬件，则更新这盏灯的状态
+                map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.STRATEGY);
+            }
+            // 更新数据库状态
             if (lampExecutionModel == null) {
                 // 如果没有这个路灯的运行状态，新增
                 var model = new LampExecutionModel();
@@ -613,6 +636,24 @@ public class StrategyService implements IStrategyService {
                 lampExecutionModel.lastUpdateTime = LocalDateTime.now();
                 this.lampExecutionMapper.update(lampExecutionModel);
             }
+            // 最后推送路灯的状态给前端
+            var tmpLamp = this.deviceService.getLamp(lamp.id);
+            var lampExecution = new LampExecution();
+            var lampExecutionMessage = new LampExecution.Message();
+            lampExecutionMessage.lampId = lamp.id;
+            lampExecutionMessage.isLight = tmpLamp.isLight;
+            lampExecutionMessage.isFault = tmpLamp.isFault;
+            lampExecutionMessage.isOnline = tmpLamp.isOnline;
+            lampExecutionMessage.executionMode = tmpLamp.executionMode;
+            lampExecutionMessage.brightness = tmpLamp.brightness;
+            lampExecutionMessage.strategyName = tmpLamp.strategyName;
+            lampExecutionMessage.from = tmpLamp.from;
+            lampExecutionMessage.to = tmpLamp.to;
+            lampExecutionMessage.points = tmpLamp.points;
+            lampExecutionMessage.regionName = tmpLamp.regionName;
+            lampExecution.message = lampExecutionMessage;
+            var jsonMsg = this.objectMapper.writeValueAsString(lampExecution);
+            this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_EXECUTION_ROUTING_KEY, jsonMsg);
             return BaseApiResult.success();
         }catch (Exception ex) {
             log.error(ex.getMessage());

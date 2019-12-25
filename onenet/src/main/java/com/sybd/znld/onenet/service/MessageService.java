@@ -85,106 +85,8 @@ public class MessageService implements IMessageService {
     }
 
     @Override
-    public RawData extractUpMsg(String body) {
-        String ds = null;
-        try {
-            ds = JsonPath.read(body, "$.ds_id");
-        } catch (Exception ignored) {
-        }
-        Object value = null;
-        try {
-            value = JsonPath.read(body, "$.value");
-        } catch (Exception ignored) {
-        }
-        LocalDateTime at = null;
-        try {
-            Long tmp = JsonPath.read(body, "$.at");
-            var zoneId = ZoneId.of("Asia/Shanghai");
-            at = MyDateTime.toLocalDateTime(tmp, zoneId);
-        } catch (Exception ignored) {
-        }
-        Integer deviceId = null;
-        try {
-            deviceId = JsonPath.read(body, "$.dev_id");
-        } catch (Exception ignored) {
-        }
-        String imei = null;
-        try {
-            imei = JsonPath.read(body, "$.imei");
-        } catch (Exception ignored) {
-        }
-        var rawData = new RawData();
-        rawData.ds = ds;
-        rawData.value = value;
-        rawData.at = at;
-        rawData.deviceId = deviceId;
-        rawData.imei = imei;
-        return rawData;
-    }
-
-    @Override
-    public Integer getUpMsgType(String body) {
-        Integer type = null;
-        try {
-            type = JsonPath.read(body, "$.type");
-        } catch (Exception ignored) { }
-        return type;
-    }
-
-    @Override
-    public Integer getUpMsgStatus(String body) {
-        Integer status = null;
-        try {
-            status = JsonPath.read(body, "$.status");
-        } catch (Exception ignored) { }
-        return status;
-    }
-
-    @Override
-    public List<String> getUpMsgIds(String body) {
-        try {
-            String ds = JsonPath.read(body, "$.ds_id");
-            var ids = ds.split("_");
-            if (ids.length != 3) {
-                return null;
-            }
-            return Arrays.stream(ids).collect(Collectors.toList());
-        } catch (Exception ignored) { }
-        return null;
-    }
-
-    @Override
-    public String getUpMsgImei(String body) {
-        String imei = null;
-        try {
-            imei = JsonPath.read(body, "$.imei");
-        } catch (Exception ignored) { }
-        return imei;
-    }
-
-    @Override
-    public Integer getUpMsgDeviceId(String body) {
-        Integer deviceId = null;
-        try {
-            deviceId = JsonPath.read(body, "$.dev_id");
-        } catch (Exception ignored) {
-        }
-        return deviceId;
-    }
-
-    @Override
-    public Long getUpMsgAt(String body) {
-        Long at = null;
-        try {
-            at = JsonPath.read(body, "$.at");
-        } catch (Exception ignored) {
-        }
-        return at;
-    }
-
-    @Override
     public News onOff(String body) {
-        var rawData = this.extractUpMsg(body);
+        var rawData = this.oneNetService.extractUpMsg(body);
         if(rawData == null) return null;
         var ids = rawData.getIds();
         if (ids == null || ids.isEmpty()) {
@@ -214,12 +116,12 @@ public class MessageService implements IMessageService {
 
     @Override
     public OnOffLineNews onOffLine(String body) {
-        var status = this.getUpMsgStatus(body);
-        var imei = this.getUpMsgImei(body);
+        var status = this.oneNetService.getUpMsgStatus(body);
+        var imei = this.oneNetService.getUpMsgImei(body);
         var news = new OnOffLineNews();
-        news.deviceId = this.getUpMsgDeviceId(body);
+        news.deviceId = this.oneNetService.getUpMsgDeviceId(body);
         news.imei = imei;
-        news.at = this.getUpMsgAt(body);
+        news.at = this.oneNetService.getUpMsgAt(body);
         if (status != null) {
             if (status == 0) {
                 news.isOnline = false;
@@ -238,7 +140,7 @@ public class MessageService implements IMessageService {
 
     @Override
     public News position(String body) {
-        var rawData = this.extractUpMsg(body);
+        var rawData = this.oneNetService.extractUpMsg(body);
         if(rawData == null) return null;
         var ids = rawData.getIds();
         if (ids == null || ids.isEmpty()) {
@@ -328,7 +230,7 @@ public class MessageService implements IMessageService {
 
     @Override
     public News angle(String body) {
-        var rawData = this.extractUpMsg(body);
+        var rawData = this.oneNetService.extractUpMsg(body);
         if(rawData == null) return null;
         var ids = rawData.getIds();
         if (ids == null || ids.isEmpty()) {
@@ -358,7 +260,7 @@ public class MessageService implements IMessageService {
 
     @Override
     public News environment(String body) {
-        var rawData = this.extractUpMsg(body);
+        var rawData = this.oneNetService.extractUpMsg(body);
         if(rawData == null) return null;
         var ids = rawData.getIds();
         if (ids == null || ids.isEmpty()) {
@@ -398,7 +300,7 @@ public class MessageService implements IMessageService {
     // 收到硬件传来的单灯数据后，更新缓存中的数据，并且返回一个用于推送到前端的对象
     @Override
     public LampStatistic statistics(String body) {
-        var rawData = this.extractUpMsg(body);
+        var rawData = this.oneNetService.extractUpMsg(body);
         if(rawData == null) return null;
         var ids = rawData.getIds();
         if (ids == null || ids.isEmpty()) {
@@ -445,7 +347,7 @@ public class MessageService implements IMessageService {
             var msg = new LampStatistic.Message();
             msg.id = lamp.id;
             msg.voltage =  new LampStatistic.Message.ValueError<>(obj.V, LampStatistic.Message.isVoltageError(obj.V));
-            msg.brightness = new LampStatistic.Message.ValueError<>(obj.B, obj.B != null && obj.B >= 0 && obj.B <= 100);
+            msg.brightness = new LampStatistic.Message.ValueError<>(obj.B, obj.B == null || obj.B < 0 || obj.B > 100);
             msg.electricity = new LampStatistic.Message.ValueError<>(obj.I.get(1), LampStatistic.Message.isElectricityError(obj.I.get(1)));
             msg.energy = new LampStatistic.Message.ValueError<>(obj.EP.get(1), false);
             msg.power = new LampStatistic.Message.ValueError<>(obj.PP.get(1), false);
@@ -465,7 +367,7 @@ public class MessageService implements IMessageService {
             msg.hddp = obj.hddp;
             msg.hgt = obj.hgt;
             msg.humidity = obj.Ua;
-            msg.temperature = obj.TP;
+            msg.temperature = obj.Ta;
             msg.imei = rawData.imei;
             msg.innerHumidity = obj.HU;
             msg.innerTemperature = obj.TP;
@@ -480,8 +382,14 @@ public class MessageService implements IMessageService {
             msg.spd = obj.spd;
             msg.stn = obj.stn;
             msg.totalEnergy = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_TOTAL_ENERGY));
+            var isFault = msg.voltage.isError || msg.electricity.isError || msg.rate.isError;
+            var isLight = obj.B != null && obj.B > 0 && obj.B < 100;
+            msg.isOnline = isOnline;
+            msg.isFault = isFault;
+            msg.isLight = isLight;
             statistics.message = msg;
-            map.put(Config.REDIS_MAP_KEY_IS_FAULT, msg.voltage.isError || msg.electricity.isError || msg.rate.isError); // 当前灯的故障状态
+
+            map.put(Config.REDIS_MAP_KEY_IS_FAULT, isFault); // 当前灯的故障状态
             var lampRegionOrganId = this.lampMapper.selectLampRegionOrganIdByImei(lamp.imei);
             var region = this.regionMapper.selectById(lampRegionOrganId.regionId);
             if(msg.voltage.isError) {
@@ -509,7 +417,7 @@ public class MessageService implements IMessageService {
                     lampAlarmOutput.regionName = region.name;
                     lampAlarm.message = lampAlarmOutput;
                     var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY, alarmMsg);
+                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
                 }
             }
             if(msg.electricity.isError) {
@@ -537,7 +445,7 @@ public class MessageService implements IMessageService {
                     lampAlarmOutput.regionName = region.name;
                     lampAlarm.message = lampAlarmOutput;
                     var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY, alarmMsg);
+                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
                 }
             }
             if(msg.rate.isError) {
@@ -565,7 +473,7 @@ public class MessageService implements IMessageService {
                     lampAlarmOutput.regionName = region.name;
                     lampAlarm.message = lampAlarmOutput;
                     var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_ALARM_MSG_LIGHT_ROUTING_KEY, alarmMsg);
+                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
                 }
             }
             return statistics;

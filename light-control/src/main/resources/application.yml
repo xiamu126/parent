@@ -1,6 +1,9 @@
 server:
   port: 8089
 spring:
+  rabbitmq:
+    username: admin
+    password: admin123
   resources:
     add-mappings: false
   mvc:

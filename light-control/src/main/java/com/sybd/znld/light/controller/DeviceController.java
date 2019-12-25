@@ -1,7 +1,7 @@
 package com.sybd.znld.light.controller;
 
-import com.sybd.znld.light.controller.dto.Command;
-import com.sybd.znld.light.controller.dto.RegionBoxLamp;
+import com.sybd.znld.model.lamp.dto.LampStatistic;
+import com.sybd.znld.model.lamp.dto.RegionBoxLamp;
 import com.sybd.znld.light.service.IDeviceService;
 import com.sybd.znld.model.lamp.dto.Message;
 import com.sybd.znld.model.lamp.dto.OpResult;
@@ -59,5 +59,10 @@ public class DeviceController implements IDeviceController {
             log.error(ExceptionUtils.getStackTrace(ex));
             return null;
         }
+    }
+
+    @Override
+    public LampStatistic getStatistics(String lampId){
+        return this.deviceService.getStatistics(lampId);
     }
 }

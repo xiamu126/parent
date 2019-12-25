@@ -6,6 +6,7 @@ import com.sybd.znld.model.lamp.dto.LampManualCmd;
 import com.sybd.znld.model.lamp.dto.LampStrategy;
 import com.sybd.znld.model.lamp.dto.LampStrategyCmd;
 import com.sybd.znld.model.lamp.dto.LampStrategyOutput;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,9 @@ public interface IStrategyService {
     // 终止某个待执行的策略
     void terminateStrategy(String id);
     // 新建照明灯策略
-    ApiResult newLampStrategy(LampStrategy strategy);
+    BaseApiResult newLampStrategy(LampStrategy strategy);
+    // 删除照明灯策略
+    BaseApiResult deleteLampStrategy(String strategyId);
     // 针对目标对象，执行指定的策略
     Map<String, BaseApiResult> executeLampStrategy(LampStrategyCmd cmd);
     // 针对目标对象，只是实时控制

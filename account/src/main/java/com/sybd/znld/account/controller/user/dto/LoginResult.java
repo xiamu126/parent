@@ -32,4 +32,5 @@ public class LoginResult {
     public List<CityAndCode> cities;
     @ApiModelProperty(value = "权限数据")
     public Object rbac;
+    public String id; // 可以认为是session_id
 }

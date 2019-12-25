@@ -47,6 +47,9 @@ public class AngleWsHandler implements WebSocketHandler {
                 } catch (Exception ex) {
                     log.error(ex.getMessage());
                     log.error(ExceptionUtils.getStackTrace(ex));
+                    if(!session.isOpen()) {
+                        sessions.remove(session);
+                    }
                 }
             }
         }

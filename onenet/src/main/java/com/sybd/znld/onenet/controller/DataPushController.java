@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class DataPushController {
     private final OneNetResourceMapper oneNetResourceMapper;
     private final RabbitTemplate rabbitTemplate;
-    private final IMessageService messageService;
+    private final IOneNetService oneNetService;
 
     private static String token = "sybd";//用户自定义token和OneNet第三方平台配置里的token一致
     private static String aeskey = "ZHKi9o3I9ot0v1rcwCcffgZdyEMa3db45j1r6Pt3bNC";//aeskey和OneNet第三方平台配置里的token一致
@@ -26,15 +26,15 @@ public class DataPushController {
     @Autowired
     public DataPushController(OneNetResourceMapper oneNetResourceMapper,
                               RabbitTemplate rabbitTemplate,
-                              IMessageService messageService) {
+                              IOneNetService oneNetService) {
         this.oneNetResourceMapper = oneNetResourceMapper;
         this.rabbitTemplate = rabbitTemplate;
-        this.messageService = messageService;
+        this.oneNetService = oneNetService;
     }
 
     private void processMsg(String msg) {
-        var rawData = this.messageService.extractUpMsg(msg);
-        var type = this.messageService.getUpMsgType(msg);
+        var rawData = this.oneNetService.extractUpMsg(msg);
+        var type = this.oneNetService.getUpMsgType(msg);
         if (type != null) {
             if (type == 2) {
                 log.debug("设备上下线消息");

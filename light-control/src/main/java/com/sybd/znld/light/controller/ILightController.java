@@ -4,10 +4,7 @@ import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.*;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +16,10 @@ public interface ILightController {
     // 新建照明灯策略
     @PostMapping(value = "strategy/lamp", produces = {MediaType.APPLICATION_JSON_VALUE})
     BaseApiResult newLampStrategy(@RequestBody LampStrategy strategy);
+    // 删除照明灯策略
+    @DeleteMapping(value = "strategy/lamp/{strategyId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    BaseApiResult deleteLampStrategy(@PathVariable(name = "strategyId") String strategyId);
+
     // 对目标对象执行照明灯策略计划
     @PostMapping(value = "strategy/lamp/schedule", produces = {MediaType.APPLICATION_JSON_VALUE})
     Map<String, BaseApiResult> executeLampStrategy(@RequestBody LampStrategyCmd cmd);

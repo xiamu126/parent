@@ -103,24 +103,24 @@ public class StrategyService implements IStrategyService {
 
     @Transactional(transactionManager = "znldTransactionManager")
     @Override
-    public ApiResult newLampStrategy(LampStrategy strategy) {
+    public BaseApiResult newLampStrategy(LampStrategy strategy) {
         try {
             if(!strategy.isValid()) {
-                return ApiResult.fail();
+                return BaseApiResult.fail();
             }
             var organ = this.organizationMapper.selectById(strategy.organId);
             if (organ == null) {
                 log.error("组织不存在");
-                return ApiResult.fail();
+                return BaseApiResult.fail();
             }
             var user = this.userMapper.selectById(strategy.userId);
             if (user == null) {
                 log.error("用户不存在");
-                return ApiResult.fail();
+                return BaseApiResult.fail();
             }
             if (!user.organizationId.equals(organ.id)) {
                 log.error("指定的组织id[" + strategy.organId + "]和用户id[" + strategy.userId + "]不符");
-                return ApiResult.fail();
+                return BaseApiResult.fail();
             }
             // 判断下指定的开始结束时间是否和已有的策略有冲突；所谓冲突，即开始时间不能一样
             var from = strategy.getFrom();
@@ -146,7 +146,7 @@ public class StrategyService implements IStrategyService {
                     var p = strategy.points.get(i);
                     var dateTime = MyDateTime.toLocalDateTime(p.time);
                     if(dateTime == null) {
-                        return ApiResult.fail("发生错误");
+                        return BaseApiResult.fail("发生错误");
                     }
                     var time = dateTime.toLocalTime();
                     if(i == 0) {
@@ -172,12 +172,26 @@ public class StrategyService implements IStrategyService {
                 }
             }
             this.lampStrategyMapper.insert(s);
-            return ApiResult.success();
+            return BaseApiResult.success();
         } catch (Exception ex) {
             log.error(ex.getMessage());
             log.error(ExceptionUtils.getStackTrace(ex));
-            return ApiResult.fail("发生错误");
+            return BaseApiResult.fail("发生错误");
         }
+    }
+
+    @Override
+    public BaseApiResult deleteLampStrategy(String strategyId) {
+        if(MyString.isEmptyOrNull(strategyId)) {
+            log.error("参数错误");
+            return BaseApiResult.fail();
+        }
+        var lampStrategyModel = this.lampStrategyMapper.selectById(strategyId);
+        if(lampStrategyModel == null) {
+            log.error("指定的策略id["+strategyId+"]不存在");
+            return BaseApiResult.fail();
+        }
+        return null;
     }
 
     @Override

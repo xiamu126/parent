@@ -31,7 +31,5 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
         registry.addHandler(new LampStatisticsWsHandler(),"/data/news/lamp")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new LampStatisticsWsHandler(),"/data/news/lamp/onoffline")
-                .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
     }
 }

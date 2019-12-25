@@ -19,6 +19,7 @@ import com.sybd.znld.util.*;
 import com.wf.captcha.SpecCaptcha;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -323,7 +325,14 @@ public class UserController implements IUserController {
                         }
                     }
                 }
-
+                user.lastLoginTime = LocalDateTime.now();
+                user.lastLoginIp = userIp;
+                this.userMapper.updateById(user);
+                // 成功登入后，保存登入信息
+                data.id = UUID.randomUUID().toString().replace("-","");
+                var redisMap = this.redissonClient.getMap(data.id);
+                redisMap.put("user", user);
+                redisMap.put("data", data);
                 return ApiResult.success(data);
             } else { // 这是用户名错误，也算累计
                 if (count == null) {
@@ -343,6 +352,7 @@ public class UserController implements IUserController {
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
         }
         return ApiResult.fail("用户名或密码错误");
     }

@@ -3,7 +3,7 @@
 scanPeriod：设置监测配置文件是否有修改的时间间隔，如果没有给出时间单位，默认单位是毫秒当scan为true时，此属性生效。默认的时间间隔为1分钟。
 debug：当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。-->
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
-    <property name="LOG_HOME" value="./"/>
+    <property name="LOG_HOME" value="./logs"/>
     <property name="appName" value="znld-web"/>
     <property name="maxHistory" value="365" />
     <property name="maxFileSize" value="100MB" />
@@ -36,29 +36,61 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         </encoder>
     </appender>
 
-    <!--name：表示匹配的logger类型前缀，也就是包的前半部分
+    <springProfile name="dev">
+        <!--name：表示匹配的logger类型前缀，也就是包的前半部分
 		level：要记录的日志级别，包括 TRACE < DEBUG < INFO < WARN < ERROR
 		additivity：作用在于children-logger是否使用rootLogger配置的appender进行输出，false：表示只用当前logger的appender-ref，true：表示当前logger的appender-ref和rootLogger的appender-ref都有效-->
-    <logger name="org.springframework" level="error"/>
-    <logger name="org.mybatis" level="error"/>
-    <logger name="org.apache" level="error"/>
-    <logger name="io.netty" level="error"/>
-    <logger name="org.redisson" level="error"/>
-    <logger name="com.alibaba" level="error"/>
-    <logger name="com.baomidou" level="error"/>
-    <logger name="org.hibernate" level="error"/>
-    <logger name="druid" level="error"/>
-    <logger name="io.lettuce" level="error"/>
-    <logger name="reactor" level="error"/>
-    <logger name="org.thymeleaf" level="error"/>
-    <logger name="io.swagger" level="error" />
-    <logger name="springfox" level="error"/>
-    <logger name="com.zaxxer.hikari" level="error"/>
-    <logger name="org.mongodb.driver" level="error"/>
+        <logger name="org.springframework" level="error"/>
+        <logger name="org.mybatis" level="error"/>
+        <logger name="org.apache" level="error"/>
+        <logger name="io.netty" level="error"/>
+        <logger name="org.redisson" level="error"/>
+        <logger name="com.alibaba" level="error"/>
+        <logger name="com.baomidou" level="error"/>
+        <logger name="org.hibernate" level="error"/>
+        <logger name="druid" level="error"/>
+        <logger name="io.lettuce" level="error"/>
+        <logger name="reactor" level="error"/>
+        <logger name="org.thymeleaf" level="error"/>
+        <logger name="io.swagger" level="error" />
+        <logger name="springfox" level="error"/>
+        <logger name="com.zaxxer.hikari" level="error"/>
+        <logger name="org.mongodb.driver" level="error"/>
+        <logger name="com.sybd.znld.mapper" level="error"/>
+        <logger name="com.jayway.jsonpath" level="error"/>
+        <logger name="com.sybd.znld" level="debug"/> <!--没有设置addtivity，默认为true，将此logger的打印信息向上级传递,即传给root；-->
 
-    <logger name="com.sybd.znld" level="debug"/> <!--没有设置addtivity，默认为true，将此logger的打印信息向上级传递,即传给root；-->
-    <root level="debug">
-        <appender-ref ref="stdout"/>
-        <appender-ref ref="appLogAppender"/>
-    </root>
+        <root level="debug">
+            <appender-ref ref="stdout"/>
+            <appender-ref ref="appLogAppender"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="org.springframework" level="error"/>
+        <logger name="org.mybatis" level="error"/>
+        <logger name="org.apache" level="error"/>
+        <logger name="io.netty" level="error"/>
+        <logger name="org.redisson" level="error"/>
+        <logger name="com.alibaba" level="error"/>
+        <logger name="com.baomidou" level="error"/>
+        <logger name="org.hibernate" level="error"/>
+        <logger name="druid" level="error"/>
+        <logger name="io.lettuce" level="error"/>
+        <logger name="reactor" level="error"/>
+        <logger name="org.thymeleaf" level="error"/>
+        <logger name="io.swagger" level="error" />
+        <logger name="springfox" level="error"/>
+        <logger name="com.zaxxer.hikari" level="error"/>
+        <logger name="org.mongodb.driver" level="error"/>
+        <logger name="com.sybd.znld.mapper" level="error"/>
+        <logger name="com.jayway.jsonpath" level="error"/>
+
+        <root level="debug">
+            <appender-ref ref="stdout"/>
+            <appender-ref ref="appLogAppender"/>
+        </root>
+    </springProfile>
+
+
 </configuration>

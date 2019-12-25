@@ -1,13 +1,14 @@
 package com.sybd.znld.onenet.websocket.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.socket.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 @Slf4j
-public class LampAlarmHandler implements WebSocketHandler {
+public class LampStatisticsWsHandler implements WebSocketHandler {
     private static final ArrayList<WebSocketSession> sessions = new ArrayList<>();
 
     @Override
@@ -16,10 +17,10 @@ public class LampAlarmHandler implements WebSocketHandler {
     }
 
     @Override
-    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message){
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
         try {
             var msg = message.getPayload().toString();
-            if(msg.equals("ping")) {
+            if (msg.equals("ping")) {
                 session.sendMessage(new TextMessage("pong"));
             }
         } catch (IOException ignored) {
@@ -28,7 +29,7 @@ public class LampAlarmHandler implements WebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        if(session.isOpen()){
+        if (session.isOpen()) {
             session.close();
         }
         sessions.remove(session);
@@ -45,14 +46,15 @@ public class LampAlarmHandler implements WebSocketHandler {
     }
 
     public static void sendAll(String msg) {
-        for(var session : sessions){
-            var message = new TextMessage(msg);
-            try {
-                synchronized (LampAlarmHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
+        synchronized (LampStatisticsWsHandler.class) { // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
+            for (var session : sessions) {
+                var message = new TextMessage(msg);
+                try {
                     session.sendMessage(message);
+                } catch (Exception ex) {
+                    log.error(ex.getMessage());
+                    log.error(ExceptionUtils.getStackTrace(ex));
                 }
-            } catch (IOException ex) {
-                log.error(ex.getMessage());
             }
         }
     }

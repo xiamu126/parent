@@ -21,19 +21,19 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new EnvironmentHandler(),"/data/news/environment")
+        registry.addHandler(new EnvironmentWsHandler(),"/data/news/environment")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*"); //支持websocket 的访问链接
-        registry.addHandler(new PositionHandler(),"/data/news/position")
+        registry.addHandler(new PositionWsHandler(),"/data/news/position")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new AngleHandler(),"/data/news/angle")
+        registry.addHandler(new AngleWsHandler(),"/data/news/angle")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new OnOffHandler(),"/data/news/onoff")
+        registry.addHandler(new OnOffPowerWsHandler(),"/data/news/onoff")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new LampStatisticsHandler(),"/data/news/lamp/statistics")
+        registry.addHandler(new LampStatisticsWsHandler(),"/data/news/lamp/statistics")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new LampStatisticsHandler(),"/data/news/lamp/onoffline")
+        registry.addHandler(new LampStatisticsWsHandler(),"/data/news/lamp/onoffline")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
-        registry.addHandler(new LampAlarmHandler(),"/data/news/lamp/alarm")
+        registry.addHandler(new LampAlarmWsHandler(),"/data/news/lamp/alarm")
                 .addInterceptors(new MyHandshakeInterceptor()).setAllowedOrigins("*");
     }
 }

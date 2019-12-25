@@ -11,6 +11,20 @@ public class LampStatistic {
     public MessageType type = MessageType.LAMP_STATISTIC;
     public Message message;
     public static class Message {
+        public static boolean isVoltageError(double voltage) {
+            if(voltage < 200) return true;
+            if(voltage > 246) return true;
+            return false;
+        }
+        public static boolean isElectricityError(double electricity) {
+            if(electricity != 3.0) return true;
+            return false;
+        }
+        public static boolean isRateError(double rate) {
+            if(rate < 49.5) return true;
+            if(rate > 50.5) return true;
+            return false;
+        }
         public String id; // 路灯编号
         public String imei;
         @JsonProperty("device_id")
@@ -21,6 +35,8 @@ public class LampStatistic {
         @JsonProperty("power_factor")
         public ValueError<Double> powerFactor; // 功率因数
         public ValueError<Double> energy; // 电能
+        @JsonProperty("total_energy")
+        public Double totalEnergy; // 总的累计电能
         public ValueError<Double> rate; // 频率
         public ValueError<Integer> brightness; // 亮度
         @JsonProperty("update_time")

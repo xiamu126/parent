@@ -67,12 +67,12 @@ public class ReportService implements IReportService {
                 obj.details = data.stream().map(d -> {
                     var detail = new Report.Detail();
                     detail.key = d.id;
-                    detail.electricity = d.electricity;
-                    detail.fullElectricity = d.electricity;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
                     return detail;
                 }).collect(Collectors.toList());
-                obj.electricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
-                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum(); // 实际用电
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum(); // 理论用电
                 obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
                 obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
@@ -86,8 +86,8 @@ public class ReportService implements IReportService {
                     var dateTime = MyDateTime.toLocalDate(d.id);
                     var weekFields = WeekFields.of(Locale.getDefault());
                     detail.key = String.valueOf(dateTime.get(weekFields.weekOfMonth()));
-                    detail.electricity = d.electricity;
-                    detail.fullElectricity = d.electricity;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
                     return detail;
                 }).collect(Collectors.toList());
                 var map = new HashMap<String, Report.Detail>();
@@ -106,8 +106,8 @@ public class ReportService implements IReportService {
                     });
                 });
                 obj.details = new ArrayList<>(map.values());
-                obj.electricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
-                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
                 obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
                 obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
@@ -119,12 +119,12 @@ public class ReportService implements IReportService {
                 obj.details = data.stream().map(d -> {
                     var detail = new Report.Detail();
                     detail.key = d.id;
-                    detail.electricity = d.electricity;
-                    detail.fullElectricity = d.electricity;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
                     return detail;
                 }).collect(Collectors.toList());
-                obj.electricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
-                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
                 obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
                 obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
@@ -145,12 +145,12 @@ public class ReportService implements IReportService {
                 obj.details = data.stream().map(d -> {
                     var detail = new Report.Detail();
                     detail.key = d.id;
-                    detail.electricity = d.electricity;
-                    detail.fullElectricity = d.electricity;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
                     return detail;
                 }).collect(Collectors.toList());
-                obj.electricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
-                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
                 obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
                 obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
@@ -164,8 +164,8 @@ public class ReportService implements IReportService {
                     var dateTime = MyDateTime.toLocalDate(d.id);
                     var weekFields = WeekFields.of(Locale.getDefault());
                     detail.key = String.valueOf(dateTime.get(weekFields.weekOfMonth()));
-                    detail.electricity = d.electricity;
-                    detail.fullElectricity = d.electricity;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
                     return detail;
                 }).collect(Collectors.toList());
                 var map = new HashMap<String, Report.Detail>();
@@ -184,8 +184,8 @@ public class ReportService implements IReportService {
                     });
                 });
                 obj.details = new ArrayList<>(map.values());
-                obj.electricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
-                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
                 obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
                 obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
@@ -197,12 +197,12 @@ public class ReportService implements IReportService {
                 obj.details = data.stream().map(d -> {
                     var detail = new Report.Detail();
                     detail.key = d.id;
-                    detail.electricity = d.electricity;
-                    detail.fullElectricity = d.electricity;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
                     return detail;
                 }).collect(Collectors.toList());
-                obj.electricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
-                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.electricity).sum();
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
                 obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
                 obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
@@ -244,7 +244,7 @@ public class ReportService implements IReportService {
             realTimeData.at = MyDateTime.toTimestamp(rawData.at);
             map.put(name, realTimeData); // 更新实时缓存
             var obj = this.objectMapper.readValue(rawData.value.toString(), LampStatistics.class);
-            var electricity = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_ELECTRICITY)); // 上一次累计的电量
+            var electricity = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_ENERGY)); // 上一次累计的电量
             var ep = obj.EP.get(1);
             if(electricity == null) {
                 if(ep == null || ep <= 0) {
@@ -260,7 +260,7 @@ public class ReportService implements IReportService {
 
             map.put(Config.REDIS_MAP_KEY_IS_LIGHT, obj.B > 0); // 当前灯的亮度状态
             map.put(Config.REDIS_MAP_KEY_IS_FAULT, false); // 当前灯的故障状态
-            map.put(Config.REDIS_MAP_KEY_ELECTRICITY, electricity);
+            map.put(Config.REDIS_MAP_KEY_ENERGY, electricity);
             var isOnline = map.get(Config.REDIS_MAP_KEY_IS_ONLINE);
             if(isOnline == null) { // 如果设备的在线状态未知，则手动刷新下
                 isOnline = this.oneNetService.isDeviceOnline(rawData.imei);
@@ -274,14 +274,14 @@ public class ReportService implements IReportService {
                 model.lampId = ids.lampId;
                 model.regionId = ids.regionId;
                 model.organId = ids.organId;
-                model.online = this.oneNetService.isDeviceOnline(rawData.imei);
-                model.light =  obj.B > 0;
-                model.fault = false; // 故障暂时不做判断
-                model.electricity = electricity; // 到目前为止累计电能
+                model.isOnline = this.oneNetService.isDeviceOnline(rawData.imei);
+                model.isLight =  obj.B > 0;
+                model.isFault = false; // 故障暂时不做判断
+                model.energy = electricity; // 到目前为止累计电能
                 model.updateTime = rawData.at;
                 this.lampStatisticsMapper.insert(model);
                 map.put(Config.REDIS_MAP_KEY_LAST_STATISTICS_UPDATE_TIME, MyDateTime.toTimestamp(LocalDateTime.now()));
-                map.put(Config.REDIS_MAP_KEY_ELECTRICITY, 0); // 清空累计，也就是我只保存这一个小时的电量，下个周期从0开始重新计算
+                map.put(Config.REDIS_MAP_KEY_ENERGY, 0); // 清空累计，也就是我只保存这一个小时的电量，下个周期从0开始重新计算
             } else {
                 // 存在上一次的更新时间，则看上一次的更新时间，到现在有没有达到一个小时（至少）
                 var lastTime = MyDateTime.toLocalDateTime(lastUpdateStatisticsTime);
@@ -294,14 +294,14 @@ public class ReportService implements IReportService {
                         model.lampId = ids.lampId;
                         model.regionId = ids.regionId;
                         model.organId = ids.organId;
-                        model.online = this.oneNetService.isDeviceOnline(rawData.imei);
-                        model.light =  obj.B > 0;
-                        model.fault = false; // 故障暂时不做判断
-                        model.electricity = electricity; // 到目前为止累计电能
+                        model.isOnline = this.oneNetService.isDeviceOnline(rawData.imei);
+                        model.isLight =  obj.B > 0;
+                        model.isFault = false; // 故障暂时不做判断
+                        model.energy = electricity; // 到目前为止累计电能
                         model.updateTime = rawData.at;
                         this.lampStatisticsMapper.insert(model);
                         map.put(Config.REDIS_MAP_KEY_LAST_STATISTICS_UPDATE_TIME, MyDateTime.toTimestamp(LocalDateTime.now()));
-                        map.put(Config.REDIS_MAP_KEY_ELECTRICITY, 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
+                        map.put(Config.REDIS_MAP_KEY_ENERGY, 0); // 清空累计，也就是我只保存这一个小时的点亮，下个周期从0开始重新计算
                     }
                 }
             }

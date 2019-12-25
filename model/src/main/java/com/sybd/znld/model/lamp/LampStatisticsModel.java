@@ -8,9 +8,9 @@ public class LampStatisticsModel {
     public String lampId;
     public String regionId;
     public String organId;
-    public Boolean online;
-    public Boolean fault;
-    public Boolean light;
-    public Double electricity;
+    public Boolean isOnline;
+    public Boolean isFault;
+    public Boolean isLight;
+    public Double energy;
     public LocalDateTime updateTime;
 }

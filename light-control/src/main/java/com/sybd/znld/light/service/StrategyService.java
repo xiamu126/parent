@@ -304,10 +304,21 @@ public class StrategyService implements IStrategyService {
                 results.put(lamp.id, new BaseApiResult(result.errno, ""));
                 var tmp = this.lampExecutionMapper.selectByLampId(lamp.id);
                 if(result.isOk()) {
+                    // 更新缓存中的状态
                     var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
                     if(map != null) {
-                        map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.MANUAL);
+                        map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.MANUAL); // 更新缓存中的执行模式
+                        // 如果是实时开关灯指令，则需要更新缓存中的亮灯状态；如果是调节实时亮度的，则更新亮度值
+                        if(cmd.action == Message.LampManualAction.OPEN) {
+                            map.put(Config.REDIS_MAP_KEY_IS_LIGHT, true);
+                        } else if(cmd.action == Message.LampManualAction.CLOSE) {
+                            map.put(Config.REDIS_MAP_KEY_IS_LIGHT, false);
+                        } else if(cmd.action == Message.LampManualAction.CHANGE_BRIGHTNESS) {
+                            map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, cmd.value);
+                        }
                     }
+                    // 更新数据库中的状态
+
                 }
                 if(tmp == null) {
                     // 如果没有这个路灯的运行状态，新增
@@ -332,6 +343,7 @@ public class StrategyService implements IStrategyService {
                     }
                     tmp.tryingCount = 0; // 重置，手动模式没有重试的概念
                     tmp.lastTryingTime = LocalDateTime.of(1973,1,1,0,0,0); // 重置，手动模式没有重试的概念
+                    tmp.lastUpdateTime = LocalDateTime.now();
                     this.lampExecutionMapper.update(tmp);
                 }
             }

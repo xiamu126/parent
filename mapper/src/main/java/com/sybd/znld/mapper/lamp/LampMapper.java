@@ -1,11 +1,13 @@
 package com.sybd.znld.mapper.lamp;
 
 import com.sybd.znld.mapper.db.DbSource;
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.model.lamp.RegionModel;
 import com.sybd.znld.model.lamp.dto.*;
 import com.sybd.znld.model.lamp.LampModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.List;
 @Mapper
 @DbSource("znld")
 public interface LampMapper {
+    @Select("select * from lamp")
+    List<LampModel> selectAll();
     int insert(LampModel model);
     List<LampSummary> selectLampSummary();
     List<LampModel> selectEnvironmentLampByOrganId(String organId);

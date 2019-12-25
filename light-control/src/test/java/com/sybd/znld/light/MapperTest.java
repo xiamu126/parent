@@ -13,7 +13,6 @@ import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,10 +74,10 @@ public class MapperTest {
             model.regionId = "d4db3d36cbb843ca863b46153954b8d0";
             model.organId = "88cc4ad365d9493f85db160b336c8414";
             model.updateTime = LocalDateTime.now().minusDays(2);
-            model.online = rand.nextBoolean();
-            model.fault = rand.nextBoolean();
-            model.light = rand.nextBoolean();
-            model.electricity = rand.nextDouble();
+            model.isOnline = rand.nextBoolean();
+            model.isFault = rand.nextBoolean();
+            model.isLight = rand.nextBoolean();
+            model.energy = rand.nextDouble();
             this.lampStatisticsMapper.insert(model);
         }
     }

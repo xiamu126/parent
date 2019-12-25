@@ -2,10 +2,7 @@ db-server: znld-mysql:3306
 
 spring:
   rabbitmq:
-    addresses: znld-rabbitmq
-    port: 5672
-    username: admin
-    password: admin123
+    addresses: znld-rabbitmq:5672
   datasource:
     oauth:
       pool-name: HikariPool-oauth

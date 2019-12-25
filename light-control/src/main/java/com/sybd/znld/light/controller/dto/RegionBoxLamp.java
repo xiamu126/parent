@@ -27,6 +27,10 @@ public class RegionBoxLamp {
             public Double lng; // 经度
             public Double lat; // 纬度
             public String status; // 路灯的状态
+            @JsonProperty("is_fault")
+            public Boolean isFault;
+            @JsonProperty("is_light")
+            public Boolean isLight;
             @JsonProperty("is_online")
             public Boolean isOnline;
             public Integer brightness;

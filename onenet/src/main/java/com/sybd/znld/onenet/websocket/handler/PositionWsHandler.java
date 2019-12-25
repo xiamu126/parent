@@ -1,20 +1,15 @@
 package com.sybd.znld.onenet.websocket.handler;
 
-import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.ResourceUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.socket.*;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 @Slf4j
-public class PositionHandler implements WebSocketHandler {
+public class PositionWsHandler implements WebSocketHandler {
     private static final ArrayList<WebSocketSession> sessions = new ArrayList<>();
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessions.add(session);
@@ -50,7 +45,7 @@ public class PositionHandler implements WebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        if(session.isOpen()){
+        if (session.isOpen()) {
             session.close();
         }
         sessions.remove(session);
@@ -67,14 +62,15 @@ public class PositionHandler implements WebSocketHandler {
     }
 
     public static void sendAll(String jsonStr) {
-        for(var session : sessions){
-            var message = new TextMessage(jsonStr);
-            try {
-                synchronized (PositionHandler.class){ // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一般，又要发新的消息
+        synchronized (PositionWsHandler.class) { // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一般，又要发新的消息
+            for (var session : sessions) {
+                var message = new TextMessage(jsonStr);
+                try {
                     session.sendMessage(message);
+                } catch (Exception ex) {
+                    log.error(ex.getMessage());
+                    log.error(ExceptionUtils.getStackTrace(ex));
                 }
-            } catch (IOException ex) {
-                log.error(ex.getMessage());
             }
         }
     }

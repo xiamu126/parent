@@ -86,7 +86,12 @@ public class UserController implements IUserController {
                           RestTemplate restTemplate,
                           ObjectMapper objectMapper,
                           OrganizationMapper organizationMapper,
-                          UserMapper userMapper, UserRoleMapper userRoleMapper, RoleMapper roleMapper, RoleAuthorityGroupMapper roleAuthorityGroupMapper, AuthorityGroupMapper authorityGroupMapper, AuthorityMapper authorityMapper) {
+                          UserMapper userMapper,
+                          UserRoleMapper userRoleMapper,
+                          RoleMapper roleMapper,
+                          RoleAuthorityGroupMapper roleAuthorityGroupMapper,
+                          AuthorityGroupMapper authorityGroupMapper,
+                          AuthorityMapper authorityMapper) {
         this.userService = userService;
         this.redissonClient = redissonClient;
         this.mongoClient = mongoClient;
@@ -221,10 +226,7 @@ public class UserController implements IUserController {
         return results;
     }
 
-    @ApiOperation(value = "登入")
-    @PostMapping(value = "login", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ApiResult login(@ApiParam(name = "jsonData", value = "登入数据", required = true) @RequestBody @Valid LoginInput input,
-                           HttpServletRequest request, BindingResult bindingResult) {
+    public ApiResult login(LoginInput input, HttpServletRequest request, BindingResult bindingResult) {
         try {
             if (input == null) {
                 log.debug("传入的参数错误");

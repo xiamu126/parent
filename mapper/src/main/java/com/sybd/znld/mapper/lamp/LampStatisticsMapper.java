@@ -52,4 +52,6 @@ public interface LampStatisticsMapper {
     List<Statistic> selectThisMonthGroupDayByOrganId(String id);
     // 获取今年的某个分平台的统计情况，按月分组
     List<Statistic> selectThisYearGroupMonthByOrganId(String id);
+    // 获取某盏灯的到目前为止的总的累计电能
+    Double selectTotalEnergyByLampId(String id);
 }

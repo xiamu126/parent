@@ -2,6 +2,8 @@ package com.sybd.znld.mapper.config;
 
 import com.sybd.znld.mapper.MyEnumTypeHandler;
 import com.sybd.znld.model.DeviceStatus;
+import com.sybd.znld.model.lamp.LampExecutionModel;
+import com.sybd.znld.model.lamp.LampStrategyModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -51,6 +53,9 @@ public class LampDataSourceConfig {
         //typeHandlerRegistry.register(LampStrategyModel.Status.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.register(Status.class, MyEnumTypeHandler.class);
         typeHandlerRegistry.register(DeviceStatus.class, MyEnumTypeHandler.class);
+        typeHandlerRegistry.register(LampExecutionModel.Mode.class, MyEnumTypeHandler.class);
+        typeHandlerRegistry.register(LampExecutionModel.Status.class, MyEnumTypeHandler.class);
+        typeHandlerRegistry.register(LampStrategyModel.Status.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.register(StrategyFailedStatus.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.register(StrategyStatus.class, MyEnumTypeHandler.class);
         //typeHandlerRegistry.setDefaultEnumTypeHandler(MyEnumTypeHandler.class);

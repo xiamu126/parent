@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.LampMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampModel">
-        insert into lamp(id, api_key, device_id, imei, device_name, longitude, latitude, status)
-        values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status});
+        insert into lamp(id, api_key, device_id, imei, device_name, longitude, latitude, status, protocol_version)
+        values (#{id}, #{apiKey}, #{deviceId}, #{imei}, #{deviceName}, #{longitude}, #{latitude}, #{status}, #{protocolVersion});
     </insert>
 
     <select id="selectLampRegionOrganIdByImei" resultType="com.sybd.znld.model.lamp.dto.LampRegionOrganId">

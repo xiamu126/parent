@@ -137,6 +137,8 @@ public class DeviceService implements IDeviceService {
                         tmpLamp.lat = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_BAIDU_LAT));
                         tmpLamp.brightness = (Integer) map.get(Config.REDIS_MAP_KEY_BRIGHTNESS);
                         tmpLamp.isOnline = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_ONLINE);
+                        tmpLamp.isLight = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_LIGHT);
+                        tmpLamp.isFault = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_FAULT);
                         var mode = (LampExecutionModel.Mode) map.get(Config.REDIS_MAP_KET_EXECUTION_MODE);
                         tmpLamp.executionMode = (mode == LampExecutionModel.Mode.STRATEGY ? "策略" : "手动");
                         if(mode == LampExecutionModel.Mode.STRATEGY) {

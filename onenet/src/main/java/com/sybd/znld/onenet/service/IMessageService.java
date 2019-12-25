@@ -21,4 +21,5 @@ public interface IMessageService {
     News angle(String body);
     News environment(String body);
     LampStatistic statistics(String body);
+    void scheduledStatistics();
 }

@@ -24,6 +24,7 @@ public class LampModel implements Serializable, IValidForDbInsert {
     public Float xAngle = 0.0f;
     public Float yAngle = 0.0f;
     public Integer linkTo = 0;
+    public Integer protocolVersion;
 
     public boolean isLongitudeLatitudeAssigned(){
         return !MyString.isEmptyOrNull(this.longitude) && !MyString.isEmptyOrNull(this.latitude);
@@ -42,6 +43,9 @@ public class LampModel implements Serializable, IValidForDbInsert {
             return false;
         }
         if(!MyString.isUuid(this.id)) {
+            return false;
+        }
+        if(!MyNumber.isPositive(this.protocolVersion)) {
             return false;
         }
         return !MyString.isAnyEmptyOrNull(this.apiKey, this.imei, this.deviceName);

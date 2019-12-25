@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sybd.znld.mapper.lamp.LampStatisticsMapper">
     <insert id="insert" parameterType="com.sybd.znld.model.lamp.LampStatisticsModel">
-        insert lamp_statistics(id, lamp_id, region_id, organ_id, online, fault, light, electricity, update_time)
+        insert lamp_statistics(id, lamp_id, region_id, organ_id, is_online, is_fault, is_light, energy, update_time)
         values
-        (#{id}, #{lampId}, #{regionId}, #{organId}, #{online}, #{fault}, #{light}, #{electricity}, #{updateTime});
+        (#{id}, #{lampId}, #{regionId}, #{organId}, #{isOnline}, #{isFault}, #{isLight}, #{energy}, #{updateTime});
     </insert>
     <update id="update"  parameterType="com.sybd.znld.model.lamp.LampStatisticsModel">
         update lamp_statistics
@@ -13,14 +13,17 @@
             <if test=" lampId != null and lampId != '' ">lamp_id=#{lampId},</if>
             <if test=" regionId != null and regionId != '' ">region_id=#{regionId},</if>
             <if test=" organId != null and organId != '' ">organ_id=#{organId},</if>
-            <if test=" online != null ">online=#{online},</if>
-            <if test=" fault != null ">fault=#{fault},</if>
-            <if test=" light != null ">light=#{light},</if>
-            <if test=" electricity != null ">electricity=#{electricity},</if>
+            <if test=" isOnline != null ">is_online=#{isOnline},</if>
+            <if test=" isFault != null ">is_fault=#{isFault},</if>
+            <if test=" isLight != null ">is_light=#{isLight},</if>
+            <if test=" energy != null ">energy=#{electricity},</if>
             <if test=" update_time != null">update_time=#{updateTime},</if>
         </trim>
         where id=#{id};
     </update>
+    <select id="selectTotalEnergyByLampId" resultType="java.lang.Double">
+        select sum(energy) from lamp_statistics where lamp_id= #{id};
+    </select>
     <select id="selectById" parameterType="com.sybd.znld.model.lamp.LampStatisticsModel">
         select * from lamp_statistics where id = #{id}
     </select>
@@ -30,10 +33,10 @@
     </select>
     <select id="selectLastDayLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select lamp_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_light) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where date_format(update_time,'%Y-%m-%d 00:00:00') = date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval 1 day)
         and region_id = #{id}
@@ -41,10 +44,10 @@
     </select>
     <select id="selectLastDayRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select region_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where date_format(update_time,'%Y-%m-%d 00:00:00') = date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval 1 day)
         and organ_id = #{id}
@@ -52,10 +55,10 @@
     </select>
     <select id="selectLastDayByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select organ_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where date_format(update_time,'%Y-%m-%d 00:00:00') = date_sub(date_format(now(),'%Y-%m-%d 00:00:00'), interval 1 day)
         and organ_id = #{id}
@@ -63,140 +66,140 @@
     </select>
     <select id="selectThisWeekLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select lamp_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where yearweek(update_time) = yearweek(now()) and region_id = #{id}
         group by lamp_id;
     </select>
     <select id="selectThisWeekRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select region_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where yearweek(update_time) = yearweek(now()) and organ_id = #{id}
         group by region_id;
     </select>
     <select id="selectThisWeekByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select organ_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where yearweek(update_time) = yearweek(now()) and organ_id = #{id}
         group by organ_id;
     </select>
     <select id="selectThisMonthLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select lamp_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where date_format(update_time,'%Y-%m')=date_format(now(),'%Y-%m') and region_id = #{id}
         group by lamp_id;
     </select>
     <select id="selectThisMonthRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select region_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where date_format(update_time,'%Y-%m')=date_format(now(),'%Y-%m') and organ_id = #{id}
         group by region_id;
     </select>
     <select id="selectThisMonthByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select organ_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where date_format(update_time,'%Y-%m')=date_format(now(),'%Y-%m') and organ_id = #{id}
         group by organ_id;
     </select>
     <select id="selectThisYearLampsByRegionId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select lamp_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where year(update_time)=year(now()) and region_id = #{id}
         group by lamp_id;
     </select>
     <select id="selectThisYearRegionsByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select region_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where year(update_time)=year(now()) and organ_id = #{id}
         group by region_id;
     </select>
     <select id="selectThisYearByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select organ_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where year(update_time)=year(now()) and organ_id = #{id}
         group by organ_i
     </select>
     <select id="selectLampsByRegionIdBetween" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select lamp_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and region_id = #{id}
         group by lamp_id;
     </select>
     <select id="selectByOrganIdBetween" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select organ_id as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and organ_id = #{id}
         group by organ_id;
     </select>
     <select id="selectThisWeekGroupDayByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select date_format(update_time,'%Y-%m-%d') as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where yearweek(update_time) = yearweek(now()) and organ_id = #{id}
         group by date_format(update_time,'%Y-%m-%d') order by id;
     </select>
     <select id="selectThisMonthGroupDayByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select date_format(update_time,'%Y-%m-%d') as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where date_format(update_time,'%Y-%m')=date_format(now(),'%Y-%m') and organ_id = #{id}
         group by date_format(update_time,'%Y-%m-%d') order by id;
     </select>
     <select id="selectThisYearGroupMonthByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
         select date_format(update_time,'%Y-%m') as id,
-               avg(online) as avg_online, count(online) as online,
-               avg(fault) as avg_fault, count(fault) as fault,
-               avg(light) as avg_light, count(light) as light,
-               sum(electricity) as electricity, max(update_time) as update_time
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               avg(is_light) as avg_light, count(is_light) as light,
+               sum(energy) as energy, max(update_time) as update_time
         from lamp_statistics
         where year(update_time)=year(now()) and organ_id = #{id}
         group by date_format(update_time,'%Y-%m') order by id;

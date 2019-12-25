@@ -10,6 +10,6 @@ public class Statistic {
     public Double avgFault;
     public Integer light;
     public Double avgLight;
-    public Double electricity;
+    public Double energy;
     public LocalDateTime updateTime;
 }

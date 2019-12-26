@@ -6,10 +6,12 @@ import org.springframework.web.socket.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
-public class LampStatisticsWsHandler implements WebSocketHandler {
-    private static final ArrayList<WebSocketSession> sessions = new ArrayList<>();
+public class LampWsHandler implements WebSocketHandler {
+    private static final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -46,7 +48,8 @@ public class LampStatisticsWsHandler implements WebSocketHandler {
     }
 
     public static void sendAll(String msg) {
-        synchronized (LampStatisticsWsHandler.class) { // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
+        synchronized (LampWsHandler.class) { // 如果不加锁，当多次调用这个sendAll，会出现上一次消息发送到一半，又要发新的消息
+            sessions.removeIf(s -> !s.isOpen());
             for (var session : sessions) {
                 var message = new TextMessage(msg);
                 try {
@@ -54,9 +57,6 @@ public class LampStatisticsWsHandler implements WebSocketHandler {
                 } catch (Exception ex) {
                     log.error(ex.getMessage());
                     log.error(ExceptionUtils.getStackTrace(ex));
-                    if(!session.isOpen()) {
-                        sessions.remove(session);
-                    }
                 }
             }
         }

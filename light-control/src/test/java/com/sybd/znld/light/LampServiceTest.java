@@ -4,6 +4,7 @@ import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
 import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.lamp.LampModuleModel;
 import com.sybd.znld.service.lamp.ILampService;
+import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,5 +49,14 @@ public class LampServiceTest {
         var regionId = "d4db3d36cbb843ca863b46153954b8d0";
         var ret = this.lampService.addElectricityBoxToRegion(model, regionId);
         Assert.assertNotNull(ret);
+    }
+
+    @Autowired
+    private IOneNetService oneNetService;
+
+    @Test
+    public void test2() {
+        var ret = this.oneNetService.isDeviceOnline("868194030013173");
+        log.debug(String.valueOf(ret));
     }
 }

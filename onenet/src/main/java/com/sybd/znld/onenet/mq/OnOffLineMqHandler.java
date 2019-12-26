@@ -3,7 +3,7 @@ package com.sybd.znld.onenet.mq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.sybd.znld.onenet.service.IMessageService;
-import com.sybd.znld.onenet.websocket.handler.LampStatisticsWsHandler;
+import com.sybd.znld.onenet.websocket.handler.LampWsHandler;
 import com.sybd.znld.service.onenet.IOneNetService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -36,7 +36,7 @@ public class OnOffLineMqHandler {
             log.info("收到上下线消息: {}", new String(body));
             var news = this.messageService.onOffLine(new String(body));
             if(news != null) {
-                LampStatisticsWsHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
+                LampWsHandler.sendAll(this.objectMapper.writeValueAsString(news)); // 推送消息
             }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false); // 手动确认
         }catch (Exception ex) {

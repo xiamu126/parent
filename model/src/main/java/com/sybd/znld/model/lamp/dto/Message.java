@@ -119,7 +119,10 @@ public class Message <T> {
     }
 
     public enum LampManualAction implements IEnum {
-        OPEN(100), CLOSE(0), CHANGE_BRIGHTNESS(100);
+        OPEN(100), // 开灯的亮度为100
+        CLOSE(0), // 关灯的亮度为0
+        CHANGE_BRIGHTNESS(-1), //
+        ;
         LampManualAction(int v){
             this.value = v;
         }

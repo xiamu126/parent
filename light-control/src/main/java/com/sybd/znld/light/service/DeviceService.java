@@ -422,6 +422,10 @@ public class DeviceService implements IDeviceService {
             return null;
         }
         var onenetUpmsg = map.get(Config.REDIS_MAP_KEY_ONENET_UP_MSG);
+        if(onenetUpmsg == null) {
+            log.error("指定的路灯id["+lampId+"]在缓存中没有硬件上传的数据");
+            return null;
+        }
         var rawData = this.oneNetService.extractUpMsg(onenetUpmsg.toString());
         if(rawData == null) {
             log.error("获取上一次路灯上传的数据为空");

@@ -3,8 +3,7 @@ package com.sybd.znld.onenet.mq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.sybd.znld.onenet.service.IMessageService;
-import com.sybd.znld.onenet.websocket.handler.LampAlarmWsHandler;
-import com.sybd.znld.onenet.websocket.handler.LampStatisticsWsHandler;
+import com.sybd.znld.onenet.websocket.handler.LampWsHandler;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,7 @@ public class LampAlarmMqHandler {
             var msg = new String(body);
             log.info("收到报警消息: {}", msg);
             if(!MyString.isEmptyOrNull(msg)) {
-                LampStatisticsWsHandler.sendAll(msg); // 推送消息
+                LampWsHandler.sendAll(msg); // 推送消息
             }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false); // 手动确认
         } catch (Exception ex) {

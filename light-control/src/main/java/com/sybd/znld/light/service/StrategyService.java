@@ -5,7 +5,6 @@ import com.sybd.znld.light.config.ProjectConfig;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.mapper.rbac.OrganizationMapper;
 import com.sybd.znld.mapper.rbac.UserMapper;
-import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.*;
 import com.sybd.znld.model.lamp.dto.*;
@@ -300,7 +299,7 @@ public class StrategyService implements IStrategyService {
             return null;
         }
         try {
-            var msg = new Message<>(Message.Address.LAMP, Message.Model.MANUAL, list);
+            var msg = new Message(com.sybd.znld.model.lamp.dto.Message.Address.LAMP, com.sybd.znld.model.lamp.dto.Message.Model.MANUAL, list);
             var json = this.objectMapper.writeValueAsString(msg);
             log.debug("准备下发到硬件的json为" + json);
             var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
@@ -324,13 +323,17 @@ public class StrategyService implements IStrategyService {
                 }
                 // 更新缓存中的状态
                 if(result.isOk()) {
+                    map.put(Config.REDIS_MAP_KEY_IS_ONLINE, true); // 更新在线状态
                     map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.MANUAL); // 更新缓存中的执行模式
                     // 如果是实时开关灯指令，则需要更新缓存中的亮灯状态；如果是调节实时亮度的，则更新亮度值
-                    if(cmd.action == Message.LampManualAction.OPEN) {
+                    if(cmd.action == com.sybd.znld.model.lamp.dto.Message.LampManualAction.OPEN) {
                         map.put(Config.REDIS_MAP_KEY_IS_LIGHT, true);
-                    } else if(cmd.action == Message.LampManualAction.CLOSE) {
+                        map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, com.sybd.znld.model.lamp.dto.Message.LampManualAction.OPEN.getValue());
+                    } else if(cmd.action == com.sybd.znld.model.lamp.dto.Message.LampManualAction.CLOSE) {
                         map.put(Config.REDIS_MAP_KEY_IS_LIGHT, false);
-                    } else if(cmd.action == Message.LampManualAction.CHANGE_BRIGHTNESS) {
+                        map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, com.sybd.znld.model.lamp.dto.Message.LampManualAction.CLOSE.getValue());
+                    } else if(cmd.action == com.sybd.znld.model.lamp.dto.Message.LampManualAction.CHANGE_BRIGHTNESS) {
+                        map.put(Config.REDIS_MAP_KEY_IS_LIGHT, true);
                         map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, cmd.value);
                     }
                 }
@@ -508,7 +511,12 @@ public class StrategyService implements IStrategyService {
             return BaseApiResult.fail("错误");
         }
         try {
-            var msg = new Message<>(Message.Address.LAMP, Message.Model.STRATEGY, list);
+            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
+            if(map == null) {
+                log.error("获取缓存对象为空，无法执行策略");
+                return BaseApiResult.fail();
+            }
+            var msg = new Message(com.sybd.znld.model.lamp.dto.Message.Address.LAMP, com.sybd.znld.model.lamp.dto.Message.Model.STRATEGY, list);
             var json = this.objectMapper.writeValueAsString(msg);
             log.debug("处理等待任务，准备下发到硬件的json为" + json);
             var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
@@ -525,13 +533,13 @@ public class StrategyService implements IStrategyService {
                 lampExecutionModel.status = LampExecutionModel.Status.TRYING;
             } else {
                 lampExecutionModel.status = LampExecutionModel.Status.TRYING_SUCCESS;
+                map.put(Config.REDIS_MAP_KEY_IS_ONLINE, true);
             }
             if(lampExecutionModel.tryingCount >= this.maxTry) {
                 // 达到重试上限
                 lampExecutionModel.status = LampExecutionModel.Status.TRYING_FAILED;
                 this.lampExecutionMapper.update(lampExecutionModel);
                 // 更新缓存中的故障状态
-                var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
                 map.put(Config.REDIS_MAP_KEY_IS_FAULT, true);
                 // 发出告警
                 var region = this.regionMapper.selectByLampId(lampId);
@@ -547,7 +555,7 @@ public class StrategyService implements IStrategyService {
                 lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
                 if(this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
                     var lampAlarm = new LampAlarm();
-                    var lampAlarmOutput = new LampAlarmOutput();
+                    var lampAlarmOutput = new LampAlarm.Message();
                     lampAlarmOutput.id = lampAlarmModel.id;
                     lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
                     lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
@@ -600,7 +608,7 @@ public class StrategyService implements IStrategyService {
             return BaseApiResult.fail("错误");
         }
         try {
-            var msg = new Message<>(Message.Address.LAMP, Message.Model.STRATEGY, list);
+            var msg = new Message(com.sybd.znld.model.lamp.dto.Message.Address.LAMP, com.sybd.znld.model.lamp.dto.Message.Model.STRATEGY, list);
             var json = this.objectMapper.writeValueAsString(msg);
             log.debug("处理等待任务，准备下发到硬件的json为" + json);
             var resource = this.oneNetResourceMapper.selectByResourceName("单灯下发");
@@ -616,10 +624,11 @@ public class StrategyService implements IStrategyService {
             var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
             if(map == null) {
                 log.error("获取缓存对象为空，无法执行策略");
-                return null;
+                return BaseApiResult.fail();
             }
             // 更新缓存状态
             if(result.isOk()) { // 策略成功执行，即下发到硬件，则更新这盏灯的状态
+                map.put(Config.REDIS_MAP_KEY_IS_ONLINE, true);
                 map.put(Config.REDIS_MAP_KET_EXECUTION_MODE, LampExecutionModel.Mode.STRATEGY);
             }
             // 更新数据库状态

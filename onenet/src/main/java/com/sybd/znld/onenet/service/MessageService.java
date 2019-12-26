@@ -3,7 +3,6 @@ package com.sybd.znld.onenet.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.sybd.znld.mapper.lamp.*;
-import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.model.lamp.LampStatisticsModel;
@@ -31,8 +30,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.*;
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -334,11 +331,7 @@ public class MessageService implements IMessageService {
             map.put(Config.REDIS_MAP_KEY_IS_LIGHT, obj.B > 0); // 当前灯的亮度状态
             map.put(Config.REDIS_MAP_KEY_BRIGHTNESS, obj.B); // 当前的亮度值
             map.put(Config.REDIS_MAP_KEY_ENERGY, energy); // 这里存放的是上一次清零到目前为止的累计电量
-            var isOnline = (Boolean) map.get(Config.REDIS_MAP_KEY_IS_ONLINE);
-            if(isOnline == null) { // 如果设备的在线状态未知，则手动刷新下
-                isOnline = this.oneNetService.isDeviceOnline(rawData.imei);
-                map.put(Config.REDIS_MAP_KEY_IS_ONLINE, isOnline); // 如果设备的在线状态为空，则更新设备的在线状态
-            }
+            map.put(Config.REDIS_MAP_KEY_IS_ONLINE, true); // 收到了推送的消息，意味着设备是在线的
             map.put(Config.REDIS_MAP_KEY_ONENET_UP_MSG_AT, MyDateTime.toTimestamp(rawData.at)); // onenet原始数据的更新时间
 
             // 最后将收到的数据推送到页面
@@ -384,7 +377,7 @@ public class MessageService implements IMessageService {
             msg.totalEnergy = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_TOTAL_ENERGY));
             var isFault = msg.voltage.isError || msg.electricity.isError || msg.rate.isError;
             var isLight = obj.B != null && obj.B > 0 && obj.B < 100;
-            msg.isOnline = isOnline;
+            msg.isOnline = true; // 收到了推送的消息，意味着设备是在线的
             msg.isFault = isFault;
             msg.isLight = isLight;
             statistics.message = msg;
@@ -406,7 +399,7 @@ public class MessageService implements IMessageService {
                 lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
                 if(this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
                     var lampAlarm = new LampAlarm();
-                    var lampAlarmOutput = new LampAlarmOutput();
+                    var lampAlarmOutput = new LampAlarm.Message();
                     lampAlarmOutput.id = lampAlarmModel.id;
                     lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
                     lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
@@ -434,7 +427,7 @@ public class MessageService implements IMessageService {
                 lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
                 if(this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
                     var lampAlarm = new LampAlarm();
-                    var lampAlarmOutput = new LampAlarmOutput();
+                    var lampAlarmOutput = new LampAlarm.Message();
                     lampAlarmOutput.id = lampAlarmModel.id;
                     lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
                     lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
@@ -462,7 +455,7 @@ public class MessageService implements IMessageService {
                 lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
                 if (this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
                     var lampAlarm = new LampAlarm();
-                    var lampAlarmOutput = new LampAlarmOutput();
+                    var lampAlarmOutput = new LampAlarm.Message();
                     lampAlarmOutput.id = lampAlarmModel.id;
                     lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
                     lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();

@@ -13,6 +13,7 @@ import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -109,5 +110,10 @@ public class LightController implements ILightController {
     @Override
     public List<LampAlarmOutput> getAlarmList(String organId) {
         return this.reportService.getAlarmList(organId);
+    }
+
+    @Override
+    public BaseApiResult deleteLampStrategy(@PathVariable(name = "strategyId") String strategyId) {
+        return null;
     }
 }

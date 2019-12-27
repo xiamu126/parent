@@ -1,6 +1,7 @@
 package com.sybd.znld.light.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sybd.znld.model.lamp.dto.LampAlarm;
 import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.mapper.lamp.LampAlarmMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
@@ -8,7 +9,6 @@ import com.sybd.znld.mapper.lamp.LampStatisticsMapper;
 import com.sybd.znld.model.environment.RawData;
 import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.lamp.LampStatisticsModel;
-import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
 import com.sybd.znld.model.lamp.dto.LampStatistic;
 import com.sybd.znld.model.lamp.dto.LampStatistics;
 import com.sybd.znld.model.onenet.Config;
@@ -213,12 +213,12 @@ public class ReportService implements IReportService {
     }
 
     @Override
-    public List<LampAlarmOutput> getAlarmList(String organId) {
+    public List<LampAlarm.Message> getAlarmList(String organId) {
         if(!MyString.isUuid(organId)) return null;
         var models = this.lampAlarmMapper.selectByOrganId(organId);
         if(models == null || models.isEmpty()) return null;
         return models.stream().map(m -> {
-            var tmp = new LampAlarmOutput();
+            var tmp = new LampAlarm.Message();
             tmp.id = m.id;
             tmp.at = MyDateTime.toTimestamp(m.at);
             tmp.content = m.content;

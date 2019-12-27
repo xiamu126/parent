@@ -190,7 +190,11 @@ public class StrategyService implements IStrategyService {
             log.error("指定的策略id["+strategyId+"]不存在");
             return BaseApiResult.fail();
         }
-        return null;
+        lampStrategyModel.status = LampStrategyModel.Status.DELETED;
+        if(this.lampStrategyMapper.update(lampStrategyModel) > 0) {
+            return BaseApiResult.success();
+        }
+        return BaseApiResult.fail();
     }
 
     @Override

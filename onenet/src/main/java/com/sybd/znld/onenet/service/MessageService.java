@@ -7,7 +7,6 @@ import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.model.lamp.LampStatisticsModel;
 import com.sybd.znld.model.lamp.dto.LampAlarm;
-import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
 import com.sybd.znld.model.lamp.dto.LampStatistic;
 import com.sybd.znld.model.lamp.dto.LampStatistics;
 import com.sybd.znld.model.onenet.Config;

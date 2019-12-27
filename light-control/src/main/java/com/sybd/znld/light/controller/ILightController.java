@@ -52,5 +52,5 @@ public interface ILightController {
 
     // 获取某个分平台的报警数据
     @GetMapping(value = "alarm/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    List<LampAlarmOutput> getAlarmList(@PathVariable(name = "organId") String organId);
+    List<LampAlarm.Message> getAlarmList(@PathVariable(name = "organId") String organId);
 }

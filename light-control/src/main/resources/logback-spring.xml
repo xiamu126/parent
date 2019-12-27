@@ -85,6 +85,8 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         <logger name="org.mongodb.driver" level="error"/>
         <logger name="com.sybd.znld.mapper" level="error"/>
         <logger name="com.jayway.jsonpath" level="error"/>
+        <logger name="com.xxl.job.core.thread.ExecutorRegistryThread" level="error"/>
+        <logger name="com.xxl.rpc.remoting.net.impl.netty_http.server.NettyHttpServerHandler" level="error"/>
 
         <root level="debug">
             <appender-ref ref="stdout"/>

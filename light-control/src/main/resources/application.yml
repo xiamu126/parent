@@ -18,10 +18,17 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
 schedule:
-  enabled: true
+  enabled: false
   cron: "0 */1 * * * ?"
   fixed-delay-waiting: 3000
   fixed-delay-failed: 10000
 baidu-ak: x1ySji2AxajkmThvd8weGwOQ
 zone-id : Asia/Shanghai
 max-try: 10
+xxl:
+  job:
+    accessToken:
+    executor:
+      appname: znld-light-control
+      logpath: /data/applogs/xxl-job/jobhandler
+      logretentiondays: 30

@@ -44,3 +44,10 @@ spring:
       username: root
       password: znld@MON#188188
       authentication-database: admin
+xxl:
+  job:
+    admin:
+      addresses: http://192.168.11.101:7070/xxl-job-admin
+    executor:
+      ip: 192.168.11.102
+      port: 9999

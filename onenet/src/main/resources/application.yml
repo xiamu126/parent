@@ -9,8 +9,15 @@ spring:
     password: admin123
     virtual-host: /
 schedule:
-  enabled: true
+  enabled: false
   cron: "0 0 */1 * * ?"
   fixed-delay-waiting: 3000
   fixed-delay-failed: 10000
 baidu-ak: x1ySji2AxajkmThvd8weGwOQ
+xxl:
+  job:
+    accessToken:
+    executor:
+      appname: znld-onenet
+      logpath: /data/applogs/xxl-job/jobhandler
+      logretentiondays: 30

@@ -108,12 +108,12 @@ public class LightController implements ILightController {
     }
 
     @Override
-    public List<LampAlarmOutput> getAlarmList(String organId) {
+    public List<LampAlarm.Message> getAlarmList(String organId) {
         return this.reportService.getAlarmList(organId);
     }
 
     @Override
     public BaseApiResult deleteLampStrategy(@PathVariable(name = "strategyId") String strategyId) {
-        return null;
+        return this.strategyService.deleteLampStrategy(strategyId);
     }
 }

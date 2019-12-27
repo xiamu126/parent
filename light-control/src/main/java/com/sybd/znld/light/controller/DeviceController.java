@@ -8,9 +8,12 @@ import com.sybd.znld.model.lamp.dto.OpResult;
 import com.sybd.znld.model.onenet.OneNetKey;
 import com.sybd.znld.model.onenet.dto.CommandParams;
 import com.sybd.znld.service.onenet.IOneNetService;
+import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

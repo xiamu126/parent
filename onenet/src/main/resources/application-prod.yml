@@ -26,3 +26,10 @@ spring:
       jdbc-url: jdbc:mysql://${db-server}/MINI_STAR?characterEncoding=utf-8&useSSL=false&useAffectedRows=true&allowPublicKeyRetrieval=true
       username: root
       password: znld@DB#188188
+xxl:
+  job:
+    admin:
+      addresses: http://znld-xxl-job-admin:8080/xxl-job-admin
+    executor:
+      ip:
+      port: 9998

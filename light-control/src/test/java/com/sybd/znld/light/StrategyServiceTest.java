@@ -6,7 +6,6 @@ import com.sybd.znld.light.service.IDeviceService;
 import com.sybd.znld.light.service.IStrategyService;
 import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.model.lamp.dto.LampAlarm;
-import com.sybd.znld.model.lamp.dto.LampAlarmOutput;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
@@ -97,7 +96,7 @@ public class StrategyServiceTest {
     @Test
     public void test14() throws JsonProcessingException {
         var lampAlarm = new LampAlarm();
-        var lampAlarmOutput = new LampAlarmOutput();
+        var lampAlarmOutput = new LampAlarm.Message();
         lampAlarmOutput.id = "5d8040865f494830826c5c944bfda609";
         lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
         lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();

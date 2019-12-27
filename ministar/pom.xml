@@ -129,7 +129,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>com.sybd.znld.ministar.App</mainClass>
+                            <mainClass>com.sybd.znld.ministar.com.sybd.znld.admin.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

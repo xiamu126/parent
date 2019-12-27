@@ -17,7 +17,7 @@ public class LampStatistic {
             return false;
         }
         public static boolean isElectricityError(double electricity) {
-            if(electricity != 3.0) return true;
+            if(electricity < 0 || electricity > 3.0) return true;
             return false;
         }
         public static boolean isRateError(double rate) {

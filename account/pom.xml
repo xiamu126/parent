@@ -143,7 +143,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>com.sybd.znld.account.App</mainClass>
+                            <mainClass>com.sybd.znld.account.com.sybd.znld.admin.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

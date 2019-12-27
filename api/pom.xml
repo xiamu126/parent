@@ -173,7 +173,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sybd.znld.web.App</mainClass>
+                            <mainClass>com.sybd.znld.web.com.sybd.znld.admin.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -6,6 +6,7 @@ import com.sybd.znld.mapper.rbac.UserMapper;
 import com.sybd.znld.mapper.rbac.UserRoleMapper;
 import com.sybd.znld.model.rbac.AuthorityModel;
 import com.sybd.znld.model.rbac.UserModel;
+import com.sybd.znld.model.rbac.UserStatus;
 import com.sybd.znld.model.rbac.dto.LoginInput;
 import com.sybd.znld.model.rbac.dto.RegisterInput;
 import com.sybd.znld.util.MyString;
@@ -82,24 +83,6 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserModel getUserByPhone(String phone) {
-        if(!MyString.isPhoneNo(phone)) return null;
-        return this.userMapper.selectByPhone(phone);
-    }
-
-    @Override
-    public UserModel getUserByEmail(String email) {
-        if(!MyString.isEmail(email)) return null;
-        return this.userMapper.selectByEmail(email);
-    }
-
-    @Override
-    public UserModel getUserByIdCardNo(String idCardNo) {
-        if(!MyString.isIdCardNo(idCardNo)) return null;
-        return this.userMapper.selectByIdCardNo(idCardNo);
-    }
-
-    @Override
     public List<UserModel> getUserByOrganizationId(String organizationId) {
         if(!MyString.isUuid(organizationId)) return null;
         return this.userMapper.selectByOrganizationId(organizationId);
@@ -149,7 +132,7 @@ public class UserService implements IUserService {
         user.password = input.password;
         user.organizationId = input.organizationId;
         user.lastLoginTime = LocalDateTime.now();
-        user.status = 0;
+        user.status = UserStatus.OK;
         return addUser(user);
     }
 

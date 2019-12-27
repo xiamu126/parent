@@ -84,7 +84,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sybd.znld.position.App</mainClass>
+                            <mainClass>com.sybd.znld.position.com.sybd.znld.admin.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

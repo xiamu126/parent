@@ -463,7 +463,7 @@
                             <manifest>
                                 <addClasspath>true</addClasspath>
                                 <classpathPrefix>libs/</classpathPrefix>
-                                <mainClass>com.sybd.znld.onenet.App</mainClass>
+                                <mainClass>com.sybd.znld.onenet.com.sybd.znld.admin.App</mainClass>
                             </manifest>
                         </archive>
                     </configuration>
@@ -491,6 +491,7 @@
         <module>positioning-socket</module>
         <module>light-control</module>
         <module>lamp-manage</module>
+        <module>admin</module>
     </modules>
 
 </project>

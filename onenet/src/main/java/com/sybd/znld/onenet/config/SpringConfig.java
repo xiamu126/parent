@@ -11,6 +11,7 @@ import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -81,10 +82,10 @@ public class SpringConfig {
     }
 
     @Bean
-    public ConnectionFactory connectionFactoryForProducer(@Value("${spring.rabbitmq.addresses}") String addresses,
-                                                          @Value("${spring.rabbitmq.username}") String username,
-                                                          @Value("${spring.rabbitmq.password}") String password,
-                                                          @Value("${spring.rabbitmq.virtual-host}") String virtualHost) {
+    public ConnectionFactory connectionFactory(@Value("${spring.rabbitmq.addresses}") String addresses,
+                                               @Value("${spring.rabbitmq.username}") String username,
+                                               @Value("${spring.rabbitmq.password}") String password,
+                                               @Value("${spring.rabbitmq.virtual-host}") String virtualHost) {
         var connectionFactory = new CachingConnectionFactory();
         connectionFactory.setAddresses(addresses);
         connectionFactory.setUsername(username);

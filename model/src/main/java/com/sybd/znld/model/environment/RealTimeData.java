@@ -12,8 +12,9 @@ public class RealTimeData implements Serializable {
     public String describe;
     public Long at;
 
-    public RealTimeData(Object value, Long at){
+    public RealTimeData(Object value, Long at, String describe){
         this.value = value;
         this.at = at;
+        this.describe = describe;
     }
 }

@@ -1,7 +1,7 @@
 package com.sybd.znld.mapper.lamp;
 
 import com.sybd.znld.mapper.db.DbSource;
-import com.sybd.znld.model.Status;
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.model.lamp.ElectricityDispositionBoxModel;
 import com.sybd.znld.model.lamp.LampModel;
 import com.sybd.znld.model.lamp.RegionModel;
@@ -33,7 +33,7 @@ public interface RegionMapper {
     List<LampWithLocation> selectLampsWithLocationByRegionId(String regionId);
     List<Lamp> selectLampsOfEnvironment(String organId);
     // 获取某个组织的某个区域下的所有（正常运行）路灯
-    List<Lamp> selectLampsByOrganIdRegionIdNotStatus(@Param("organId") String organId, @Param("regionId") String regionId, @Param("status") Status status);
+    List<Lamp> selectLampsByOrganIdRegionIdNotStatus(@Param("organId") String organId, @Param("regionId") String regionId, @Param("status") DeviceStatus status);
     List<LampModel> selectLampsByOrganIdRegionId(@Param("organId") String organId, @Param("regionId") String regionId);
     // 获取某个区域下的所有配电箱
     List<ElectricityDispositionBoxModel> selectBoxesByOrganIdRegionId(@Param("organId") String organId, @Param("regionId") String regionId);

@@ -8,12 +8,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter @Setter @NoArgsConstructor
 @ApiModel(value = "登入返回数据")
-public class LoginResult {
+public class LoginResult implements Serializable {
     @ApiModelProperty(value = "登入后返回的用户Id")
     public String userId;
     @ApiModelProperty(value = "登入后返回此用户所属组织Id")

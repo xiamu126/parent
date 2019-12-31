@@ -2,7 +2,6 @@ package com.sybd.znld.account.controller.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.sybd.znld.account.config.ProjectConfig;
@@ -43,9 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@Api(tags = "用户接口")
 @RestController
-@RequestMapping("/api/v2/user")
 public class UserController implements IUserController {
     private final IUserService userService;
     private final RedissonClient redissonClient;
@@ -78,6 +75,10 @@ public class UserController implements IUserController {
     private Integer height;
     @Value("${project.captcha.length}")
     private Integer length;
+    @Value("${app.login-success-expiration-time}")
+    private Duration loginSuccessExpirationTime;
+    @Value("${app.login-error-expiration-time}")
+    private Duration loginErrorExpirationTime;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -109,8 +110,6 @@ public class UserController implements IUserController {
         this.authorityMapper = authorityMapper;
     }
 
-    @ApiOperation(value = "获取验证码")
-    @GetMapping(value = "login/captcha", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
     public String getCaptcha(HttpServletRequest request) {
         var specCaptcha = new SpecCaptcha(this.width, this.height, this.length);
@@ -119,9 +118,15 @@ public class UserController implements IUserController {
             verCode = specCaptcha.text().toLowerCase();
         }
         var tmp = redissonClient.getBucket(verCode);
-        var captchaExpirationTime = this.captchaExpirationTime.toSeconds();
-        tmp.set("", captchaExpirationTime, TimeUnit.SECONDS);
+        tmp.set("", this.captchaExpirationTime.toSeconds(), TimeUnit.SECONDS);
         return specCaptcha.toBase64();
+    }
+
+    @Override
+    public ApiResult getUserLoginInfo(String id) {
+       // var bucket = this.redissonClient.getBucket(id);
+        // (LoginResult) bucket.get()
+        return null;
     }
 
     @ApiOperation(value = "登入")
@@ -262,7 +267,7 @@ public class UserController implements IUserController {
                     }
                     log.debug("用户ip为：" + userIp + ";累计：" + count);
                     // 如果之前已经记录过这个错误IP，则重置过期时间
-                    this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS);
+                    this.redissonClient.getBucket(userIp).set(count, this.loginErrorExpirationTime.toSeconds(), TimeUnit.SECONDS);
                     if (count >= 3) {
                         var loginResult = new NeedCaptchaResult();
                         loginResult.needCaptcha = true;
@@ -330,9 +335,8 @@ public class UserController implements IUserController {
                 this.userMapper.updateById(user);
                 // 成功登入后，保存登入信息
                 data.id = UUID.randomUUID().toString().replace("-","");
-                var redisMap = this.redissonClient.getMap(data.id);
-                redisMap.put("user", user);
-                redisMap.put("data", data);
+                var bucket = this.redissonClient.getBucket(data.id);
+                bucket.set(data, this.loginSuccessExpirationTime.toSeconds(), TimeUnit.SECONDS);
                 return ApiResult.success(data);
             } else { // 这是用户名错误，也算累计
                 if (count == null) {
@@ -341,7 +345,7 @@ public class UserController implements IUserController {
                     count = count + 1;
                 }
                 log.debug("用户ip为：" + userIp + ";累计：" + count);
-                this.redissonClient.getBucket(userIp).set(count, 1, TimeUnit.DAYS); // 延长错误记录的时间
+                this.redissonClient.getBucket(userIp).set(count, this.loginErrorExpirationTime.toSeconds(), TimeUnit.SECONDS); // 延长错误记录的时间
                 if (count >= 3) {
                     var loginResult = new NeedCaptchaResult();
                     loginResult.needCaptcha = true;
@@ -389,9 +393,8 @@ public class UserController implements IUserController {
         return ApiResult.success();
     }
 
-    @PostMapping(value = "register", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
-    public ApiResult register(@RequestBody @Valid RegisterInput input, HttpServletRequest request, BindingResult bindingResult) {
+    public ApiResult register(RegisterInput input, HttpServletRequest request, BindingResult bindingResult) {
         try {
             if (userService.register(input) != null) {
                 return ApiResult.success();
@@ -402,9 +405,8 @@ public class UserController implements IUserController {
         return ApiResult.fail("注册失败");
     }
 
-    @GetMapping(value = "{id:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_VALUE})
     @Override
-    public ApiResult getUserInfo(@PathVariable(name = "id") String id, HttpServletRequest request) {
+    public ApiResult getUserInfo(String id, HttpServletRequest request) {
         var tmp = this.userService.getUserById(id);
         return ApiResult.success(tmp);
     }

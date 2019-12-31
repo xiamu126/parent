@@ -7,6 +7,7 @@ import com.sybd.znld.environment.service.dto.AVGResult;
 import com.sybd.znld.mapper.lamp.DataLocationMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.model.Status;
 import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.lamp.dto.ElementAvgResult;
@@ -76,7 +77,7 @@ public class RegionController implements IRegionController {
             var lampWithLocation = new LampWithLocation();
             lampWithLocation.deviceId = l.deviceId;
             lampWithLocation.deviceName = l.deviceName;
-            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+l.deviceId);
+            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(l.imei));
             var realTimeData1 = (RealTimeData) map.get("北斗经度");
             var realTimeData2 = (RealTimeData) map.get("北斗纬度");
             if(realTimeData1 != null && realTimeData2 != null){
@@ -107,13 +108,13 @@ public class RegionController implements IRegionController {
 
     @Override
     public List<LampWithLocation> getLampsByRegion(String organId, String regionId, Boolean convert, HttpServletRequest request) {
-        var lamps = this.regionMapper.selectLampsByOrganIdRegionIdNotStatus(organId, regionId, Status.LAMP_DEAD);
+        var lamps = this.regionMapper.selectLampsByOrganIdRegionIdNotStatus(organId, regionId, DeviceStatus.DEAD);
         var result = new ArrayList<LampWithLocation>();
         for(var l : lamps){
             var lampWithLocation = new LampWithLocation();
             lampWithLocation.deviceId = l.deviceId;
             lampWithLocation.deviceName = l.deviceName;
-            var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+l.deviceId);
+            var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(l.imei));
             var realTimeData1 = (RealTimeData) map.get("北斗经度");
             var realTimeData2 = (RealTimeData) map.get("北斗纬度");
             if(realTimeData1 != null && realTimeData2 != null){
@@ -145,13 +146,17 @@ public class RegionController implements IRegionController {
     @Override
     public List<RealTimeData> getRealTimeDataOfDevice(Integer deviceId) {
         if(!MyNumber.isPositive(deviceId)) return null;
-        var map = this.redissonClient.getMap("com.sybd.znld.onenet.realtime."+deviceId);
+        var lamp = this.lampMapper.selectByDeviceId(deviceId);
+        if(lamp == null) return null;
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
         var list = new ArrayList<RealTimeData>();
         map.forEach((k, v) -> {
             if(v instanceof RealTimeData){
                 var tmp = (RealTimeData) v;
-                if(!tmp.describe.contains("开关") && !tmp.describe.contains("angle")){
-                    list.add(tmp);
+                if(tmp.describe != null) {
+                    if(!tmp.describe.contains("开关") && !tmp.describe.contains("angle")){
+                        list.add(tmp);
+                    }
                 }
             }
         });

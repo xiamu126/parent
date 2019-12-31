@@ -46,8 +46,11 @@ spring:
       username: root
       password: znld@MON#188188
       authentication-database: admin
+app:
+  register: true
 xxl:
   job:
+    enabled: true
     admin:
       addresses: http://znld-xxl-job-admin:8080/xxl-job-admin
     executor:

@@ -96,7 +96,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.sybd.znld.oauth2.com.sybd.znld.admin.App</mainClass>
+                            <mainClass>com.sybd.znld.oauth2.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

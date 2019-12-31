@@ -25,6 +25,8 @@ schedule:
 baidu-ak: x1ySji2AxajkmThvd8weGwOQ
 zone-id : Asia/Shanghai
 max-try: 10
+app:
+  name: znld-light-control
 xxl:
   job:
     accessToken:

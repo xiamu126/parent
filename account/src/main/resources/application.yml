@@ -37,6 +37,10 @@ project:
     height: 30
     length: 5
     expiration-time: 60s
+app:
+  name: znld-account
+  login-success-expiration-time: 10m
+  login-error-expiration-time: 1d
 #dubbo:
 #  application:
 #    name: dubbo-account

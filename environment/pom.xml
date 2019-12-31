@@ -122,7 +122,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>com.sybd.znld.environment.com.sybd.znld.admin.App</mainClass>
+                            <mainClass>com.sybd.znld.environment.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

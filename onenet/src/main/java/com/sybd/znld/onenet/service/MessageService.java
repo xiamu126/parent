@@ -199,8 +199,8 @@ public class MessageService implements IMessageService {
                         if (status == 0) {
                             var baiduLng = JsonPath.read(repoBody, "$.result[0].x");
                             var baiduLat = JsonPath.read(repoBody, "$.result[0].y");
-                            map.put(Config.REDIS_MAP_KEY_BAIDU_LNG, new RealTimeData(baiduLng, MyDateTime.toTimestamp(at)));
-                            map.put(Config.REDIS_MAP_KEY_BAIDU_LAT, new RealTimeData(baiduLat, MyDateTime.toTimestamp(at)));
+                            map.put(Config.REDIS_MAP_KEY_BAIDU_LNG, new RealTimeData(baiduLng, MyDateTime.toTimestamp(at), "百度经度"));
+                            map.put(Config.REDIS_MAP_KEY_BAIDU_LAT, new RealTimeData(baiduLat, MyDateTime.toTimestamp(at), "百度纬度"));
                         }
                     }
                 } catch (Exception ex) {

@@ -3,6 +3,7 @@ package com.sybd.znld.environment;
 import com.sybd.znld.mapper.lamp.LocationMapper;
 import com.sybd.znld.mapper.lamp.LampMapper;
 import com.sybd.znld.mapper.lamp.RegionMapper;
+import com.sybd.znld.model.DeviceStatus;
 import com.sybd.znld.model.Status;
 import com.sybd.znld.model.lamp.LocationModel;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +80,7 @@ public class MapperTest {
     @Test
     public void test7(){
         var tmp = this.regionMapper.selectLampsByOrganIdRegionIdNotStatus("a69ce5bf51f111e9804a0242ac110007",
-                "6314f1b056a111e98edc0242ac110007", Status.LAMP_DEAD);
+                "6314f1b056a111e98edc0242ac110007", DeviceStatus.ERROR);
         Assert.isTrue(tmp.size() > 0, "test");
     }
 

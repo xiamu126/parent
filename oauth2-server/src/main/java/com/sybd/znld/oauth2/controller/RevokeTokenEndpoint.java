@@ -1,5 +1,6 @@
 package com.sybd.znld.oauth2.controller;
 
+import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.oauth2.core.ApiResult;
 import com.sybd.znld.oauth2.core.MyRedisTokenStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,12 @@ public class RevokeTokenEndpoint {
     @Resource//(name = "tokenServices")
     private ConsumerTokenServices tokenServices;
 
+    private final MyRedisTokenStore tokenStore;
+
     @Autowired
-    private MyRedisTokenStore tokenStore;
+    public RevokeTokenEndpoint(MyRedisTokenStore tokenStore) {
+        this.tokenStore = tokenStore;
+    }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/oauth/token/revoke")
     @ResponseBody
@@ -44,5 +49,15 @@ public class RevokeTokenEndpoint {
             return ApiResult.success(list.size());
         }
         return ApiResult.fail();
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/oauth/token/check/{token}")
+    @ResponseBody
+    public BaseApiResult checkToken(@PathVariable("token") String token) {
+        var accessToken = this.tokenStore.readAccessToken(token);
+        if(accessToken == null || accessToken.isExpired()) {
+            return BaseApiResult.fail();
+        }
+        return BaseApiResult.success();
     }
 }

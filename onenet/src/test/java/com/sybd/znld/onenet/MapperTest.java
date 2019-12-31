@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.mapper.lamp.*;
 import com.sybd.znld.model.lamp.dto.LampStatistic;
 import com.sybd.znld.model.onenet.DataPushModel;
+import com.sybd.znld.onenet.service.IMessageService;
 import com.sybd.znld.util.MyDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
@@ -105,5 +106,12 @@ public class MapperTest {
         statistics.message = msg;
         var json = this.objectMapper.writeValueAsString(statistics);
         log.debug(json);
+    }
+
+    @Autowired
+    private IMessageService messageService;
+    @Test
+    public void test13() {
+        this.messageService.scheduledStatistics();
     }
 }

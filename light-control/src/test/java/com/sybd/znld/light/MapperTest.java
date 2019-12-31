@@ -51,7 +51,7 @@ public class MapperTest {
 
     @Test
     public void test2() {
-        var key = Config.getRedisRealtimeKey("868194030013223");
+        var key = Config.getRedisRealtimeKey("868194030013173");
         var map = this.redissonClient.getMap(key);
         var electricity = map.get("electricity");
         var lastUpdateStatisticsTime = (Long) map.get("lastUpdateStatisticsTime"); // 上次更新数据库的时间
@@ -225,5 +225,12 @@ public class MapperTest {
     public void test15() {
         var ret = this.regionMapper.selectByLampId("156effb2466e4c68b27d269726beb7e6");
         Assert.assertEquals("156effb2466e4c68b27d269726beb7e6", ret.id);
+    }
+
+    @Test
+    public void test16() {
+        var date1 = LocalDateTime.of(LocalDate.now(), LocalTime.of(12,0));
+        var date2 = LocalDateTime.of(LocalDate.now(), LocalTime.of(15,0));
+        log.debug(String.valueOf(Duration.between(date1, date2).toHours()));
     }
 }

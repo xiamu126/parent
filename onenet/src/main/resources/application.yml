@@ -14,6 +14,7 @@ schedule:
   fixed-delay-waiting: 3000
   fixed-delay-failed: 10000
 baidu-ak: x1ySji2AxajkmThvd8weGwOQ
+max-offline-hours: 12
 xxl:
   job:
     accessToken:

@@ -7,12 +7,12 @@ import com.sybd.znld.model.environment.RealTimeData;
 import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.model.lamp.LampStatisticsModel;
 import com.sybd.znld.model.lamp.dto.LampAlarm;
+import com.sybd.znld.model.lamp.dto.LampOnOffLine;
 import com.sybd.znld.model.lamp.dto.LampStatistic;
 import com.sybd.znld.model.lamp.dto.LampStatistics;
 import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.model.onenet.DataPushModel;
 import com.sybd.znld.model.onenet.dto.News;
-import com.sybd.znld.model.onenet.dto.OnOffLineNews;
 import com.sybd.znld.service.onenet.IOneNetService;
 import com.sybd.znld.util.MyDateTime;
 import com.sybd.znld.util.MyNumber;
@@ -50,6 +50,8 @@ public class MessageService implements IMessageService {
 
     @Value("${baidu-ak}")
     private String baiduAK;
+    @Value("${max-offline-hours}")
+    private Integer maxOfflineHours;
 
     @Autowired
     public MessageService(ObjectMapper objectMapper,
@@ -111,26 +113,33 @@ public class MessageService implements IMessageService {
     }
 
     @Override
-    public OnOffLineNews onOffLine(String body) {
+    public LampOnOffLine onOffLine(String body) {
         var status = this.oneNetService.getUpMsgStatus(body);
-        var imei = this.oneNetService.getUpMsgImei(body);
-        var news = new OnOffLineNews();
-        news.deviceId = this.oneNetService.getUpMsgDeviceId(body);
-        news.imei = imei;
-        news.at = this.oneNetService.getUpMsgAt(body);
-        if (status != null) {
-            if (status == 0) {
-                news.isOnline = false;
-            } else if (status == 1) {
-                news.isOnline = true;
-            } else {
-                news.isOnline = null;
-            }
-            if (imei != null) {
-                var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(imei));
-                map.put(Config.REDIS_MAP_KEY_IS_ONLINE, news.isOnline);
-            }
+        if(status == null) {
+            return null;
         }
+        var imei = this.oneNetService.getUpMsgImei(body);
+        if(imei == null) {
+            return null;
+        }
+        var lamp = this.lampMapper.selectByImei(imei);
+        if(lamp == null) {
+            return null;
+        }
+        var news = new LampOnOffLine();
+        var msg = new LampOnOffLine.Message();
+        msg.imei = imei;
+        msg.lampId = lamp.id;
+        if (status == 0) {
+            msg.isOnline = false;
+        } else if (status == 1) {
+            msg.isOnline = true;
+        } else {
+            msg.isOnline = null;
+        }
+        var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(imei));
+        map.put(Config.REDIS_MAP_KEY_IS_ONLINE, msg.isOnline);
+        news.message = msg;
         return news;
     }
 
@@ -386,87 +395,15 @@ public class MessageService implements IMessageService {
             var region = this.regionMapper.selectById(lampRegionOrganId.regionId);
             if(msg.voltage.isError) {
                 var errorMsg = "电压异常";
-                var lampAlarmModel = new LampAlarmModel();
-                lampAlarmModel.at = LocalDateTime.now();
-                lampAlarmModel.content = errorMsg;
-                lampAlarmModel.lampId = lamp.id;
-                lampAlarmModel.lampName = lamp.deviceName;
-                lampAlarmModel.organId = region.organizationId;
-                lampAlarmModel.regionId = region.id;
-                lampAlarmModel.regionName = region.name;
-                lampAlarmModel.type = LampAlarmModel.AlarmType.COMMON;
-                lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
-                if(this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
-                    var lampAlarm = new LampAlarm();
-                    var lampAlarmOutput = new LampAlarm.Message();
-                    lampAlarmOutput.id = lampAlarmModel.id;
-                    lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
-                    lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
-                    lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
-                    lampAlarmOutput.content = errorMsg;
-                    lampAlarmOutput.lampId = lamp.id;
-                    lampAlarmOutput.lampName = lamp.deviceName;
-                    lampAlarmOutput.regionName = region.name;
-                    lampAlarm.message = lampAlarmOutput;
-                    var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
-                }
+                this.sendAlarm(lamp.id, LampAlarmModel.AlarmType.COMMON, errorMsg);
             }
             if(msg.electricity.isError) {
                 var errorMsg = "电流异常";
-                var lampAlarmModel = new LampAlarmModel();
-                lampAlarmModel.at = LocalDateTime.now();
-                lampAlarmModel.content = errorMsg;
-                lampAlarmModel.lampId = lamp.id;
-                lampAlarmModel.lampName = lamp.deviceName;
-                lampAlarmModel.organId = region.organizationId;
-                lampAlarmModel.regionId = region.id;
-                lampAlarmModel.regionName = region.name;
-                lampAlarmModel.type = LampAlarmModel.AlarmType.COMMON;
-                lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
-                if(this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
-                    var lampAlarm = new LampAlarm();
-                    var lampAlarmOutput = new LampAlarm.Message();
-                    lampAlarmOutput.id = lampAlarmModel.id;
-                    lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
-                    lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
-                    lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
-                    lampAlarmOutput.content = errorMsg;
-                    lampAlarmOutput.lampId = lamp.id;
-                    lampAlarmOutput.lampName = lamp.deviceName;
-                    lampAlarmOutput.regionName = region.name;
-                    lampAlarm.message = lampAlarmOutput;
-                    var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
-                }
+                this.sendAlarm(lamp.id, LampAlarmModel.AlarmType.COMMON, errorMsg);
             }
             if(msg.rate.isError) {
                 var errorMsg = "频率异常";
-                var lampAlarmModel = new LampAlarmModel();
-                lampAlarmModel.at = LocalDateTime.now();
-                lampAlarmModel.content = errorMsg;
-                lampAlarmModel.lampId = lamp.id;
-                lampAlarmModel.lampName = lamp.deviceName;
-                lampAlarmModel.organId = region.organizationId;
-                lampAlarmModel.regionId = region.id;
-                lampAlarmModel.regionName = region.name;
-                lampAlarmModel.type = LampAlarmModel.AlarmType.COMMON;
-                lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
-                if (this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
-                    var lampAlarm = new LampAlarm();
-                    var lampAlarmOutput = new LampAlarm.Message();
-                    lampAlarmOutput.id = lampAlarmModel.id;
-                    lampAlarmOutput.type = LampAlarmModel.AlarmType.COMMON.getDescribe();
-                    lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
-                    lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
-                    lampAlarmOutput.content = errorMsg;
-                    lampAlarmOutput.lampId = lamp.id;
-                    lampAlarmOutput.lampName = lamp.deviceName;
-                    lampAlarmOutput.regionName = region.name;
-                    lampAlarm.message = lampAlarmOutput;
-                    var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
-                    this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
-                }
+                this.sendAlarm(lamp.id, LampAlarmModel.AlarmType.COMMON, errorMsg);
             }
             return statistics;
         } catch (Exception ex) {
@@ -474,6 +411,53 @@ public class MessageService implements IMessageService {
             log.error(ExceptionUtils.getStackTrace(ex));
         }
         return null;
+    }
+
+    private void sendAlarm(String lampId, LampAlarmModel.AlarmType type, String msg) {
+        if(MyString.isEmptyOrNull(lampId)) {
+            log.error("参数错误");
+            return;
+        }
+        var lamp = this.lampMapper.selectById(lampId);
+        if(lamp == null) {
+            log.error("指定的路灯id["+lampId+"]不存在");
+            return;
+        }
+        var region = this.regionMapper.selectByLampId(lampId);
+        if(region == null) {
+            log.error("指定的路灯id["+lampId+"]未绑定区域");
+            return;
+        }
+        var lampAlarmModel = new LampAlarmModel();
+        lampAlarmModel.at = LocalDateTime.now();
+        lampAlarmModel.content = msg;
+        lampAlarmModel.lampId = lamp.id;
+        lampAlarmModel.lampName = lamp.deviceName;
+        lampAlarmModel.organId = region.organizationId;
+        lampAlarmModel.regionId = region.id;
+        lampAlarmModel.regionName = region.name;
+        lampAlarmModel.type = type;
+        lampAlarmModel.status = LampAlarmModel.Status.UNCONFIRMED;
+        try {
+            if (this.lampAlarmMapper.insert(lampAlarmModel) > 0) {
+                var lampAlarm = new LampAlarm();
+                var lampAlarmOutput = new LampAlarm.Message();
+                lampAlarmOutput.id = lampAlarmModel.id;
+                lampAlarmOutput.type = type.getDescribe();
+                lampAlarmOutput.status = LampAlarmModel.Status.UNCONFIRMED.getDescribe();
+                lampAlarmOutput.at = MyDateTime.toTimestamp(LocalDateTime.now());
+                lampAlarmOutput.content = msg;
+                lampAlarmOutput.lampId = lamp.id;
+                lampAlarmOutput.lampName = lamp.deviceName;
+                lampAlarmOutput.regionName = region.name;
+                lampAlarm.message = lampAlarmOutput;
+                var alarmMsg = this.objectMapper.writeValueAsString(lampAlarm);
+                this.rabbitTemplate.convertAndSend(IOneNetService.ONENET_TOPIC_EXCHANGE, IOneNetService.ONENET_LIGHT_ALARM_ROUTING_KEY, alarmMsg);
+            }
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            log.error(ExceptionUtils.getStackTrace(ex));
+        }
     }
 
     // 每隔一段时间，将缓存中的数据更新到数据库中
@@ -485,6 +469,20 @@ public class MessageService implements IMessageService {
             if(lamp.protocolVersion < 2) continue; // 协议版本号小于2意味着不支持单灯
             var map = this.redissonClient.getMap(Config.getRedisRealtimeKey(lamp.imei));
             if(map == null || map.isEmpty()) continue;
+            // 查看缓存中的数据更新时间
+            var oneNetUpAt = MyNumber.getLong(map.get(Config.REDIS_MAP_KEY_ONENET_UP_MSG));
+            if(oneNetUpAt == null) {
+                continue;
+            }
+            var lastTime = MyDateTime.toLocalDateTime(oneNetUpAt);
+            if(lastTime == null) {
+                continue;
+            }
+            // 如果最后的更新时间距离现在超过一定时间，则报警
+            var hours = Duration.between(lastTime, LocalDateTime.now()).toHours();
+            if(Math.abs(hours) > this.maxOfflineHours) { // hours为负值，表示lastTime为过去时间
+                this.sendAlarm(lamp.id, LampAlarmModel.AlarmType.COMMON, "设备超过指定的时间未上传数据");
+            }
             var lampRegionOrganId = this.lampMapper.selectLampRegionOrganIdByImei(lamp.imei);
             // 更新总的电能
             var totalEnergy = MyNumber.getDouble(map.get(Config.REDIS_MAP_KEY_TOTAL_ENERGY));

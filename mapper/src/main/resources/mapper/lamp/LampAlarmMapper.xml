@@ -18,7 +18,7 @@
             <if test=" content != null and content != '' ">content=#{content},</if>
             <if test=" at != null ">at=#{at},</if>
             <if test=" status != null ">status=#{status},</if>
-            <if test=" type != null ">type=#{status},</if>
+            <if test=" type != null ">type=#{type},</if>
             <if test=" regionId != null and regionId != '' ">region_id=#{regionId},</if>
             <if test=" regionName != null and regionName != '' ">region_name=#{regionName},</if>
             <if test=" organId != null and organId != '' ">organ_id=#{organId},</if>

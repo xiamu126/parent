@@ -41,6 +41,19 @@ app:
   name: znld-account
   login-success-expiration-time: 10m
   login-error-expiration-time: 1d
+  login-error-count: 3
+security:
+  oauth2:
+    client:
+      client-id: sybd_znld_test
+      client-secret: defadfc2ad2fbb4fbcdc4d64f6c8d823
+      access-token-uri: ${auth-server}/oauth/token
+      user-authorization-uri: ${auth-server}/oauth/authorize
+      token-check-uri: ${auth-server}/oauth/token/check
+      token-delete-uri: ${auth-server}/oauth/token/revoke
+    resource:
+      token-info-uri: ${auth-server}/oauth/check_token
+      id: znld-web
 #dubbo:
 #  application:
 #    name: dubbo-account

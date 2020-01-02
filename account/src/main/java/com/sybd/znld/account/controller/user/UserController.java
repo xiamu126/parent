@@ -10,7 +10,6 @@ import com.sybd.znld.mapper.rbac.*;
 import com.sybd.znld.model.rbac.dto.*;
 import com.sybd.znld.account.controller.user.dto.LoginResult;
 import com.sybd.znld.account.controller.user.dto.NeedCaptchaResult;
-import com.sybd.znld.account.model.LoginInput;
 import com.sybd.znld.account.service.IUserService;
 import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.UserModel;
@@ -119,14 +118,8 @@ public class UserController implements IUserController {
         }
         var tmp = redissonClient.getBucket(verCode);
         tmp.set("", this.captchaExpirationTime.toSeconds(), TimeUnit.SECONDS);
+        log.debug(verCode);
         return specCaptcha.toBase64();
-    }
-
-    @Override
-    public ApiResult getUserLoginInfo(String id) {
-       // var bucket = this.redissonClient.getBucket(id);
-        // (LoginResult) bucket.get()
-        return null;
     }
 
     @ApiOperation(value = "登入")
@@ -233,7 +226,7 @@ public class UserController implements IUserController {
         return results;
     }
 
-    public ApiResult login(LoginInput input, HttpServletRequest request, BindingResult bindingResult) {
+    public ApiResult loginV2(LoginInput input, HttpServletRequest request, BindingResult bindingResult) {
         try {
             if (input == null) {
                 log.debug("传入的参数错误");
@@ -257,7 +250,7 @@ public class UserController implements IUserController {
                     return ApiResult.fail("验证码错误或已失效");
                 }
             }
-            var user = this.userService.getUserByName(input.user);
+            var user = this.userMapper.selectByName(input.user);
             if (user != null) {
                 if (!this.encoder.matches(input.password, user.password)) {
                     if (count == null) {
@@ -361,6 +354,14 @@ public class UserController implements IUserController {
         return ApiResult.fail("用户名或密码错误");
     }
 
+    @Override
+    public ApiResult loginV3(LoginInput input, HttpServletRequest request, BindingResult bindingResult) {
+        if(input == null || MyString.isEmptyOrNull(input.user) || MyString.isEmptyOrNull(input.password)) {
+            return ApiResult.fail("参数错误");
+        }
+        return this.userService.loginV3(input, request);
+    }
+
     @GetMapping(value = "menu/{code:[0-9a-f]{32}}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public String getMenu(@PathVariable(name = "code") String code, @RequestHeader("root") String rootId, HttpServletRequest request){
         var user = this.userMapper.selectById(rootId);
@@ -381,16 +382,21 @@ public class UserController implements IUserController {
         return jsonStr;
     }
 
-    @ApiOperation(value = "登出")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "userId", value = "用户Id", required = true, dataType = "string", paramType = "path")
-    })
-    @PostMapping(value = "logout", produces = {MediaType.APPLICATION_JSON_VALUE})
+
     @Override
-    public ApiResult logout(@RequestBody String jsonStr, HttpServletRequest request) {
+    public ApiResult logoutV2(String jsonStr, HttpServletRequest request) {
         if (MyString.isEmptyOrNull(jsonStr)) return ApiResult.fail("错误的用户信息");
         String id = JsonPath.read(jsonStr, "$.id");
         return ApiResult.success();
+    }
+
+    @Override
+    public ApiResult logoutV3(LogoutInput input, HttpServletRequest request) {
+        if(input == null || MyString.isEmptyOrNull(input.id)) {
+            log.error("参数错误");
+            return ApiResult.fail("参数错误");
+        }
+        return this.userService.logoutV3(input.id);
     }
 
     @Override
@@ -403,18 +409,5 @@ public class UserController implements IUserController {
             log.error(ex.getMessage());
         }
         return ApiResult.fail("注册失败");
-    }
-
-    @Override
-    public ApiResult getUserInfo(String id, HttpServletRequest request) {
-        var tmp = this.userService.getUserById(id);
-        return ApiResult.success(tmp);
-    }
-
-    @PostMapping(value = "", produces = {MediaType.APPLICATION_JSON_VALUE})
-    @Override
-    public ApiResult updateUserInfo(@RequestBody @Valid UserModel input, HttpServletRequest request, BindingResult bindingResult) {
-        this.userService.modifyUserById(input);
-        return ApiResult.success();
     }
 }

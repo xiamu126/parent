@@ -11,5 +11,6 @@ public interface IReportService {
     Report getReport(String organId, Report.TimeType type);
     Report getReport(String organId, Report.TimeType type, LocalDateTime begin, LocalDateTime end);
     List<LampAlarm.Message> getAlarmList(String organId);
+    Integer ignoreAlarm(List<String> ids);
     void statistics(RawData rawData, String name);
 }

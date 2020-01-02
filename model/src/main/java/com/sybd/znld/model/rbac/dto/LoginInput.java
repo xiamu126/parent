@@ -8,22 +8,12 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
-@ApiModel(value = "用户登入传入参数")
 public class LoginInput implements Serializable {
-    @ApiModelProperty(value = "会话Id，已经弃用")
-    //@Uuid(message = "UUID不能为空")
-    public String uuid;
-    @ApiModelProperty(value = "用户名")
-    @NotEmpty(message = "用户名为空")
     public String user;
-    @ApiModelProperty(value = "用户密码，两次md5加密")
-    @NotEmpty(message = "密码为空")
-    public String password;
-    @ApiModelProperty(value = "验证码")
-    @NotEmpty(message = "验证码为空")
-    public String captcha;
+    public String password; // 两次md5加密
+    public String captcha; // 验证码不一定会传
 
     public boolean isValid(){
-        return MyString.isUuid(uuid) && !MyString.isAnyEmptyOrNull(user, password, captcha);
+        return !MyString.isAnyEmptyOrNull(user, password);
     }
 }

@@ -21,7 +21,7 @@ public class LampAlarmModel {
 
     @MyEnum
     public enum Status implements IEnum {
-        UNCONFIRMED(0), CONFIRMED(1), HANDLED(2)
+        UNCONFIRMED(0), CONFIRMED(1), HANDLED(2), IGNORED(3)
         ;
         Status(int v) {
             this.value = v;
@@ -37,6 +37,7 @@ public class LampAlarmModel {
                 case 0 : return "未确认";
                 case 1 : return "已确认";
                 case 2 : return "已处理";
+                case 3 : return "已忽略";
                 default:
                     return "";
             }

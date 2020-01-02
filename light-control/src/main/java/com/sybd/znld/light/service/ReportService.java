@@ -1,6 +1,7 @@
 package com.sybd.znld.light.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sybd.znld.model.lamp.LampAlarmModel;
 import com.sybd.znld.model.lamp.dto.LampAlarm;
 import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.mapper.lamp.LampAlarmMapper;
@@ -229,6 +230,22 @@ public class ReportService implements IReportService {
             tmp.type = m.type.getDescribe();
             return tmp;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Integer ignoreAlarm(List<String> ids) {
+        if(ids == null || ids.isEmpty()) return null;
+        var count = 0;
+        for(var id : ids) {
+            var alarm = this.lampAlarmMapper.selectById(id);
+            if(alarm != null) {
+                alarm.status = LampAlarmModel.Status.IGNORED;
+                if(this.lampAlarmMapper.update(alarm) > 0) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     @Override

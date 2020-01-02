@@ -1,22 +1,16 @@
 package com.sybd.znld.account.service;
 
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.rbac.AuthorityModel;
 import com.sybd.znld.model.rbac.UserModel;
-import com.sybd.znld.model.rbac.dto.InitAccountInput;
-import com.sybd.znld.model.rbac.dto.LoginInput;
-import com.sybd.znld.model.rbac.dto.RegisterInput;
+import com.sybd.znld.model.rbac.dto.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface IUserService {
+    ApiResult loginV3(LoginInput input, HttpServletRequest request);
+    ApiResult logoutV3(String token);
     UserModel addUser(UserModel model);
-    UserModel modifyUserById(UserModel model);
-    UserModel modifyUserByName(UserModel model);
-    UserModel getUserById(String id);
-    UserModel getUserByName(String name);
-    List<UserModel> getUserByOrganizationId(String organizationId);
-    UserModel verify(String name, String password);
-    UserModel verify(LoginInput input);
     UserModel register(RegisterInput input);
-    List<AuthorityModel> getAuthoritiesById(String userId);
 }

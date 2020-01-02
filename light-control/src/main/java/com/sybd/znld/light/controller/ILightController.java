@@ -1,5 +1,6 @@
 package com.sybd.znld.light.controller;
 
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.*;
@@ -53,4 +54,8 @@ public interface ILightController {
     // 获取某个分平台的报警数据
     @GetMapping(value = "alarm/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
     List<LampAlarm.Message> getAlarmList(@PathVariable(name = "organId") String organId);
+
+    // 清除告警
+    @PutMapping(value = "alarm", produces = {MediaType.APPLICATION_JSON_VALUE})
+    ApiResult ignoreAlarms(@RequestBody IgnoreAlarmsInput input);
 }

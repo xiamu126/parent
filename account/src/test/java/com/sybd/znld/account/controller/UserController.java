@@ -107,6 +107,11 @@ public class UserController {
     }
 
     @Test
+    public void testLogin() {
+        //this.userService.
+    }
+
+    @Test
     public void testPwd() throws NoSuchAlgorithmException {
         var md5 = MD5.encrypt("2019").toLowerCase();
         md5 = MD5.encrypt(md5).toLowerCase();

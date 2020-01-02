@@ -3,12 +3,13 @@ package com.sybd.znld.light.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sybd.znld.light.service.IReportService;
 import com.sybd.znld.light.service.IStrategyService;
+import com.sybd.znld.mapper.rbac.OrganizationMapper;
+import com.sybd.znld.mapper.rbac.UserMapper;
+import com.sybd.znld.model.ApiResult;
 import com.sybd.znld.model.lamp.dto.Report;
 import com.sybd.znld.model.BaseApiResult;
 import com.sybd.znld.model.lamp.dto.*;
-import com.sybd.znld.model.onenet.Config;
 import com.sybd.znld.util.MyDateTime;
-import com.sybd.znld.util.MyNumber;
 import com.sybd.znld.util.MyString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -28,12 +28,20 @@ public class LightController implements ILightController {
     private final IStrategyService strategyService;
     private final IReportService reportService;
     private final ObjectMapper objectMapper;
+    private final UserMapper userMapper;
+    private final OrganizationMapper organizationMapper;
 
     @Autowired
-    public LightController(IStrategyService strategyService, IReportService reportService, ObjectMapper objectMapper) {
+    public LightController(IStrategyService strategyService,
+                           IReportService reportService,
+                           ObjectMapper objectMapper,
+                           UserMapper userMapper,
+                           OrganizationMapper organizationMapper) {
         this.strategyService = strategyService;
         this.reportService = reportService;
         this.objectMapper = objectMapper;
+        this.userMapper = userMapper;
+        this.organizationMapper = organizationMapper;
     }
 
     @Override
@@ -110,6 +118,30 @@ public class LightController implements ILightController {
     @Override
     public List<LampAlarm.Message> getAlarmList(String organId) {
         return this.reportService.getAlarmList(organId);
+    }
+
+    @Override
+    public ApiResult ignoreAlarms(IgnoreAlarmsInput input) {
+        if(input == null) {
+            log.error("参数错误");
+            return ApiResult.fail();
+        }
+        if(input.ids == null || input.ids.isEmpty()) {
+            log.error("id为空");
+            return ApiResult.fail();
+        }
+        if(MyString.isEmptyOrNull(input.organId) || MyString.isEmptyOrNull(input.userId)) {
+            log.error("组织id或用户名为空");
+            return ApiResult.fail();
+        }
+        var user = this.userMapper.selectById(input.userId);
+        var organ = this.organizationMapper.selectById(input.organId);
+        if(user == null || organ == null || !user.organizationId.equals(organ.id)) {
+            log.error("组织id，用户名不匹配");
+            return ApiResult.fail();
+        }
+        var ret = this.reportService.ignoreAlarm(input.ids);
+        return ApiResult.success(ret);
     }
 
     @Override

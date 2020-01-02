@@ -41,8 +41,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers("/css/**", "/js/**", "/plugins/**", "/favicon.ico");
         web.ignoring().antMatchers(HttpMethod.GET, "/oauth/token/check/*");
+        web.ignoring().antMatchers(HttpMethod.DELETE, "/oauth/token/revoke");
         //web.ignoring().antMatchers(HttpMethod.OPTIONS);
-        //web.ignoring().antMatchers("/tokens/revoke/*");
     }
 
     @Override

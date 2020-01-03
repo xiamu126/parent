@@ -90,10 +90,17 @@
         <rabbitmqVersion>5.7.3</rabbitmqVersion>
 
         <xxlJobVersion>2.1.1</xxlJobVersion>
+
+        <jwtVersion>1.1.0.RELEASE</jwtVersion>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-jwt</artifactId>
+                <version>${jwtVersion}</version>
+            </dependency>
             <dependency>
                 <groupId>com.xuxueli</groupId>
                 <artifactId>xxl-job-core</artifactId>

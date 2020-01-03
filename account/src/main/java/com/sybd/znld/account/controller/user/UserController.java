@@ -410,4 +410,26 @@ public class UserController implements IUserController {
         }
         return ApiResult.fail("注册失败");
     }
+
+    @PostMapping(value = "/api/v1/user/oauth/token/refresh", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ApiResult refreshToken(HttpServletRequest request) {
+        var refreshTokenValue = request.getHeader("refresh_token");
+        if(MyString.isEmptyOrNull(refreshTokenValue)) {
+            return ApiResult.fail();
+        }
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        var map = new LinkedMultiValueMap<String, String>();
+        map.add("grant_type", "refresh_token");
+        map.add("client_id", this.clientId);
+        map.add("client_secret", this.clientSecret);
+        map.add("refresh_token", refreshTokenValue);
+        var httpEntity = new HttpEntity<>(map, headers);
+        var token = this.restTemplate.exchange(this.accessTokenUri, HttpMethod.POST, httpEntity, AccessToken.class);
+        var body = token.getBody();
+        if (body == null) {
+            return ApiResult.fail("此账号无权限");
+        }
+        return ApiResult.success("token.getValue()");
+    }
 }

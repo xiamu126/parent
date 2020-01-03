@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-@Component
+@Component("myUserDetailsService")
 public class MyUserDetailsService implements UserDetailsService {
     private final UserMapper userMapper;
     private final AuthorityService authorityService;

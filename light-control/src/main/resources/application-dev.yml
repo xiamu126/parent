@@ -1,5 +1,5 @@
 db-server: 58.210.51.74:8307
-auth-server: http://58.210.51.74:9003 # 认证服务器地址
+auth-server: http://localhost:8081 # 认证服务器地址
 
 security:
   oauth2:

@@ -287,14 +287,14 @@ public class UserController implements IUserController {
                 map.add("username", input.user);
                 map.add("password", input.password);
                 var httpEntity = new HttpEntity<>(map, headers);
-                var token = this.restTemplate.exchange(this.accessTokenUri, HttpMethod.POST, httpEntity, AccessToken.class);
+                var token = this.restTemplate.exchange(this.accessTokenUri, HttpMethod.POST, httpEntity, Object.class);
                 var body = token.getBody();
                 if (body == null) {
                     return ApiResult.fail("此账号无权限");
                 }
                 var data = new LoginResult();
-                data.token = body.access_token;
-                var expireSeconds = body.expires_in - 10 * 60;
+                data.token = JsonPath.read(body,"access_token");
+                var expireSeconds = (Integer) (JsonPath.read(body,"expires_in")) - 10 * 60;
                 data.tokenExpire = MyDateTime.toTimestamp(LocalDateTime.now(), expireSeconds > 0 ? expireSeconds : body.expires_in);
                 data.userId = user.id;
                 data.organId = user.organizationId;

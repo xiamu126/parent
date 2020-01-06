@@ -45,11 +45,34 @@ public interface ILightController {
     @GetMapping(value = "report/year/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
     Report getReportThisYear(@PathVariable(name = "organId") String organId);
 
-    // 获取某个时间区间内的统计，包括电量，上线率，亮灯率，故障率
+    // 获取近七天的统计，包括电量，上线率，亮灯率，故障率
+    @GetMapping(value = "report/week/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportThisSevenDay(@PathVariable(name = "organId") String organId);
+
+    // 获取最近六个月的统计，包括电量，上线率，亮灯率，故障率
+    @GetMapping(value = "report/month/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportThisSixMonth(@PathVariable(name = "organId") String organId);
+
+
+    // 获取某个时间区间内的年统计，包括电量，上线率，亮灯率，故障率
     @GetMapping(value = "report/year/{organId:^[0-9a-f]{32}$}/{begin}/{end}", produces = {MediaType.APPLICATION_JSON_VALUE})
     Report getReportBetween(@PathVariable(name = "organId") String organId,
                             @PathVariable(name = "begin") Long beginTimestamp,
                             @PathVariable(name = "end") Long endTimestamp);
+
+
+    // 获取某个时间区间内的日统计，包括电量，上线率，亮灯率，故障率
+    @GetMapping(value = "report/week/{organId:^[0-9a-f]{32}$}/{begin}/{end}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportDayBetween(@PathVariable(name = "organId") String organId,
+                               @PathVariable(name = "begin") Long beginTimestamp,
+                               @PathVariable(name = "end") Long endTimestamp);
+
+    // 获取某个时间区间内的月统计，包括电量，上线率，亮灯率，故障率
+    @GetMapping(value = "report/month/{organId:^[0-9a-f]{32}$}/{begin}/{end}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Report getReportMonthBetween(@PathVariable(name = "organId") String organId,
+                                 @PathVariable(name = "begin") Long beginTimestamp,
+                                 @PathVariable(name = "end") Long endTimestamp);
+
 
     // 获取某个分平台的报警数据
     @GetMapping(value = "alarm/{organId:^[0-9a-f]{32}$}", produces = {MediaType.APPLICATION_JSON_VALUE})

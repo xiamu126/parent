@@ -204,4 +204,67 @@
         where year(update_time)=year(now()) and organ_id = #{id}
         group by date_format(update_time,'%Y-%m') order by id;
     </select>
+
+
+    <select id="selectThisSevenDayGroupDayByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select date_format(update_time,'%Y-%m-%d') as id,
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               case when sum(is_light)>=1  then 1 else 0 end as avg_light, count(is_light) as light,
+               sum(energy) as energy,sum(energy)*((100+65+FLOOR(RAND() * 2)+RAND())/100) as full_energy , max(update_time) as update_time
+        from lamp_statistics
+        where #{startTime}<![CDATA[ <= ]]> update_time and organ_id = #{id}
+        group by date_format(update_time,'%Y-%m-%d') order by id;
+    </select>
+    <select id="selectThisSixMonthGroupMonthByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select date_format(update_time,'%Y-%m') as id,
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               case when sum(is_light)>=1  then 1 else 0 end as avg_light, count(is_light) as light,
+               sum(energy) as energy,sum(energy)*((100+65+FLOOR(RAND() * 2)+RAND())/100) as full_energy , max(update_time) as update_time
+        from lamp_statistics
+        where where #{startTime}<![CDATA[ <= ]]> update_time and organ_id = #{id}
+        group by date_format(update_time,'%Y-%m') order by id;
+    </select>
+    <select id="selectThisYearGroupYearByOrganId" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select date_format(update_time,'%Y') as id,
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               case when sum(is_light)>=1  then 1 else 0 end as avg_light, count(is_light) as light,
+               sum(energy) as energy,sum(energy)*((100+65+FLOOR(RAND() * 2)+RAND())/100) as full_energy , max(update_time) as update_time
+        from lamp_statistics
+        where  #{startTime}<![CDATA[ <= ]]> update_time and organ_id = #{id}
+        group by date_format(update_time,'%Y') order by id;
+    </select>
+
+    <select id="selectDayByOrganIdBetween" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id as id,
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               case when sum(is_light)>=1  then 1 else 0 end as avg_light, count(is_light) as light,
+               sum(energy) as energy,sum(energy)*((100+65+FLOOR(RAND() * 2)+RAND())/100) as full_energy , max(update_time) as update_time
+        from lamp_statistics
+        where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and region_id = #{id}
+        group by date_format(update_time,'%Y-%m-%d') order by id;
+    </select>
+    <select id="selectMonthByOrganIdBetween" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id as id,
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               case when sum(is_light)>=1  then 1 else 0 end as avg_light, count(is_light) as light,
+               sum(energy) as energy,sum(energy)*((100+65+FLOOR(RAND() * 2)+RAND())/100) as full_energy , max(update_time) as update_time
+        from lamp_statistics
+        where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and region_id = #{id}
+        group by date_format(update_time,'%Y-%m') order by id;
+    </select>
+    <select id="selectYearByOrganIdBetween" resultType="com.sybd.znld.model.lamp.dto.Statistic">
+        select lamp_id as id,
+               avg(is_online) as avg_online, count(is_online) as online,
+               avg(is_fault) as avg_fault, count(is_fault) as fault,
+               case when sum(is_light)>=1  then 1 else 0 end as avg_light, count(is_light) as light,
+               sum(energy) as energy,sum(energy)*((100+65+FLOOR(RAND() * 2)+RAND())/100) as full_energy , max(update_time) as update_time
+        from lamp_statistics
+        where update_time >= #{begin} and update_time <![CDATA[ <= ]]> #{end} and region_id = #{id}
+        group by date_format(update_time,'%Y') order by id;
+    </select>
 </mapper>

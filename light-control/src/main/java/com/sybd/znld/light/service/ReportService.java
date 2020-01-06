@@ -23,13 +23,12 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.WeekFields;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -131,8 +130,196 @@ public class ReportService implements IReportService {
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
             }
             return obj;
+        }else if(type == Report.TimeType.WEEK) {
+            Calendar nowCal = Calendar.getInstance();
+            nowCal.add(Calendar.DAY_OF_YEAR,-7);
+            Date startTime=nowCal.getTime();
+            SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat sdf2 =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = sdf.format(startTime)+"00:00:00";
+            Date startDateTime = null;
+            try {
+                startDateTime = sdf2.parse(format);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            var data = this.lampStatisticsMapper.selectThisSevenDayGroupDayByOrganId(startDateTime, organId);
+            List<String> dateList = this.getLastDate(7);
+            dateList.forEach(dateStr -> {
+                long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
+                if(count <= 0) {
+                    var detail = new Report.Detail();
+                    detail.key = dateStr;
+                    // detail.electricity = d.energy;
+                    // detail.fullElectricity = d.energy;
+                    data.add(detail);
+                }
+            });
+            if (data != null && !data.isEmpty()) {
+                obj.details = data.stream().map(d -> {
+                    var detail = new Report.Detail();
+                    detail.key = d.id;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
+                    return detail;
+                }).collect(Collectors.toList());
+                obj.electricitySummary = data.stream().mapToDouble(d -> d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d -> d.energy).sum();
+                obj.onlineSummary = data.stream().mapToDouble(d -> d.avgOnline).average().orElse(0.0);
+                obj.faultSummary = data.stream().mapToDouble(d -> d.avgFault).average().orElse(0.0);
+                obj.lightSummary = data.stream().mapToDouble(d -> d.avgLight).average().orElse(0.0);
+            }
+            return obj;
+        }else if(type == Report.TimeType.MONTH) {
+            Calendar nowCal = Calendar.getInstance();
+            nowCal.add(Calendar.MONTH,-6);
+            Date startTime=nowCal.getTime();
+            SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM");
+            SimpleDateFormat sdf2 =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = sdf.format(startTime)+"00:00:00";
+            Date startDateTime = null;
+            try {
+                startDateTime = sdf2.parse(format);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            /*try{
+
+                SimpleDateFormat formats = new SimpleDateFormat("yyyy-MM");
+                String nowdate=formats.format(new Date());//当前月份
+                Date d1 = new SimpleDateFormat("yyyy-MM").parse("begin");//定义起始日期
+                Date d2 = new SimpleDateFormat("yyyy-MM").parse(nowdate);//定义结束日期  可以去当前月也可以手动写日期。
+                Calendar dd = Calendar.getInstance();//定义日期实例
+                dd.setTime(d1);//设置日期起始时间
+                while (dd.getTime().before(d2)) {//判断是否到结束日期
+                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM");
+                    String str = sdf1.format(dd.getTime());
+                    //System.out.println(str);//输出日期结果
+                    dd.add(Calendar.MONTH, 1);//进行当前日期月份加1
+                }
+                //System.out.println(nowdate);//输出日期结果
+            }catch (Exception e){
+                e.printStackTrace();
+            }*/
+            /*
+            Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, -5);
+        String before_six = c.get(Calendar.YEAR) + "-" + c.get(Calendar.MONTH);//六个月前
+        ArrayList<String> result = new ArrayList<String>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");// 格式化为年月
+        Calendar min = Calendar.getInstance();
+        Calendar max = Calendar.getInstance();
+        min.setTime(sdf.parse(before_six));
+        min.set(min.get(Calendar.YEAR), min.get(Calendar.MONTH), 1);
+        max.setTime(sdf.parse(sdf.format(new Date())));
+        max.set(max.get(Calendar.YEAR), max.get(Calendar.MONTH), 2);
+        Calendar curr = min;
+        while (curr.before(max)) {
+            result.add(sdf.format(curr.getTime()));
+            curr.add(Calendar.MONTH, 1);
+        }
+
+            */
+
+
+            var data = this.lampStatisticsMapper.selectThisSixMonthGroupMonthByOrganId(startDateTime,organId);
+            List<String> dateList = this.getLastMonth(6);
+            dateList.forEach(dateStr -> {
+                long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
+                if(count <= 0) {
+                    var detail = new Report.Detail();
+                    detail.key = dateStr;
+                    // detail.electricity = d.energy;
+                    // detail.fullElectricity = d.energy;
+                    data.add(detail);
+                }
+            });
+            if(data != null && !data.isEmpty()) {
+                obj.details = data.stream().map(d -> {
+                    var detail = new Report.Detail();
+                    detail.key = d.id;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
+                    return detail;
+                }).collect(Collectors.toList());
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
+                obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
+                obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
+            }
+            return obj;
+        }else if(type == Report.TimeType.YEAR) {
+            Calendar nowCal = Calendar.getInstance();
+            nowCal.add(Calendar.YEAR,0);
+            Date startTime=nowCal.getTime();
+            SimpleDateFormat sdf =new SimpleDateFormat("yyyy");
+            SimpleDateFormat sdf2 =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = sdf.format(startTime)+"00:00:00";
+            Date startDateTime = null;
+            try {
+                startDateTime = sdf2.parse(format);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            var data = this.lampStatisticsMapper.selectThisYearGroupYearByOrganId(startDateTime,organId);
+            List<String> dateList = this.getLastYear(1);
+            dateList.forEach(dateStr -> {
+                long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
+                if(count <= 0) {
+                    var detail = new Report.Detail();
+                    detail.key = dateStr;
+                    // detail.electricity = d.energy;
+                    // detail.fullElectricity = d.energy;
+                    data.add(detail);
+                }
+            });
+            if (data != null && !data.isEmpty()) {
+                obj.details = data.stream().map(d -> {
+                    var detail = new Report.Detail();
+                    detail.key = d.id;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
+                    return detail;
+                }).collect(Collectors.toList());
+                obj.electricitySummary = data.stream().mapToDouble(d -> d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d -> d.energy).sum();
+                obj.onlineSummary = data.stream().mapToDouble(d -> d.avgOnline).average().orElse(0.0);
+                obj.faultSummary = data.stream().mapToDouble(d -> d.avgFault).average().orElse(0.0);
+                obj.lightSummary = data.stream().mapToDouble(d -> d.avgLight).average().orElse(0.0);
+            }
+            return obj;
         }
         return null;
+    }
+    private List<String> getLastDate(int lastDays) {
+        List<String> existsDateList = new ArrayList<>();
+        Calendar currCalendar = Calendar.getInstance();
+        for (int i = 0; i < lastDays; ++i) {
+            existsDateList.add(new SimpleDateFormat("yyyy-MM-dd").format(currCalendar.getTime()));
+            currCalendar.add(Calendar.DATE, -1);
+        }
+        return existsDateList;
+    }
+    private List<String> getLastMonth(int lastMonths) {
+        List<String> existsMonthList = new ArrayList<>();
+        Calendar currCalendar = Calendar.getInstance();
+        for (int i = 0; i < lastMonths; ++i) {
+            existsMonthList.add(new SimpleDateFormat("yyyy-MM").format(currCalendar.getTime()));
+            currCalendar.add(Calendar.MONTH, -1);
+        }
+        return existsMonthList;
+    }
+    private List<String> getLastYear(int lastYears) {
+        List<String> existsYearList = new ArrayList<>();
+        Calendar currCalendar = Calendar.getInstance();
+        for (int i = 0; i < lastYears; ++i) {
+            existsYearList.add(new SimpleDateFormat("yyyy").format(currCalendar.getTime()));
+            currCalendar.add(Calendar.YEAR, -1);
+        }
+        return existsYearList;
     }
 
     @Override
@@ -209,9 +396,104 @@ public class ReportService implements IReportService {
                 obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
             }
             return obj;
+        }else if(type == Report.TimeType.WEEK) {
+            var data = this.lampStatisticsMapper.selectDayByOrganIdBetween(organId,begin,end);
+           /* List<String> dateList = this.findDates("yyyy-MM-dd","yyyy-MM-dd");
+            dateList.forEach(dateStr -> {
+                long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
+                if(count <= 0) {
+                    var detail = new Report.Detail();
+                    detail.key = dateStr;
+                    // detail.electricity = d.energy;
+                    // detail.fullElectricity = d.energy;
+                    data.add(detail);
+                }
+            });*/
+            if(data != null && !data.isEmpty()) {
+                obj.details = data.stream().map(d -> {
+                    var detail = new Report.Detail();
+                    detail.key = d.id;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
+                    return detail;
+                }).collect(Collectors.toList());
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
+                obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
+                obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
+            }
+            return obj;
+        }else if(type == Report.TimeType.MONTH) {
+            var data = this.lampStatisticsMapper.selectMonthByOrganIdBetween(organId,begin,end);
+            if(data != null && !data.isEmpty()) {
+                obj.details = data.stream().map(d -> {
+                    var detail = new Report.Detail();
+                    detail.key = d.id;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
+                    return detail;
+                }).collect(Collectors.toList());
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
+                obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
+                obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
+            }
+            return obj;
+        }else if(type == Report.TimeType.YEAR) {
+            var data = this.lampStatisticsMapper.selectYearByOrganIdBetween(organId,begin,end);
+            if(data != null && !data.isEmpty()) {
+                obj.details = data.stream().map(d -> {
+                    var detail = new Report.Detail();
+                    detail.key = d.id;
+                    detail.electricity = d.energy;
+                    detail.fullElectricity = d.energy;
+                    return detail;
+                }).collect(Collectors.toList());
+                obj.electricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.fullElectricitySummary = data.stream().mapToDouble(d->d.energy).sum();
+                obj.onlineSummary = data.stream().mapToDouble(d->d.avgOnline).average().orElse(0.0);
+                obj.faultSummary = data.stream().mapToDouble(d->d.avgFault).average().orElse(0.0);
+                obj.lightSummary = data.stream().mapToDouble(d->d.avgLight).average().orElse(0.0);
+            }
+            return obj;
         }
         return null;
     }
+   /*public static List<String> findDates(String begin, String end) throws ParseException {
+        List<String> allDate = new ArrayList();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        Date dBegin = sdf.parse(begin);
+        Date dEnd = sdf.parse(end);
+        allDate.add(sdf.format(dBegin));
+        Calendar calBegin = Calendar.getInstance();
+        // 使用给定的 Date 设置此 Calendar 的时间
+        calBegin.setTime(dBegin);
+        Calendar calEnd = Calendar.getInstance();
+        // 使用给定的 Date 设置此 Calendar 的时间
+        calEnd.setTime(dEnd);
+        // 测试此日期是否在指定日期之后
+        while (dEnd.after(calBegin.getTime())) {
+            // 根据日历的规则，为给定的日历字段添加或减去指定的时间量
+            calBegin.add(Calendar.DAY_OF_MONTH, 1);
+            allDate.add(sdf.format(calBegin.getTime()));
+        }
+       // System.out.println("时间==" + allDate);
+        return allDate;
+    }
+*/
+    //集合中包含2019-05-01/2019-05-05，不需要可去除
+    /*List<String> list = new ArrayList<>();
+try {
+        //只有结束时间大于开始时间时才进行查询===改完
+        list = findDates(begin, end);
+        //System.out.println("时间啊啊啊==" + list);
+    } catch (ParseException e) {
+        e.printStackTrace();
+    }*/
+
 
     @Override
     public List<LampAlarm.Message> getAlarmList(String organId) {

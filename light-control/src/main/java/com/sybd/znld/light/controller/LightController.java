@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -104,6 +105,17 @@ public class LightController implements ILightController {
     public Report getReportThisYear(String organId) {
         return this.reportService.getReport(organId, Report.TimeType.YEAR);
     }
+    @Override
+    public Report getReportThisSevenDay(String organId) {
+
+
+        return this.reportService.getReport(organId, Report.TimeType.WEEK);
+    }
+
+    @Override
+    public Report getReportThisSixMonth(String organId) {
+        return this.reportService.getReport(organId, Report.TimeType.MONTH);
+    }
 
     @Override
     public Report getReportBetween(String organId, Long beginTimestamp, Long endTimestamp) {
@@ -114,6 +126,26 @@ public class LightController implements ILightController {
         }
         return null;
     }
+
+    @Override
+    public Report getReportDayBetween(String organId, Long beginTimestamp, Long endTimestamp) {
+        var begin = MyDateTime.toLocalDateTime(beginTimestamp);
+        var end = MyDateTime.toLocalDateTime(endTimestamp);
+        if(begin != null && end != null) {
+            return this.reportService.getReport(organId, Report.TimeType.WEEK, begin, end);
+        }
+        return null;
+    }
+    @Override
+    public Report getReportMonthBetween(String organId, Long beginTimestamp, Long endTimestamp) {
+        var begin = MyDateTime.toLocalDateTime(beginTimestamp);
+        var end = MyDateTime.toLocalDateTime(endTimestamp);
+        if(begin != null && end != null) {
+            return this.reportService.getReport(organId, Report.TimeType.MONTH, begin, end);
+        }
+        return null;
+    }
+
 
     @Override
     public List<LampAlarm.Message> getAlarmList(String organId) {

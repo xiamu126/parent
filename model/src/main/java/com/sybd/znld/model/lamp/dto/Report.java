@@ -20,7 +20,7 @@ public class Report {
     public Double lightSummary;
     public List<Detail> details;
 
-    public static class Detail {
+    public static class Detail extends Statistic {
         public String key;
         public Double electricity;
         @JsonProperty("full_electricity")

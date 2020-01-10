@@ -56,11 +56,11 @@ public interface LampStatisticsMapper {
 
 
     // 获取最近七天的某个分平台的统计情况，按天分组
-    List<Statistic> selectThisSevenDayGroupDayByOrganId(@Param("startTime") Date startTime,@Param("id") String id);
+    List<Statistic> selectThisSevenDayGroupDayByOrganId(String id);
     // 获取最近六个月的某个分平台的统计情况，按月分组
-    List<Statistic> selectThisSixMonthGroupMonthByOrganId(@Param("startTime") Date startTime,@Param("id") String id);
+    List<Statistic> selectThisSixMonthGroupMonthByOrganId(String id);
     // 获取今年的某个分平台的统计情况，按年分组
-    List<Statistic> selectThisYearGroupYearByOrganId(@Param("startTime") Date startTime, @Param("id") String id);
+    List<Statistic> selectThisYearGroupYearByOrganId(String id);
 
     //按天搜索指定时间区间内某个分平台的统计情况
     List<Statistic> selectDayByOrganIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
@@ -70,4 +70,5 @@ public interface LampStatisticsMapper {
     List<Statistic> selectYearByOrganIdBetween(@Param("id") String id, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
     // 获取某盏灯的到目前为止的总的累计电能
     Double selectTotalEnergyByLampId(String id);
+
 }

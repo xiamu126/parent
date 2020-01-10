@@ -131,7 +131,7 @@ public class ReportService implements IReportService {
             }
             return obj;
         }else if(type == Report.TimeType.WEEK) {
-            Calendar nowCal = Calendar.getInstance();
+           /* Calendar nowCal = Calendar.getInstance();
             nowCal.add(Calendar.DAY_OF_YEAR,-7);
             Date startTime=nowCal.getTime();
             SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
@@ -142,9 +142,9 @@ public class ReportService implements IReportService {
                 startDateTime = sdf2.parse(format);
             } catch (ParseException e) {
                 e.printStackTrace();
-            }
+            }*/
 
-            var data = this.lampStatisticsMapper.selectThisSevenDayGroupDayByOrganId(startDateTime, organId);
+            var data = this.lampStatisticsMapper.selectThisSevenDayGroupDayByOrganId(organId);
             List<String> dateList = this.getLastDate(7);
             dateList.forEach(dateStr -> {
                 long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
@@ -172,7 +172,7 @@ public class ReportService implements IReportService {
             }
             return obj;
         }else if(type == Report.TimeType.MONTH) {
-            Calendar nowCal = Calendar.getInstance();
+           /* Calendar nowCal = Calendar.getInstance();
             nowCal.add(Calendar.MONTH,-6);
             Date startTime=nowCal.getTime();
             SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM");
@@ -183,7 +183,7 @@ public class ReportService implements IReportService {
                 startDateTime = sdf2.parse(format);
             } catch (ParseException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             /*try{
 
@@ -224,7 +224,7 @@ public class ReportService implements IReportService {
             */
 
 
-            var data = this.lampStatisticsMapper.selectThisSixMonthGroupMonthByOrganId(startDateTime,organId);
+            var data = this.lampStatisticsMapper.selectThisSixMonthGroupMonthByOrganId(organId);
             List<String> dateList = this.getLastMonth(6);
             dateList.forEach(dateStr -> {
                 long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
@@ -252,7 +252,7 @@ public class ReportService implements IReportService {
             }
             return obj;
         }else if(type == Report.TimeType.YEAR) {
-            Calendar nowCal = Calendar.getInstance();
+           /* Calendar nowCal = Calendar.getInstance();
             nowCal.add(Calendar.YEAR,0);
             Date startTime=nowCal.getTime();
             SimpleDateFormat sdf =new SimpleDateFormat("yyyy");
@@ -263,8 +263,8 @@ public class ReportService implements IReportService {
                 startDateTime = sdf2.parse(format);
             } catch (ParseException e) {
                 e.printStackTrace();
-            }
-            var data = this.lampStatisticsMapper.selectThisYearGroupYearByOrganId(startDateTime,organId);
+            }*/
+            var data = this.lampStatisticsMapper.selectThisYearGroupYearByOrganId(organId);
             List<String> dateList = this.getLastYear(1);
             dateList.forEach(dateStr -> {
                 long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
@@ -397,18 +397,20 @@ public class ReportService implements IReportService {
             }
             return obj;
         }else if(type == Report.TimeType.WEEK) {
+            SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat sdf2 =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = sdf.format(begin)+"00:00:00";
+            String format2 = sdf.format(end)+"00:00:00";
+            Date beginDateTime = null;
+            Date endDateTime = null;
+            try {
+                beginDateTime = sdf2.parse(format);
+                endDateTime = sdf2.parse(format2);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             var data = this.lampStatisticsMapper.selectDayByOrganIdBetween(organId,begin,end);
-           /* List<String> dateList = this.findDates("yyyy-MM-dd","yyyy-MM-dd");
-            dateList.forEach(dateStr -> {
-                long count = data.stream().filter(d -> dateStr.equals(d.id)).count();
-                if(count <= 0) {
-                    var detail = new Report.Detail();
-                    detail.key = dateStr;
-                    // detail.electricity = d.energy;
-                    // detail.fullElectricity = d.energy;
-                    data.add(detail);
-                }
-            });*/
+
             if(data != null && !data.isEmpty()) {
                 obj.details = data.stream().map(d -> {
                     var detail = new Report.Detail();
@@ -425,6 +427,18 @@ public class ReportService implements IReportService {
             }
             return obj;
         }else if(type == Report.TimeType.MONTH) {
+            SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM");
+            SimpleDateFormat sdf2 =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = sdf.format(begin)+"00:00:00";
+            String format2 = sdf.format(end)+"00:00:00";
+            Date beginDateTime = null;
+            Date endDateTime = null;
+            try {
+                beginDateTime = sdf2.parse(format);
+                endDateTime = sdf2.parse(format2);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             var data = this.lampStatisticsMapper.selectMonthByOrganIdBetween(organId,begin,end);
             if(data != null && !data.isEmpty()) {
                 obj.details = data.stream().map(d -> {
@@ -442,6 +456,18 @@ public class ReportService implements IReportService {
             }
             return obj;
         }else if(type == Report.TimeType.YEAR) {
+            SimpleDateFormat sdf =new SimpleDateFormat("yyyy");
+            SimpleDateFormat sdf2 =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format = sdf.format(begin)+"00:00:00";
+            String format2 = sdf.format(end)+"00:00:00";
+            Date beginDateTime = null;
+            Date endDateTime = null;
+            try {
+                beginDateTime = sdf2.parse(format);
+                endDateTime = sdf2.parse(format2);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             var data = this.lampStatisticsMapper.selectYearByOrganIdBetween(organId,begin,end);
             if(data != null && !data.isEmpty()) {
                 obj.details = data.stream().map(d -> {
